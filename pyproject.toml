@@ -1,17 +1,52 @@
 [project]
 name = "fisherbin"
 version = "0.1.0"
-description = "Add your description here"
+description = "Information-preserving binning for statistical inference"
 readme = "README.md"
 authors = [
     { name = "Vitaly Vorobyev", email = "vit.vorobiev@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "jax>=0.7",
+    "optax>=0.2",
+]
 
-[project.scripts]
-fisherbin = "fisherbin:main"
+[project.optional-dependencies]
+viz = ["matplotlib>=3.10"]
+examples = [
+    "ipykernel>=6.29",
+    "matplotlib>=3.10",
+    "nbclient>=0.10",
+    "nbformat>=5.10",
+]
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.130",
+    "ipykernel>=6.29",
+    "matplotlib>=3.10",
+    "nbclient>=0.10",
+    "nbformat>=5.10",
+    "pytest>=8.3",
+    "ruff>=0.11",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"*.ipynb" = ["B018"]

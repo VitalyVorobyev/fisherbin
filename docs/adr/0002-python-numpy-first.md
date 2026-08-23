@@ -1,6 +1,6 @@
 # ADR 0002: Start with a small Python/NumPy implementation
 
-**Status:** Accepted
+**Status:** Superseded by [ADR 0004](0004-jax-first.md)
 
 ## Decision
 

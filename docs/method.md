@@ -16,6 +16,8 @@ $$
 
 This is the canonical library input. The observation dimension does not enter the optimization once scores have been computed.
 
+Weights represent nonnegative measure, frequency, or exposure. Zero-weight rows are ignored. Signed weights do not preserve the positive-semidefinite identities below and are outside the v0.1 contract. Multiplying all weights by a common positive factor scales both Fisher matrices but does not change normalized retention or the fitted partition.
+
 ## 2. Fisher information before and after binning
 
 For a weighted sample, the unbinned Fisher information is estimated by
@@ -74,7 +76,7 @@ Therefore the natural representation is the vector of **relative components**, n
 
 ### Score k-means
 
-Weighted k-means in score space is the first implementation and the main baseline. Optionally whiten scores using $F_\infty^{-1/2}$ so Euclidean distance corresponds to normalized parameter-information directions.
+Weighted k-means in score space is the first implementation and the main baseline. By default scores are projected onto the numerically informative eigensubspace and whitened using $F_\infty^{-1/2}$ so Euclidean distance corresponds to normalized parameter-information directions. Scores are not mean-centered. Discarded directions and the numerical rank threshold are part of every fitted result.
 
 ### Soft Voronoi optimization
 
@@ -89,13 +91,15 @@ $$
 
 where $u_i$ is the score or whitened score. These assignments define differentiable bin statistics and therefore a differentiable Fisher matrix.
 
-The initial objective is D-optimality:
+The initial objective is D-optimality in the informative subspace:
 
 $$
 \max \log\det F_B.
 $$
 
 Start from score-k-means centers, optimize with a finite temperature, gradually reduce $\sigma$, then convert to the final hard nearest-center partition.
+
+The differentiable objective uses fractional bin statistics during fitting. The optimizer trace separately records soft retention and the retention of the current hardened partition; the final hard partition is the result users evaluate. D-optimal fitting requires at least as many bins as informative Fisher directions. K-means remains defined below that limit, with zero retained eigenvalues reported explicitly.
 
 Other objectives, nuisance-parameter profiling, occupancy constraints, and weighted Voronoi cells are useful extensions, but are not required for the first implementation.
 
@@ -118,6 +122,8 @@ The fundamental numerical check is
 $$
 F_B\preceq F_\infty.
 $$
+
+For a bin with weights $w_i$, the effective sample size is $(\sum_i w_i)^2/\sum_i w_i^2$. Splitting one event's weight among identical copies leaves every information statistic unchanged; duplicating the event without splitting its weight doubles its information contribution.
 
 ## 6. Local nature of the method
 

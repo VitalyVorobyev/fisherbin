@@ -2,110 +2,61 @@
 
 ## Design goal
 
-Keep the first version small enough that the mathematics is obvious in the code.
-
-The library should have one primary workflow:
+Keep the mathematics obvious in code while producing structured diagnostics that can drive both today's Python figures and a future local application.
 
 ```text
-scores + weights
-      |
-      v
-quantizer.fit(...)
-      |
-      v
-partition
-      |
-      +--> assign new scores
-      +--> information report
+array-like scores + nonnegative weights
+                 |
+                 v
+             fit(config)
+                 |
+                 v
+             FitResult
+       /-----------|------------\
+  predict       evaluate       trace/report
+                                  |
+                           optional Matplotlib
 ```
 
-Everything else is an adapter or optional extension.
+## Boundaries
 
-## Core modules
+- `information.py` owns full, hard-binned, and fractionally binned Fisher calculations.
+- `transforms.py` owns informative-rank selection, projection, and optional whitening.
+- `quantizers.py` privately implements weighted k-means and soft Voronoi optimization.
+- `config.py`, `result.py`, and `api.py` define the small public fitting contract.
+- `visualization.py` imports Matplotlib lazily and only consumes structured results.
+- Dataset-specific generators, baselines, notebooks, and figure layouts live in `examples/`.
 
-```text
-fisherbin/
-  information.py     Fisher matrices and diagnostics
-  quantizers.py      score k-means, later soft Voronoi
-  components.py      linear-component -> score adapter
-  result.py          fitted partition and report
-```
+JAX is the v0.1 numerical implementation and Optax supplies Adam. The public concepts remain arrays, configs, transforms, reports, traces, and fitted partitions; no backend registry or protocol is introduced yet.
 
-Do not introduce backend abstractions, services, registries, or plugin systems until a concrete need appears.
-
-## Public API
-
-The low-level API should accept NumPy arrays directly:
+## Public workflow
 
 ```python
 result = fisherbin.fit(
     scores,
-    weights=None,
+    weights=weights,
     n_bins=16,
-    method="kmeans",
+    config=fisherbin.KMeansConfig(seed=0),
+    validation_scores=validation_scores,
+    validation_weights=validation_weights,
 )
 
 bins = result.predict(scores_new)
-report = result.report()
+report = result.evaluate(scores_new, weights_new)
+payload = result.to_dict()
 ```
 
-A linear-component convenience API can compute scores and call the same core:
+The config type selects the method. Validation is diagnostic only. `to_dict()` is JSON-ready but is not a durable versioned artifact format.
 
-```python
-scores = fisherbin.scores_from_components(components, coefficients)
-result = fisherbin.fit(scores, n_bins=16)
-```
+## Numerical behavior
 
-The API should remain small until real use cases show what abstractions are actually needed.
+- Inputs must be finite; weights must be nonnegative with at least one positive value.
+- Fisher matrices are symmetrized before eigendecomposition.
+- Directions below a dtype-aware relative eigenvalue threshold are projected out and reported.
+- Score coordinates are never centered.
+- X64 is enabled by the application or CI, never as an import-time side effect.
+- Fitting is full-batch and uses dense `[N, B]` distances/responsibilities, but histories contain only aggregate values and `[B, R]` center snapshots.
 
-## Implementation
+## Frontend boundary
 
-### NumPy first
-
-Implement the mathematical reference in NumPy. This keeps the project easy to inspect, test, and use.
-
-### Differentiable optimizer
-
-Add PyTorch only for soft-Voronoi optimization once the NumPy baseline works. PyTorch is an optional dependency, not a requirement for using fitted partitions or the k-means baseline.
-
-### Performance
-
-Do not add Rust/C++, JAX, streaming infrastructure, or custom GPU kernels initially. Profile real workloads first. The core calculations are simple enough that optimized NumPy/SciPy and optional PyTorch may be sufficient for a long time.
-
-## Result object
-
-A fitted result needs only:
-
-- bin centers;
-- optional whitening transform;
-- method/configuration metadata;
-- information diagnostics.
-
-Serialization can start with a simple NumPy/JSON representation. Versioned schemas are only needed once compatibility becomes a real concern.
-
-## Validation
-
-Tests should focus on mathematical invariants:
-
-- $F_B\preceq F_\infty$;
-- event order does not matter;
-- relabeling bins does not matter;
-- identical weighted copies are equivalent to the original event;
-- one bin and one-event-per-bin limits are correct;
-- k-means reduces trace information loss relative to sensible baselines on synthetic problems.
-
-Optimization metrics must also be evaluated on held-out samples in examples and benchmarks.
-
-## Frontend
-
-A frontend is useful, but it is not part of the initial architecture.
-
-After the core library is stable, a small local application could provide:
-
-- loading score/component datasets;
-- 2D projections colored by bin;
-- configuration of bin count and optimizer;
-- optimization progress;
-- comparison of Fisher information before and after binning.
-
-It should call the Python library rather than reimplement the method. The technology choice can wait until the UI is actually started.
+Web, Tauri, and Python-service layers are deferred. A future frontend should serialize typed config values into the Python boundary and consume JSON-ready reports/traces rather than reproduce statistical calculations or parse plots.
