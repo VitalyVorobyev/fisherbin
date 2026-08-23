@@ -65,12 +65,12 @@ def run_experiment(
         validation_scores=problem.validation.scores,
         validation_weights=problem.validation.weights,
     )
-    kmeans = fisherbin.fit(
+    kmeans = fisherbin.fit_scores(
         problem.train.scores,
         config=fisherbin.KMeansConfig(seed=42, n_init=4),
         **common,
     )
-    soft = fisherbin.fit(
+    soft = fisherbin.fit_scores(
         problem.train.scores,
         config=fisherbin.SoftVoronoiConfig(
             seed=42,
@@ -83,7 +83,7 @@ def run_experiment(
     kmeans_test = kmeans.evaluate(problem.test.scores, problem.test.weights)
     soft_test = soft.evaluate(problem.test.scores, problem.test.weights)
 
-    observation_fit = fisherbin.fit(
+    observation_fit = fisherbin.fit_scores(
         problem.train.observations,
         weights=problem.train.weights,
         n_bins=problem.n_bins,

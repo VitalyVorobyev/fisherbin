@@ -72,6 +72,8 @@ $$
 
 Therefore the natural representation is the vector of **relative components**, not the absolute component values. This generalizes the original component-space Voronoi idea.
 
+The $\phi_\alpha$ are intensity components, not necessarily normalized probability densities. Individual components and coefficients may be signed; the required physical condition is that the reference intensity $\lambda(x;c_0)$ is finite and strictly positive on the integration sample.
+
 ## 4. Algorithms
 
 ### Score k-means

@@ -13,7 +13,7 @@ def main() -> None:
     key = jax.random.PRNGKey(2026)
     scores = jax.random.normal(key, (100_000, 16))
     weights = jnp.ones(scores.shape[0])
-    result = fisherbin.fit(
+    result = fisherbin.fit_scores(
         scores,
         weights=weights,
         n_bins=64,

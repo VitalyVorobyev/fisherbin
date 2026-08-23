@@ -11,7 +11,7 @@ import fisherbin
 
 def test_all_visualizations_construct_figures() -> None:
     scores = jnp.linspace(-2, 2, 80)[:, None]
-    result = fisherbin.fit(
+    result = fisherbin.fit_scores(
         scores,
         n_bins=4,
         config=fisherbin.KMeansConfig(n_init=2),

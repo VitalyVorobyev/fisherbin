@@ -54,13 +54,13 @@ def test_soft_d_optimality_improves_a_targeted_nonlinear_fixture() -> None:
 
     train_scores, train_weights = generate(1003, 5_000)
     test_scores, test_weights = generate(2003, 20_000)
-    kmeans = fisherbin.fit(
+    kmeans = fisherbin.fit_scores(
         train_scores,
         weights=train_weights,
         n_bins=2,
         config=fisherbin.KMeansConfig(seed=0, n_init=8),
     )
-    soft = fisherbin.fit(
+    soft = fisherbin.fit_scores(
         train_scores,
         weights=train_weights,
         n_bins=2,
