@@ -1,67 +1,27 @@
 # Roadmap
 
-The roadmap intentionally avoids building infrastructure before the method is proven useful.
+## v0.1 — JAX end-to-end proof
 
-## M1 — Mathematical reference
+- JAX Fisher calculations, informative-subspace transforms, and nonnegative-weight validation.
+- Deterministic weighted k-means and Optax soft Voronoi optimization.
+- Immutable typed configs, result/report/trace objects, prediction, evaluation, and JSON-ready conversion.
+- Optional Matplotlib optimization and final-result views.
+- Three deterministic synthetic problems, scripts, notebooks, gallery figures, and held-out baseline comparisons.
+- X64 invariant tests, float32 smoke coverage, linting, notebook execution, and a moderate-scale memory smoke benchmark.
 
-Implement in NumPy:
+**Done when:** the package reproduces the Fisher-loss identity, both optimizers produce trustworthy hard-partition diagnostics, and every gallery result regenerates from a clean environment.
 
-- full and binned Fisher information from `(scores, weights)`;
-- information-loss and retained-information diagnostics;
-- hard partitions;
-- property tests and small synthetic examples.
+## v0.2 candidates, only after v0.1 evidence
 
-**Done when:** the equations in `method.md` are reproduced numerically and the core invariants are well tested.
+- tune optimizer defaults against a broader deterministic fixture set;
+- add a versioned fitted-partition artifact if multiple consumers need persistence;
+- profile chunked statistics or minibatched optimization on million-event workloads;
+- evaluate nuisance-profiled and multi-reference objectives on concrete applications.
 
-## M2 — Useful MVP
+## Later
 
-Add:
-
-- weighted score k-means;
-- optional Fisher whitening;
-- linear-component score adapter;
-- simple `fit / predict / report` API;
-- comparison with random and observation-space baselines.
-
-**Done when:** the original template-fit problem can be solved through the public API and examples show measurable information retention.
-
-## M3 — Main optimization method
-
-Add optional PyTorch soft-Voronoi optimization:
-
-- k-means initialization;
-- soft assignments;
-- D-optimal objective;
-- temperature annealing;
-- final hard partition;
-- held-out evaluation.
-
-**Done when:** it reliably matches or improves the k-means baseline on representative synthetic and real examples.
-
-## M4 — Open-source quality
-
-Prepare the first serious public release:
-
-- clean package structure and API;
-- documentation and tutorials;
-- deterministic tests and CI;
-- benchmark suite;
-- serialization of fitted partitions;
-- examples from at least two non-HEP domains or synthetic analogues.
-
-**Target:** useful, understandable `0.1` library rather than a broad framework.
-
-## Later, only when justified
-
-Possible extensions:
-
-- nuisance-parameter/profiled objectives;
-- A/E-optimal or custom objectives;
-- power diagrams and occupancy constraints;
-- multi-reference optimization;
-- analytic/autodiff/learned score adapters;
-- large-data or GPU optimization;
-- compiled acceleration;
-- interactive frontend.
-
-Each should be driven by a real application or benchmark, not anticipated architecture.
+- backend abstraction beyond JAX;
+- signed-weight formulations with explicitly revised guarantees;
+- occupancy constraints, power diagrams, and alternative optimality criteria;
+- Python service plus React/Tauri applications consuming the library data contract;
+- compiled or accelerator-specific deployment work justified by profiles.
