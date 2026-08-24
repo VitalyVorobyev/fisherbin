@@ -5,8 +5,8 @@ score vectors expressed in a stable parameter order.
 
 ## Exact likelihood derivatives
 
-If (p(x\mid\theta)) is differentiable and evaluable, compute
-(\nabla_\theta\log p) analytically or with automatic differentiation. This is
+If \(p(x\mid\theta)\) is differentiable and evaluable, compute
+\(\nabla_\theta\log p\) analytically or with automatic differentiation. This is
 the cleanest oracle case.
 
 **Limitation.** Many simulators can sample events but cannot evaluate their
@@ -41,7 +41,7 @@ gives a density ratio up to a common event-wise factor:
 r_k(x)=\frac{q_k(x)}{\pi_k}\propto p_k(x).
 \]
 
-At an interior reference composition (	heta_0), choosing component (r) as
+At an interior reference composition \(\theta_0\), choosing component \(r\) as
 the simplex reference gives (K-1) scores:
 
 \[

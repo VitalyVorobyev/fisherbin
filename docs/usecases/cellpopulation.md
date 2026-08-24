@@ -19,7 +19,7 @@ slightly better at 0.00173 RMSE, as the exact-information ordering suggests it
 should be when ratio bias is sufficiently controlled.
 
 Those numbers are not fixture results. They come from all 30 FlowCyt patients,
-with 20 reference patients and ten untouched test patients. The reproducible
+with 20 reference patients and ten frozen held-out test patients. The reproducible
 bounded study contains 600,000 real cells sampled from 21,254,866 upstream
 events.
 
@@ -37,7 +37,7 @@ median random score partition in held-out D-efficiency for at least five of six
 bin counts, and to be no worse than marker k-means in population RMSE for at
 least four. The result was 6/6 for both tests.
 
-| Bins | Soft Voronoi RMSE | Score k-means RMSE | Marker k-means RMSE | Random RMSE median | Soft D-efficiency | Random D-efficiency median |
+| Bins | Soft Voronoi RMSE | Score k-means RMSE | Marker k-means RMSE | Random RMSE median | Supplied-score D-efficiency | Random D-efficiency median |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 5 | 0.03000 | 0.00501 | 0.04186 | 0.02998 | 0.391 | 0.001 |
 | 8 | **0.00196** | 0.00201 | 0.02889 | 0.01870 | 0.982 | 0.016 |
@@ -47,27 +47,56 @@ least four. The result was 6/6 for both tests.
 | 30 | 0.00249 | 0.00285 | 0.04990 | 0.00697 | **0.998** | 0.324 |
 
 Eight bins are the useful knee in this experiment and give the lowest learned-
-partition RMSE. The five-bin soft optimizer is an explicit negative result: its
-hardened partition is much worse than score k-means despite passing the broad
-predeclared comparisons. Thirty bins preserve more local information but contain
-an empty held-out bin and do not improve the downstream estimate. More bins are
-not automatically better, and the hard result—not the soft objective—is what
-matters.
+partition RMSE. Five bins are an explicit negative result, but not an optimizer
+mystery: they cannot identify five independent fractions from a fixed-total
+count likelihood. Thirty bins preserve more local supplied-score information
+but contain an empty held-out bin and do not improve the downstream estimate.
+More bins are not automatically better, and the hard result—not the soft
+objective—is what matters.
 
 ![Full FlowCyt held-out results](assets/cell_population.png)
 
 The lower-left panel shows each estimated target fraction against the expert
 fraction for the ten test patients. The lower-right panel does not project the
 five-dimensional partition. It shows
-(P(k\mid B_j,\theta_0)), the reference population composition of each of the
+\(P(k\mid B_j,\theta_0)\), the reference population composition of each of the
 eight gates. This projection-free summary explains the statistical role of each
 gate.
 
 The complete numeric record is committed as
 [`cell_population.json`](assets/cell_population.json). It includes every
 method/bin result, per-patient estimates, calibration and shift diagnostics,
-uncertainty arrays, run settings, timings, source provenance, and acceptance
-decisions.
+reference-only closure and uncertainty coverage, run settings, timings, source
+provenance, and acceptance decisions.
+
+## Why five bins fail
+
+There are six population fractions constrained to sum to one, so the downstream
+fit has five free parameters. A patient contributes five bin counts when
+`n_bins=5`, but their sum is the fixed number of sampled cells. Only four bin
+frequencies are independent. In general, a fixed-total mixture of \(K\) classes
+needs at least \(K\) bins:
+
+\[
+B-1\geq K-1.
+\]
+
+The reference-only audit confirms the algebra for every seed from 2026 through
+2035. Both score k-means and soft Voronoi have conditional information rank four
+at five bins and rank five at six and eight bins. The five-bin D-efficiency for
+the fixed-total likelihood is therefore zero, even though the unconditioned
+supplied-score diagnostic in the table is nonzero.
+
+This discrepancy is informative. An intensity or Poisson model can use the
+total event rate and therefore has \(B\) count coordinates. The FlowCyt patient
+fit conditions on 20,000 cells and has only \(B-1\). Approximate classifier
+scores also have a nonzero mean, so an unconditioned second moment can appear to
+contain a fifth direction that the downstream likelihood cannot use.
+
+The machine evidence includes a direct null-space witness: two different
+six-class compositions produce the same five bin probabilities to
+\(5.6\times10^{-17}\). For six and eight bins the template contrasts are full
+rank, with condition numbers about 4.83 and 5.43 respectively.
 
 ## The real data behind the experiment
 
@@ -148,15 +177,33 @@ raw posteriors with declared uniform training priors, raw posteriors with priors
 estimated from inner out-of-fold marginals, and temperature-scaled posteriors
 with the same prior-consistency correction. It selects the smallest outer-fold
 macro RMSE, preferring the simpler strategy when values differ by at most
-(10^{-6}). Candidate errors, the selected strategy, priors, temperature, and
+\(10^{-6}\). Candidate errors, the selected strategy, priors, temperature, and
 ratio-normalization residuals are stored in the JSON evidence.
 
 After selection, one final classifier is trained on all reference patients and
-evaluated once on the untouched test cohort. The nested audit selected raw
+used by the frozen held-out evaluation. The nested audit selected raw
 posteriors with the declared uniform training priors: outer-fold macro RMSE was
 0.00298, compared with 0.00308 for OOF prior correction and 0.01122 for the
 temperature-scaled candidate. The final temperature is therefore 1.0. Fisher
 information does not make an upstream score estimator correct.
+
+### What the normalization residual means
+
+For exact density ratios, every component ratio integrates to one under the
+declared training mixture. The selected raw-declared strategy misses that
+closure by as much as 0.217, and its weighted mean-score norm at \(\theta_0\) is
+0.178. This is model bias, not compression loss.
+
+The OOF-prior strategies force the six component integrals to one on the same
+reference sample, to numerical precision. That does not make their ratios
+correct point by point: the raw OOF-prior candidate still has mean-score norm
+0.162 and slightly worse nested RMSE, while temperature scaling increases the
+norm to 1.225 and performs much worse. Marginal normalization is therefore a
+useful closure check, but not a sufficient calibration criterion.
+
+No ratio is silently renormalized after selection. The evidence records all
+three residuals, reference-fold errors, and patient-level dispersion. The test
+cohort is not used to choose among them.
 
 ## The FisherBin API boundary
 
@@ -220,6 +267,11 @@ downstream likelihood is
 \sum_j n_j\log\left(\sum_k A_{jk}\theta_k\right).
 \]
 
+Its local identifiability is controlled by the five template contrasts
+\(A_{:a}-A_{:\mathrm{other}}\). Their singular values, effective rank, and
+condition number are now part of the evidence. This check happens before a
+covariance or convergence flag is interpreted.
+
 The example solves this concave simplex problem with deterministic EM. Local
 covariance is computed in the five free directions and lifted back to all six
 fractions. Singular directions are projected with a pseudoinverse; no ridge is
@@ -228,6 +280,27 @@ slowest learned-partition fit required 1,198 iterations at five bins.
 
 This likelihood is application code under `examples/cell_population/`. It
 consumes the generic hard labels but is not part of FisherBin's public API.
+
+### Reference-only pseudo-patients
+
+The downstream pipeline is also tested without consulting the frozen test
+cohort. Eleven compositions cover \(\theta_0\) and a factor-of-two change in
+each target fraction. For each composition, twenty deterministic pseudo-patients
+of 20,000 events are sampled only from reference validation rows.
+
+At six bins, all 220 pseudo-patient likelihoods converge. Soft Voronoi reaches
+0.000657 macro RMSE and score k-means reaches 0.000728. At eight bins the values
+are 0.000879 and 0.000858. The unbinned classifier-ratio fit reaches 0.000972.
+The binned results can be better here because their templates are independently
+estimated from labelled reference rows; this is low-dimensional recalibration
+of an approximate ratio model, not information created by discarding events.
+
+Five-bin score k-means reaches 0.00231 but remains non-identifiable. Five-bin
+soft Voronoi reaches 0.00733 and none of its 220 fits meets the convergence
+tolerance. Even with exact expected bin counts, the five-bin soft likelihood
+does not converge for any of the eleven compositions. With six or eight bins,
+all expected-count fits converge and recover the known fractions to about
+\(10^{-7}\).
 
 ## What was compared
 
@@ -286,23 +359,32 @@ after proportional rounding. Absolute RMSE therefore looks small even when the
 relative error is poor. This is a general warning for rare mixture components:
 one summary number cannot replace the per-class table.
 
-## Uncertainty: where the local calculation works and fails
+## Uncertainty: validate the interior, mark the boundary
 
-For the 30-bin partition, we compare the likelihood's local Fisher standard
-errors with 200 multinomial bootstrap refits of the frozen bin-count pipeline.
+The uncertainty check now uses the frozen 30-bin reference templates and no
+test patients. For each of two known compositions, it draws 1,000 multinomial
+pseudoexperiments of 20,000 events and compares empirical variation with the
+local Fisher covariance.
 
-![Fisher and bootstrap uncertainty](assets/cell_population_uncertainty.png)
+![Reference-only uncertainty coverage](assets/cell_population_uncertainty.png)
 
-The median predicted/bootstrap ratios are 0.994 for T cells, 1.222 for B cells,
-1.081 for monocytes, 1.158 for HSPCs, and 1.034 for `other`. This is good local
-agreement for a deterministic count likelihood.
+At the reference composition, T cells, B cells, monocytes, HSPCs, and `other`
+remain interior. Their local-to-empirical standard-error ratios range from
+1.018 to 1.041, and their nominal 68% Wald coverages range from 0.684 to 0.713.
+That is the regime where the quadratic calculation has a clear interpretation.
 
-Mast cells fail visibly. Their fitted fraction often sits exactly at zero, so
-the nonparametric bootstrap also collapses at the simplex boundary. The interior
-quadratic Fisher approximation remains nonzero and its median ratio becomes
-meaningless. The correct conclusion is not to patch the denominator. Boundary
-intervals or a constrained likelihood-ratio construction are needed for that
-population.
+Mast cells are different. Their reference fraction is 0.00019—only 3.8 expected
+events in a 20,000-cell patient—and 44.2% of constrained estimates lie within
+half an event of the simplex boundary. The audit labels this result
+`boundary_dominated` and publishes neither a standard-error ratio nor Wald
+coverage for it. There is no artificial denominator.
+
+As a controlled check, the second composition raises the mast fraction to
+0.005. Boundary hits disappear; the local-to-empirical error ratio is 1.012 and
+coverage is 0.689. This isolates the failure as a boundary problem rather than
+a general covariance bug. A profile-likelihood or another constrained interval
+construction is still required when inference on the reference-like mast
+fraction matters.
 
 ## Patient shift and empty bins
 
@@ -373,9 +455,10 @@ the source URLs, file totals, sampling settings, and digest.
 On this frozen all-patient sample, a handful of score-aware hard gates preserve
 the parameter information that ordinary marker-space partitions miss. Eight
 bins are already enough for a practical result. The study also shows the limits
-clearly: score calibration matters, high information retention does not prevent
-empty transported bins, and local Fisher errors fail for fractions on the
-simplex boundary.
+clearly: score calibration matters, fixed-total identifiability must be checked
+separately from an intensity-information objective, high information retention
+does not prevent empty transported bins, and local Fisher errors fail for
+fractions on the simplex boundary.
 
 That combination is the useful result. FisherBin is not a classifier and not a
 mixture fitter. It is the compression layer between them, and this case shows

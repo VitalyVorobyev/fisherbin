@@ -14,6 +14,7 @@ from sklearn.decomposition import PCA
 
 import fisherbin as fb
 
+from .closure import ClosureInputs, run_scientific_closure
 from .data import CLASS_NAMES, REFERENCE_PATIENTS, TEST_PATIENTS, FlowCytData
 from .likelihood import estimate_bin_templates, fit_binned_mixture, fit_unbinned_mixture
 from .scores import (
@@ -34,8 +35,6 @@ class ExperimentResult:
     bin_counts: tuple[int, ...]
     operating_n_bins: int
     operating_bin_composition: np.ndarray
-    predicted_standard_errors: np.ndarray
-    bootstrap_standard_errors: np.ndarray
     patient_ids: np.ndarray
 
 
@@ -65,8 +64,6 @@ class _SweepResult:
     metrics: dict[str, object]
     predicted: dict[str, np.ndarray]
     operating_bin_composition: np.ndarray
-    predicted_standard_errors: np.ndarray
-    bootstrap_standard_errors: np.ndarray
     timings: dict[str, float]
 
 
@@ -238,33 +235,6 @@ def _fit_unbinned_patient_fractions(
     }
 
 
-def _bootstrap_uncertainty(
-    test: FlowCytData,
-    test_labels: np.ndarray,
-    templates: np.ndarray,
-    patients: np.ndarray,
-    *,
-    repeats: int,
-    seed: int,
-) -> tuple[np.ndarray, np.ndarray]:
-    rng = np.random.default_rng(seed)
-    predicted_errors: list[np.ndarray] = []
-    bootstrap_errors: list[np.ndarray] = []
-    for patient in patients:
-        labels = test_labels[test.patients == patient]
-        counts = np.bincount(labels, minlength=templates.shape[0])
-        fitted = fit_binned_mixture(counts, templates)
-        draws = [
-            fit_binned_mixture(
-                rng.multinomial(len(labels), counts / np.sum(counts)), templates
-            ).fractions
-            for _ in range(repeats)
-        ]
-        predicted_errors.append(fitted.standard_errors)
-        bootstrap_errors.append(np.std(draws, axis=0, ddof=1))
-    return np.asarray(predicted_errors), np.asarray(bootstrap_errors)
-
-
 def _summary_metrics(
     true_fractions: np.ndarray,
     predicted: np.ndarray,
@@ -397,10 +367,9 @@ def _evaluate_bin_count(
     n_bins: int,
     *,
     operating_n_bins: int,
-    uncertainty_n_bins: int,
     quick: bool,
     seed: int,
-) -> tuple[dict[str, object], dict[str, np.ndarray], np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[dict[str, object], dict[str, np.ndarray], np.ndarray]:
     metrics: dict[str, object] = {}
     predicted_by_method: dict[str, np.ndarray] = {}
     common = {
@@ -528,8 +497,6 @@ def _evaluate_bin_count(
     }
 
     operating_composition = np.empty((0, len(CLASS_NAMES)))
-    predicted_errors = np.empty((0, len(CLASS_NAMES)))
-    bootstrap_errors = np.empty((0, len(CLASS_NAMES)))
     template_labels = np.asarray(
         soft_result.predict(context.reference_scores[context.template_mask])
     )
@@ -542,22 +509,7 @@ def _evaluate_bin_count(
         )
         operating_composition = templates * context.theta0[None, :]
         operating_composition /= np.sum(operating_composition, axis=1, keepdims=True)
-    if n_bins == uncertainty_n_bins:
-        templates = estimate_bin_templates(
-            context.reference.labels[context.template_mask],
-            template_labels,
-            context.reference.patients[context.template_mask],
-            n_bins=n_bins,
-        )
-        predicted_errors, bootstrap_errors = _bootstrap_uncertainty(
-            context.test,
-            predict_score_bins(soft_result, context.test_scores),
-            templates,
-            context.patients,
-            repeats=30 if quick else 200,
-            seed=seed,
-        )
-    return metrics, predicted_by_method, operating_composition, predicted_errors, bootstrap_errors
+    return metrics, predicted_by_method, operating_composition
 
 
 def _run_partition_sweep(
@@ -565,7 +517,6 @@ def _run_partition_sweep(
     bin_counts: tuple[int, ...],
     *,
     operating_n_bins: int,
-    uncertainty_n_bins: int,
     quick: bool,
     seed: int,
 ) -> _SweepResult:
@@ -573,15 +524,12 @@ def _run_partition_sweep(
     all_predicted: dict[str, np.ndarray] = {}
     timings: dict[str, float] = {}
     operating_composition = np.empty((0, len(CLASS_NAMES)))
-    predicted_errors = np.empty((0, len(CLASS_NAMES)))
-    bootstrap_errors = np.empty((0, len(CLASS_NAMES)))
     for n_bins in bin_counts:
         started = perf_counter()
-        metrics, predicted, composition, current_predicted, current_bootstrap = _evaluate_bin_count(
+        metrics, predicted, composition = _evaluate_bin_count(
             context,
             n_bins,
             operating_n_bins=operating_n_bins,
-            uncertainty_n_bins=uncertainty_n_bins,
             quick=quick,
             seed=seed,
         )
@@ -589,16 +537,11 @@ def _run_partition_sweep(
         all_predicted.update(predicted)
         if len(composition):
             operating_composition = composition
-        if len(current_predicted):
-            predicted_errors = current_predicted
-            bootstrap_errors = current_bootstrap
         timings[f"partitions_and_baselines_{n_bins}_bins"] = perf_counter() - started
     return _SweepResult(
         all_metrics,
         all_predicted,
         operating_composition,
-        predicted_errors,
-        bootstrap_errors,
         timings,
     )
 
@@ -638,6 +581,7 @@ def _assemble_metrics(
     *,
     operating_n_bins: int,
     uncertainty_n_bins: int,
+    scientific_closure: dict[str, object],
     quick: bool,
     elapsed_seconds: float,
     score_elapsed_seconds: float,
@@ -711,6 +655,7 @@ def _assemble_metrics(
         )
     ]
     metrics["acceptance"] = _acceptance_metrics(metrics, bin_counts)
+    metrics["scientific_closure"] = scientific_closure
     timings = {"score_model_and_scores": score_elapsed_seconds, **sweep.timings}
     metrics["run"] = {
         "reference_patients": list(REFERENCE_PATIENTS),
@@ -740,18 +685,18 @@ def _assemble_metrics(
             "soft_n_init": 3 if quick else 4,
             "soft_max_steps": 50 if quick else 160,
             "random_repeats": 5 if quick else 20,
-            "bootstrap_repeats": 30 if quick else 200,
+            "closure_pseudo_repeats": 1 if quick else 20,
+            "closure_seed_repeats": 1 if quick else 10,
+            "uncertainty_coverage_draws": 30 if quick else 1_000,
         },
         "timings_seconds": timings,
     }
     metrics["uncertainty"] = {
         "n_bins": uncertainty_n_bins,
-        "predicted_standard_errors": sweep.predicted_standard_errors.tolist(),
-        "bootstrap_standard_errors": sweep.bootstrap_standard_errors.tolist(),
-        "median_ratio_by_class": np.median(
-            sweep.predicted_standard_errors / np.maximum(sweep.bootstrap_standard_errors, 1e-12),
-            axis=0,
-        ).tolist(),
+        **cast(
+            dict[str, object],
+            scientific_closure["uncertainty_coverage"],
+        ),
     }
     return metrics, predicted
 
@@ -778,16 +723,33 @@ def run_experiment(
         context,
         bin_counts,
         operating_n_bins=operating_n_bins,
+        quick=quick,
+        seed=seed,
+    )
+    closure_started = perf_counter()
+    scientific_closure = run_scientific_closure(
+        ClosureInputs(
+            reference=context.reference,
+            score_fit=context.score_fit,
+            theta0=context.theta0,
+            reference_scores=context.reference_scores,
+            partition_mask=context.partition_mask,
+            validation_mask=context.validation_mask,
+            template_mask=context.template_mask,
+            partition_weights=context.weights,
+        ),
         uncertainty_n_bins=uncertainty_n_bins,
         quick=quick,
         seed=seed,
     )
+    sweep.timings["reference_only_scientific_closure"] = perf_counter() - closure_started
     metrics, predicted = _assemble_metrics(
         context,
         sweep,
         bin_counts,
         operating_n_bins=operating_n_bins,
         uncertainty_n_bins=uncertainty_n_bins,
+        scientific_closure=scientific_closure,
         quick=quick,
         elapsed_seconds=perf_counter() - started,
         score_elapsed_seconds=score_elapsed,
@@ -799,7 +761,5 @@ def run_experiment(
         bin_counts=bin_counts,
         operating_n_bins=operating_n_bins,
         operating_bin_composition=sweep.operating_bin_composition,
-        predicted_standard_errors=sweep.predicted_standard_errors,
-        bootstrap_standard_errors=sweep.bootstrap_standard_errors,
         patient_ids=context.patients,
     )

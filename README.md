@@ -1,100 +1,165 @@
 # FisherBin
 
-**Information-preserving binning for statistical inference.**
+**Turn continuous or high-dimensional events into a small histogram designed for parameter estimation.**
 
 [![CI](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/ci.yml/badge.svg)](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/ci.yml)
 [![Documentation](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/docs.yml/badge.svg)](https://vitalyvorobyev.github.io/fisherbin/)
 
-FisherBin learns a finite hard partition of continuous or high-dimensional events while retaining information about parameters of a statistical model.
+Many analyses start with thousands or millions of events and end by estimating
+an unknown parameter vector. The events may be cells with twelve marker
+measurements, collisions with many reconstructed variables, or samples from a
+simulator. The final likelihood may still need a small set of hard bins.
 
-## Installation
+An ordinary grid preserves geometry in the measured variables. That is not
+necessarily the geometry that matters for inference. Two nearby events can
+support different parameter values, while two distant events can carry the same
+statistical evidence. FisherBin learns bins from that evidence.
 
-FisherBin requires Python 3.12 or newer. From a source checkout:
+## The core idea
 
-```bash
-uv sync --all-extras --all-groups --locked
-```
+For each event, the **score** measures how the log likelihood changes when a
+parameter changes:
 
-## User workflow
+\[
+s(x)=\nabla_\theta\log p(x\mid\theta)\big|_{\theta_0}.
+\]
 
-Suppose an event is described by `energy` and `cos_theta`, and
+Events with similar scores affect the parameter fit in similar ways. FisherBin
+partitions score space, assigns every event to one hard bin, and reports how much
+local Fisher information the resulting counts retain.
 
 ```text
-lambda(x; theta) = theta_signal * signal(x)
-                 + theta_bkg1   * background_1(x)
-                 + theta_bkg2   * background_2(x).
+measured event -> statistical score -> learned hard bin -> bin counts
 ```
 
-Define vectorized component functions and fit the partition on a Monte Carlo or integration sample:
+The library does not invent the statistical model and does not run the final
+parameter fit. It builds the information-aware hard interface between them.
 
+## Install
+
+Add FisherBin directly from GitHub:
+
+```bash
+uv add "fisherbin @ git+https://github.com/VitalyVorobyev/fisherbin.git"
+```
+
+## A complete first partition
+
+For a Gaussian location model, \(x\sim\mathcal N(\mu,1)\), the score at
+\(\mu_0=0\) is simply \(s(x)=x\). This gives a useful first example because the
+score is exact and needs no classifier or density estimator.
+
+<!-- quickstart-test:start -->
 ```python
 import numpy as np
 import fisherbin as fb
 
-X_mc = np.column_stack([energy_mc, cos_theta_mc])
+rng = np.random.default_rng(7)
+reference = rng.normal(size=20_000)
 
-model = fb.LinearComponents(
-    components={
-        "signal": signal,
-        "background_1": background_1,
-        "background_2": background_2,
-    },
-    coefficients={
-        "signal": 1.0,
-        "background_1": 0.4,
-        "background_2": 0.2,
-    },
-    variables=["energy", "cos_theta"],
+partition = fb.fit_scores(
+    reference[:, None],
+    n_bins=4,
+    config=fb.KMeansConfig(seed=7, n_init=8),
 )
 
-result = fb.fit(
-    X_mc,
-    model=model,
-    weights=mc_weights,
-    n_bins=16,
-)
+observed = rng.normal(loc=0.3, size=2_000)
+observed_bins = partition.predict(observed[:, None])
+counts = np.bincount(np.asarray(observed_bins), minlength=partition.n_bins)
 
-print(result.report())
-print(result.labels)  # labels for X_mc
-
-data_bins = result.predict(X_data)
-counts = np.bincount(data_bins, minlength=result.n_bins)
+print(counts.tolist())
+print(f"retained information: {partition.train_report.geometric_mean_retention:.3f}")
 ```
+<!-- quickstart-test:end -->
 
-Each component receives the entire `X` matrix with shape `[N, K]` and returns shape `[N]`. Components need not be normalized PDFs and may be signed; FisherBin only requires finite values and a strictly positive reference intensity `components @ coefficients` at every supplied point. Integration weights must be finite and nonnegative.
-
-The fitted result stores the model and its component ordering, so prediction does not ask the caller to provide the model again. FisherBin produces bins and diagnostics; the downstream statistical fit remains the user's responsibility.
-
-## Three explicit representations
-
-The public entry points mirror the mathematical pipeline:
+The deterministic output is:
 
 ```text
-physical variables X
-    -- LinearComponents --> component values Phi
-    -- reference theta0 --> scores Phi / (Phi @ theta0)
-    -- FisherBin --> hard bin labels
+[768, 200, 547, 485]
+retained information: 0.882
 ```
 
-- `fit(X, model=...)` is the ergonomic physical-variable workflow.
-- `fit_components(Phi, coefficients=...)` is the main statistical matrix API and also accepts `LinearProblem`.
-- `fit_scores(scores, ...)` is the mathematical core for callers that already have scores.
+`partition.predict(...)` is the frozen event-to-bin map. The four counts can now
+feed a count likelihood for \(\mu\). In this one-parameter example, the reported
+retention means that the four-bin likelihood keeps about 88.2% of the local
+Fisher information available in the supplied exact scores.
 
-All three return a result whose `predict(...)` method expects the same representation used during fitting.
+## Choose the input you already have
 
-## Evidence
+FisherBin keeps the path to score vectors explicit:
 
-The reproducible [synthetic gallery](docs/gallery/index.md) covers an analytic Gaussian score, non-monotonic spectral templates, and an importance-weighted spatial intensity model.
+| You have | Use | The fitted result predicts from |
+| --- | --- | --- |
+| Physical variables and callable linear components | `fit` | physical variables |
+| Evaluated component values | `fit_components` | component values |
+| Statistical scores | `fit_scores` | scores |
+| Classifier posteriors for a finite mixture | `mixture_scores_from_posteriors`, then `fit_scores` | scores |
 
-The realistic end-to-end case learns information-aware multidimensional gates
-for [cell-population quantification in the FlowCyt benchmark](docs/usecases/cellpopulation.md),
-then estimates six population fractions from frozen bin counts on held-out patients.
+The [workflow guide](https://vitalyvorobyev.github.io/fisherbin/user-workflow/)
+explains these representations and their contracts. The
+[classifier-mixture tutorial](https://vitalyvorobyev.github.io/fisherbin/tutorials/classifier-mixtures/)
+shows how calibrated class probabilities become mixture-fraction scores without
+making classifier training part of the library.
 
-## Documents
+## When FisherBin is a good fit
 
-- [Published documentation](https://vitalyvorobyev.github.io/fisherbin/)
-- [Python API](docs/api.md)
-- [FlowCyt cell-population use case](docs/usecases/cellpopulation.md)
-- [Generated reference](docs/reference/index.md)
+Use it when:
+
+- the downstream analysis requires hard bins, gates, categories, or template counts;
+- you can supply credible local scores, analytic components, or classifier posteriors;
+- preserving parameter sensitivity matters more than preserving geometric locality.
+
+There is no required ordering between the observation dimension and the number
+of parameters. Once scores have been constructed, FisherBin works in the
+parameter-score space and no longer depends on the dimension of the original
+observations. The common high-dimensional-event/few-parameter setting is an
+important use case, not a mathematical assumption.
+
+Use the exact unbinned likelihood when it is available, validated, and cheap
+enough. Use ordinary geometric bins when spatial locality or human-readable
+rectangular cuts are the primary requirement. A high Fisher retention also does
+not prove that an approximate classifier or simulator is unbiased; upstream
+model closure must be checked separately.
+
+## Evidence on real high-dimensional events
+
+The FlowCyt study starts from 600,000 real cells, learns a five-dimensional score
+representation for six population fractions, and compresses each held-out
+patient to eight integer counts. The frozen eight-bin partition retains 98.2%
+of the supplied-score Fisher information and reaches a macro fraction RMSE of
+0.00196. The selected unbinned classifier-ratio fit reaches 0.00173.
+
+![FlowCyt population quantification](docs/usecases/assets/cell_population.png)
+
+This result has an important limitation. FisherBin measures compression loss
+for the supplied scores; it cannot remove bias in the learned likelihood ratios.
+The complete study therefore reports classifier closure, fixed-total
+identifiability, patient-level shift, hard-bin occupancy, downstream convergence,
+and boundary behavior separately.
+
+Read the [complete FlowCyt study](https://vitalyvorobyev.github.io/fisherbin/usecases/cellpopulation/)
+or browse the reproducible [synthetic gallery](https://vitalyvorobyev.github.io/fisherbin/gallery/).
+
+## Learn the method
+
+The documentation starts from basic statistical estimation and does not assume
+prior knowledge of score compression:
+
+- [The estimation problem](https://vitalyvorobyev.github.io/fisherbin/learn/estimation-problem/)
+- [Likelihood and score](https://vitalyvorobyev.github.io/fisherbin/learn/likelihood-and-score/)
+- [What binning loses](https://vitalyvorobyev.github.io/fisherbin/learn/binning-loss/)
+- [First analytic tutorial](https://vitalyvorobyev.github.io/fisherbin/tutorials/first-partition/)
+- [API guide](https://vitalyvorobyev.github.io/fisherbin/api/)
+- [Generated reference](https://vitalyvorobyev.github.io/fisherbin/reference/)
+- [Bibliography](https://vitalyvorobyev.github.io/fisherbin/bibliography/)
+
+The executable notebooks show the same ideas without hiding the work behind an
+experiment wrapper:
+
+- [Gaussian location](examples/notebooks/gaussian_location.ipynb): derive an exact score and learn the first partition;
+- [linear components](examples/notebooks/linear_workflow.ipynb): follow physical variables through components and scores to bins;
+- [spectral templates](examples/notebooks/spectral_templates.ipynb): understand non-contiguous information-aware bins;
+- [spatial sources](examples/notebooks/spatial_sources.ipynb): compare physical and score geometry;
+- [FlowCyt](examples/notebooks/cell_population.ipynb): inspect data, build classifier scores, learn gates, and fit count templates step by step.
 
 FisherBin is available under the [MIT license](LICENSE).

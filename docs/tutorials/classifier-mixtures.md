@@ -71,12 +71,12 @@ test_scores = fb.mixture_scores_from_posteriors(
 test_bins = partition.predict(test_scores)
 ```
 
-The downstream mixture likelihood should estimate (P(B_j\mid k)) on
+The downstream mixture likelihood should estimate \(P(B_j\mid k)\) on
 independent labelled reference rows and consume only test bin counts.
 
 ## 5. Interpret an unbinned comparison correctly
 
-Ratios (q_k/\pi_k) are exact component density ratios only for a perfectly
+Ratios \(q_k/\pi_k\) are exact component density ratios only for a perfectly
 specified, perfectly calibrated classifier. Therefore an unbinned likelihood
 built from them is named an **unbinned classifier-ratio baseline**, not an
 oracle. If it has worse RMSE than the binned pipeline, the likely mechanism is
