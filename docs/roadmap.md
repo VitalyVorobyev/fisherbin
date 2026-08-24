@@ -5,6 +5,7 @@
 - JAX Fisher calculations, informative-subspace transforms, and nonnegative-weight validation.
 - Deterministic weighted k-means and Optax soft Voronoi optimization.
 - Immutable typed configs, result/report/trace objects, prediction, evaluation, and JSON-ready conversion.
+- Explicit `fit(X, model=...)`, `fit_components(...)`, and `fit_scores(...)` workflows with representation-specific prediction.
 - Optional Matplotlib optimization and final-result views.
 - Three deterministic synthetic problems, scripts, notebooks, gallery figures, and held-out baseline comparisons.
 - X64 invariant tests, float32 smoke coverage, linting, notebook execution, and a moderate-scale memory smoke benchmark.

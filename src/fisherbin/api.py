@@ -1,4 +1,4 @@
-"""The single public fitting workflow."""
+"""Representation-explicit public fitting workflows."""
 
 from __future__ import annotations
 
@@ -8,10 +8,11 @@ import jax.numpy as jnp
 import numpy as np
 
 from ._validation import validate_n_bins, validate_scores_weights
+from .components import LinearComponents, LinearProblem
 from .config import FitConfig, KMeansConfig, SoftVoronoiConfig
 from .information import fisher_information, information_report
 from .quantizers import QuantizerRun, hard_assign, soft_voronoi, weighted_kmeans
-from .result import FitResult, OptimizationTrace
+from .result import ComponentFitResult, FitResult, ModelFitResult, OptimizationTrace
 from .transforms import fisher_transform
 
 
@@ -33,7 +34,7 @@ def _hard_retention_history(
     return values
 
 
-def fit(
+def fit_scores(
     scores: Any,
     *,
     weights: Any | None = None,
@@ -156,6 +157,116 @@ def fit(
         transform=transform,
         config=resolved_config,
         trace=trace,
+        labels=final_train_labels,
         train_report=train_report,
         validation_report=validation_report,
     )
+
+
+def _coerce_problem(
+    components: Any | LinearProblem,
+    coefficients: Any | None,
+    weights: Any | None,
+    component_names: Any | None,
+) -> LinearProblem:
+    if isinstance(components, LinearProblem):
+        if coefficients is not None or weights is not None or component_names is not None:
+            raise ValueError(
+                "coefficients, weights, and component_names must be omitted "
+                "when passing LinearProblem"
+            )
+        return components
+    if coefficients is None:
+        raise ValueError("coefficients are required when components is a matrix")
+    return LinearProblem(
+        components=components,
+        coefficients=coefficients,
+        weights=weights,
+        component_names=component_names,
+    )
+
+
+def fit_components(
+    components: Any | LinearProblem,
+    *,
+    coefficients: Any | None = None,
+    weights: Any | None = None,
+    component_names: Any | None = None,
+    n_bins: int,
+    config: FitConfig | None = None,
+    validation_components: Any | LinearProblem | None = None,
+    validation_weights: Any | None = None,
+) -> ComponentFitResult:
+    """Fit from evaluated component values or a :class:`LinearProblem`.
+
+    Matrix inputs require reference ``coefficients``. A ``LinearProblem``
+    already owns coefficients, weights, and component names, so conflicting
+    keyword values are rejected rather than silently overridden.
+    """
+
+    problem = _coerce_problem(components, coefficients, weights, component_names)
+    if validation_components is None:
+        if validation_weights is not None:
+            raise ValueError("validation_weights requires validation_components")
+        validation_problem = None
+    elif isinstance(validation_components, LinearProblem):
+        if validation_weights is not None:
+            raise ValueError("validation_weights must be omitted for validation LinearProblem")
+        validation_problem = validation_components
+        if validation_problem.component_names != problem.component_names:
+            raise ValueError("validation problem component names must match the fitting problem")
+        if not bool(
+            np.asarray(jnp.allclose(validation_problem.coefficients, problem.coefficients))
+        ):
+            raise ValueError("validation problem coefficients must match the fitting problem")
+    else:
+        validation_problem = LinearProblem(
+            components=validation_components,
+            coefficients=problem.coefficients,
+            weights=validation_weights,
+            component_names=problem.component_names,
+        )
+
+    score_result = fit_scores(
+        problem.scores,
+        weights=problem.weights,
+        n_bins=n_bins,
+        config=config,
+        validation_scores=(None if validation_problem is None else validation_problem.scores),
+        validation_weights=(None if validation_problem is None else validation_problem.weights),
+    )
+    return ComponentFitResult(
+        score_result=score_result,
+        coefficients=problem.coefficients,
+        component_names=problem.component_names,
+    )
+
+
+def fit(
+    X: Any,
+    *,
+    model: LinearComponents,
+    weights: Any | None = None,
+    n_bins: int,
+    config: FitConfig | None = None,
+    validation_X: Any | None = None,
+    validation_weights: Any | None = None,
+) -> ModelFitResult:
+    """Fit from physical variables through a frozen linear component model."""
+
+    if not isinstance(model, LinearComponents):
+        raise TypeError("model must be LinearComponents")
+    problem = model.evaluate(X, weights=weights)
+    if validation_X is None:
+        if validation_weights is not None:
+            raise ValueError("validation_weights requires validation_X")
+        validation_problem = None
+    else:
+        validation_problem = model.evaluate(validation_X, weights=validation_weights)
+    component_result = fit_components(
+        problem,
+        n_bins=n_bins,
+        config=config,
+        validation_components=validation_problem,
+    )
+    return ModelFitResult(component_result=component_result, model=model)

@@ -14,6 +14,8 @@ from .transforms import FisherTransform
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
+    from .components import LinearComponents
+
 
 @dataclass(frozen=True, slots=True)
 class InformationReport:
@@ -37,6 +39,17 @@ class InformationReport:
         """Return a JSON-compatible representation."""
 
         return json_ready(self)
+
+    def __str__(self) -> str:
+        eigenvalues = ", ".join(f"{float(value):.4f}" for value in self.retained_eigenvalues)
+        return (
+            "FisherBin information report\n"
+            f"  effective rank: {self.effective_rank}\n"
+            f"  D-efficiency: {self.geometric_mean_retention:.6f}\n"
+            f"  mean retention: {self.arithmetic_mean_retention:.6f}\n"
+            f"  retained eigenvalues: [{eigenvalues}]\n"
+            f"  minimum PSD residual eigenvalue: {self.psd_residual_min_eigenvalue:.3e}"
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +80,7 @@ class FitResult:
     transform: FisherTransform
     config: FitConfig
     trace: OptimizationTrace
+    labels: jnp.ndarray
     train_report: InformationReport
     validation_report: InformationReport | None = None
 
@@ -89,6 +103,11 @@ class FitResult:
         labels = self.predict(scores)
         return information_report(scores, labels, weights=weights, n_bins=self.n_bins)
 
+    def report(self) -> InformationReport:
+        """Return the final hard-partition report on the fitting sample."""
+
+        return self.train_report
+
     def to_dict(self) -> dict[str, object]:
         """Return all stable in-memory fields as JSON-compatible data."""
 
@@ -98,6 +117,7 @@ class FitResult:
                 "transform": self.transform.to_dict(),
                 "config": self.config.to_dict(),
                 "trace": self.trace.to_dict(),
+                "labels": self.labels,
                 "train_report": self.train_report.to_dict(),
                 "validation_report": (
                     None if self.validation_report is None else self.validation_report.to_dict()
@@ -111,3 +131,145 @@ class FitResult:
         from .visualization import plot_summary
 
         return plot_summary(self, scores, weights)
+
+
+@dataclass(frozen=True, slots=True)
+class ComponentFitResult:
+    """A fitted partition whose prediction input is a component matrix."""
+
+    score_result: FitResult
+    coefficients: jnp.ndarray
+    component_names: tuple[str, ...]
+
+    @property
+    def labels(self) -> jnp.ndarray:
+        return self.score_result.labels
+
+    @property
+    def n_bins(self) -> int:
+        return self.score_result.n_bins
+
+    @property
+    def centers(self) -> jnp.ndarray:
+        return self.score_result.centers
+
+    @property
+    def transform(self) -> FisherTransform:
+        return self.score_result.transform
+
+    @property
+    def config(self) -> FitConfig:
+        return self.score_result.config
+
+    @property
+    def trace(self) -> OptimizationTrace:
+        return self.score_result.trace
+
+    @property
+    def train_report(self) -> InformationReport:
+        return self.score_result.train_report
+
+    @property
+    def validation_report(self) -> InformationReport | None:
+        return self.score_result.validation_report
+
+    def predict(self, components: Any) -> jnp.ndarray:
+        """Assign a new component matrix using the frozen reference coefficients."""
+
+        from .components import scores_from_components
+
+        return self.score_result.predict(scores_from_components(components, self.coefficients))
+
+    def evaluate(self, components: Any, weights: Any | None = None) -> InformationReport:
+        """Evaluate the fixed partition on a new weighted component sample."""
+
+        from .components import scores_from_components
+
+        return self.score_result.evaluate(
+            scores_from_components(components, self.coefficients), weights
+        )
+
+    def report(self) -> InformationReport:
+        return self.train_report
+
+    def to_dict(self) -> dict[str, object]:
+        return json_ready(
+            {
+                "input_representation": "components",
+                "coefficients": self.coefficients,
+                "component_names": self.component_names,
+                "score_result": self.score_result.to_dict(),
+            }
+        )
+
+    def plot_summary(self, components: Any, weights: Any | None = None) -> Figure:
+        from .components import scores_from_components
+
+        return self.score_result.plot_summary(
+            scores_from_components(components, self.coefficients), weights
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ModelFitResult:
+    """A fitted partition whose prediction input is a physical-variable matrix."""
+
+    component_result: ComponentFitResult
+    model: LinearComponents
+
+    @property
+    def labels(self) -> jnp.ndarray:
+        return self.component_result.labels
+
+    @property
+    def n_bins(self) -> int:
+        return self.component_result.n_bins
+
+    @property
+    def centers(self) -> jnp.ndarray:
+        return self.component_result.centers
+
+    @property
+    def transform(self) -> FisherTransform:
+        return self.component_result.transform
+
+    @property
+    def config(self) -> FitConfig:
+        return self.component_result.config
+
+    @property
+    def trace(self) -> OptimizationTrace:
+        return self.component_result.trace
+
+    @property
+    def train_report(self) -> InformationReport:
+        return self.component_result.train_report
+
+    @property
+    def validation_report(self) -> InformationReport | None:
+        return self.component_result.validation_report
+
+    def predict(self, X: Any) -> jnp.ndarray:
+        """Evaluate the frozen model and assign physical observations to bins."""
+
+        return self.component_result.predict(self.model.evaluate_components(X))
+
+    def evaluate(self, X: Any, weights: Any | None = None) -> InformationReport:
+        """Evaluate the frozen model and partition on a new weighted sample."""
+
+        return self.component_result.evaluate(self.model.evaluate_components(X), weights)
+
+    def report(self) -> InformationReport:
+        return self.train_report
+
+    def to_dict(self) -> dict[str, object]:
+        return json_ready(
+            {
+                "input_representation": "variables",
+                "model": self.model.to_dict(),
+                "component_result": self.component_result.to_dict(),
+            }
+        )
+
+    def plot_summary(self, X: Any, weights: Any | None = None) -> Figure:
+        return self.component_result.plot_summary(self.model.evaluate_components(X), weights)

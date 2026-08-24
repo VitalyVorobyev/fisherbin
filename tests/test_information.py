@@ -91,7 +91,7 @@ def test_event_order_bin_relabeling_and_partition_limits() -> None:
 
 def test_rank_projection_and_json_are_explicit() -> None:
     scores = jnp.asarray([[-1.0, -2.0], [0.0, 0.0], [1.0, 2.0]])
-    result = fisherbin.fit(scores, n_bins=2)
+    result = fisherbin.fit_scores(scores, n_bins=2)
     assert result.transform.rank == 1
     assert result.transform.dropped_directions == 1
     json.dumps(result.to_dict(), allow_nan=False)
@@ -104,6 +104,14 @@ def test_component_adapter() -> None:
     np.testing.assert_allclose(fisherbin.scores_from_components(components, coefficients), expected)
     with pytest.raises(ValueError, match="strictly positive"):
         fisherbin.scores_from_components(jnp.zeros((2, 2)), coefficients)
+
+
+def test_component_adapter_allows_signed_basis_terms() -> None:
+    components = jnp.asarray([[2.0, -1.0], [1.0, 0.5], [0.5, -0.25]])
+    coefficients = jnp.asarray([1.0, -0.2])
+    density = np.asarray(components @ coefficients)
+    scores = fisherbin.scores_from_components(components, coefficients)
+    np.testing.assert_allclose(scores, np.asarray(components) / density[:, None])
 
 
 @pytest.mark.parametrize("bad_weights", [[1.0, -1.0], [0.0, 0.0], [1.0, np.nan]])
