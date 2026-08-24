@@ -9,3 +9,4 @@ Only decisions that materially constrain future implementation are recorded here
 5. [ADR 0005 — Make variables, components, and scores explicit API layers](0005-explicit-representations.md)
 6. [ADR 0006 — Publish generated documentation through GitHub Pages](0006-documentation-site.md)
 7. [ADR 0007 — Evolve the API around generic statistical contracts](0007-generic-api-evolution.md)
+8. [ADR 0008 — Expose only the mathematical classifier-posterior bridge](0008-classifier-posterior-bridge.md)

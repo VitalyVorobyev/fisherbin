@@ -24,7 +24,6 @@ from examples.cell_population.likelihood import (
 from examples.cell_population.scores import (
     fit_score_model,
     integration_weights,
-    mixture_scores,
     reference_composition,
 )
 
@@ -75,8 +74,8 @@ def test_posterior_prior_correction_recovers_same_simplex_scores() -> None:
     skewed_posterior = ratios * skewed_prior
     skewed_posterior /= np.sum(skewed_posterior, axis=1, keepdims=True)
     np.testing.assert_allclose(
-        mixture_scores(uniform_posterior, theta0, training_prior=uniform_prior),
-        mixture_scores(skewed_posterior, theta0, training_prior=skewed_prior),
+        fb.mixture_scores_from_posteriors(uniform_posterior, uniform_prior, theta0),
+        fb.mixture_scores_from_posteriors(skewed_posterior, skewed_prior, theta0),
         rtol=1e-12,
         atol=1e-12,
     )
@@ -105,6 +104,20 @@ def test_binned_and_unbinned_mixture_recover_known_fractions() -> None:
     assert np.isfinite(unbinned.fractions).all()
     np.testing.assert_allclose(np.sum(unbinned.fractions), 1.0)
 
+    component_values = templates
+    uniform_priors = np.full(6, 1 / 6)
+    posterior_values = component_values * uniform_priors[None, :]
+    posterior_values /= np.sum(posterior_values, axis=1, keepdims=True)
+    exact_scores = fb.mixture_scores_from_posteriors(posterior_values, uniform_priors, theta)
+    mixture_weights = component_values @ theta
+    coarse_bins = np.asarray([0, 0, 1, 1, 2, 2])
+    full_fisher = fb.fisher_information(exact_scores, mixture_weights)
+    binned_fisher = fb.binned_fisher_information(
+        exact_scores, coarse_bins, mixture_weights, n_bins=3
+    )
+    residual = np.asarray(full_fisher - binned_fisher)
+    assert np.linalg.eigvalsh((residual + residual.T) / 2).min() >= -1e-12
+
 
 def test_template_estimation_is_patient_balanced_and_smoothed() -> None:
     labels = np.tile(np.repeat(np.arange(6), 8), 2)
@@ -123,12 +136,29 @@ def test_cross_fitted_score_model_covers_every_reference_patient() -> None:
     assert fitted.out_of_fold_probabilities.shape == (len(reference.labels), 6)
     np.testing.assert_allclose(np.sum(fitted.out_of_fold_probabilities, axis=1), 1.0)
     theta0 = reference_composition(reference.labels, reference.patients)
-    scores = mixture_scores(
+    scores = fb.mixture_scores_from_posteriors(
         fitted.out_of_fold_probabilities,
+        fitted.model.class_priors,
         theta0,
-        training_prior=fitted.model.training_prior,
     )
     assert scores.shape == (len(reference.labels), 5)
+    assert fitted.calibration_selection["selected_strategy"] in {
+        "raw_declared_prior",
+        "raw_oof_prior",
+        "temperature_oof_prior",
+    }
+    outer_folds = fitted.calibration_selection["outer_folds"]
+    assert len(outer_folds) == 5
+    held_out_patients = [patient for fold in outer_folds for patient in fold["held_out_patients"]]
+    assert sorted(held_out_patients) == sorted(REFERENCE_PATIENTS)
+    assert len(held_out_patients) == len(set(held_out_patients))
+    assert list(fitted.calibration_selection["candidates"]) == [
+        "raw_declared_prior",
+        "raw_oof_prior",
+        "temperature_oof_prior",
+    ]
+    final_calibration = fitted.calibration_selection["final_calibration"]
+    assert float(final_calibration["maximum_normalization_residual"]) < 0.25
     weights = integration_weights(reference.labels, reference.patients, theta0)
     np.testing.assert_allclose(np.sum(weights), 1.0)
 
@@ -178,13 +208,23 @@ def test_remote_sample_allocation_preserves_component_proportions() -> None:
 
 
 def test_flowcyt_fixture_is_the_standard_end_to_end_use_case() -> None:
-    result = run_experiment(load_fixture(FIXTURE), bin_counts=(5,), quick=True)
+    result = run_experiment(
+        load_fixture(FIXTURE),
+        bin_counts=(5,),
+        operating_n_bins=5,
+        uncertainty_n_bins=5,
+        quick=True,
+    )
     soft = result.metrics["soft_voronoi:5"]
     marker = result.metrics["marker_kmeans:5"]
     assert float(soft["target_macro_rmse"]) < float(marker["target_macro_rmse"])
     assert float(soft["held_out_d_efficiency"]) >= 0.20
     assert result.predicted_fractions["soft_voronoi:5"].shape == (len(TEST_PATIENTS), 6)
     assert result.predicted_standard_errors.shape == (len(TEST_PATIENTS), 6)
+    assert result.operating_bin_composition.shape == (5, 6)
+    np.testing.assert_allclose(np.sum(result.operating_bin_composition, axis=1), 1.0)
+    assert "unbinned_classifier_ratio" in result.metrics
+    assert "unbinned" not in result.metrics
 
 
 def test_committed_full_patient_evidence_passes_the_frozen_gate() -> None:
@@ -196,3 +236,12 @@ def test_committed_full_patient_evidence_passes_the_frozen_gate() -> None:
     assert metrics["soft_voronoi:8"]["held_out_d_efficiency"] >= 0.94
     assert metrics["soft_voronoi:8"]["target_macro_rmse"] <= 0.0023
     assert metrics["soft_voronoi:8"]["likelihood_convergence"]["converged_patients"] == 10
+    assert metrics["calibration_selection"]["selected_strategy"] == "raw_declared_prior"
+    assert metrics["run"]["classifier_test_posterior_evaluations"] == 1
+    assert (
+        metrics["unbinned_classifier_ratio"]["target_macro_rmse"]
+        < metrics["soft_voronoi:8"]["target_macro_rmse"]
+    )
+    composition = np.asarray(metrics["operating_partition"]["reference_bin_composition"])
+    assert composition.shape == (8, 6)
+    np.testing.assert_allclose(np.sum(composition, axis=1), 1.0)

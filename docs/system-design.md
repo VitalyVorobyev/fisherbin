@@ -22,12 +22,12 @@ physical variables X -- LinearComponents --> component matrix Phi
 - `information.py` owns full, hard-binned, and fractionally binned Fisher calculations.
 - `transforms.py` owns informative-rank selection, projection, and optional whitening.
 - `quantizers.py` privately implements weighted k-means and soft Voronoi optimization.
-- `components.py` owns `LinearComponents`, evaluated `LinearProblem`, and score construction.
+- `components.py` owns `LinearComponents`, evaluated `LinearProblem`, linear score construction, and the classifier-posterior-to-mixture-score transform.
 - `config.py`, `result.py`, and `api.py` define the representation-specific fitting contract.
 - `visualization.py` imports Matplotlib lazily and only consumes structured results.
 - Dataset-specific generators, baselines, notebooks, and figure layouts live in `examples/`.
 
-JAX is the v0.1 numerical implementation and Optax supplies Adam. The public concepts remain arrays, configs, transforms, reports, traces, and fitted partitions; no backend registry or protocol is introduced yet.
+JAX is the numerical implementation and Optax supplies Adam. The public concepts remain arrays, configs, transforms, reports, traces, and fitted partitions; no backend registry or protocol is introduced.
 
 The current API is not a compatibility target by itself. Public types and entry
 points may change when a smaller or more expressive domain-independent contract
@@ -66,6 +66,6 @@ The config type selects the method. Validation is diagnostic only. `to_dict()` i
 - X64 is enabled by the application or CI, never as an import-time side effect.
 - Fitting is full-batch and uses dense `[N, B]` distances/responsibilities, but histories contain only aggregate values and `[B, R]` center snapshots.
 
-## Frontend boundary
-
-Web, Tauri, and Python-service layers are deferred. A future frontend should serialize typed config values and pre-evaluated component matrices into the Python boundary and consume JSON-ready reports/traces rather than reproduce statistical calculations or parse plots.
+The classifier-posterior bridge accepts already evaluated arrays. Classifier
+training, posterior calibration, split policy, and downstream likelihoods stay
+outside the library.

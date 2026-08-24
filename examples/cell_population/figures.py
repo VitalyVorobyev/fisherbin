@@ -174,13 +174,19 @@ def make_figure(result: ExperimentResult) -> Figure:
         marker="o",
         label="random score Voronoi",
     )
-    unbinned_rmse = float(result.metrics["unbinned"]["target_macro_rmse"])
-    axes[0, 0].axhline(unbinned_rmse, color="black", linestyle="--", label="unbinned score")
+    unbinned_rmse = float(result.metrics["unbinned_classifier_ratio"]["target_macro_rmse"])
+    axes[0, 0].axhline(
+        unbinned_rmse,
+        color="black",
+        linestyle="--",
+        label="unbinned classifier ratio",
+    )
     axes[0, 0].set(
         title="Held-out population error",
         xlabel="number of hard bins",
-        ylabel="mean RMSE, five target fractions",
+        ylabel="mean RMSE, five target fractions (log scale)",
     )
+    axes[0, 0].set_yscale("log")
     axes[0, 0].legend(fontsize=8)
     axes[0, 1].set(
         title="Held-out Fisher information",
@@ -189,7 +195,7 @@ def make_figure(result: ExperimentResult) -> Figure:
         ylim=(0, 1.02),
     )
 
-    final_key = f"soft_voronoi:{result.bin_counts[-1]}"
+    final_key = f"soft_voronoi:{result.operating_n_bins}"
     predicted = result.predicted_fractions[final_key]
     for class_index, name in enumerate(CLASS_NAMES[:5]):
         axes[1, 0].scatter(
@@ -202,31 +208,29 @@ def make_figure(result: ExperimentResult) -> Figure:
     limit = max(float(np.max(result.true_fractions[:, :5])), float(np.max(predicted[:, :5])))
     axes[1, 0].plot([0, limit], [0, limit], color="black", linestyle="--", linewidth=1)
     axes[1, 0].set(
-        title=f"Fractions from {result.bin_counts[-1]} learned gates",
+        title=f"Fractions from {result.operating_n_bins} learned gates",
         xlabel="expert-label fraction",
         ylabel="estimated fraction",
     )
     axes[1, 0].legend(fontsize=8)
 
-    sample = np.linspace(
-        0,
-        len(result.score_projection) - 1,
-        min(8_000, len(result.score_projection)),
-    ).astype(int)
-    axes[1, 1].scatter(
-        result.score_projection[sample, 0],
-        result.score_projection[sample, 1],
-        c=result.projection_labels[sample],
-        cmap="tab20",
-        s=5,
-        alpha=0.55,
-        linewidths=0,
+    composition = result.operating_bin_composition.T
+    image = axes[1, 1].imshow(
+        composition,
+        aspect="auto",
+        vmin=0,
+        vmax=1,
+        cmap="viridis",
     )
     axes[1, 1].set(
-        title="Learned hard gates in score space",
-        xlabel="informative coordinate 1",
-        ylabel="informative coordinate 2",
+        title="Reference population composition of each gate",
+        xlabel="hard bin",
+        ylabel="population",
+        xticks=np.arange(result.operating_n_bins),
+        yticks=np.arange(len(CLASS_NAMES)),
+        yticklabels=CLASS_NAMES,
     )
+    figure.colorbar(image, ax=axes[1, 1], fraction=0.046, label="P(population | bin)")
     figure.suptitle("FlowCyt population quantification")
     return figure
 
@@ -276,7 +280,8 @@ def make_uncertainty_figure(result: ExperimentResult) -> Figure:
     )
     axes[1].tick_params(axis="x", rotation=25)
     axes[1].legend(fontsize=8)
-    figure.suptitle(f"Uncertainty from {result.bin_counts[-1]} learned gates")
+    uncertainty_n_bins = int(result.metrics["uncertainty"]["n_bins"])
+    figure.suptitle(f"Uncertainty from {uncertainty_n_bins} learned gates")
     return figure
 
 

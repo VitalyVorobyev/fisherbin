@@ -3,18 +3,49 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 import jax.numpy as jnp
 import numpy as np
 
 from ._typing import ArrayLike
-from ._validation import validate_n_bins, validate_sample
+from ._validation import _ValidatedSample, validate_n_bins, validate_sample
 from .components import LinearComponents, LinearProblem
 from .config import FitConfig, KMeansConfig, SoftVoronoiConfig
 from .information import _unbinned_fisher, information_report
 from .quantizers import QuantizerRun, hard_assign, soft_voronoi, weighted_kmeans
-from .result import ComponentFitResult, FitResult, ModelFitResult, OptimizationTrace
-from .transforms import fisher_transform
+from .result import (
+    ComponentFitResult,
+    FitResult,
+    InformationReport,
+    ModelFitResult,
+    OptimizationTrace,
+)
+from .transforms import FisherTransform, fisher_transform
+
+
+@dataclass(frozen=True, slots=True)
+class _PreparedFit:
+    """Validated score samples and their fitted optimization coordinates."""
+
+    config: FitConfig
+    train_sample: _ValidatedSample
+    validation_sample: _ValidatedSample | None
+    transform: FisherTransform
+    train_coordinates: jnp.ndarray
+    all_train_coordinates: jnp.ndarray
+    validation_coordinates: jnp.ndarray | None
+
+
+@dataclass(frozen=True, slots=True)
+class _FitDiagnostics:
+    """Final labels, reports, and hardened-retention histories."""
+
+    labels: jnp.ndarray
+    train_report: InformationReport
+    validation_report: InformationReport | None
+    train_hard_retention: list[float]
+    validation_hard_retention: list[float] | None
 
 
 def _hard_retention_history(
@@ -33,6 +64,143 @@ def _hard_retention_history(
         )
         values.append(report.geometric_mean_retention)
     return values
+
+
+def _prepare_score_fit(
+    scores: ArrayLike,
+    weights: ArrayLike | None,
+    n_bins: int,
+    config: FitConfig | None,
+    validation_scores: ArrayLike | None,
+    validation_weights: ArrayLike | None,
+) -> _PreparedFit:
+    resolved_config = KMeansConfig() if config is None else config
+    if not isinstance(resolved_config, (KMeansConfig, SoftVoronoiConfig)):
+        raise TypeError("config must be KMeansConfig or SoftVoronoiConfig")
+    train_sample = validate_sample(scores, weights)
+    validate_n_bins(n_bins, train_sample.n_effective)
+    transform = fisher_transform(
+        _unbinned_fisher(train_sample),
+        whiten=resolved_config.whiten,
+        rank_rtol=resolved_config.rank_rtol,
+    )
+    train_coordinates = transform.apply(train_sample.effective_scores)
+    unique_count = np.unique(np.asarray(train_coordinates), axis=0).shape[0]
+    if n_bins > unique_count:
+        raise ValueError("n_bins exceeds the number of distinct positive-weight score coordinates")
+
+    if validation_scores is None:
+        if validation_weights is not None:
+            raise ValueError("validation_weights requires validation_scores")
+        validation_sample = None
+        validation_coordinates = None
+    else:
+        validation_sample = validate_sample(
+            validation_scores,
+            validation_weights,
+            expected_features=train_sample.scores.shape[1],
+        )
+        validation_coordinates = transform.apply(validation_sample.scores)
+    return _PreparedFit(
+        config=resolved_config,
+        train_sample=train_sample,
+        validation_sample=validation_sample,
+        transform=transform,
+        train_coordinates=train_coordinates,
+        all_train_coordinates=transform.apply(train_sample.scores),
+        validation_coordinates=validation_coordinates,
+    )
+
+
+def _run_quantizer(prepared: _PreparedFit, n_bins: int) -> QuantizerRun:
+    if isinstance(prepared.config, KMeansConfig):
+        return weighted_kmeans(
+            prepared.train_coordinates,
+            prepared.train_sample.effective_weights,
+            n_bins,
+            prepared.config,
+        )
+    return soft_voronoi(
+        prepared.train_coordinates,
+        prepared.train_sample.effective_weights,
+        n_bins,
+        prepared.transform.rank,
+        prepared.config,
+    )
+
+
+def _build_fit_diagnostics(
+    prepared: _PreparedFit,
+    run: QuantizerRun,
+    n_bins: int,
+) -> _FitDiagnostics:
+    train_hard = _hard_retention_history(
+        prepared.train_sample.scores,
+        prepared.train_sample.weights,
+        prepared.all_train_coordinates,
+        run,
+        rank_rtol=prepared.config.rank_rtol,
+    )
+    labels = hard_assign(prepared.all_train_coordinates, run.centers)
+    train_report = information_report(
+        prepared.train_sample.scores,
+        labels,
+        prepared.train_sample.weights,
+        n_bins=n_bins,
+        rank_rtol=prepared.config.rank_rtol,
+    )
+    if prepared.validation_sample is None or prepared.validation_coordinates is None:
+        validation_hard = None
+        validation_report = None
+    else:
+        validation_hard = _hard_retention_history(
+            prepared.validation_sample.scores,
+            prepared.validation_sample.weights,
+            prepared.validation_coordinates,
+            run,
+            rank_rtol=prepared.config.rank_rtol,
+        )
+        validation_report = information_report(
+            prepared.validation_sample.scores,
+            hard_assign(prepared.validation_coordinates, run.centers),
+            prepared.validation_sample.weights,
+            n_bins=n_bins,
+            rank_rtol=prepared.config.rank_rtol,
+        )
+    return _FitDiagnostics(
+        labels=labels,
+        train_report=train_report,
+        validation_report=validation_report,
+        train_hard_retention=train_hard,
+        validation_hard_retention=validation_hard,
+    )
+
+
+def _build_optimization_trace(
+    run: QuantizerRun,
+    diagnostics: _FitDiagnostics,
+) -> OptimizationTrace:
+    return OptimizationTrace(
+        steps=jnp.asarray(run.steps),
+        centers=jnp.stack(run.center_history),
+        objective=jnp.asarray(run.objective_history),
+        bin_weights=jnp.stack(run.bin_weight_history),
+        train_hard_retention=jnp.asarray(diagnostics.train_hard_retention),
+        validation_hard_retention=(
+            None
+            if diagnostics.validation_hard_retention is None
+            else jnp.asarray(diagnostics.validation_hard_retention)
+        ),
+        soft_retention=(
+            None if run.soft_retention_history is None else jnp.asarray(run.soft_retention_history)
+        ),
+        temperatures=(
+            None if run.temperature_history is None else jnp.asarray(run.temperature_history)
+        ),
+        gradient_norms=(
+            None if run.gradient_norm_history is None else jnp.asarray(run.gradient_norm_history)
+        ),
+    )
 
 
 def fit_scores(
@@ -79,117 +247,24 @@ def fit_scores(
         If inputs violate the numerical contract or the requested partition
         cannot be represented by the effective score coordinates.
     """
-    resolved_config = KMeansConfig() if config is None else config
-    if not isinstance(resolved_config, (KMeansConfig, SoftVoronoiConfig)):
-        raise TypeError("config must be KMeansConfig or SoftVoronoiConfig")
-    train_sample = validate_sample(scores, weights)
-    raw_scores = train_sample.scores
-    train_scores = train_sample.effective_scores
-    train_weights = train_sample.effective_weights
-    validate_n_bins(n_bins, train_sample.n_effective)
-    train_fisher = _unbinned_fisher(train_sample)
-    transform = fisher_transform(
-        train_fisher,
-        whiten=resolved_config.whiten,
-        rank_rtol=resolved_config.rank_rtol,
+    prepared = _prepare_score_fit(
+        scores,
+        weights,
+        n_bins,
+        config,
+        validation_scores,
+        validation_weights,
     )
-    train_coordinates = transform.apply(train_scores)
-    unique_count = np.unique(np.asarray(train_coordinates), axis=0).shape[0]
-    if n_bins > unique_count:
-        raise ValueError("n_bins exceeds the number of distinct positive-weight score coordinates")
-
-    if validation_scores is None:
-        if validation_weights is not None:
-            raise ValueError("validation_weights requires validation_scores")
-        raw_validation_scores = None
-        validation_coordinates = None
-    else:
-        validation_sample = validate_sample(
-            validation_scores,
-            validation_weights,
-            expected_features=train_scores.shape[1],
-        )
-        raw_validation_scores = validation_sample.scores
-        validation_coordinates = transform.apply(raw_validation_scores)
-
-    if isinstance(resolved_config, KMeansConfig):
-        run = weighted_kmeans(train_coordinates, train_weights, n_bins, resolved_config)
-    else:
-        run = soft_voronoi(
-            train_coordinates,
-            train_weights,
-            n_bins,
-            transform.rank,
-            resolved_config,
-        )
-
-    # Use the original row count for labels; zero-weight rows remain
-    # predictable but do not contribute.
-    all_train_coordinates = transform.apply(raw_scores)
-    train_hard = _hard_retention_history(
-        raw_scores,
-        train_sample.weights,
-        all_train_coordinates,
-        run,
-        rank_rtol=resolved_config.rank_rtol,
-    )
-    if raw_validation_scores is None or validation_coordinates is None:
-        validation_hard = None
-    else:
-        validation_hard = _hard_retention_history(
-            raw_validation_scores,
-            validation_sample.weights,
-            validation_coordinates,
-            run,
-            rank_rtol=resolved_config.rank_rtol,
-        )
-
-    final_train_labels = hard_assign(all_train_coordinates, run.centers)
-    train_report = information_report(
-        raw_scores,
-        final_train_labels,
-        train_sample.weights,
-        n_bins=n_bins,
-        rank_rtol=resolved_config.rank_rtol,
-    )
-    if raw_validation_scores is None or validation_coordinates is None:
-        validation_report = None
-    else:
-        validation_report = information_report(
-            raw_validation_scores,
-            hard_assign(validation_coordinates, run.centers),
-            validation_sample.weights,
-            n_bins=n_bins,
-            rank_rtol=resolved_config.rank_rtol,
-        )
-
-    trace = OptimizationTrace(
-        steps=jnp.asarray(run.steps),
-        centers=jnp.stack(run.center_history),
-        objective=jnp.asarray(run.objective_history),
-        bin_weights=jnp.stack(run.bin_weight_history),
-        train_hard_retention=jnp.asarray(train_hard),
-        validation_hard_retention=(
-            None if validation_hard is None else jnp.asarray(validation_hard)
-        ),
-        soft_retention=(
-            None if run.soft_retention_history is None else jnp.asarray(run.soft_retention_history)
-        ),
-        temperatures=(
-            None if run.temperature_history is None else jnp.asarray(run.temperature_history)
-        ),
-        gradient_norms=(
-            None if run.gradient_norm_history is None else jnp.asarray(run.gradient_norm_history)
-        ),
-    )
+    run = _run_quantizer(prepared, n_bins)
+    diagnostics = _build_fit_diagnostics(prepared, run, n_bins)
     return FitResult(
         centers=run.centers,
-        transform=transform,
-        config=resolved_config,
-        trace=trace,
-        labels=final_train_labels,
-        train_report=train_report,
-        validation_report=validation_report,
+        transform=prepared.transform,
+        config=prepared.config,
+        trace=_build_optimization_trace(run, diagnostics),
+        labels=diagnostics.labels,
+        train_report=diagnostics.train_report,
+        validation_report=diagnostics.validation_report,
     )
 
 

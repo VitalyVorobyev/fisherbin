@@ -1,7 +1,12 @@
 """Information-preserving binning for statistical inference."""
 
 from .api import fit, fit_components, fit_scores
-from .components import LinearComponents, LinearProblem, scores_from_components
+from .components import (
+    LinearComponents,
+    LinearProblem,
+    mixture_scores_from_posteriors,
+    scores_from_components,
+)
 from .config import KMeansConfig, SoftVoronoiConfig
 from .information import (
     binned_fisher_information,
@@ -37,6 +42,7 @@ __all__ = [
     "fit_scores",
     "fractional_fisher_information",
     "information_report",
+    "mixture_scores_from_posteriors",
     "plot_information",
     "plot_optimization",
     "plot_partition",
