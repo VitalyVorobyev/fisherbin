@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import matplotlib
 import numpy as np
+import pytest
 
 matplotlib.use("Agg")
 
@@ -40,4 +41,41 @@ def test_retained_information_plot_preserves_negative_matrix_entries() -> None:
     image = figure.axes[0].images[0]
     assert image.get_cmap().name == "coolwarm"
     assert image.get_clim() == (-1.0, 1.0)
+    figure.clf()
+
+
+def test_partition_rejects_implicit_high_dimensional_projection() -> None:
+    rng = np.random.default_rng(15)
+    scores = jnp.asarray(rng.normal(size=(120, 3)))
+    result = fisherbin.fit_scores(scores, n_bins=5)
+    with pytest.raises(ValueError, match="projection-free"):
+        fisherbin.plot_partition(result, scores)
+
+
+def test_high_dimensional_summary_uses_information_spectrum() -> None:
+    rng = np.random.default_rng(16)
+    scores = jnp.asarray(rng.normal(size=(120, 3)))
+    result = fisherbin.fit_scores(scores, n_bins=5)
+    figure = fisherbin.plot_summary(result, scores)
+    first_axis = figure.axes[0]
+    assert first_axis.get_title() == "Retained-information spectrum"
+    assert not first_axis.collections
+    assert len(first_axis.patches) == 3
+    figure.clf()
+
+
+def test_high_dimensional_center_motion_uses_all_coordinates() -> None:
+    rng = np.random.default_rng(17)
+    scores = jnp.asarray(rng.normal(size=(120, 3)))
+    result = fisherbin.fit_scores(
+        scores,
+        n_bins=5,
+        config=fisherbin.SoftVoronoiConfig(max_steps=8, record_every=1),
+    )
+    figure = fisherbin.plot_optimization(result.trace)
+    motion_axis = figure.axes[3]
+    assert motion_axis.get_title() == "Center displacement across all dimensions"
+    expected = np.linalg.norm(np.diff(np.asarray(result.trace.centers), axis=0), axis=2)
+    np.testing.assert_allclose(motion_axis.lines[0].get_ydata(), np.median(expected, axis=1))
+    np.testing.assert_allclose(motion_axis.lines[1].get_ydata(), np.max(expected, axis=1))
     figure.clf()

@@ -7,6 +7,14 @@ repo_name: VitalyVorobyev/fisherbin
 edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2026 Vitaly Vorobyev
 
+exclude_docs: |
+  development.md
+  roadmap.md
+  system-design.md
+  adr/**
+  motivation.md
+  method.md
+
 theme:
   name: material
   icon:
@@ -35,18 +43,25 @@ theme:
 
 nav:
   - Home: index.md
-  - Getting started:
-      - User workflow: user-workflow.md
-  - Examples:
-      - Evidence gallery: gallery/index.md
-  - Use cases:
-      - Cell population quantification: usecases/cellpopulation.md
-  - Concepts:
-      - Motivation: motivation.md
-      - Method: method.md
-      - System design: system-design.md
-  - API:
-      - Guide: api.md
+  - Learn:
+      - The estimation problem: learn/estimation-problem.md
+      - Likelihood and score: learn/likelihood-and-score.md
+      - Fisher information: learn/fisher-information.md
+      - What binning loses: learn/binning-loss.md
+      - Constructing scores: learn/score-construction.md
+      - Algorithms: learn/algorithms.md
+      - Diagnostics: learn/diagnostics.md
+      - Limitations and alternatives: learn/limitations.md
+  - Tutorials:
+      - First analytic partition: tutorials/first-partition.md
+      - Linear components: tutorials/linear-components.md
+      - Classifier posteriors for mixtures: tutorials/classifier-mixtures.md
+  - Evidence:
+      - Synthetic gallery: gallery/index.md
+      - FlowCyt study: usecases/cellpopulation.md
+  - How-to and API:
+      - Workflow guide: user-workflow.md
+      - API guide: api.md
       - Reference:
           - Overview: reference/index.md
           - Fitting: reference/fitting.md
@@ -56,17 +71,8 @@ nav:
           - Information: reference/information.md
           - Transforms: reference/transforms.md
           - Visualization: reference/visualization.md
-  - Development: development.md
-  - Roadmap: roadmap.md
-  - Architecture decisions:
-      - Overview: adr/index.md
-      - Scores are the core contract: adr/0001-score-contract.md
-      - Python/NumPy prototype (superseded): adr/0002-python-numpy-first.md
-      - Keep optional concerns outside the core: adr/0003-small-core.md
-      - JAX-native core: adr/0004-jax-first.md
-      - Explicit representation layers: adr/0005-explicit-representations.md
-      - Documentation and Pages deployment: adr/0006-documentation-site.md
-      - Generic API evolution: adr/0007-generic-api-evolution.md
+  - Glossary: glossary.md
+  - Bibliography: bibliography.md
 
 plugins:
   - search

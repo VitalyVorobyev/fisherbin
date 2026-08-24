@@ -72,6 +72,19 @@ Each callable receives a NumPy array `[N, K]` and returns one finite value per r
 
 Components and coefficients may be signed and need not be normalized. Their reference intensity must be finite and strictly positive on all supplied rows.
 
+## Classifier posteriors for mixture scores
+
+`mixture_scores_from_posteriors(posteriors, class_priors, reference_fractions,
+reference_component=-1)` converts already evaluated classifier posteriors into
+the free score coordinates of a finite mixture. It does not train or calibrate
+the classifier.
+
+The helper requires normalized posterior rows, strictly positive normalized
+class priors, and an interior normalized reference composition. It performs no
+clipping and no hidden renormalization. See the
+[classifier-mixture tutorial](tutorials/classifier-mixtures.md) for the formula,
+calibration boundary, and a complete example.
+
 ## Result behavior
 
 `FitResult`, `ComponentFitResult`, and `ModelFitResult` share:
@@ -93,12 +106,7 @@ Components and coefficients may be signed and need not be normalized. Their refe
 - `fractional_fisher_information(scores, responsibilities, weights=None)` computes soft-bin information.
 - `information_report(...)` returns normalized retention and occupancy diagnostics.
 - `scores_from_components(components, coefficients)` performs the explicit `Phi -> scores` transformation.
+- `mixture_scores_from_posteriors(...)` converts calibrated class posteriors into finite-mixture scores.
 - `plot_optimization`, `plot_partition`, `plot_information`, and `plot_summary` consume score-level structured results.
-
-## Migration from the initial prototype
-
-The former `fit(scores, ...)` call is intentionally replaced by `fit_scores(scores, ...)`. This pre-release hard break prevents `fit` from ambiguously interpreting a matrix as physical variables or scores.
-
-The initial configs accepted a redundant `method=` constructor argument even though their class already selected the method. That argument is removed; use the appropriate config class directly.
 
 See the generated [API reference](reference/index.md) for current signatures and field documentation.

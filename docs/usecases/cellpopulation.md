@@ -10,10 +10,13 @@ This study asks a deliberately hard compression question:
 > Can we replace 200,000 held-out twelve-dimensional test events with a few
 > integer bin counts and still recover the population fractions?
 
-The answer on the frozen FlowCyt experiment is yes. Eight learned hard bins
-retain 94.4% of the held-out Fisher information and estimate the five target
-fractions with a macro RMSE of 0.00226. A marker-space k-means partition with
-the same eight outputs reaches 0.0289 RMSE and 13.8% Fisher efficiency.
+The answer on the frozen FlowCyt experiment is yes. The operating point uses
+eight learned hard bins. The tables below report both local information
+retention and held-out fraction error; neither quantity substitutes for the
+other. Eight bins retain 98.2% of the supplied-score Fisher information and
+reach 0.00196 macro RMSE. The selected unbinned classifier-ratio baseline is
+slightly better at 0.00173 RMSE, as the exact-information ordering suggests it
+should be when ratio bias is sufficiently controlled.
 
 Those numbers are not fixture results. They come from all 30 FlowCyt patients,
 with 20 reference patients and ten untouched test patients. The reproducible
@@ -36,25 +39,29 @@ least four. The result was 6/6 for both tests.
 
 | Bins | Soft Voronoi RMSE | Score k-means RMSE | Marker k-means RMSE | Random RMSE median | Soft D-efficiency | Random D-efficiency median |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 5 | 0.00429 | 0.00440 | 0.04186 | 0.03338 | 0.427 | 0.016 |
-| 8 | 0.00226 | 0.00237 | 0.02889 | 0.02404 | 0.944 | 0.153 |
-| 10 | 0.00228 | 0.00236 | 0.04758 | 0.01644 | 0.957 | 0.243 |
-| 15 | 0.00231 | 0.00228 | 0.03332 | 0.01057 | 0.977 | 0.319 |
-| 20 | **0.00223** | 0.00230 | 0.03220 | 0.00746 | 0.986 | 0.455 |
-| 30 | 0.00249 | 0.00253 | 0.04990 | 0.00629 | **0.993** | 0.472 |
+| 5 | 0.03000 | 0.00501 | 0.04186 | 0.02998 | 0.391 | 0.001 |
+| 8 | **0.00196** | 0.00201 | 0.02889 | 0.01870 | 0.982 | 0.016 |
+| 10 | 0.00205 | 0.00205 | 0.04758 | 0.01147 | 0.990 | 0.060 |
+| 15 | 0.00207 | 0.00217 | 0.03332 | 0.01046 | 0.995 | 0.099 |
+| 20 | 0.00231 | 0.00226 | 0.03220 | 0.00730 | 0.997 | 0.260 |
+| 30 | 0.00249 | 0.00285 | 0.04990 | 0.00697 | **0.998** | 0.324 |
 
-Eight bins are the useful knee in this experiment. Moving to 20 bins gives the
-lowest observed RMSE, but the gain is only \(3.3\times10^{-5}\), while the
-held-out minimum occupancy falls from 25 cells to zero. Thirty bins preserve
-more local information but do not improve the downstream estimate. More bins
-are not automatically better.
+Eight bins are the useful knee in this experiment and give the lowest learned-
+partition RMSE. The five-bin soft optimizer is an explicit negative result: its
+hardened partition is much worse than score k-means despite passing the broad
+predeclared comparisons. Thirty bins preserve more local information but contain
+an empty held-out bin and do not improve the downstream estimate. More bins are
+not automatically better, and the hard result—not the soft objective—is what
+matters.
 
 ![Full FlowCyt held-out results](assets/cell_population.png)
 
 The lower-left panel shows each estimated target fraction against the expert
-fraction for the ten test patients. The lower-right panel is a two-dimensional
-view of a five-dimensional learned partition; the colors are hard bin labels,
-not cell labels.
+fraction for the ten test patients. The lower-right panel does not project the
+five-dimensional partition. It shows
+(P(k\mid B_j,\theta_0)), the reference population composition of each of the
+eight gates. This projection-free summary explains the statistical role of each
+gate.
 
 The complete numeric record is committed as
 [`cell_population.json`](assets/cell_population.json). It includes every
@@ -97,9 +104,11 @@ The exact frozen patient split is:
 - test: 5, 6, 8, 9, 11, 15, 20, 23, 28, 30.
 
 Within the reference cohort, five four-patient folds produce out-of-fold score
-predictions. Disjoint deterministic row roles are then used for partition
-fitting, validation diagnostics, and bin-template estimation. Validation rows
-never affect gradients, stopping, or checkpoint selection.
+predictions. Calibration selection is nested: each outer patient fold is absent
+from classifier fitting and from the inner out-of-fold calibration used to
+score it. Disjoint deterministic row roles are then used for partition fitting,
+validation diagnostics, and bin-template estimation. Validation rows never
+affect gradients, stopping, or checkpoint selection.
 
 ## From class probabilities to mixture scores
 
@@ -134,12 +143,20 @@ The common event density cancels in the score formula. This is the key bridge:
 we can build the five statistical score coordinates without fitting a general
 twelve-dimensional density model.
 
-Every classifier fold is trained without the patient it predicts. One
-multiclass temperature is fitted from the out-of-fold probabilities using equal
-patient/class influence. The fitted temperature is 2.219, balanced accuracy is
-0.941, balanced log loss is 0.211, and expected calibration error is 0.029.
-The reliability plot still shows miscalibration in sparse intermediate-confidence
-bins. Fisher information does not make an upstream score estimator correct.
+The audit compares three strategies fixed before the test cohort is evaluated:
+raw posteriors with declared uniform training priors, raw posteriors with priors
+estimated from inner out-of-fold marginals, and temperature-scaled posteriors
+with the same prior-consistency correction. It selects the smallest outer-fold
+macro RMSE, preferring the simpler strategy when values differ by at most
+(10^{-6}). Candidate errors, the selected strategy, priors, temperature, and
+ratio-normalization residuals are stored in the JSON evidence.
+
+After selection, one final classifier is trained on all reference patients and
+evaluated once on the untouched test cohort. The nested audit selected raw
+posteriors with the declared uniform training priors: outer-fold macro RMSE was
+0.00298, compared with 0.00308 for OOF prior correction and 0.01122 for the
+temperature-scaled candidate. The final temperature is therefore 1.0. Fisher
+information does not make an upstream score estimator correct.
 
 ## The FisherBin API boundary
 
@@ -178,11 +195,11 @@ There are five practical API rules hidden in this short block:
 5. Inspect both information and occupancy. A high D-efficiency does not prevent
    a held-out bin from becoming empty.
 
-If an application already has evaluated linear components, use
-`fit_components`; if it owns callable component functions on physical variables,
-use `fit`. This example should not produce a cytometry-specific public API. A
-future library change is welcome when it represents a generic statistical
-contract rather than FlowCyt preprocessing or classifier choices.
+The generic posterior-to-score algebra is available as
+`mixture_scores_from_posteriors`. Classifier training, calibration, and the
+downstream likelihood remain application code. If an application already has
+evaluated linear components, use `fit_components`; if it owns callable
+component functions on physical variables, use `fit`.
 
 ## Turning hard labels into fractions
 
@@ -225,20 +242,30 @@ downstream likelihood:
 | One leading score direction | How much is lost by a one-dimensional gate variable? |
 | Two marker-PCA coordinates on a grid | How does naive axis-aligned gating behave? |
 | Random score Voronoi, 20 repeats | Is score space alone enough without learning centers? |
-| Unbinned score likelihood | What happens when the calibrated density ratios are trusted directly? |
+| Unbinned classifier-ratio likelihood | What happens when the selected approximate density ratios are trusted directly? |
 
 The near equality of score k-means and soft Voronoi is a useful result. The
 Fisher transform already supplies a strong geometry, and weighted k-means is a
 competitive default here. The study supports score-aware partitioning; it does
 not establish universal superiority of one optimizer.
 
-The unbinned likelihood reaches 0.0135 macro RMSE, worse than every learned hard
-partition. This does not mean that discarding data creates information. The
-unbinned fit trusts the classifier density ratios directly, while the binned
+An unbinned classifier-ratio baseline can be worse than a learned hard
+partition when its ratio model is biased. This would not mean that discarding
+data creates information. With
+exact component likelihood ratios, unbinned Fisher information is the upper
+bound and the matrix ordering is verified in the synthetic oracle test. Here
+the unbinned fit trusts estimated classifier ratios directly, while the binned
 pipeline re-estimates \(P(B_j\mid k)\) from independent labelled reference rows.
-Hard bins therefore act as a low-dimensional recalibration and regularizer for
-an imperfect score model. Fisher retention measures local compression loss for
-the supplied scores; downstream bias can still move differently.
+Hard bins can therefore act as a low-dimensional recalibration and regularizer
+for an imperfect ratio model. Fisher retention measures local compression loss
+for the supplied scores; estimator bias and downstream RMSE are different
+quantities.
+
+After the reference-only calibration audit, the frozen test result now follows
+the expected direction: the unbinned classifier-ratio macro RMSE is 0.00173,
+compared with 0.00196 for eight hard bins. The earlier reversal was caused by
+the chosen temperature-scaled ratio model, not by a failure of the information
+inequality.
 
 ## Per-population behavior
 
@@ -246,12 +273,12 @@ At the eight-bin operating point, the held-out RMSE values are:
 
 | Population | RMSE |
 | --- | ---: |
-| T cells | 0.00393 |
-| B cells | 0.00118 |
-| Monocytes | 0.00272 |
-| Mast cells | 0.00021 |
-| HSPCs | 0.00328 |
-| Other | 0.00757 |
+| T cells | 0.00477 |
+| B cells | 0.00111 |
+| Monocytes | 0.00154 |
+| Mast cells | 0.00014 |
+| HSPCs | 0.00222 |
+| Other | 0.00666 |
 
 The small absolute mast-cell RMSE needs care. The true mast fraction is usually
 only a few events in a 20,000-cell patient sample, and some patients have none
@@ -266,8 +293,8 @@ errors with 200 multinomial bootstrap refits of the frozen bin-count pipeline.
 
 ![Fisher and bootstrap uncertainty](assets/cell_population_uncertainty.png)
 
-The median predicted/bootstrap ratios are 1.012 for T cells, 1.141 for B cells,
-1.066 for monocytes, 1.253 for HSPCs, and 0.976 for `other`. This is good local
+The median predicted/bootstrap ratios are 0.994 for T cells, 1.222 for B cells,
+1.081 for monocytes, 1.158 for HSPCs, and 1.034 for `other`. This is good local
 agreement for a deterministic count likelihood.
 
 Mast cells fail visibly. Their fitted fraction often sits exactly at zero, so
@@ -282,10 +309,10 @@ population.
 The test cohort is measurably shifted even though it comes from the same
 benchmark. After the frozen reference transform, the median absolute marker
 shift is 0.123 robust-scale units, the maximum channel shift is 0.225, and the
-mean score shift has Euclidean norm 0.448.
+mean score shift has Euclidean norm 0.809.
 
-At 20 and 30 bins, at least one learned bin is empty on the held-out cohort even
-though D-efficiency remains above 0.985. That combination is possible because
+At 30 bins, one learned bin is empty on the held-out cohort even though
+D-efficiency remains above 0.998. That combination is possible because
 the remaining occupied bins preserve the five informative score directions.
 Operationally, however, empty bins are a warning about transport and template
 stability. This is another reason to prefer eight bins for this dataset.
@@ -332,38 +359,14 @@ JAX_ENABLE_X64=1 MPLBACKEND=Agg \
 
 The generated sample SHA-256 is
 `a08e9bf183fe32b913e155d413eeacfdb65c7f99017a42e69c4b91bdde20d987`.
-On an Apple M4 Pro, the numerical study took 58.2 seconds and reached 1.40 GiB
-peak resident memory. The score model and score construction consumed 26.3
-seconds; all six partition/baseline stages consumed another 31.5 seconds. These
-timings exclude network acquisition and documentation rendering.
+The JSON evidence records elapsed time, peak resident memory, and per-stage
+timings for the exact run that generated the figures.
 
 The [FlowCyt paper](https://proceedings.mlr.press/v248/bini24a.html) describes
 the benchmark and expert populations. The data and derived samples are licensed
 under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/),
 separately from FisherBin's MIT-licensed code. The generated manifest records
 the source URLs, file totals, sampling settings, and digest.
-
-## Developer map
-
-- `data.py` freezes patient identities, schema, robust preprocessing, and local
-  loaders.
-- `fixture.py` parses FCS metadata and performs deterministic remote range
-  sampling.
-- `scores.py` owns cross-fitting, temperature calibration, density-ratio
-  conversion, simplex scores, and integration weights.
-- `experiment.py` freezes row roles, fits partitions and baselines, runs the
-  held-out likelihoods, and records evidence.
-- `likelihood.py` estimates bin templates and solves binned/unbinned mixture
-  fits.
-- `figures.py` renders all committed illustrations from the machine-readable
-  result.
-- `tests/test_cell_population.py` covers schema, sampling, score identities,
-  cross-fitting, likelihood recovery, chunked prediction, and the standard
-  integration path.
-
-All of this remains example code because its data model and evaluation protocol
-are specific to the study. The reusable object is the score-space hard partition
-and its information report.
 
 ## What this study establishes
 

@@ -32,6 +32,8 @@ def _parser() -> argparse.ArgumentParser:
     mode.add_argument("--quick", action="store_true", help="use short optimizer settings")
     mode.add_argument("--full", action="store_true", help="use the frozen research settings")
     parser.add_argument("--bins", type=int, nargs="+", default=[5, 8, 10, 15, 20, 30])
+    parser.add_argument("--operating-bins", type=int, default=8)
+    parser.add_argument("--uncertainty-bins", type=int, default=30)
     parser.add_argument("--max-per-patient", type=int, default=20_000)
     parser.add_argument("--write-fixture", type=Path, help="create fixture from --data-dir")
     parser.add_argument(
@@ -99,7 +101,13 @@ def main() -> None:
         return
     data = _load_data(args)
     quick = args.quick or (not args.full and (args.fixture is not None or args.data_dir is None))
-    result = run_experiment(data, bin_counts=tuple(args.bins), quick=quick)
+    result = run_experiment(
+        data,
+        bin_counts=tuple(args.bins),
+        operating_n_bins=args.operating_bins,
+        uncertainty_n_bins=args.uncertainty_bins,
+        quick=quick,
+    )
     if args.fixture is not None:
         manifest_path = args.fixture.with_suffix(".json")
         if manifest_path.is_file():

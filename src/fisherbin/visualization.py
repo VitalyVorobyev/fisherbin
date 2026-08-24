@@ -58,11 +58,13 @@ def plot_optimization(trace: OptimizationTrace) -> Figure:
     axes[1, 0].plot(steps, fractions)
     axes[1, 0].set(title="Weighted bin occupancy", xlabel="step", ylabel="fraction")
 
-    if centers.shape[2] == 1:
+    effective_rank = centers.shape[2]
+    if effective_rank == 1:
         for bin_index in range(centers.shape[1]):
             axes[1, 1].plot(steps, centers[:, bin_index, 0], marker=".")
         axes[1, 1].set(xlabel="step", ylabel="optimization coordinate 1")
-    else:
+        axes[1, 1].set_title("Center trajectories")
+    elif effective_rank == 2:
         for bin_index in range(centers.shape[1]):
             axes[1, 1].plot(
                 centers[:, bin_index, 0], centers[:, bin_index, 1], marker=".", alpha=0.8
@@ -71,7 +73,18 @@ def plot_optimization(trace: OptimizationTrace) -> Figure:
             xlabel="optimization coordinate 1",
             ylabel="optimization coordinate 2",
         )
-    axes[1, 1].set_title("Center trajectories (projected when rank > 2)")
+        axes[1, 1].set_title("Center trajectories")
+    else:
+        if len(steps) > 1:
+            displacements = np.linalg.norm(np.diff(centers, axis=0), axis=2)
+            axes[1, 1].plot(steps[1:], np.median(displacements, axis=1), marker=".", label="median")
+            axes[1, 1].plot(steps[1:], np.max(displacements, axis=1), marker=".", label="maximum")
+        axes[1, 1].set(
+            title="Center displacement across all dimensions",
+            xlabel="step",
+            ylabel="Euclidean displacement",
+        )
+        axes[1, 1].legend()
     return figure
 
 
@@ -92,13 +105,23 @@ def plot_partition(
     Returns
     -------
     matplotlib.figure.Figure
-        One- or two-dimensional partition view. Ranks above two are explicitly
-        shown as a leading-coordinate projection.
+        One- or two-dimensional partition view.
+
+    Raises
+    ------
+    ValueError
+        If the fitted informative space has rank above two. Use
+        :func:`plot_summary` for a projection-free diagnostic instead.
     """
     _require_matplotlib()
     import matplotlib.pyplot as plt
 
     coordinates = np.asarray(result.transform.apply(scores))
+    if coordinates.shape[1] > 2:
+        raise ValueError(
+            "plot_partition supports effective rank 1 or 2 only; "
+            "use plot_summary for a projection-free diagnostic"
+        )
     labels = np.asarray(result.predict(scores))
     point_sizes = None
     if weights is not None:
@@ -132,8 +155,7 @@ def plot_partition(
             xlabel="informative coordinate 1",
             ylabel="informative coordinate 2",
         )
-    suffix = "" if coordinates.shape[1] <= 2 else " (leading 2D projection)"
-    axis.set_title(f"Final hard partition{suffix}")
+    axis.set_title("Final hard partition")
     return figure
 
 
@@ -195,12 +217,23 @@ def plot_summary(result: FitResult, scores: ArrayLike, weights: ArrayLike | None
     if coordinates.shape[1] == 1:
         axes[0, 0].scatter(coordinates[:, 0], labels, c=labels, cmap="tab20", s=8, alpha=0.5)
         axes[0, 0].set(xlabel="informative coordinate 1", ylabel="hard bin")
-    else:
+        axes[0, 0].set_title("Final hard partition")
+    elif coordinates.shape[1] == 2:
         axes[0, 0].scatter(
             coordinates[:, 0], coordinates[:, 1], c=labels, cmap="tab20", s=8, alpha=0.5
         )
         axes[0, 0].set(xlabel="informative coordinate 1", ylabel="informative coordinate 2")
-    axes[0, 0].set_title("Final hard partition (2D projection when needed)")
+        axes[0, 0].set_title("Final hard partition")
+    else:
+        eigenvalues = np.asarray(report.retained_eigenvalues)
+        axes[0, 0].bar(np.arange(1, len(eigenvalues) + 1), eigenvalues)
+        axes[0, 0].axhline(1, color="black", linestyle="--", linewidth=1)
+        axes[0, 0].set(
+            title="Retained-information spectrum",
+            xlabel="informative direction",
+            ylabel="retained eigenvalue",
+            ylim=(0, 1.05),
+        )
     image = axes[0, 1].imshow(np.asarray(report.retained_matrix), vmin=-1, vmax=1, cmap="coolwarm")
     axes[0, 1].set_title("Normalized retained information")
     figure.colorbar(image, ax=axes[0, 1], fraction=0.046)

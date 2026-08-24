@@ -18,7 +18,7 @@ from .data import (
     load_fixture,
 )
 from .likelihood import MixtureEstimate, fit_binned_mixture, fit_unbinned_mixture
-from .scores import ScoreModel, fit_score_model, mixture_scores, reference_composition
+from .scores import ScoreModel, fit_score_model, reference_composition
 
 __all__ = [
     "CLASS_NAMES",
@@ -34,6 +34,5 @@ __all__ = [
     "fit_unbinned_mixture",
     "load_csv_directory",
     "load_fixture",
-    "mixture_scores",
     "reference_composition",
 ]

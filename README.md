@@ -5,7 +5,15 @@
 [![CI](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/ci.yml/badge.svg)](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/ci.yml)
 [![Documentation](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/docs.yml/badge.svg)](https://vitalyvorobyev.github.io/fisherbin/)
 
-FisherBin learns a finite partition of continuous or high-dimensional events while retaining information about parameters of a linear intensity model.
+FisherBin learns a finite hard partition of continuous or high-dimensional events while retaining information about parameters of a statistical model.
+
+## Installation
+
+FisherBin requires Python 3.12 or newer. From a source checkout:
+
+```bash
+uv sync --all-extras --all-groups --locked
+```
 
 ## User workflow
 
@@ -74,35 +82,19 @@ physical variables X
 
 All three return a result whose `predict(...)` method expects the same representation used during fitting.
 
-## Development and evidence
-
-FisherBin requires Python 3.12 or newer. Synchronize a complete source checkout with:
-
-```bash
-uv sync --all-extras --all-groups --locked
-```
-
-Set `JAX_ENABLE_X64=1` before Python for the high-precision reference mode used by the examples and CI. See the [development guide](https://vitalyvorobyev.github.io/fisherbin/development/) for all validation and documentation commands.
+## Evidence
 
 The reproducible [synthetic gallery](docs/gallery/index.md) covers an analytic Gaussian score, non-monotonic spectral templates, and an importance-weighted spatial intensity model.
 
-The first realistic end-to-end case learns information-aware multidimensional
-gates for [cell-population quantification in the FlowCyt benchmark](docs/usecases/cellpopulation.md),
+The realistic end-to-end case learns information-aware multidimensional gates
+for [cell-population quantification in the FlowCyt benchmark](docs/usecases/cellpopulation.md),
 then estimates six population fractions from frozen bin counts on held-out patients.
-The full 600,000-cell study covers all 30 patients; eight learned gates retain
-94.4% held-out Fisher information and reach 0.00226 macro RMSE on the five
-target fractions.
 
 ## Documents
 
-- [User workflow](docs/user-workflow.md)
 - [Published documentation](https://vitalyvorobyev.github.io/fisherbin/)
 - [Python API](docs/api.md)
-- [Motivation](docs/motivation.md)
-- [Method](docs/method.md)
-- [System design](docs/system-design.md)
-- [Roadmap](docs/roadmap.md)
 - [FlowCyt cell-population use case](docs/usecases/cellpopulation.md)
-- [Architecture decisions](docs/adr/index.md)
+- [Generated reference](docs/reference/index.md)
 
 FisherBin is available under the [MIT license](LICENSE).
