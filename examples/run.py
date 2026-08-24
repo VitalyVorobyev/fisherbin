@@ -184,10 +184,10 @@ def make_example_figure(experiment: ExperimentResult):
 
     report = experiment.soft.evaluate(problem.test.scores, problem.test.weights)
     matrix = np.asarray(report.retained_matrix)
-    image = axes[1, 1].imshow(matrix, vmin=0, vmax=1, cmap="viridis")
+    image = axes[1, 1].imshow(matrix, vmin=-1, vmax=1, cmap="coolwarm")
     for row in range(matrix.shape[0]):
         for column in range(matrix.shape[1]):
-            color = "white" if matrix[row, column] < 0.5 else "black"
+            color = "white" if abs(matrix[row, column]) > 0.55 else "black"
             axes[1, 1].text(
                 column,
                 row,

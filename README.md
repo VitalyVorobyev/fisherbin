@@ -2,6 +2,9 @@
 
 **Information-preserving binning for statistical inference.**
 
+[![CI](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/ci.yml/badge.svg)](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/ci.yml)
+[![Documentation](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/docs.yml/badge.svg)](https://vitalyvorobyev.github.io/fisherbin/)
+
 FisherBin learns a finite partition of continuous or high-dimensional events while retaining information about parameters of a linear intensity model.
 
 ## User workflow
@@ -73,16 +76,25 @@ All three return a result whose `predict(...)` method expects the same represent
 
 ## Development and evidence
 
-Install with `uv sync`; include figures and notebooks with `uv sync --all-extras --dev`. Set `JAX_ENABLE_X64=1` before Python for the high-precision reference mode used by the examples and CI.
+FisherBin requires Python 3.12 or newer. Synchronize a complete source checkout with:
 
-The reproducible [synthetic gallery](docs/gallery/README.md) covers an analytic Gaussian score, non-monotonic spectral templates, and an importance-weighted spatial intensity model.
+```bash
+uv sync --all-extras --all-groups --locked
+```
+
+Set `JAX_ENABLE_X64=1` before Python for the high-precision reference mode used by the examples and CI. See the [development guide](https://vitalyvorobyev.github.io/fisherbin/development/) for all validation and documentation commands.
+
+The reproducible [synthetic gallery](docs/gallery/index.md) covers an analytic Gaussian score, non-monotonic spectral templates, and an importance-weighted spatial intensity model.
 
 ## Documents
 
 - [User workflow](docs/user-workflow.md)
+- [Published documentation](https://vitalyvorobyev.github.io/fisherbin/)
 - [Python API](docs/api.md)
 - [Motivation](docs/motivation.md)
 - [Method](docs/method.md)
 - [System design](docs/system-design.md)
 - [Roadmap](docs/roadmap.md)
-- [Architecture decisions](docs/adr/README.md)
+- [Architecture decisions](docs/adr/index.md)
+
+FisherBin is available under the [MIT license](LICENSE).

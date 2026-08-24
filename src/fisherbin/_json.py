@@ -11,7 +11,6 @@ import numpy as np
 
 def json_ready(value: Any) -> Any:
     """Recursively convert arrays, NumPy scalars, and dataclasses to JSON values."""
-
     if is_dataclass(value):
         return json_ready(asdict(value))
     if isinstance(value, dict):

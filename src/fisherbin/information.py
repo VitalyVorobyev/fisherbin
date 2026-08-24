@@ -2,26 +2,112 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 import jax.numpy as jnp
 import numpy as np
 
-from ._validation import validate_scores_weights
+from ._validation import _ValidatedSample, validate_sample
 from .result import InformationReport
 from .transforms import fisher_transform
 
 
 def fisher_information(scores: Any, weights: Any | None = None) -> jnp.ndarray:
-    """Estimate unbinned Fisher information ``sum_i w_i s_i s_i.T``."""
+    """Estimate unbinned Fisher information.
 
-    score_array, weight_array = validate_scores_weights(scores, weights)
-    return jnp.einsum("n,np,nq->pq", weight_array, score_array, score_array)
+    Parameters
+    ----------
+    scores
+        Finite score matrix with shape ``[N, P]``.
+    weights
+        Optional finite, nonnegative weights with shape ``[N]``.
+
+    Returns
+    -------
+    jax.Array
+        Matrix ``sum_i w_i s_i s_i.T`` with shape ``[P, P]``.
+    """
+    sample = validate_sample(scores, weights)
+    return _unbinned_fisher(sample)
 
 
-def _raw_weight_mask(scores: Any, weights: Any | None) -> jnp.ndarray:
-    n = jnp.asarray(scores).shape[0]
-    return jnp.ones(n, dtype=bool) if weights is None else jnp.asarray(weights) > 0
+def _unbinned_fisher(sample: _ValidatedSample) -> jnp.ndarray:
+    return jnp.einsum(
+        "n,np,nq->pq",
+        sample.effective_weights,
+        sample.effective_scores,
+        sample.effective_scores,
+    )
+
+
+def _validate_hard_assignments(
+    sample: _ValidatedSample,
+    assignments: Any,
+    n_bins: int | None,
+) -> tuple[jnp.ndarray, int]:
+    labels = jnp.asarray(assignments)
+    if labels.shape != (sample.scores.shape[0],):
+        raise ValueError(
+            f"assignments must have shape [{sample.scores.shape[0]}], got {labels.shape}"
+        )
+    if not jnp.issubdtype(labels.dtype, jnp.integer):
+        raise TypeError("assignments must contain integer bin labels")
+    labels = labels[sample.positive_weight_mask]
+    if n_bins is None:
+        resolved_n_bins = int(np.asarray(jnp.max(labels))) + 1
+    else:
+        if isinstance(n_bins, bool) or not isinstance(n_bins, int):
+            raise TypeError("n_bins must be an integer")
+        resolved_n_bins = n_bins
+    if resolved_n_bins < 1:
+        raise ValueError("n_bins must be at least one")
+    if bool(np.asarray(jnp.any((labels < 0) | (labels >= resolved_n_bins)))):
+        raise ValueError("assignments contain a label outside [0, n_bins)")
+    return labels, resolved_n_bins
+
+
+@dataclass(frozen=True, slots=True)
+class _HardBinStatistics:
+    fisher: jnp.ndarray
+    weights: jnp.ndarray
+    counts: jnp.ndarray
+    effective_sample_sizes: jnp.ndarray
+
+
+def _hard_binned_fisher(
+    sample: _ValidatedSample,
+    labels: jnp.ndarray,
+    n_bins: int,
+) -> tuple[jnp.ndarray, jnp.ndarray]:
+    scores = sample.effective_scores
+    weights = sample.effective_weights
+    weighted_scores = weights[:, None] * scores
+    bin_weights = jnp.zeros(n_bins, dtype=scores.dtype).at[labels].add(weights)
+    bin_score_sums = jnp.zeros((n_bins, scores.shape[1]), dtype=scores.dtype)
+    bin_score_sums = bin_score_sums.at[labels].add(weighted_scores)
+    safe_weights = jnp.where(bin_weights > 0, bin_weights, 1)
+    means = bin_score_sums / safe_weights[:, None]
+    fisher = jnp.einsum("b,bp,bq->pq", bin_weights, means, means)
+    return fisher, bin_weights
+
+
+def _hard_bin_statistics(
+    sample: _ValidatedSample,
+    labels: jnp.ndarray,
+    n_bins: int,
+) -> _HardBinStatistics:
+    fisher, bin_weights = _hard_binned_fisher(sample, labels, n_bins)
+    weights = sample.effective_weights
+    bin_counts = jnp.zeros(n_bins, dtype=jnp.int32).at[labels].add(1)
+    squared_weights = jnp.zeros(n_bins, dtype=weights.dtype).at[labels].add(weights**2)
+    effective = jnp.where(squared_weights > 0, bin_weights**2 / squared_weights, 0)
+    return _HardBinStatistics(
+        fisher=fisher,
+        weights=bin_weights,
+        counts=bin_counts,
+        effective_sample_sizes=effective,
+    )
 
 
 def binned_fisher_information(
@@ -31,30 +117,29 @@ def binned_fisher_information(
     *,
     n_bins: int | None = None,
 ) -> jnp.ndarray:
-    """Estimate Fisher information retained by hard bin counts."""
+    """Estimate Fisher information retained by hard bin counts.
 
-    raw_scores = jnp.asarray(scores)
-    mask = _raw_weight_mask(raw_scores, weights)
-    score_array, weight_array = validate_scores_weights(raw_scores, weights)
-    labels = jnp.asarray(assignments)
-    if labels.shape != (raw_scores.shape[0],):
-        raise ValueError(f"assignments must have shape [{raw_scores.shape[0]}], got {labels.shape}")
-    labels = labels[mask]
-    if not jnp.issubdtype(labels.dtype, jnp.integer):
-        raise TypeError("assignments must contain integer bin labels")
-    if n_bins is None:
-        n_bins = int(np.asarray(jnp.max(labels))) + 1
-    if n_bins < 1:
-        raise ValueError("n_bins must be at least one")
-    if bool(np.asarray(jnp.any((labels < 0) | (labels >= n_bins)))):
-        raise ValueError("assignments contain a label outside [0, n_bins)")
-    weighted_scores = weight_array[:, None] * score_array
-    bin_weights = jnp.zeros(n_bins, dtype=score_array.dtype).at[labels].add(weight_array)
-    bin_score_sums = jnp.zeros((n_bins, score_array.shape[1]), dtype=score_array.dtype)
-    bin_score_sums = bin_score_sums.at[labels].add(weighted_scores)
-    safe_weights = jnp.where(bin_weights > 0, bin_weights, 1)
-    means = bin_score_sums / safe_weights[:, None]
-    return jnp.einsum("b,bp,bq->pq", bin_weights, means, means)
+    Parameters
+    ----------
+    scores
+        Finite score matrix with shape ``[N, P]``.
+    assignments
+        Integer bin label for every input row, with shape ``[N]``.
+    weights
+        Optional finite, nonnegative weights with shape ``[N]``.
+    n_bins
+        Total number of bins. Inferred from the largest effective label when
+        omitted; provide it explicitly to preserve trailing empty bins.
+
+    Returns
+    -------
+    jax.Array
+        Hard-binned Fisher matrix with shape ``[P, P]``.
+    """
+    sample = validate_sample(scores, weights)
+    labels, resolved_n_bins = _validate_hard_assignments(sample, assignments, n_bins)
+    fisher, _ = _hard_binned_fisher(sample, labels, resolved_n_bins)
+    return fisher
 
 
 def fractional_fisher_information(
@@ -62,22 +147,35 @@ def fractional_fisher_information(
     responsibilities: Any,
     weights: Any | None = None,
 ) -> jnp.ndarray:
-    """Estimate Fisher information retained by fractional bin assignments."""
+    """Estimate Fisher information retained by fractional assignments.
 
-    raw_scores = jnp.asarray(scores)
-    mask = _raw_weight_mask(raw_scores, weights)
-    score_array, weight_array = validate_scores_weights(raw_scores, weights)
-    resp = jnp.asarray(responsibilities, dtype=score_array.dtype)
-    if resp.ndim != 2 or resp.shape[0] != raw_scores.shape[0] or resp.shape[1] == 0:
+    Parameters
+    ----------
+    scores
+        Finite score matrix with shape ``[N, P]``.
+    responsibilities
+        Finite nonnegative responsibilities with shape ``[N, B]`` whose
+        effective rows sum to one.
+    weights
+        Optional finite, nonnegative weights with shape ``[N]``.
+
+    Returns
+    -------
+    jax.Array
+        Fractionally binned Fisher matrix with shape ``[P, P]``.
+    """
+    sample = validate_sample(scores, weights)
+    resp = jnp.asarray(responsibilities, dtype=sample.scores.dtype)
+    if resp.ndim != 2 or resp.shape[0] != sample.scores.shape[0] or resp.shape[1] == 0:
         raise ValueError("responsibilities must have shape [N, B] with B >= 1")
-    resp = resp[mask]
+    resp = resp[sample.positive_weight_mask]
     if not bool(np.asarray(jnp.all(jnp.isfinite(resp)))) or bool(np.asarray(jnp.any(resp < 0))):
         raise ValueError("responsibilities must be finite and nonnegative")
     if not bool(np.asarray(jnp.allclose(jnp.sum(resp, axis=1), 1, rtol=1e-5, atol=1e-7))):
         raise ValueError("responsibility rows must sum to one")
-    weighted_resp = weight_array[:, None] * resp
+    weighted_resp = sample.effective_weights[:, None] * resp
     bin_weights = jnp.sum(weighted_resp, axis=0)
-    bin_score_sums = weighted_resp.T @ score_array
+    bin_score_sums = weighted_resp.T @ sample.effective_scores
     safe_weights = jnp.where(bin_weights > 0, bin_weights, 1)
     means = bin_score_sums / safe_weights[:, None]
     return jnp.einsum("b,bp,bq->pq", bin_weights, means, means)
@@ -130,32 +228,35 @@ def information_report(
     n_bins: int | None = None,
     rank_rtol: float | None = None,
 ) -> InformationReport:
-    """Build retained-information and occupancy diagnostics for hard bins."""
+    """Build retained-information and occupancy diagnostics for hard bins.
 
-    raw_scores = jnp.asarray(scores)
-    mask = _raw_weight_mask(raw_scores, weights)
-    score_array, weight_array = validate_scores_weights(raw_scores, weights)
-    labels = jnp.asarray(assignments)
-    if labels.shape != (raw_scores.shape[0],):
-        raise ValueError(f"assignments must have shape [{raw_scores.shape[0]}], got {labels.shape}")
-    labels = labels[mask]
-    if not jnp.issubdtype(labels.dtype, jnp.integer):
-        raise TypeError("assignments must contain integer bin labels")
-    if n_bins is None:
-        n_bins = int(np.asarray(jnp.max(labels))) + 1
-    if bool(np.asarray(jnp.any((labels < 0) | (labels >= n_bins)))):
-        raise ValueError("assignments contain a label outside [0, n_bins)")
-    fisher_unbinned = jnp.einsum("n,np,nq->pq", weight_array, score_array, score_array)
-    fisher_binned = binned_fisher_information(raw_scores, assignments, weights, n_bins=n_bins)
-    bin_weights = jnp.zeros(n_bins, dtype=score_array.dtype).at[labels].add(weight_array)
-    bin_counts = jnp.zeros(n_bins, dtype=jnp.int32).at[labels].add(1)
-    squared_weights = jnp.zeros(n_bins, dtype=score_array.dtype).at[labels].add(weight_array**2)
-    effective = jnp.where(squared_weights > 0, bin_weights**2 / squared_weights, 0)
+    Parameters
+    ----------
+    scores
+        Finite score matrix with shape ``[N, P]``.
+    assignments
+        Integer bin label for every input row, with shape ``[N]``.
+    weights
+        Optional finite, nonnegative weights with shape ``[N]``.
+    n_bins
+        Total number of bins, including empty bins. Inferred when omitted.
+    rank_rtol
+        Relative threshold used to select informative Fisher directions.
+
+    Returns
+    -------
+    InformationReport
+        Unregularized Fisher matrices, normalized retention, spectrum, and
+        per-bin occupancy diagnostics.
+    """
+    sample = validate_sample(scores, weights)
+    labels, resolved_n_bins = _validate_hard_assignments(sample, assignments, n_bins)
+    statistics = _hard_bin_statistics(sample, labels, resolved_n_bins)
     return _report_from_fishers(
-        fisher_unbinned,
-        fisher_binned,
-        bin_weights,
-        bin_counts,
-        effective,
+        _unbinned_fisher(sample),
+        statistics.fisher,
+        statistics.weights,
+        statistics.counts,
+        statistics.effective_sample_sizes,
         rank_rtol=rank_rtol,
     )

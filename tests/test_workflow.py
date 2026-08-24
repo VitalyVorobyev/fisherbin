@@ -67,6 +67,19 @@ def test_all_three_entry_points_are_equivalent() -> None:
     assert "D-efficiency" in str(model_result.report())
 
 
+def test_result_views_delegate_common_fitted_state() -> None:
+    model_result = fb.fit(_observations(11, 120), model=_model(), n_bins=4)
+    component_result = model_result.component_result
+    score_result = component_result.score_result
+
+    assert model_result.config is score_result.config
+    assert model_result.trace is score_result.trace
+    assert model_result.train_report is score_result.train_report
+    assert component_result.config is score_result.config
+    assert component_result.labels is score_result.labels
+    assert component_result.report() is score_result.train_report
+
+
 def test_frozen_model_predicts_new_physical_observations() -> None:
     train = _observations(3, 250)
     data = _observations(4, 80)

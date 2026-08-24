@@ -9,28 +9,40 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.12"
+          - os: ubuntu-latest
+            python-version: "3.13"
+          - os: macos-latest
+            python-version: "3.13"
     runs-on: ${{ matrix.os }}
     env:
       JAX_ENABLE_X64: "1"
       MPLBACKEND: Agg
+      UV_PYTHON: ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
-      - run: uv python install 3.13
+      - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --all-extras --dev --locked
       - run: uv run ruff check .
+      - run: uv run ruff format --check .
       - run: uv run pytest
+      - if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
+        run: uv build
 
   float32-smoke:
     runs-on: ubuntu-latest
     env:
+      JAX_ENABLE_X64: "0"
       MPLBACKEND: Agg
+      UV_PYTHON: "3.13"
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
       - run: uv python install 3.13
       - run: uv sync --dev --locked
       - run: uv run pytest tests/test_float32.py

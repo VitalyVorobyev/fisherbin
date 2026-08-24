@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import jax
 import jax.numpy as jnp
@@ -15,6 +15,8 @@ from .transforms import fisher_transform
 
 @dataclass(slots=True)
 class QuantizerRun:
+    """Aggregate state returned by a private quantizer implementation."""
+
     centers: jnp.ndarray
     steps: list[int]
     center_history: list[jnp.ndarray]
@@ -27,11 +29,11 @@ class QuantizerRun:
 
 def squared_distances(points: jnp.ndarray, centers: jnp.ndarray) -> jnp.ndarray:
     """Return the dense ``[N, B]`` squared Euclidean distance matrix."""
-
     return jnp.sum((points[:, None, :] - centers[None, :, :]) ** 2, axis=2)
 
 
 def hard_assign(points: jnp.ndarray, centers: jnp.ndarray) -> jnp.ndarray:
+    """Assign each point to its nearest center."""
     return jnp.argmin(squared_distances(points, centers), axis=1)
 
 
@@ -137,11 +139,6 @@ def weighted_kmeans(
     config: KMeansConfig,
 ) -> QuantizerRun:
     """Run seeded weighted k-means restarts and return the lowest-SSE run."""
-
-    if config.n_init < 1 or config.max_iter < 1 or config.record_every < 1:
-        raise ValueError("n_init, max_iter, and record_every must be positive")
-    if config.tolerance < 0 or not np.isfinite(config.tolerance):
-        raise ValueError("tolerance must be finite and nonnegative")
     keys = jax.random.split(jax.random.PRNGKey(config.seed), config.n_init)
     runs = [_single_kmeans(points, weights, n_bins, config, key) for key in keys]
     return min(runs, key=lambda run: run.objective_history[-1])
@@ -158,7 +155,6 @@ def soft_responsibilities(
     points: jnp.ndarray, centers: jnp.ndarray, temperature: float | jnp.ndarray
 ) -> jnp.ndarray:
     """Return stable soft nearest-center responsibilities."""
-
     logits = -squared_distances(points, centers) / (2 * jnp.asarray(temperature) ** 2)
     return jax.nn.softmax(logits, axis=1)
 
@@ -176,6 +172,97 @@ def _soft_fisher(
     return 0.5 * (fisher + fisher.T)
 
 
+def _soft_initial_centers(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    config: SoftVoronoiConfig,
+) -> jnp.ndarray:
+    initializer_config = KMeansConfig(
+        whiten=config.whiten,
+        rank_rtol=config.rank_rtol,
+        seed=config.seed,
+        n_init=config.n_init,
+        max_iter=config.kmeans_max_iter,
+        tolerance=config.tolerance,
+        record_every=config.kmeans_max_iter,
+    )
+    return weighted_kmeans(points, weights, n_bins, initializer_config).centers
+
+
+def _soft_temperature_bounds(
+    centers: jnp.ndarray,
+    end_ratio: float,
+) -> tuple[float, float]:
+    n_bins = centers.shape[0]
+    center_distances = squared_distances(centers, centers)
+    center_distances = jnp.where(jnp.eye(n_bins, dtype=bool), jnp.inf, center_distances)
+    nearest_separations = jnp.sqrt(jnp.min(center_distances, axis=1))
+    start = float(np.asarray(jnp.median(nearest_separations)))
+    if not np.isfinite(start) or start <= 0:
+        raise ValueError("soft optimization requires distinct initial centers")
+    return start, start * end_ratio
+
+
+def _soft_retention(fisher: jnp.ndarray) -> float:
+    eigenvalues = jnp.linalg.eigvalsh(fisher)
+    value = jnp.where(
+        jnp.any(eigenvalues <= 0),
+        0.0,
+        jnp.exp(jnp.mean(jnp.log(eigenvalues))),
+    )
+    return float(np.asarray(value))
+
+
+@dataclass(slots=True)
+class _SoftHistory:
+    points: jnp.ndarray
+    weights: jnp.ndarray
+    objective_scores: jnp.ndarray
+    n_bins: int
+    steps: list[int] = field(default_factory=list)
+    centers: list[jnp.ndarray] = field(default_factory=list)
+    objectives: list[float] = field(default_factory=list)
+    bin_weights: list[jnp.ndarray] = field(default_factory=list)
+    retentions: list[float] = field(default_factory=list)
+    temperatures: list[float] = field(default_factory=list)
+    gradient_norms: list[float] = field(default_factory=list)
+
+    def append(
+        self,
+        *,
+        step: int,
+        centers: jnp.ndarray,
+        loss: jnp.ndarray,
+        temperature: float,
+        gradient_norm: jnp.ndarray,
+    ) -> None:
+        """Record one aggregate soft-optimization checkpoint."""
+        responsibilities = soft_responsibilities(self.points, centers, temperature)
+        soft_fisher = _soft_fisher(self.objective_scores, responsibilities, self.weights)
+        labels = hard_assign(self.points, centers)
+        self.steps.append(step)
+        self.centers.append(centers)
+        self.objectives.append(float(np.asarray(-loss)))
+        self.bin_weights.append(_bin_weights(labels, self.weights, self.n_bins))
+        self.retentions.append(_soft_retention(soft_fisher))
+        self.temperatures.append(float(temperature))
+        self.gradient_norms.append(float(np.asarray(gradient_norm)))
+
+    def finish(self, centers: jnp.ndarray) -> QuantizerRun:
+        """Build the common quantizer result from recorded checkpoints."""
+        return QuantizerRun(
+            centers=centers,
+            steps=self.steps,
+            center_history=self.centers,
+            objective_history=self.objectives,
+            bin_weight_history=self.bin_weights,
+            soft_retention_history=self.retentions,
+            temperature_history=self.temperatures,
+            gradient_norm_history=self.gradient_norms,
+        )
+
+
 def soft_voronoi(
     points: jnp.ndarray,
     weights: jnp.ndarray,
@@ -184,30 +271,12 @@ def soft_voronoi(
     config: SoftVoronoiConfig,
 ) -> QuantizerRun:
     """Optimize soft Fisher retention, then return centers for hard assignment."""
-
     if n_bins < effective_rank:
         raise ValueError(
             "soft D-optimal fitting requires n_bins >= the effective Fisher rank; "
             "use k-means for smaller partitions"
         )
-    if config.max_steps < 1 or config.record_every < 1:
-        raise ValueError("max_steps and record_every must be positive")
-    if config.learning_rate <= 0 or config.gradient_clip <= 0:
-        raise ValueError("learning_rate and gradient_clip must be positive")
-    if not 0 < config.temperature_end_ratio <= 1:
-        raise ValueError("temperature_end_ratio must lie in (0, 1]")
-
-    initializer_config = KMeansConfig(
-        whiten=config.whiten,
-        rank_rtol=config.rank_rtol,
-        seed=config.seed,
-        n_init=config.n_init,
-        max_iter=config.kmeans_max_iter,
-        tolerance=config.tolerance,
-        record_every=max(config.kmeans_max_iter, 1),
-    )
-    initial = weighted_kmeans(points, weights, n_bins, initializer_config)
-    centers = initial.centers
+    centers = _soft_initial_centers(points, weights, n_bins, config)
     if n_bins == 1:
         return QuantizerRun(
             centers=centers,
@@ -220,13 +289,9 @@ def soft_voronoi(
             gradient_norm_history=[0.0],
         )
 
-    center_distances = squared_distances(centers, centers)
-    center_distances = jnp.where(jnp.eye(n_bins, dtype=bool), jnp.inf, center_distances)
-    nearest_separations = jnp.sqrt(jnp.min(center_distances, axis=1))
-    start_temperature = float(np.asarray(jnp.median(nearest_separations)))
-    if not np.isfinite(start_temperature) or start_temperature <= 0:
-        raise ValueError("soft optimization requires distinct initial centers")
-    end_temperature = start_temperature * config.temperature_end_ratio
+    start_temperature, end_temperature = _soft_temperature_bounds(
+        centers, config.temperature_end_ratio
+    )
     objective_scores = _normalized_objective_scores(points, weights, config.rank_rtol)
     epsilon = 1e-8 if points.dtype == jnp.float64 else 1e-5
     identity = jnp.eye(effective_rank, dtype=points.dtype)
@@ -259,13 +324,7 @@ def soft_voronoi(
             optax.tree.norm(gradients),
         )
 
-    steps: list[int] = []
-    center_history: list[jnp.ndarray] = []
-    objective_history: list[float] = []
-    bin_weight_history: list[jnp.ndarray] = []
-    soft_retention_history: list[float] = []
-    temperature_history: list[float] = []
-    gradient_norm_history: list[float] = []
+    history = _SoftHistory(points, weights, objective_scores, n_bins)
 
     for step in range(config.max_steps + 1):
         fraction = step / config.max_steps
@@ -276,34 +335,12 @@ def soft_voronoi(
             loss = loss_fn(centers, jnp.asarray(temperature))
             gradient_norm = jnp.asarray(0.0, dtype=points.dtype)
         if step % config.record_every == 0 or step == config.max_steps:
-            resp = soft_responsibilities(points, centers, temperature)
-            soft_fisher = _soft_fisher(objective_scores, resp, weights)
-            eig = jnp.linalg.eigvalsh(soft_fisher)
-            retention = float(
-                np.asarray(
-                    jnp.where(
-                        jnp.any(eig <= 0),
-                        0.0,
-                        jnp.exp(jnp.mean(jnp.log(eig))),
-                    )
-                )
+            history.append(
+                step=step,
+                centers=centers,
+                loss=loss,
+                temperature=temperature,
+                gradient_norm=gradient_norm,
             )
-            labels = hard_assign(points, centers)
-            steps.append(step)
-            center_history.append(centers)
-            objective_history.append(float(np.asarray(-loss)))
-            bin_weight_history.append(_bin_weights(labels, weights, n_bins))
-            soft_retention_history.append(retention)
-            temperature_history.append(float(temperature))
-            gradient_norm_history.append(float(np.asarray(gradient_norm)))
 
-    return QuantizerRun(
-        centers=centers,
-        steps=steps,
-        center_history=center_history,
-        objective_history=objective_history,
-        bin_weight_history=bin_weight_history,
-        soft_retention_history=soft_retention_history,
-        temperature_history=temperature_history,
-        gradient_norm_history=gradient_norm_history,
-    )
+    return history.finish(centers)

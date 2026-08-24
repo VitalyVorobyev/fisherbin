@@ -55,6 +55,8 @@ This is the score-space mathematical core. It contains all optimizer implementat
 
 Validation inputs are diagnostic only for every entry point. They cannot affect gradients, stopping, checkpoint selection, or final centers.
 
+The optimizer is selected by constructing `KMeansConfig` or `SoftVoronoiConfig`. The read-only `method` field is derived from the config class and included by `to_dict()`; it is not a constructor argument. All config values are validated immediately.
+
 ## Linear models
 
 `LinearComponents(components, coefficients, variables=None)` accepts either:
@@ -96,3 +98,7 @@ Components and coefficients may be signed and need not be normalized. Their refe
 ## Migration from the initial prototype
 
 The former `fit(scores, ...)` call is intentionally replaced by `fit_scores(scores, ...)`. This pre-release hard break prevents `fit` from ambiguously interpreting a matrix as physical variables or scores.
+
+The initial configs accepted a redundant `method=` constructor argument even though their class already selected the method. That argument is removed; use the appropriate config class directly.
+
+See the generated [API reference](reference/index.md) for current signatures and field documentation.
