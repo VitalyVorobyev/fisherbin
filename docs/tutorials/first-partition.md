@@ -6,7 +6,7 @@ between estimators.
 
 ## 1. Generate Gaussian location scores
 
-For (x\sim\mathcal N(\mu,1)) at (mu_0=0), the score is (s(x)=x).
+For \(x\sim\mathcal N(\mu,1)\) at \(\mu_0=0\), the score is \(s(x)=x\).
 
 ```python
 import jax.numpy as jnp

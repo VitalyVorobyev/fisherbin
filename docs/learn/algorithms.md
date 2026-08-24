@@ -34,7 +34,7 @@ Soft Voronoi fitting replaces hard assignments during optimization by
 \]
 
 The fractional bin statistics are differentiable, so the centers can maximize
-a D-optimal objective based on (log\det F_\text{soft}). Temperature is reduced
+a D-optimal objective based on \(\log\det F_\text{soft}\). Temperature is reduced
 during fitting; the reported result is always the final hard nearest-center
 partition.
 

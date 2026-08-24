@@ -140,6 +140,7 @@ class ScoreFit:
     """Return the score model, OOF posteriors, and calibration-selection evidence."""
 
     model: ScoreModel
+    raw_out_of_fold_probabilities: np.ndarray
     out_of_fold_probabilities: np.ndarray
     calibration_selection: dict[str, object]
 
@@ -398,6 +399,7 @@ def fit_score_model(
     }
     return ScoreFit(
         model=ScoreModel(transform, final_classifier, calibration),
+        raw_out_of_fold_probabilities=raw_out_of_fold,
         out_of_fold_probabilities=calibrated,
         calibration_selection=selection,
     )

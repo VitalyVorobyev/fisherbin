@@ -43,6 +43,45 @@ The synthetic evidence includes this oracle case and checks the matrix ordering
 directly. This is a statement about the same correct statistical model on both
 sides. It does not order the RMSE of two differently misspecified estimators.
 
+## Poisson counts and fixed-total counts are different models
+
+The identity above applies to the supplied score and measure. In an intensity
+or Poisson model, the total event count can itself carry information. The
+weighted score mean therefore has statistical meaning and FisherBin does not
+subtract it.
+
+A likelihood conditioned on a fixed total count is different. Its event score
+is the supplied score minus its expectation,
+
+\[
+s_{\mathrm{cond}}(x)=s(x)-E[s(x)],
+\]
+
+and its information is the score covariance
+
+\[
+F_{\mathrm{cond}}
+=E\!\left[(s-E[s])(s-E[s])^T\right].
+\]
+
+Only \(B-1\) of \(B\) fixed-total bin frequencies are independent. A binned
+conditional likelihood for \(p\) locally identifiable parameters therefore
+needs
+
+\[
+B-1\geq p.
+\]
+
+For a mixture of \(K\) fractions constrained to sum to one, \(p=K-1\), so at
+least \(K\) bins are required. This is a rank condition, not an optimizer
+preference. Five bins cannot identify all six fractions of a fixed-total
+mixture, even if an unconditioned information diagnostic reports a nonzero
+fifth direction.
+
+Do not center scores before passing them to FisherBin. Conditioning belongs to
+the downstream statistical model and should be checked as a separate
+application diagnostic.
+
 ## Why score-space k-means appears
 
 Taking the trace of the loss gives

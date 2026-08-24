@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -236,52 +237,68 @@ def make_figure(result: ExperimentResult) -> Figure:
 
 
 def make_uncertainty_figure(result: ExperimentResult) -> Figure:
-    """Compare local Fisher errors with frozen-pipeline bootstrap errors."""
+    """Show reference-only interior agreement and boundary-hit rates."""
     figure, axes = plt.subplots(1, 2, figsize=(11, 4.5), constrained_layout=True)
-    for class_index, name in enumerate(CLASS_NAMES[:5]):
-        axes[0].scatter(
-            result.bootstrap_standard_errors[:, class_index],
-            result.predicted_standard_errors[:, class_index],
-            label=name,
-            s=35,
-            alpha=0.8,
-        )
-    limit = max(
-        float(np.max(result.bootstrap_standard_errors[:, :5])),
-        float(np.max(result.predicted_standard_errors[:, :5])),
-    )
+    uncertainty = cast(dict[str, object], result.metrics["uncertainty"])
+    scenarios = cast(dict[str, object], uncertainty["scenarios"])
+    markers = {"reference_like": "o", "mast_enriched": "x"}
+    colors = plt.get_cmap("tab10")
+    plotted_values: list[float] = []
+    plotted_classes: set[str] = set()
+    for scenario_name, marker in markers.items():
+        scenario = cast(dict[str, object], scenarios[scenario_name])
+        classes = cast(dict[str, object], scenario["classes"])
+        for class_index, name in enumerate(CLASS_NAMES[:5]):
+            values = cast(dict[str, object], classes[name])
+            if values["status"] != "interior":
+                continue
+            empirical = 1_000 * float(cast(float, values["empirical_standard_deviation"]))
+            predicted = 1_000 * float(cast(float, values["median_local_fisher_error"]))
+            plotted_values.extend([empirical, predicted])
+            axes[0].scatter(
+                empirical,
+                predicted,
+                color=colors(class_index),
+                marker=marker,
+                s=45,
+                label=name if name not in plotted_classes else None,
+            )
+            plotted_classes.add(name)
+    limit = max(plotted_values, default=1.0)
     axes[0].plot([0, limit], [0, limit], color="black", linestyle="--", linewidth=1)
     axes[0].set(
-        title="Local uncertainty check",
-        xlabel="bootstrap standard error",
-        ylabel="predicted Fisher standard error",
+        title="Interior pseudoexperiments",
+        xlabel="empirical standard deviation (×10⁻³)",
+        ylabel="median local Fisher error (×10⁻³)",
     )
     axes[0].legend(fontsize=8)
 
     positions = np.arange(5)
-    width = 0.38
-    axes[1].bar(
-        positions - width / 2,
-        np.median(result.predicted_standard_errors[:, :5], axis=0),
-        width,
-        label="predicted Fisher",
-    )
-    axes[1].bar(
-        positions + width / 2,
-        np.median(result.bootstrap_standard_errors[:, :5], axis=0),
-        width,
-        label="bootstrap",
-    )
+    width = 0.36
+    for scenario_index, scenario_name in enumerate(markers):
+        scenario = cast(dict[str, object], scenarios[scenario_name])
+        classes = cast(dict[str, object], scenario["classes"])
+        boundary = [
+            float(cast(float, cast(dict[str, object], classes[name])["boundary_hit_fraction"]))
+            for name in CLASS_NAMES[:5]
+        ]
+        axes[1].bar(
+            positions + (scenario_index - 0.5) * width,
+            boundary,
+            width,
+            label=scenario_name.replace("_", " "),
+        )
     axes[1].set(
-        title="Median error by population",
-        ylabel="standard error",
+        title="Constrained estimates at the boundary",
+        ylabel="boundary-hit fraction",
         xticks=positions,
         xticklabels=CLASS_NAMES[:5],
+        ylim=(0, 1),
     )
     axes[1].tick_params(axis="x", rotation=25)
     axes[1].legend(fontsize=8)
-    uncertainty_n_bins = int(result.metrics["uncertainty"]["n_bins"])
-    figure.suptitle(f"Uncertainty from {uncertainty_n_bins} learned gates")
+    uncertainty_n_bins = int(cast(int, uncertainty["n_bins"]))
+    figure.suptitle(f"Reference-only uncertainty coverage from {uncertainty_n_bins} learned gates")
     return figure
 
 

@@ -23,12 +23,18 @@ FisherBin learns a finite hard partition of continuous or high-dimensional event
 
 ## What problem does it solve?
 
-Suppose every observation is a point in a large space, but the final analysis
-estimates only a few parameters. You may still need a small number of hard bins
-for a count likelihood, a template fit, storage, or an interpretable selection.
+Suppose every observation is a point in a continuous or multidimensional space,
+and the final analysis estimates an unknown parameter vector. You may still
+need a small number of hard bins for a count likelihood, a template fit,
+storage, or an interpretable selection.
 Ordinary geometric binning preserves proximity in the measured variables.
 FisherBin instead preserves similarity in how observations respond to the
 parameters.
+
+The observation and parameter dimensions are independent design choices. The
+common case of many measured coordinates and fewer parameters is not a method
+requirement: after score construction, FisherBin depends on the informative
+score rank, not on the number of original observables.
 
 That response is represented by the **score**, the gradient of the log
 likelihood. The Learn section introduces likelihood, score, Fisher information,

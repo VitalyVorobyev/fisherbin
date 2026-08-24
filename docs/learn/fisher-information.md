@@ -3,7 +3,7 @@
 ## Definition and intuition
 
 **Fisher information** measures the local curvature or distinguishability of a
-model around (	heta_0). For one event,
+model around \(\theta_0\). For one event,
 
 \[
 F(\theta_0)=
@@ -52,7 +52,7 @@ specified model. It does not measure:
 
 - bias from an approximate likelihood or learned ratio;
 - finite-sample boundary behavior;
-- robustness far from (	heta_0);
+- robustness far from \(\theta_0\);
 - systematic errors absent from the supplied score model.
 
 This distinction resolves an apparent paradox in the FlowCyt study. Exact

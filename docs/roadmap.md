@@ -24,13 +24,18 @@ model bias, and downstream estimation error.
 
 - Keep the FlowCyt patient split and acceptance rules frozen.
 - Select posterior calibration with nested reference-patient folds.
-- Evaluate the untouched test cohort once and retain negative results without
-  test-driven retuning.
+- Treat the previously evaluated test cohort as frozen evidence and retain
+  negative results without test-driven retuning.
 - Record candidate metrics, priors, temperature, normalization closure,
   convergence, runtime, and source provenance.
+- Distinguish supplied-score Poisson information from fixed-total downstream
+  identifiability, including template rank and explicit null-space witnesses.
+- Validate bias, finite-sample error, seed stability, and uncertainty coverage
+  with deterministic reference-only pseudoexperiments.
 
 **Gate:** machine-readable evidence reproduces every table and figure, and test
-labels are confined to final metrics.
+labels are confined to the frozen final metrics. Scientific closure and tuning
+receive reference rows only.
 
 ## Broader default evidence
 
@@ -72,3 +77,5 @@ chunked statistics, minibatches, or accelerator-specific paths.
 Nuisance-profiled and multi-reference objectives, occupancy constraints, power
 diagrams, alternative optimality criteria, signed weights, and additional
 numerical backends require separate mathematical contracts and evidence.
+Boundary-aware profile-likelihood intervals also remain application research;
+they should not become a FisherBin inference API without a second use case.

@@ -26,7 +26,7 @@ up to a common event-wise factor.
 score. A learned classifier ratio is not an oracle merely because it is used
 without binning.
 
-**Reference point.** Parameter value (	heta_0) at which scores and Fisher
+**Reference point.** Parameter value \(\theta_0\) at which scores and Fisher
 information are evaluated.
 
 **Score.** Gradient of log likelihood with respect to parameters. It describes
@@ -35,7 +35,7 @@ an event's local parameter sensitivity.
 **Simplex.** Set of nonnegative fractions that sum to one. A (K)-component
 mixture has (K-1) free directions.
 
-**Template.** Conditional bin probabilities (P(B_j\mid k)) for a model
+**Template.** Conditional bin probabilities \(P(B_j\mid k)\) for a model
 component (k).
 
 **Whitening.** Linear scaling of informative score directions so that their
