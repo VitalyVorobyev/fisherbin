@@ -2,20 +2,45 @@
 
 from __future__ import annotations
 
-from typing import Any
+from dataclasses import dataclass
 
 import jax.numpy as jnp
 import numpy as np
 
+from ._typing import ArrayLike
 
-def validate_scores_weights(
-    scores: Any,
-    weights: Any | None = None,
+
+@dataclass(frozen=True, slots=True)
+class _ValidatedSample:
+    """Validated score rows with their original and effective weight views."""
+
+    scores: jnp.ndarray
+    weights: jnp.ndarray
+    positive_weight_mask: jnp.ndarray
+
+    @property
+    def effective_scores(self) -> jnp.ndarray:
+        """Return score rows that contribute positive measure."""
+        return self.scores[self.positive_weight_mask]
+
+    @property
+    def effective_weights(self) -> jnp.ndarray:
+        """Return strictly positive weights aligned with effective scores."""
+        return self.weights[self.positive_weight_mask]
+
+    @property
+    def n_effective(self) -> int:
+        """Return the number of positive-weight observations."""
+        return int(self.effective_scores.shape[0])
+
+
+def validate_sample(
+    scores: ArrayLike,
+    weights: ArrayLike | None = None,
     *,
     expected_features: int | None = None,
-) -> tuple[jnp.ndarray, jnp.ndarray]:
-    """Validate and normalize score/weight inputs without normalizing weight scale."""
-
+) -> _ValidatedSample:
+    """Validate scores and weights without normalizing their measure scale."""
     score_array = jnp.asarray(scores)
     if score_array.ndim != 2:
         raise ValueError(f"scores must have shape [N, P], got {score_array.shape}")
@@ -50,12 +75,15 @@ def validate_scores_weights(
         raise ValueError("at least one weight must be positive")
 
     positive = weight_array > 0
-    return score_array[positive], weight_array[positive]
+    return _ValidatedSample(
+        scores=score_array,
+        weights=weight_array,
+        positive_weight_mask=positive,
+    )
 
 
 def validate_n_bins(n_bins: int, n_observations: int) -> None:
     """Validate a requested hard partition size."""
-
     if isinstance(n_bins, bool) or not isinstance(n_bins, int):
         raise TypeError("n_bins must be an integer")
     if n_bins < 1:

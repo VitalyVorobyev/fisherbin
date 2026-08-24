@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any
 
 import jax.numpy as jnp
 import numpy as np
 
 from ._json import json_ready
+from ._typing import ArrayLike, JsonValue
 
-ComponentFunction = Callable[[np.ndarray], Any]
+ComponentFunction = Callable[[np.ndarray], ArrayLike]
 
 
 def _names(
@@ -32,14 +32,34 @@ def _names(
     return resolved
 
 
-def scores_from_components(components: Any, coefficients: Any) -> jnp.ndarray:
-    """Return scores for ``lambda(x) = sum_k theta[k] * phi_k(x)``.
+def scores_from_components(components: ArrayLike, coefficients: ArrayLike) -> jnp.ndarray:
+    """Construct scores for a linear intensity model.
 
+    Parameters
+    ----------
+    components
+        Finite component matrix with shape ``[N, M]``.
+    coefficients
+        Finite reference coefficients with shape ``[M]``.
+
+    Returns
+    -------
+    jax.Array
+        Score matrix ``components / (components @ coefficients)[:, None]``
+        with shape ``[N, M]``.
+
+    Raises
+    ------
+    ValueError
+        If shapes are incompatible, values are non-finite, or the reference
+        intensity is not strictly positive at every row.
+
+    Notes
+    -----
     Components and coefficients may be signed and need not be normalized.
     They must be finite, and their resulting reference intensity must be
     strictly positive at every supplied integration point.
     """
-
     component_array = jnp.asarray(components)
     if component_array.ndim != 2 or min(component_array.shape) == 0:
         raise ValueError("components must have non-empty shape [N, M]")
@@ -65,25 +85,48 @@ def scores_from_components(components: Any, coefficients: Any) -> jnp.ndarray:
     return component_array / intensity[:, None]
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, init=False)
 class LinearProblem:
-    """An evaluated linear-intensity problem on an integration sample."""
+    """Represent an evaluated linear intensity on an integration sample.
 
-    components: Any
-    coefficients: Any
-    weights: Any | None = None
-    component_names: Sequence[str] | None = None
-    variables: Sequence[str] | None = None
+    Parameters
+    ----------
+    components
+        Component matrix with shape ``[N, M]``.
+    coefficients
+        Reference coefficient vector with shape ``[M]``.
+    weights
+        Optional finite, nonnegative integration weights with shape ``[N]``.
+    component_names
+        Optional unique component names. Stable generated names are used when
+        omitted.
+    variables
+        Optional physical-variable names retained as metadata.
+    """
 
-    def __post_init__(self) -> None:
-        component_array = jnp.asarray(self.components)
-        scores = scores_from_components(component_array, self.coefficients)
+    components: jnp.ndarray
+    coefficients: jnp.ndarray
+    weights: jnp.ndarray | None
+    component_names: tuple[str, ...]
+    variables: tuple[str, ...] | None
+
+    def __init__(
+        self,
+        components: ArrayLike,
+        coefficients: ArrayLike,
+        weights: ArrayLike | None = None,
+        component_names: Sequence[str] | None = None,
+        variables: Sequence[str] | None = None,
+    ) -> None:
+        """Validate arrays and freeze their normalized representations."""
+        component_array = jnp.asarray(components)
+        scores = scores_from_components(component_array, coefficients)
         component_array = component_array.astype(scores.dtype)
-        coefficient_array = jnp.asarray(self.coefficients, dtype=scores.dtype)
-        if self.weights is None:
+        coefficient_array = jnp.asarray(coefficients, dtype=scores.dtype)
+        if weights is None:
             weight_array = None
         else:
-            weight_array = jnp.asarray(self.weights, dtype=scores.dtype)
+            weight_array = jnp.asarray(weights, dtype=scores.dtype)
             if weight_array.shape != (component_array.shape[0],):
                 raise ValueError(
                     f"weights must have shape [{component_array.shape[0]}], "
@@ -96,14 +139,12 @@ class LinearProblem:
             if not bool(np.asarray(jnp.any(weight_array > 0))):
                 raise ValueError("at least one weight must be positive")
         component_names = _names(
-            self.component_names,
+            component_names,
             component_array.shape[1],
             prefix="component",
         )
         variables = (
-            None
-            if self.variables is None
-            else _names(self.variables, len(self.variables), prefix="variable")
+            None if variables is None else _names(variables, len(variables), prefix="variable")
         )
         object.__setattr__(self, "components", component_array)
         object.__setattr__(self, "coefficients", coefficient_array)
@@ -114,18 +155,15 @@ class LinearProblem:
     @property
     def density(self) -> jnp.ndarray:
         """Reference intensity evaluated on every integration point."""
-
         return self.components @ self.coefficients
 
     @property
     def scores(self) -> jnp.ndarray:
         """Inference score representation derived from the components."""
-
         return self.components / self.density[:, None]
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return the evaluated problem as JSON-compatible data."""
-
         return json_ready(
             {
                 "components": self.components,
@@ -139,12 +177,19 @@ class LinearProblem:
 
 @dataclass(frozen=True, slots=True, init=False)
 class LinearComponents:
-    """A vectorized linear-intensity model evaluated on physical variables.
+    """Define vectorized linear-intensity components on physical variables.
 
-    Named component mappings preserve insertion order and require an exactly
-    matching coefficient mapping. Sequence components use generated names.
-    Each component callable receives a NumPy array with shape ``[N, K]`` and
-    must return one finite value per row.
+    Parameters
+    ----------
+    components
+        Either an insertion-ordered mapping from names to callables or a
+        sequence of callables. Each callable receives ``X`` with shape
+        ``[N, K]`` and returns one finite value per row.
+    coefficients
+        A mapping with exactly the component keys or a coefficient sequence
+        aligned with sequence components.
+    variables
+        Optional unique physical-variable names used to validate ``K``.
     """
 
     components: tuple[ComponentFunction, ...]
@@ -159,6 +204,7 @@ class LinearComponents:
         *,
         variables: Sequence[str] | None = None,
     ) -> None:
+        """Validate and freeze component order, coefficients, and metadata."""
         if isinstance(components, Mapping):
             if not isinstance(coefficients, Mapping):
                 raise TypeError("named components require a coefficient mapping")
@@ -202,9 +248,19 @@ class LinearComponents:
         object.__setattr__(self, "component_names", resolved_names)
         object.__setattr__(self, "variables", resolved_variables)
 
-    def evaluate_components(self, X: Any) -> jnp.ndarray:
-        """Evaluate every component function on a physical-variable matrix."""
+    def evaluate_components(self, X: ArrayLike) -> jnp.ndarray:
+        """Evaluate every component function.
 
+        Parameters
+        ----------
+        X
+            Finite numeric physical-variable matrix with shape ``[N, K]``.
+
+        Returns
+        -------
+        jax.Array
+            Evaluated component matrix with shape ``[N, M]``.
+        """
         observations = np.asarray(X)
         if observations.ndim != 2 or min(observations.shape) == 0:
             raise ValueError("X must have non-empty shape [N, K]")
@@ -227,9 +283,21 @@ class LinearComponents:
             columns.append(values)
         return jnp.stack(columns, axis=1)
 
-    def evaluate(self, X: Any, *, weights: Any | None = None) -> LinearProblem:
-        """Evaluate the model and create a reusable component-level problem."""
+    def evaluate(self, X: ArrayLike, *, weights: ArrayLike | None = None) -> LinearProblem:
+        """Create a reusable evaluated problem.
 
+        Parameters
+        ----------
+        X
+            Finite numeric physical-variable matrix with shape ``[N, K]``.
+        weights
+            Optional finite, nonnegative integration weights with shape ``[N]``.
+
+        Returns
+        -------
+        LinearProblem
+            Validated components, coefficients, weights, and metadata.
+        """
         return LinearProblem(
             components=self.evaluate_components(X),
             coefficients=self.coefficients,
@@ -238,9 +306,8 @@ class LinearComponents:
             variables=self.variables,
         )
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return serializable model metadata; callables are intentionally omitted."""
-
         return json_ready(
             {
                 "coefficients": self.coefficients,

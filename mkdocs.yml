@@ -1,0 +1,106 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+site_name: FisherBin
+site_description: Information-preserving binning for statistical inference
+site_url: https://vitalyvorobyev.github.io/fisherbin/
+repo_url: https://github.com/VitalyVorobyev/fisherbin
+repo_name: VitalyVorobyev/fisherbin
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Vitaly Vorobyev
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.indexes
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - User workflow: user-workflow.md
+  - Examples:
+      - Synthetic evidence: gallery/index.md
+  - Concepts:
+      - Motivation: motivation.md
+      - Method: method.md
+      - System design: system-design.md
+  - API:
+      - Guide: api.md
+      - Reference:
+          - Overview: reference/index.md
+          - Fitting: reference/fitting.md
+          - Linear models: reference/models.md
+          - Configuration: reference/configuration.md
+          - Results: reference/results.md
+          - Information: reference/information.md
+          - Transforms: reference/transforms.md
+          - Visualization: reference/visualization.md
+  - Development: development.md
+  - Roadmap: roadmap.md
+  - Architecture decisions:
+      - Overview: adr/index.md
+      - Scores are the core contract: adr/0001-score-contract.md
+      - Python/NumPy prototype (superseded): adr/0002-python-numpy-first.md
+      - Keep optional concerns outside the core: adr/0003-small-core.md
+      - JAX-native core: adr/0004-jax-first.md
+      - Explicit representation layers: adr/0005-explicit-representations.md
+      - Documentation and Pages deployment: adr/0006-documentation-site.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            docstring_section_style: list
+            inherited_members: true
+            members_order: source
+            merge_init_into_class: true
+            separate_signature: true
+            show_root_full_path: false
+            show_root_heading: true
+            show_signature_annotations: true
+            show_source: false
+            signature_crossrefs: true
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js

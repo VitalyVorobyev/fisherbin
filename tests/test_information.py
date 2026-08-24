@@ -65,6 +65,21 @@ def test_weight_splitting_and_global_scaling_preserve_normalized_report() -> Non
     np.testing.assert_allclose(report.retained_matrix, scaled.retained_matrix, atol=1e-6)
 
 
+def test_report_reuses_hard_statistics_and_ignores_zero_weight_rows() -> None:
+    scores = jnp.asarray([[-1.0], [100.0], [0.5], [2.0]])
+    weights = jnp.asarray([1.0, 0.0, 2.0, 3.0])
+    # An out-of-range label is harmless for a row excluded from the measure.
+    labels = jnp.asarray([0, 99, 1, 1])
+
+    report = fisherbin.information_report(scores, labels, weights, n_bins=2)
+    direct = fisherbin.binned_fisher_information(scores, labels, weights, n_bins=2)
+
+    np.testing.assert_allclose(report.fisher_binned, direct)
+    np.testing.assert_allclose(report.bin_weights, [1.0, 5.0])
+    np.testing.assert_array_equal(report.bin_counts, [1, 2])
+    np.testing.assert_allclose(report.bin_effective_sample_sizes, [1.0, 25.0 / 13.0])
+
+
 def test_event_order_bin_relabeling_and_partition_limits() -> None:
     scores = jnp.asarray([[-2.0, 0.5], [-0.5, 1.0], [1.0, -0.2], [2.0, 0.7]])
     weights = jnp.asarray([1.0, 2.0, 0.5, 3.0])

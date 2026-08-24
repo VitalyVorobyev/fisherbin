@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -109,3 +111,49 @@ def test_whitened_partition_is_parameter_reparameterization_invariant() -> None:
 def test_too_many_distinct_bins_fails() -> None:
     with pytest.raises(ValueError, match="distinct"):
         fisherbin.fit_scores(jnp.asarray([[0.0], [0.0], [1.0]]), n_bins=3)
+
+
+@pytest.mark.parametrize(
+    ("factory", "message"),
+    [
+        (lambda: fisherbin.KMeansConfig(n_init=0), "n_init"),
+        (lambda: fisherbin.KMeansConfig(seed=-1), "seed"),
+        (lambda: fisherbin.KMeansConfig(whiten=1), "whiten"),
+        (lambda: fisherbin.KMeansConfig(rank_rtol=True), "rank_rtol"),
+        (lambda: fisherbin.KMeansConfig(rank_rtol=1.0), "rank_rtol"),
+        (lambda: fisherbin.SoftVoronoiConfig(learning_rate=np.nan), "learning_rate"),
+        (lambda: fisherbin.SoftVoronoiConfig(temperature_end_ratio=1.1), "temperature"),
+    ],
+)
+def test_configs_fail_during_construction(
+    factory: Callable[[], fisherbin.KMeansConfig | fisherbin.SoftVoronoiConfig],
+    message: str,
+) -> None:
+    with pytest.raises((TypeError, ValueError), match=message):
+        factory()
+
+
+def test_config_method_is_derived_and_serialized() -> None:
+    config = fisherbin.KMeansConfig()
+    assert config.method == "kmeans"
+    assert config.to_dict()["method"] == "kmeans"
+    with pytest.raises(TypeError, match="method"):
+        fisherbin.KMeansConfig(method="kmeans")
+
+
+def test_evaluate_reuses_fitted_rank_tolerance() -> None:
+    scores = jnp.asarray(
+        [
+            [-1.0, 0.0],
+            [1.0, 0.0],
+            [0.0, -0.01],
+            [0.0, 0.01],
+        ]
+    )
+    result = fisherbin.fit_scores(
+        scores,
+        n_bins=2,
+        config=fisherbin.KMeansConfig(rank_rtol=1e-3, n_init=2),
+    )
+    assert result.transform.rank == 1
+    assert result.evaluate(scores).effective_rank == 1

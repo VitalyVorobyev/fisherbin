@@ -2,25 +2,41 @@
 
 from __future__ import annotations
 
-from typing import Any
+from importlib import import_module
+from typing import TYPE_CHECKING
 
 import numpy as np
 
+from ._typing import ArrayLike
 from .result import FitResult, InformationReport, OptimizationTrace
 
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
-def _pyplot():
+
+def _require_matplotlib() -> None:
     try:
-        import matplotlib.pyplot as plt
+        import_module("matplotlib.pyplot")
     except ImportError as error:  # pragma: no cover - exercised without the optional extra
-        raise ImportError("visualization requires `pip install fisherbin[viz]`") from error
-    return plt
+        raise ImportError("visualization requires the `viz` optional dependency") from error
 
 
-def plot_optimization(trace: OptimizationTrace):
-    """Plot objective, hard retention, occupancies, and center motion."""
+def plot_optimization(trace: OptimizationTrace) -> Figure:
+    """Plot objective, hard retention, occupancies, and center motion.
 
-    plt = _pyplot()
+    Parameters
+    ----------
+    trace
+        Aggregate optimization history from a fitted result.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Four-panel optimization summary.
+    """
+    _require_matplotlib()
+    import matplotlib.pyplot as plt
+
     steps = np.asarray(trace.steps)
     centers = np.asarray(trace.centers)
     figure, axes = plt.subplots(2, 2, figsize=(11, 8), constrained_layout=True)
@@ -59,10 +75,29 @@ def plot_optimization(trace: OptimizationTrace):
     return figure
 
 
-def plot_partition(result: FitResult, scores: Any, weights: Any | None = None):
-    """Plot assigned observations in the fitted informative coordinate system."""
+def plot_partition(
+    result: FitResult, scores: ArrayLike, weights: ArrayLike | None = None
+) -> Figure:
+    """Plot observations in the fitted informative coordinate system.
 
-    plt = _pyplot()
+    Parameters
+    ----------
+    result
+        Fitted score-space partition.
+    scores
+        Raw score matrix compatible with ``result``.
+    weights
+        Optional weights used only to scale marker sizes.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        One- or two-dimensional partition view. Ranks above two are explicitly
+        shown as a leading-coordinate projection.
+    """
+    _require_matplotlib()
+    import matplotlib.pyplot as plt
+
     coordinates = np.asarray(result.transform.apply(scores))
     labels = np.asarray(result.predict(scores))
     point_sizes = None
@@ -102,12 +137,25 @@ def plot_partition(result: FitResult, scores: Any, weights: Any | None = None):
     return figure
 
 
-def plot_information(report: InformationReport):
-    """Plot normalized retained information, its spectrum, and bin occupancy."""
+def plot_information(report: InformationReport) -> Figure:
+    """Plot retained information, its spectrum, and bin occupancy.
 
-    plt = _pyplot()
+    Parameters
+    ----------
+    report
+        Information report for one fixed partition and sample.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Matrix, eigenvalue, and weighted-occupancy panels. The matrix uses a
+        signed scale so negative off-diagonal values remain visible.
+    """
+    _require_matplotlib()
+    import matplotlib.pyplot as plt
+
     figure, axes = plt.subplots(1, 3, figsize=(12, 3.7), constrained_layout=True)
-    image = axes[0].imshow(np.asarray(report.retained_matrix), vmin=0, vmax=1, cmap="viridis")
+    image = axes[0].imshow(np.asarray(report.retained_matrix), vmin=-1, vmax=1, cmap="coolwarm")
     axes[0].set_title("Normalized retained matrix")
     figure.colorbar(image, ax=axes[0], fraction=0.046)
     eigenvalues = np.asarray(report.retained_eigenvalues)
@@ -120,10 +168,26 @@ def plot_information(report: InformationReport):
     return figure
 
 
-def plot_summary(result: FitResult, scores: Any, weights: Any | None = None):
-    """Create a compact final-partition and optimization summary."""
+def plot_summary(result: FitResult, scores: ArrayLike, weights: ArrayLike | None = None) -> Figure:
+    """Create a compact final-partition and optimization summary.
 
-    plt = _pyplot()
+    Parameters
+    ----------
+    result
+        Fitted score-space partition.
+    scores
+        Raw score matrix compatible with ``result``.
+    weights
+        Optional evaluation weights.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Partition, retained matrix, trace, and occupancy panels.
+    """
+    _require_matplotlib()
+    import matplotlib.pyplot as plt
+
     coordinates = np.asarray(result.transform.apply(scores))
     labels = np.asarray(result.predict(scores))
     report = result.evaluate(scores, weights)
@@ -137,7 +201,7 @@ def plot_summary(result: FitResult, scores: Any, weights: Any | None = None):
         )
         axes[0, 0].set(xlabel="informative coordinate 1", ylabel="informative coordinate 2")
     axes[0, 0].set_title("Final hard partition (2D projection when needed)")
-    image = axes[0, 1].imshow(np.asarray(report.retained_matrix), vmin=0, vmax=1, cmap="viridis")
+    image = axes[0, 1].imshow(np.asarray(report.retained_matrix), vmin=-1, vmax=1, cmap="coolwarm")
     axes[0, 1].set_title("Normalized retained information")
     figure.colorbar(image, ax=axes[0, 1], fraction=0.046)
     axes[1, 0].plot(

@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 import jax.numpy as jnp
 import numpy as np
 
 from ._json import json_ready
+from ._typing import ArrayLike, JsonValue
 
 
 def _default_rank_rtol(dtype: jnp.dtype) -> float:
@@ -21,6 +21,19 @@ class FisherTransform:
 
     Scores are never mean-centered. ``matrix`` maps raw score vectors from
     shape ``[..., P]`` to optimization coordinates ``[..., R]``.
+
+    Attributes
+    ----------
+    matrix
+        Projection or whitening matrix with shape ``[P, R]``.
+    eigenvectors, eigenvalues
+        Complete eigendecomposition of the symmetrized input Fisher matrix.
+    retained_eigenvalues
+        Eigenvalues above the numerical rank threshold.
+    rank_rtol, threshold
+        Relative and absolute rank thresholds.
+    whiten
+        Whether retained directions are scaled by inverse square root eigenvalues.
     """
 
     matrix: jnp.ndarray
@@ -33,19 +46,21 @@ class FisherTransform:
 
     @property
     def input_dim(self) -> int:
+        """Return the raw score dimension ``P``."""
         return int(self.matrix.shape[0])
 
     @property
     def rank(self) -> int:
+        """Return the retained informative rank ``R``."""
         return int(self.matrix.shape[1])
 
     @property
     def dropped_directions(self) -> int:
+        """Return the number of projected-out score directions."""
         return self.input_dim - self.rank
 
-    def apply(self, scores: Any) -> jnp.ndarray:
+    def apply(self, scores: ArrayLike) -> jnp.ndarray:
         """Map raw scores into the fitted informative coordinate system."""
-
         array = jnp.asarray(scores, dtype=self.matrix.dtype)
         if array.ndim != 2 or array.shape[1] != self.input_dim:
             raise ValueError(f"scores must have shape [N, {self.input_dim}], got {array.shape}")
@@ -53,9 +68,8 @@ class FisherTransform:
             raise ValueError("scores must be finite")
         return array @ self.matrix
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible representation."""
-
         return json_ready(
             {
                 "matrix": self.matrix,
@@ -72,13 +86,29 @@ class FisherTransform:
 
 
 def fisher_transform(
-    fisher: Any,
+    fisher: ArrayLike,
     *,
     whiten: bool = True,
     rank_rtol: float | None = None,
 ) -> FisherTransform:
-    """Construct an informative-subspace transform from a Fisher matrix."""
+    """Construct an informative-subspace transform from a Fisher matrix.
 
+    Parameters
+    ----------
+    fisher
+        Finite non-empty square Fisher matrix.
+    whiten
+        Scale retained eigenvectors by inverse square root eigenvalues.
+    rank_rtol
+        Relative threshold applied to the largest eigenvalue. A dtype-aware
+        default is used when omitted.
+
+    Returns
+    -------
+    FisherTransform
+        Projection metadata and the matrix mapping scores into optimization
+        coordinates.
+    """
     matrix = jnp.asarray(fisher)
     if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1] or matrix.shape[0] == 0:
         raise ValueError("fisher must be a non-empty square matrix")
