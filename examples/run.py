@@ -8,6 +8,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
 
 import fisherbin
 from examples.synthetic_problems import PROBLEMS, SyntheticDataset, SyntheticProblem
@@ -114,7 +115,7 @@ def run_experiment(
     return ExperimentResult(problem, kmeans, soft, metrics)
 
 
-def make_example_figure(experiment: ExperimentResult):
+def make_example_figure(experiment: ExperimentResult) -> Figure:
     """Render the original-domain result, optimization, and final diagnostics."""
 
     problem = experiment.problem

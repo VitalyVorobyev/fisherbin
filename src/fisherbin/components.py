@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any
 
 import jax.numpy as jnp
 import numpy as np
 
 from ._json import json_ready
+from ._typing import ArrayLike, JsonValue
 
-ComponentFunction = Callable[[np.ndarray], Any]
+ComponentFunction = Callable[[np.ndarray], ArrayLike]
 
 
 def _names(
@@ -32,7 +32,7 @@ def _names(
     return resolved
 
 
-def scores_from_components(components: Any, coefficients: Any) -> jnp.ndarray:
+def scores_from_components(components: ArrayLike, coefficients: ArrayLike) -> jnp.ndarray:
     """Construct scores for a linear intensity model.
 
     Parameters
@@ -85,7 +85,7 @@ def scores_from_components(components: Any, coefficients: Any) -> jnp.ndarray:
     return component_array / intensity[:, None]
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, init=False)
 class LinearProblem:
     """Represent an evaluated linear intensity on an integration sample.
 
@@ -104,22 +104,29 @@ class LinearProblem:
         Optional physical-variable names retained as metadata.
     """
 
-    components: Any
-    coefficients: Any
-    weights: Any | None = None
-    component_names: Sequence[str] | None = None
-    variables: Sequence[str] | None = None
+    components: jnp.ndarray
+    coefficients: jnp.ndarray
+    weights: jnp.ndarray | None
+    component_names: tuple[str, ...]
+    variables: tuple[str, ...] | None
 
-    def __post_init__(self) -> None:
+    def __init__(
+        self,
+        components: ArrayLike,
+        coefficients: ArrayLike,
+        weights: ArrayLike | None = None,
+        component_names: Sequence[str] | None = None,
+        variables: Sequence[str] | None = None,
+    ) -> None:
         """Validate arrays and freeze their normalized representations."""
-        component_array = jnp.asarray(self.components)
-        scores = scores_from_components(component_array, self.coefficients)
+        component_array = jnp.asarray(components)
+        scores = scores_from_components(component_array, coefficients)
         component_array = component_array.astype(scores.dtype)
-        coefficient_array = jnp.asarray(self.coefficients, dtype=scores.dtype)
-        if self.weights is None:
+        coefficient_array = jnp.asarray(coefficients, dtype=scores.dtype)
+        if weights is None:
             weight_array = None
         else:
-            weight_array = jnp.asarray(self.weights, dtype=scores.dtype)
+            weight_array = jnp.asarray(weights, dtype=scores.dtype)
             if weight_array.shape != (component_array.shape[0],):
                 raise ValueError(
                     f"weights must have shape [{component_array.shape[0]}], "
@@ -132,14 +139,12 @@ class LinearProblem:
             if not bool(np.asarray(jnp.any(weight_array > 0))):
                 raise ValueError("at least one weight must be positive")
         component_names = _names(
-            self.component_names,
+            component_names,
             component_array.shape[1],
             prefix="component",
         )
         variables = (
-            None
-            if self.variables is None
-            else _names(self.variables, len(self.variables), prefix="variable")
+            None if variables is None else _names(variables, len(variables), prefix="variable")
         )
         object.__setattr__(self, "components", component_array)
         object.__setattr__(self, "coefficients", coefficient_array)
@@ -157,7 +162,7 @@ class LinearProblem:
         """Inference score representation derived from the components."""
         return self.components / self.density[:, None]
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return the evaluated problem as JSON-compatible data."""
         return json_ready(
             {
@@ -243,7 +248,7 @@ class LinearComponents:
         object.__setattr__(self, "component_names", resolved_names)
         object.__setattr__(self, "variables", resolved_variables)
 
-    def evaluate_components(self, X: Any) -> jnp.ndarray:
+    def evaluate_components(self, X: ArrayLike) -> jnp.ndarray:
         """Evaluate every component function.
 
         Parameters
@@ -278,7 +283,7 @@ class LinearComponents:
             columns.append(values)
         return jnp.stack(columns, axis=1)
 
-    def evaluate(self, X: Any, *, weights: Any | None = None) -> LinearProblem:
+    def evaluate(self, X: ArrayLike, *, weights: ArrayLike | None = None) -> LinearProblem:
         """Create a reusable evaluated problem.
 
         Parameters
@@ -301,7 +306,7 @@ class LinearComponents:
             variables=self.variables,
         )
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return serializable model metadata; callables are intentionally omitted."""
         return json_ready(
             {

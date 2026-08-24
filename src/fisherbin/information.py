@@ -3,17 +3,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 import jax.numpy as jnp
 import numpy as np
 
+from ._typing import ArrayLike
 from ._validation import _ValidatedSample, validate_sample
 from .result import InformationReport
 from .transforms import fisher_transform
 
 
-def fisher_information(scores: Any, weights: Any | None = None) -> jnp.ndarray:
+def fisher_information(scores: ArrayLike, weights: ArrayLike | None = None) -> jnp.ndarray:
     """Estimate unbinned Fisher information.
 
     Parameters
@@ -43,7 +43,7 @@ def _unbinned_fisher(sample: _ValidatedSample) -> jnp.ndarray:
 
 def _validate_hard_assignments(
     sample: _ValidatedSample,
-    assignments: Any,
+    assignments: ArrayLike,
     n_bins: int | None,
 ) -> tuple[jnp.ndarray, int]:
     labels = jnp.asarray(assignments)
@@ -111,9 +111,9 @@ def _hard_bin_statistics(
 
 
 def binned_fisher_information(
-    scores: Any,
-    assignments: Any,
-    weights: Any | None = None,
+    scores: ArrayLike,
+    assignments: ArrayLike,
+    weights: ArrayLike | None = None,
     *,
     n_bins: int | None = None,
 ) -> jnp.ndarray:
@@ -143,9 +143,9 @@ def binned_fisher_information(
 
 
 def fractional_fisher_information(
-    scores: Any,
-    responsibilities: Any,
-    weights: Any | None = None,
+    scores: ArrayLike,
+    responsibilities: ArrayLike,
+    weights: ArrayLike | None = None,
 ) -> jnp.ndarray:
     """Estimate Fisher information retained by fractional assignments.
 
@@ -221,9 +221,9 @@ def _report_from_fishers(
 
 
 def information_report(
-    scores: Any,
-    assignments: Any,
-    weights: Any | None = None,
+    scores: ArrayLike,
+    assignments: ArrayLike,
+    weights: ArrayLike | None = None,
     *,
     n_bins: int | None = None,
     rank_rtol: float | None = None,

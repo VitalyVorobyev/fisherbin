@@ -318,10 +318,10 @@ def soft_voronoi(
         loss, gradients = jax.value_and_grad(loss_fn)(current_centers, temperature)
         updates, optimizer_state = optimizer.update(gradients, optimizer_state, current_centers)
         return (
-            optax.apply_updates(current_centers, updates),
+            jnp.asarray(optax.apply_updates(current_centers, updates)),
             optimizer_state,
-            loss,
-            optax.tree.norm(gradients),
+            jnp.asarray(loss),
+            jnp.asarray(optax.tree.norm(gradients)),
         )
 
     history = _SoftHistory(points, weights, objective_scores, n_bins)

@@ -15,6 +15,7 @@ The core dependencies are JAX and Optax. Matplotlib, notebook tooling, and the d
 ```bash
 uv run ruff check .
 uv run ruff format --check .
+uv run ty check src
 JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
 uv build
@@ -22,6 +23,8 @@ uv run mkdocs build --strict
 ```
 
 X64 is an explicit application and CI choice. The package never changes global JAX configuration during import.
+
+Ruff enforces complete function annotations and bans importing `typing.Any`. `ty` then checks those annotations across `src/`; public conversion boundaries use `numpy.typing.ArrayLike` rather than leaking JAX-specific types.
 
 ## Preview documentation
 

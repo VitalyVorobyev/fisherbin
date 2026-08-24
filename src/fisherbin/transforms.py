@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 import jax.numpy as jnp
 import numpy as np
 
 from ._json import json_ready
+from ._typing import ArrayLike, JsonValue
 
 
 def _default_rank_rtol(dtype: jnp.dtype) -> float:
@@ -59,7 +59,7 @@ class FisherTransform:
         """Return the number of projected-out score directions."""
         return self.input_dim - self.rank
 
-    def apply(self, scores: Any) -> jnp.ndarray:
+    def apply(self, scores: ArrayLike) -> jnp.ndarray:
         """Map raw scores into the fitted informative coordinate system."""
         array = jnp.asarray(scores, dtype=self.matrix.dtype)
         if array.ndim != 2 or array.shape[1] != self.input_dim:
@@ -68,7 +68,7 @@ class FisherTransform:
             raise ValueError("scores must be finite")
         return array @ self.matrix
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible representation."""
         return json_ready(
             {
@@ -86,7 +86,7 @@ class FisherTransform:
 
 
 def fisher_transform(
-    fisher: Any,
+    fisher: ArrayLike,
     *,
     whiten: bool = True,
     rank_rtol: float | None = None,

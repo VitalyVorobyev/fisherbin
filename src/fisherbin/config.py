@@ -7,6 +7,9 @@ from typing import Literal
 
 import numpy as np
 
+from ._json import json_ready
+from ._typing import JsonValue
+
 
 def _validate_bool(name: str, value: object) -> None:
     if not isinstance(value, bool):
@@ -95,9 +98,9 @@ class KMeansConfig:
         )
         _validate_integer("max_iter", self.max_iter, minimum=1)
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible configuration mapping."""
-        return asdict(self)
+        return json_ready(asdict(self))
 
 
 @dataclass(frozen=True, slots=True)
@@ -162,9 +165,9 @@ class SoftVoronoiConfig:
         if self.temperature_end_ratio > 1:
             raise ValueError("temperature_end_ratio must be at most one")
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible configuration mapping."""
-        return asdict(self)
+        return json_ready(asdict(self))
 
 
 FitConfig = KMeansConfig | SoftVoronoiConfig

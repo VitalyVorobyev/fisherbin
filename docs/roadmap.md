@@ -11,7 +11,7 @@ The v0.1 scientific core is feature-complete:
 - optional Matplotlib views plus three reproducible scripts, notebooks, gallery figures, and baseline comparisons;
 - X64 invariant tests, float32 smoke coverage, notebook execution, and a moderate-scale memory benchmark.
 
-The current hardening milestone adds maintainable internals, Python 3.12 support, MIT licensing, generated API documentation, package-build checks, and automatic GitHub Pages deployment.
+The current hardening milestone adds maintainable internals, Python 3.12 support, MIT licensing, generated API documentation, static typing gates, package-build checks, and automatic GitHub Pages deployment.
 
 **Exit gate:** every documented `uv` command passes from a locked environment, pull requests build documentation strictly, the Pages workflow deploys from `main`, and the package is ready for an explicitly authorized v0.1 tag.
 

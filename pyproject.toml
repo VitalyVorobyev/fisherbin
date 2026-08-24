@@ -52,6 +52,7 @@ dev = [
     "nbformat>=5.10",
     "pytest>=8.3",
     "ruff>=0.11",
+    "ty>=0.0.70,<0.1",
 ]
 
 [build-system]
@@ -69,10 +70,13 @@ target-version = "py312"
 
 [tool.ruff.lint]
 ignore = ["D105", "D107"]
-select = ["E", "F", "I", "UP", "B", "D"]
+select = ["E", "F", "I", "UP", "B", "D", "ANN", "TID"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"typing.Any" = { msg = "Use an explicit boundary or domain type instead." }
 
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = ["B018"]

@@ -2,22 +2,23 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from importlib import import_module
+from typing import TYPE_CHECKING
 
 import numpy as np
 
+from ._typing import ArrayLike
 from .result import FitResult, InformationReport, OptimizationTrace
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-def _pyplot() -> Any:
+def _require_matplotlib() -> None:
     try:
-        import matplotlib.pyplot as plt
+        import_module("matplotlib.pyplot")
     except ImportError as error:  # pragma: no cover - exercised without the optional extra
-        raise ImportError("visualization requires `pip install fisherbin[viz]`") from error
-    return plt
+        raise ImportError("visualization requires the `viz` optional dependency") from error
 
 
 def plot_optimization(trace: OptimizationTrace) -> Figure:
@@ -33,7 +34,9 @@ def plot_optimization(trace: OptimizationTrace) -> Figure:
     matplotlib.figure.Figure
         Four-panel optimization summary.
     """
-    plt = _pyplot()
+    _require_matplotlib()
+    import matplotlib.pyplot as plt
+
     steps = np.asarray(trace.steps)
     centers = np.asarray(trace.centers)
     figure, axes = plt.subplots(2, 2, figsize=(11, 8), constrained_layout=True)
@@ -72,7 +75,9 @@ def plot_optimization(trace: OptimizationTrace) -> Figure:
     return figure
 
 
-def plot_partition(result: FitResult, scores: Any, weights: Any | None = None) -> Figure:
+def plot_partition(
+    result: FitResult, scores: ArrayLike, weights: ArrayLike | None = None
+) -> Figure:
     """Plot observations in the fitted informative coordinate system.
 
     Parameters
@@ -90,7 +95,9 @@ def plot_partition(result: FitResult, scores: Any, weights: Any | None = None) -
         One- or two-dimensional partition view. Ranks above two are explicitly
         shown as a leading-coordinate projection.
     """
-    plt = _pyplot()
+    _require_matplotlib()
+    import matplotlib.pyplot as plt
+
     coordinates = np.asarray(result.transform.apply(scores))
     labels = np.asarray(result.predict(scores))
     point_sizes = None
@@ -144,7 +151,9 @@ def plot_information(report: InformationReport) -> Figure:
         Matrix, eigenvalue, and weighted-occupancy panels. The matrix uses a
         signed scale so negative off-diagonal values remain visible.
     """
-    plt = _pyplot()
+    _require_matplotlib()
+    import matplotlib.pyplot as plt
+
     figure, axes = plt.subplots(1, 3, figsize=(12, 3.7), constrained_layout=True)
     image = axes[0].imshow(np.asarray(report.retained_matrix), vmin=-1, vmax=1, cmap="coolwarm")
     axes[0].set_title("Normalized retained matrix")
@@ -159,7 +168,7 @@ def plot_information(report: InformationReport) -> Figure:
     return figure
 
 
-def plot_summary(result: FitResult, scores: Any, weights: Any | None = None) -> Figure:
+def plot_summary(result: FitResult, scores: ArrayLike, weights: ArrayLike | None = None) -> Figure:
     """Create a compact final-partition and optimization summary.
 
     Parameters
@@ -176,7 +185,9 @@ def plot_summary(result: FitResult, scores: Any, weights: Any | None = None) -> 
     matplotlib.figure.Figure
         Partition, retained matrix, trace, and occupancy panels.
     """
-    plt = _pyplot()
+    _require_matplotlib()
+    import matplotlib.pyplot as plt
+
     coordinates = np.asarray(result.transform.apply(scores))
     labels = np.asarray(result.predict(scores))
     report = result.evaluate(scores, weights)

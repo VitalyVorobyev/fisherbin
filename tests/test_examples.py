@@ -5,7 +5,12 @@ import pytest
 
 import fisherbin
 from examples.run import run_experiment
-from examples.synthetic_problems import gaussian_location, spatial_sources, spectral_templates
+from examples.synthetic_problems import (
+    SyntheticProblem,
+    gaussian_location,
+    spatial_sources,
+    spectral_templates,
+)
 
 
 @pytest.mark.parametrize(
@@ -17,7 +22,7 @@ from examples.synthetic_problems import gaussian_location, spatial_sources, spec
     ],
     ids=lambda problem: problem.name,
 )
-def test_end_to_end_synthetic_evidence(problem) -> None:
+def test_end_to_end_synthetic_evidence(problem: SyntheticProblem) -> None:
     experiment = run_experiment(problem, soft_steps=80, n_random=10)
     metrics = experiment.metrics
     assert metrics["soft_test_retention"] >= metrics["kmeans_test_retention"] - 0.01

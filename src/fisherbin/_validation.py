@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 import jax.numpy as jnp
 import numpy as np
+
+from ._typing import ArrayLike
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,8 +35,8 @@ class _ValidatedSample:
 
 
 def validate_sample(
-    scores: Any,
-    weights: Any | None = None,
+    scores: ArrayLike,
+    weights: ArrayLike | None = None,
     *,
     expected_features: int | None = None,
 ) -> _ValidatedSample:

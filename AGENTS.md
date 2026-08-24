@@ -42,6 +42,7 @@ Use JAX for numerical kernels and Optax for gradient optimization. Do not add Py
 uv sync --all-extras --all-groups --locked
 uv run ruff check .
 uv run ruff format --check .
+uv run ty check src
 JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
 uv build
@@ -55,6 +56,7 @@ Use `uv add`, `uv remove`, and `uv lock` for dependency changes. Run commands th
 - Make small, cohesive changes and reuse existing abstractions before adding new ones.
 - Preserve unrelated work. Avoid destructive Git commands and hidden behavior changes.
 - Use type annotations, meaningful names, and NumPy-style docstrings for every public object. Comments should explain why, especially for numerical choices, rather than narrate code.
+- Use explicit array-like and recursive JSON contracts at conversion boundaries. `typing.Any` is prohibited in `src/`; Ruff `ANN401`, a banned-import rule, and `ty` enforce this.
 - Add deterministic tests for changed behavior and numerical edge cases. Use fixed seeds and measurable assertions; avoid brittle pixel snapshots.
 - Validate in proportion to risk: targeted tests while iterating, then the full commands above before handoff.
 - Update user guides when workflows change. Run MkDocs in strict mode so broken navigation, links, or reference collection fail CI.

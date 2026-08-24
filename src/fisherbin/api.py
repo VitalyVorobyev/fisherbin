@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
+from collections.abc import Sequence
 
 import jax.numpy as jnp
 import numpy as np
 
+from ._typing import ArrayLike
 from ._validation import validate_n_bins, validate_sample
 from .components import LinearComponents, LinearProblem
 from .config import FitConfig, KMeansConfig, SoftVoronoiConfig
@@ -18,7 +19,7 @@ from .transforms import fisher_transform
 
 def _hard_retention_history(
     scores: jnp.ndarray,
-    weights: Any | None,
+    weights: ArrayLike | None,
     transformed_scores: jnp.ndarray,
     run: QuantizerRun,
     *,
@@ -35,13 +36,13 @@ def _hard_retention_history(
 
 
 def fit_scores(
-    scores: Any,
+    scores: ArrayLike,
     *,
-    weights: Any | None = None,
+    weights: ArrayLike | None = None,
     n_bins: int,
     config: FitConfig | None = None,
-    validation_scores: Any | None = None,
-    validation_weights: Any | None = None,
+    validation_scores: ArrayLike | None = None,
+    validation_weights: ArrayLike | None = None,
 ) -> FitResult:
     """Fit an information-preserving hard partition in score space.
 
@@ -193,10 +194,10 @@ def fit_scores(
 
 
 def _coerce_problem(
-    components: Any | LinearProblem,
-    coefficients: Any | None,
-    weights: Any | None,
-    component_names: Any | None,
+    components: ArrayLike | LinearProblem,
+    coefficients: ArrayLike | None,
+    weights: ArrayLike | None,
+    component_names: Sequence[str] | None,
 ) -> LinearProblem:
     if isinstance(components, LinearProblem):
         if coefficients is not None or weights is not None or component_names is not None:
@@ -216,15 +217,15 @@ def _coerce_problem(
 
 
 def fit_components(
-    components: Any | LinearProblem,
+    components: ArrayLike | LinearProblem,
     *,
-    coefficients: Any | None = None,
-    weights: Any | None = None,
-    component_names: Any | None = None,
+    coefficients: ArrayLike | None = None,
+    weights: ArrayLike | None = None,
+    component_names: Sequence[str] | None = None,
     n_bins: int,
     config: FitConfig | None = None,
-    validation_components: Any | LinearProblem | None = None,
-    validation_weights: Any | None = None,
+    validation_components: ArrayLike | LinearProblem | None = None,
+    validation_weights: ArrayLike | None = None,
 ) -> ComponentFitResult:
     """Fit from evaluated linear components or a `LinearProblem`.
 
@@ -298,14 +299,14 @@ def fit_components(
 
 
 def fit(
-    X: Any,
+    X: ArrayLike,
     *,
     model: LinearComponents,
-    weights: Any | None = None,
+    weights: ArrayLike | None = None,
     n_bins: int,
     config: FitConfig | None = None,
-    validation_X: Any | None = None,
-    validation_weights: Any | None = None,
+    validation_X: ArrayLike | None = None,
+    validation_weights: ArrayLike | None = None,
 ) -> ModelFitResult:
     """Fit from physical variables through a linear component model.
 

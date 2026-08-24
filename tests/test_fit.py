@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -123,7 +125,10 @@ def test_too_many_distinct_bins_fails() -> None:
         (lambda: fisherbin.SoftVoronoiConfig(temperature_end_ratio=1.1), "temperature"),
     ],
 )
-def test_configs_fail_during_construction(factory, message: str) -> None:
+def test_configs_fail_during_construction(
+    factory: Callable[[], fisherbin.KMeansConfig | fisherbin.SoftVoronoiConfig],
+    message: str,
+) -> None:
     with pytest.raises((TypeError, ValueError), match=message):
         factory()
 

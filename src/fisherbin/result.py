@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING
 
 import jax.numpy as jnp
 
 from ._json import json_ready
+from ._typing import ArrayLike, JsonValue
 from .config import FitConfig
 from .transforms import FisherTransform
 
@@ -52,9 +53,9 @@ class InformationReport:
     rank_threshold: float
     psd_residual_min_eigenvalue: float
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible representation."""
-        return json_ready(self)
+        return json_ready(asdict(self))
 
     def __str__(self) -> str:
         """Format the headline retention diagnostics for interactive use."""
@@ -88,9 +89,9 @@ class OptimizationTrace:
     temperatures: jnp.ndarray | None = None
     gradient_norms: jnp.ndarray | None = None
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible representation."""
-        return json_ready(self)
+        return json_ready(asdict(self))
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,13 +115,13 @@ class FitResult:
         """Return the number of fitted hard bins."""
         return int(self.centers.shape[0])
 
-    def predict(self, scores: Any) -> jnp.ndarray:
+    def predict(self, scores: ArrayLike) -> jnp.ndarray:
         """Assign new raw score vectors to their nearest fitted center."""
         coordinates = self.transform.apply(scores)
         distances = jnp.sum((coordinates[:, None, :] - self.centers[None, :, :]) ** 2, axis=2)
         return jnp.argmin(distances, axis=1)
 
-    def evaluate(self, scores: Any, weights: Any | None = None) -> InformationReport:
+    def evaluate(self, scores: ArrayLike, weights: ArrayLike | None = None) -> InformationReport:
         """Evaluate the fixed hard partition on a new weighted sample."""
         from .information import information_report
 
@@ -137,7 +138,7 @@ class FitResult:
         """Return the final hard-partition report on the fitting sample."""
         return self.train_report
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return all stable in-memory fields as JSON-compatible data."""
         return json_ready(
             {
@@ -153,7 +154,7 @@ class FitResult:
             }
         )
 
-    def plot_summary(self, scores: Any, weights: Any | None = None) -> Figure:
+    def plot_summary(self, scores: ArrayLike, weights: ArrayLike | None = None) -> Figure:
         """Create the optional Matplotlib summary figure."""
         from .visualization import plot_summary
 
@@ -230,13 +231,15 @@ class ComponentFitResult(_ResultView):
     def _fit_result(self) -> FitResult:
         return self.score_result
 
-    def predict(self, components: Any) -> jnp.ndarray:
+    def predict(self, components: ArrayLike) -> jnp.ndarray:
         """Assign a new component matrix using the frozen reference coefficients."""
         from .components import scores_from_components
 
         return self.score_result.predict(scores_from_components(components, self.coefficients))
 
-    def evaluate(self, components: Any, weights: Any | None = None) -> InformationReport:
+    def evaluate(
+        self, components: ArrayLike, weights: ArrayLike | None = None
+    ) -> InformationReport:
         """Evaluate the fixed partition on a new weighted component sample."""
         from .components import scores_from_components
 
@@ -244,7 +247,7 @@ class ComponentFitResult(_ResultView):
             scores_from_components(components, self.coefficients), weights
         )
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return component metadata and the score result as JSON-ready data."""
         return json_ready(
             {
@@ -255,7 +258,7 @@ class ComponentFitResult(_ResultView):
             }
         )
 
-    def plot_summary(self, components: Any, weights: Any | None = None) -> Figure:
+    def plot_summary(self, components: ArrayLike, weights: ArrayLike | None = None) -> Figure:
         """Create a score-space summary from a component matrix."""
         from .components import scores_from_components
 
@@ -279,15 +282,15 @@ class ModelFitResult(_ResultView):
     def _fit_result(self) -> FitResult:
         return self.component_result.score_result
 
-    def predict(self, X: Any) -> jnp.ndarray:
+    def predict(self, X: ArrayLike) -> jnp.ndarray:
         """Evaluate the frozen model and assign physical observations to bins."""
         return self.component_result.predict(self.model.evaluate_components(X))
 
-    def evaluate(self, X: Any, weights: Any | None = None) -> InformationReport:
+    def evaluate(self, X: ArrayLike, weights: ArrayLike | None = None) -> InformationReport:
         """Evaluate the frozen model and partition on a new weighted sample."""
         return self.component_result.evaluate(self.model.evaluate_components(X), weights)
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return model metadata and nested fitted state as JSON-ready data."""
         return json_ready(
             {
@@ -297,6 +300,6 @@ class ModelFitResult(_ResultView):
             }
         )
 
-    def plot_summary(self, X: Any, weights: Any | None = None) -> Figure:
+    def plot_summary(self, X: ArrayLike, weights: ArrayLike | None = None) -> Figure:
         """Evaluate the model and create a score-space summary figure."""
         return self.component_result.plot_summary(self.model.evaluate_components(X), weights)
