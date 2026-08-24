@@ -23,7 +23,7 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
       - run: uv python install ${{ matrix.python-version }}
@@ -42,7 +42,7 @@ jobs:
       UV_PYTHON: "3.13"
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.0.1
       - run: uv python install 3.13
       - run: uv sync --dev --locked
       - run: uv run pytest tests/test_float32.py
