@@ -1,0 +1,1867 @@
+{
+  "dataset": {
+    "patient_compositions": [
+      {
+        "patient": 1,
+        "split": "reference",
+        "fractions": [
+          0.12205,
+          0.0216,
+          0.02345,
+          0.0001,
+          0.00665,
+          0.82615
+        ]
+      },
+      {
+        "patient": 2,
+        "split": "reference",
+        "fractions": [
+          0.0288,
+          0.01095,
+          0.0223,
+          0.00035,
+          0.01805,
+          0.91955
+        ]
+      },
+      {
+        "patient": 3,
+        "split": "reference",
+        "fractions": [
+          0.0848,
+          0.0227,
+          0.01525,
+          0.00015,
+          0.0224,
+          0.8547
+        ]
+      },
+      {
+        "patient": 4,
+        "split": "reference",
+        "fractions": [
+          0.0719,
+          0.01205,
+          0.02715,
+          0.0002,
+          0.0115,
+          0.8772
+        ]
+      },
+      {
+        "patient": 5,
+        "split": "test",
+        "fractions": [
+          0.0522,
+          0.0098,
+          0.02735,
+          0.00015,
+          0.0181,
+          0.8924
+        ]
+      },
+      {
+        "patient": 6,
+        "split": "test",
+        "fractions": [
+          0.02745,
+          0.00485,
+          0.0307,
+          0.00015,
+          0.01445,
+          0.9224
+        ]
+      },
+      {
+        "patient": 7,
+        "split": "reference",
+        "fractions": [
+          0.06295,
+          0.00765,
+          0.0049,
+          0.0,
+          0.0077,
+          0.9168
+        ]
+      },
+      {
+        "patient": 8,
+        "split": "test",
+        "fractions": [
+          0.03055,
+          0.0109,
+          0.0031,
+          5e-05,
+          0.00405,
+          0.95135
+        ]
+      },
+      {
+        "patient": 9,
+        "split": "test",
+        "fractions": [
+          0.0269,
+          0.00025,
+          0.00875,
+          5e-05,
+          0.0175,
+          0.94655
+        ]
+      },
+      {
+        "patient": 10,
+        "split": "reference",
+        "fractions": [
+          0.12895,
+          0.08985,
+          0.00715,
+          0.00025,
+          0.00125,
+          0.77255
+        ]
+      },
+      {
+        "patient": 11,
+        "split": "test",
+        "fractions": [
+          0.02855,
+          0.0053,
+          0.03395,
+          5e-05,
+          0.01585,
+          0.9163
+        ]
+      },
+      {
+        "patient": 12,
+        "split": "reference",
+        "fractions": [
+          0.039,
+          0.00315,
+          0.01015,
+          0.0,
+          0.0015,
+          0.9462
+        ]
+      },
+      {
+        "patient": 13,
+        "split": "reference",
+        "fractions": [
+          0.0546,
+          0.00905,
+          0.0204,
+          0.00055,
+          0.00595,
+          0.90945
+        ]
+      },
+      {
+        "patient": 14,
+        "split": "reference",
+        "fractions": [
+          0.04995,
+          0.01295,
+          0.00645,
+          0.0001,
+          0.0045,
+          0.92605
+        ]
+      },
+      {
+        "patient": 15,
+        "split": "test",
+        "fractions": [
+          0.09335,
+          0.0134,
+          0.01235,
+          5e-05,
+          0.0046,
+          0.87625
+        ]
+      },
+      {
+        "patient": 16,
+        "split": "reference",
+        "fractions": [
+          0.17285,
+          0.05015,
+          0.0188,
+          5e-05,
+          0.0095,
+          0.74865
+        ]
+      },
+      {
+        "patient": 17,
+        "split": "reference",
+        "fractions": [
+          0.038,
+          0.03985,
+          0.02085,
+          0.0003,
+          0.01075,
+          0.89025
+        ]
+      },
+      {
+        "patient": 18,
+        "split": "reference",
+        "fractions": [
+          0.06275,
+          0.0066,
+          0.0129,
+          5e-05,
+          0.00755,
+          0.91015
+        ]
+      },
+      {
+        "patient": 19,
+        "split": "reference",
+        "fractions": [
+          0.02955,
+          0.00835,
+          0.006,
+          5e-05,
+          0.00225,
+          0.9538
+        ]
+      },
+      {
+        "patient": 20,
+        "split": "test",
+        "fractions": [
+          0.0757,
+          0.00615,
+          0.00855,
+          0.0001,
+          0.0078,
+          0.9017
+        ]
+      },
+      {
+        "patient": 21,
+        "split": "reference",
+        "fractions": [
+          0.05585,
+          0.0143,
+          0.0083,
+          0.0,
+          0.0085,
+          0.91305
+        ]
+      },
+      {
+        "patient": 22,
+        "split": "reference",
+        "fractions": [
+          0.04695,
+          0.0156,
+          0.0057,
+          5e-05,
+          0.00615,
+          0.92555
+        ]
+      },
+      {
+        "patient": 23,
+        "split": "test",
+        "fractions": [
+          0.057,
+          0.01535,
+          0.0086,
+          0.0015,
+          0.00885,
+          0.9087
+        ]
+      },
+      {
+        "patient": 24,
+        "split": "reference",
+        "fractions": [
+          0.1112,
+          0.00575,
+          0.01085,
+          5e-05,
+          0.00595,
+          0.8662
+        ]
+      },
+      {
+        "patient": 25,
+        "split": "reference",
+        "fractions": [
+          0.0373,
+          0.0006,
+          0.01115,
+          5e-05,
+          0.0041,
+          0.9468
+        ]
+      },
+      {
+        "patient": 26,
+        "split": "reference",
+        "fractions": [
+          0.1364,
+          0.0031,
+          0.05245,
+          0.00125,
+          0.01965,
+          0.78715
+        ]
+      },
+      {
+        "patient": 27,
+        "split": "reference",
+        "fractions": [
+          0.0386,
+          0.0542,
+          0.00965,
+          0.0,
+          0.0035,
+          0.89405
+        ]
+      },
+      {
+        "patient": 28,
+        "split": "test",
+        "fractions": [
+          0.03035,
+          5e-05,
+          0.01325,
+          0.00015,
+          0.0084,
+          0.9478
+        ]
+      },
+      {
+        "patient": 29,
+        "split": "reference",
+        "fractions": [
+          0.0501,
+          0.00345,
+          0.0058,
+          0.00025,
+          0.00495,
+          0.93545
+        ]
+      },
+      {
+        "patient": 30,
+        "split": "test",
+        "fractions": [
+          0.0918,
+          0.00085,
+          0.0058,
+          0.00015,
+          0.0227,
+          0.8787
+        ]
+      }
+    ],
+    "class_names": [
+      "T cells",
+      "B cells",
+      "monocytes",
+      "mast cells",
+      "HSPCs",
+      "other"
+    ]
+  },
+  "unbinned": {
+    "target_macro_rmse": 0.013476607619570516,
+    "per_class_rmse": [
+      0.03461082977526112,
+      0.00848677893114712,
+      0.01064086006635996,
+      0.00048579831205962186,
+      0.013158771013024753,
+      0.06257100693362981
+    ],
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 227
+    }
+  },
+  "score_kmeans:5": {
+    "target_macro_rmse": 0.004399333538866384,
+    "per_class_rmse": [
+      0.0038250675740667804,
+      0.0009677485760789064,
+      0.002617739514695602,
+      0.0004857983120596448,
+      0.014100313717430986,
+      0.018452605202013736
+    ],
+    "held_out_d_efficiency": 0.42718668795118864,
+    "minimum_bin_count": 25,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 1195
+    },
+    "validation_d_efficiency": 0.4748187528717664
+  },
+  "soft_voronoi:5": {
+    "target_macro_rmse": 0.004291709205158481,
+    "per_class_rmse": [
+      0.0032623016337055537,
+      0.000970141669197483,
+      0.0026444855568663306,
+      0.0004857983120596448,
+      0.014095818853963394,
+      0.01782904221837242
+    ],
+    "held_out_d_efficiency": 0.42709421884781124,
+    "minimum_bin_count": 25,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 1198
+    },
+    "validation_d_efficiency": 0.4747277895559027
+  },
+  "marker_kmeans:5": {
+    "target_macro_rmse": 0.04186310498432869,
+    "per_class_rmse": [
+      0.034498804618498816,
+      0.010169406331215786,
+      0.018541966293705223,
+      0.037697557940415384,
+      0.10840778973780825,
+      0.09558639818637663
+    ],
+    "held_out_d_efficiency": 0.015924477012839916,
+    "minimum_bin_count": 17003,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 1691
+    }
+  },
+  "one_dimensional_score:5": {
+    "target_macro_rmse": 0.0196074832044066,
+    "per_class_rmse": [
+      0.012614566547767183,
+      0.028900610420433702,
+      0.01568943129277044,
+      0.025005175302023473,
+      0.0158276324590382,
+      0.007706101756056751
+    ],
+    "held_out_d_efficiency": 0.012470094753827394,
+    "minimum_bin_count": 4544,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 7238
+    }
+  },
+  "two_dimensional_grid:5": {
+    "target_macro_rmse": 0.13194575604425102,
+    "per_class_rmse": [
+      0.24271227007787533,
+      0.012036015282112872,
+      0.34324644559191947,
+      0.0004857763197429881,
+      0.061248272949604485,
+      0.45129933795860694
+    ],
+    "held_out_d_efficiency": 0.0279175116553894,
+    "minimum_bin_count": 8590,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 2385
+    }
+  },
+  "random_score_voronoi:5": {
+    "target_macro_rmse_median": 0.03337517511055872,
+    "held_out_d_efficiency_median": 0.01600429524521883,
+    "repeats": 20
+  },
+  "score_kmeans:8": {
+    "target_macro_rmse": 0.002373145501560582,
+    "per_class_rmse": [
+      0.0038144999551424216,
+      0.0014629801625087788,
+      0.0027081439540563813,
+      0.00013505875760664739,
+      0.0037450446784886796,
+      0.007948775643189993
+    ],
+    "held_out_d_efficiency": 0.9450616403226029,
+    "minimum_bin_count": 25,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 124
+    },
+    "validation_d_efficiency": 0.9491536542240884
+  },
+  "soft_voronoi:8": {
+    "target_macro_rmse": 0.00226268508882123,
+    "per_class_rmse": [
+      0.00392587696111294,
+      0.0011821697488156196,
+      0.0027151105105094574,
+      0.0002122225549750921,
+      0.00327804566869304,
+      0.007568960700894591
+    ],
+    "held_out_d_efficiency": 0.9443973368849089,
+    "minimum_bin_count": 25,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 132
+    },
+    "validation_d_efficiency": 0.946579601381854
+  },
+  "marker_kmeans:8": {
+    "target_macro_rmse": 0.028891852157931913,
+    "per_class_rmse": [
+      0.033454817296106235,
+      0.007318053052257466,
+      0.011694693509413852,
+      0.05517415724969296,
+      0.03681753968218905,
+      0.06882695337879526
+    ],
+    "held_out_d_efficiency": 0.13785875783835777,
+    "minimum_bin_count": 5131,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 505
+    }
+  },
+  "one_dimensional_score:8": {
+    "target_macro_rmse": 0.013720109086168155,
+    "per_class_rmse": [
+      0.008984446092999546,
+      0.0058723528447576865,
+      0.015339685255476342,
+      0.026902546792587065,
+      0.011501514445020136,
+      0.006612759229809832
+    ],
+    "held_out_d_efficiency": 0.06271471773445338,
+    "minimum_bin_count": 2144,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 9460
+    }
+  },
+  "two_dimensional_grid:8": {
+    "target_macro_rmse": 0.08332510970683164,
+    "per_class_rmse": [
+      0.24048491950475936,
+      0.008526851707350716,
+      0.11349633570973626,
+      0.0004857942663034171,
+      0.053631647346008476,
+      0.27225932061449354
+    ],
+    "held_out_d_efficiency": 0.04255757754620107,
+    "minimum_bin_count": 3223,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 1105
+    }
+  },
+  "random_score_voronoi:8": {
+    "target_macro_rmse_median": 0.024036208287216646,
+    "held_out_d_efficiency_median": 0.15270485669970624,
+    "repeats": 20
+  },
+  "score_kmeans:10": {
+    "target_macro_rmse": 0.0023559932260625136,
+    "per_class_rmse": [
+      0.0037272639718973163,
+      0.0014670622835300162,
+      0.0024317668529625206,
+      0.0004668735706267596,
+      0.0036869994512959553,
+      0.008038776649990453
+    ],
+    "held_out_d_efficiency": 0.9572574470634088,
+    "minimum_bin_count": 2,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 665
+    },
+    "validation_d_efficiency": 0.9659447059286324
+  },
+  "soft_voronoi:10": {
+    "target_macro_rmse": 0.00228191730999453,
+    "per_class_rmse": [
+      0.003932886966145121,
+      0.0012197976992568407,
+      0.002355628331459076,
+      0.0004855967884735868,
+      0.003415676764638025,
+      0.007853345953393431
+    ],
+    "held_out_d_efficiency": 0.9567129274065926,
+    "minimum_bin_count": 2,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 369
+    },
+    "validation_d_efficiency": 0.9637873644267485
+  },
+  "marker_kmeans:10": {
+    "target_macro_rmse": 0.047581831179146224,
+    "per_class_rmse": [
+      0.032502997543739844,
+      0.0070820664052650235,
+      0.012353270345987374,
+      0.12180568979894707,
+      0.06416513180179181,
+      0.13356846934314373
+    ],
+    "held_out_d_efficiency": 0.14180319085146487,
+    "minimum_bin_count": 4994,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 265
+    }
+  },
+  "one_dimensional_score:10": {
+    "target_macro_rmse": 0.01692465736338288,
+    "per_class_rmse": [
+      0.012173815769559474,
+      0.004737514584352019,
+      0.015286539762828977,
+      0.03987916488695914,
+      0.012546251813214787,
+      0.010519628699684227
+    ],
+    "held_out_d_efficiency": 0.06945094059125688,
+    "minimum_bin_count": 1686,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 7157
+    }
+  },
+  "two_dimensional_grid:10": {
+    "target_macro_rmse": 0.07304430429125539,
+    "per_class_rmse": [
+      0.23674083144182526,
+      0.008404261431116776,
+      0.06781453380465804,
+      0.000485790397797611,
+      0.05177610438087927,
+      0.25153734009865275
+    ],
+    "held_out_d_efficiency": 0.056019508513901625,
+    "minimum_bin_count": 1748,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 3662
+    }
+  },
+  "random_score_voronoi:10": {
+    "target_macro_rmse_median": 0.01643518610745582,
+    "held_out_d_efficiency_median": 0.24302925111163148,
+    "repeats": 20
+  },
+  "score_kmeans:15": {
+    "target_macro_rmse": 0.002282496810873029,
+    "per_class_rmse": [
+      0.003389216283203862,
+      0.001677507488367431,
+      0.0024976188838659874,
+      0.0004857727226632273,
+      0.0033623686762646377,
+      0.007567217495638878
+    ],
+    "held_out_d_efficiency": 0.9799239649624452,
+    "minimum_bin_count": 2,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 91
+    },
+    "validation_d_efficiency": 0.9819460605792532
+  },
+  "soft_voronoi:15": {
+    "target_macro_rmse": 0.0023136351569880884,
+    "per_class_rmse": [
+      0.0036712120678947524,
+      0.001679504578976112,
+      0.002478163121908568,
+      0.00048578217788173574,
+      0.0032535138382792732,
+      0.007907874255206946
+    ],
+    "held_out_d_efficiency": 0.9767045378842348,
+    "minimum_bin_count": 2,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 64
+    },
+    "validation_d_efficiency": 0.9774989112569423
+  },
+  "marker_kmeans:15": {
+    "target_macro_rmse": 0.0333158205009479,
+    "per_class_rmse": [
+      0.03364165180370405,
+      0.006334740563525597,
+      0.007754563529253005,
+      0.08228995886844921,
+      0.0365581877398076,
+      0.08788052402390614
+    ],
+    "held_out_d_efficiency": 0.2034066923450641,
+    "minimum_bin_count": 1790,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 654
+    }
+  },
+  "one_dimensional_score:15": {
+    "target_macro_rmse": 0.009656501460856375,
+    "per_class_rmse": [
+      0.007662339967965278,
+      0.004702143223379468,
+      0.008810261123279244,
+      0.015381133471659604,
+      0.011726629517998284,
+      0.007586170824384255
+    ],
+    "held_out_d_efficiency": 0.19848745481066996,
+    "minimum_bin_count": 1049,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 6534
+    }
+  },
+  "two_dimensional_grid:15": {
+    "target_macro_rmse": 0.06704398748915899,
+    "per_class_rmse": [
+      0.23222426566436907,
+      0.007947876162109563,
+      0.04017901377313719,
+      0.01260568402600542,
+      0.042263097820173706,
+      0.2509817381516774
+    ],
+    "held_out_d_efficiency": 0.08817669074416476,
+    "minimum_bin_count": 991,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 561
+    }
+  },
+  "random_score_voronoi:15": {
+    "target_macro_rmse_median": 0.010566503409822845,
+    "held_out_d_efficiency_median": 0.3193899674669972,
+    "repeats": 20
+  },
+  "score_kmeans:20": {
+    "target_macro_rmse": 0.002297470957753978,
+    "per_class_rmse": [
+      0.003137874723541647,
+      0.0018200604220560835,
+      0.002709356209623605,
+      0.0004857649942714208,
+      0.0033342984392771345,
+      0.007463069344792914
+    ],
+    "held_out_d_efficiency": 0.9853818360460803,
+    "minimum_bin_count": 2,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 113
+    },
+    "validation_d_efficiency": 0.9883508267918975
+  },
+  "soft_voronoi:20": {
+    "target_macro_rmse": 0.002229652971611721,
+    "per_class_rmse": [
+      0.0032022124369732916,
+      0.0015114378113494868,
+      0.002600556559508733,
+      0.00048578114226173583,
+      0.0033482769079653586,
+      0.006919604156017433
+    ],
+    "held_out_d_efficiency": 0.9856892516793707,
+    "minimum_bin_count": 0,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 68
+    },
+    "validation_d_efficiency": 0.9881572414703677
+  },
+  "marker_kmeans:20": {
+    "target_macro_rmse": 0.03219967042444199,
+    "per_class_rmse": [
+      0.033173891227554396,
+      0.007672210893107948,
+      0.008010353698670656,
+      0.08786134980769289,
+      0.024280546495184054,
+      0.08456190198674302
+    ],
+    "held_out_d_efficiency": 0.20340715790656871,
+    "minimum_bin_count": 816,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 1062
+    }
+  },
+  "one_dimensional_score:20": {
+    "target_macro_rmse": 0.009642755400822763,
+    "per_class_rmse": [
+      0.007364216386390373,
+      0.005174178370619081,
+      0.01003019550561957,
+      0.012403611069541333,
+      0.013241575671943466,
+      0.007102567477219824
+    ],
+    "held_out_d_efficiency": 0.20001143840472066,
+    "minimum_bin_count": 797,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 7705
+    }
+  },
+  "two_dimensional_grid:20": {
+    "target_macro_rmse": 0.06368795806385456,
+    "per_class_rmse": [
+      0.2241591056321495,
+      0.007832990418452413,
+      0.025054832221287415,
+      0.008242293823397884,
+      0.053150568223985645,
+      0.23950490036764582
+    ],
+    "held_out_d_efficiency": 0.10838281215286102,
+    "minimum_bin_count": 654,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 1301
+    }
+  },
+  "random_score_voronoi:20": {
+    "target_macro_rmse_median": 0.0074554365364960335,
+    "held_out_d_efficiency_median": 0.45522529627010017,
+    "repeats": 20
+  },
+  "score_kmeans:30": {
+    "target_macro_rmse": 0.002526971965571044,
+    "per_class_rmse": [
+      0.0032785517508381623,
+      0.0020908069894693465,
+      0.0028756046774797116,
+      0.0004857840598003145,
+      0.0039041123502676833,
+      0.008053055796770346
+    ],
+    "held_out_d_efficiency": 0.9937163338806669,
+    "minimum_bin_count": 0,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 184
+    },
+    "validation_d_efficiency": 0.9937146228723637
+  },
+  "soft_voronoi:30": {
+    "target_macro_rmse": 0.0024859397263409934,
+    "per_class_rmse": [
+      0.0031515126980897895,
+      0.0018170626219547886,
+      0.002833852819872555,
+      0.00048578125035028745,
+      0.004141489241437547,
+      0.007942310489771471
+    ],
+    "held_out_d_efficiency": 0.9934937668764541,
+    "minimum_bin_count": 0,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 95
+    },
+    "validation_d_efficiency": 0.9936125178072935
+  },
+  "marker_kmeans:30": {
+    "target_macro_rmse": 0.049900775931123735,
+    "per_class_rmse": [
+      0.0274215332079649,
+      0.006265318607811024,
+      0.007987724634437155,
+      0.19062437839360197,
+      0.017204924811803645,
+      0.18124847929470375
+    ],
+    "held_out_d_efficiency": 0.22992270480883562,
+    "minimum_bin_count": 758,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 2371
+    }
+  },
+  "one_dimensional_score:30": {
+    "target_macro_rmse": 0.008229601006127279,
+    "per_class_rmse": [
+      0.0065910752366814766,
+      0.005117783427345971,
+      0.011912988925834016,
+      0.006270683946261388,
+      0.011255473494513547,
+      0.005729664459344579
+    ],
+    "held_out_d_efficiency": 0.23553126877957323,
+    "minimum_bin_count": 485,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 1902
+    }
+  },
+  "two_dimensional_grid:30": {
+    "target_macro_rmse": 0.062011452341553266,
+    "per_class_rmse": [
+      0.2100462197274984,
+      0.008583912159945918,
+      0.02211466973704233,
+      0.02114681334646399,
+      0.048165646736815684,
+      0.23245191747599328
+    ],
+    "held_out_d_efficiency": 0.130556931279713,
+    "minimum_bin_count": 161,
+    "likelihood_convergence": {
+      "converged_patients": 10,
+      "total_patients": 10,
+      "maximum_iterations": 333
+    }
+  },
+  "random_score_voronoi:30": {
+    "target_macro_rmse_median": 0.006289712297367991,
+    "held_out_d_efficiency_median": 0.47159624988114257,
+    "repeats": 20
+  },
+  "calibration": {
+    "balanced_log_loss": 0.2113002212783382,
+    "balanced_brier_score": 0.09524659924440745,
+    "balanced_accuracy": 0.9411152473281539,
+    "expected_calibration_error": 0.029092421444714307,
+    "reliability_bins": [
+      {
+        "lower": 0.0,
+        "upper": 0.1,
+        "weight": 0.0,
+        "mean_confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.1,
+        "upper": 0.2,
+        "weight": 0.0,
+        "mean_confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.2,
+        "upper": 0.30000000000000004,
+        "weight": 0.0,
+        "mean_confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.30000000000000004,
+        "upper": 0.4,
+        "weight": 9.415811529373841e-05,
+        "mean_confidence": 0.3828359277304805,
+        "accuracy": 0.030620125157162364
+      },
+      {
+        "lower": 0.4,
+        "upper": 0.5,
+        "weight": 0.004924113297172456,
+        "mean_confidence": 0.462506942030324,
+        "accuracy": 0.23871116112150062
+      },
+      {
+        "lower": 0.5,
+        "upper": 0.6000000000000001,
+        "weight": 0.011423644750687058,
+        "mean_confidence": 0.5447052358347224,
+        "accuracy": 0.3492312353497034
+      },
+      {
+        "lower": 0.6000000000000001,
+        "upper": 0.7000000000000001,
+        "weight": 0.00982238306514512,
+        "mean_confidence": 0.6522514710274593,
+        "accuracy": 0.7123766911543986
+      },
+      {
+        "lower": 0.7000000000000001,
+        "upper": 0.8,
+        "weight": 0.01657196050105874,
+        "mean_confidence": 0.7581051623831672,
+        "accuracy": 0.8223156943340818
+      },
+      {
+        "lower": 0.8,
+        "upper": 0.9,
+        "weight": 0.07379338856027894,
+        "mean_confidence": 0.8538518667667176,
+        "accuracy": 0.6323978338029733
+      },
+      {
+        "lower": 0.9,
+        "upper": 1.0,
+        "weight": 0.8833703517103639,
+        "mean_confidence": 0.9745949746069178,
+        "accuracy": 0.9833429762661363
+      }
+    ]
+  },
+  "shift": {
+    "median_absolute_standardized_marker_shift": 0.12264254544149139,
+    "maximum_absolute_standardized_marker_shift": 0.22453459285500513,
+    "score_mean_shift_norm": 0.4477332383189247
+  },
+  "patients": [
+    {
+      "patient": 5,
+      "true_fractions": [
+        0.0522,
+        0.0098,
+        0.02735,
+        0.00015,
+        0.0181,
+        0.8924
+      ],
+      "soft_voronoi_fractions": [
+        0.050457101510283056,
+        0.006994205792415713,
+        0.029512150948873092,
+        2.1209097082310512e-08,
+        0.017083231303769653,
+        0.895953289235561
+      ],
+      "unbinned_fractions": [
+        0.028882022049968873,
+        9.962043576757301e-18,
+        0.017770906390231475,
+        2.979353006530829e-62,
+        0.003863166621334493,
+        0.9494839049384598
+      ]
+    },
+    {
+      "patient": 6,
+      "true_fractions": [
+        0.02745,
+        0.00485,
+        0.0307,
+        0.00015,
+        0.01445,
+        0.9224
+      ],
+      "soft_voronoi_fractions": [
+        0.024627303424831982,
+        0.0030446358321601493,
+        0.029762284874186275,
+        2.2523148182215753e-08,
+        0.012926320289035027,
+        0.9296394330566389
+      ],
+      "unbinned_fractions": [
+        0.0052580691918284765,
+        8.19364734046724e-42,
+        0.013654555714937143,
+        4.311711516290921e-90,
+        3.5855793440247125e-08,
+        0.9810873392374431
+      ]
+    },
+    {
+      "patient": 8,
+      "true_fractions": [
+        0.03055,
+        0.0109,
+        0.0031,
+        5e-05,
+        0.00405,
+        0.95135
+      ],
+      "soft_voronoi_fractions": [
+        0.027776813430022054,
+        0.010881949071653697,
+        0.0010083068762863365,
+        1.163823501296349e-09,
+        0.0009915852102553183,
+        0.9593413442479592
+      ],
+      "unbinned_fractions": [
+        4.263504614914696e-08,
+        1.3873694192087648e-23,
+        4.094018582725763e-39,
+        8.46423609500849e-107,
+        3.068941623157984e-41,
+        0.9999999573649584
+      ]
+    },
+    {
+      "patient": 9,
+      "true_fractions": [
+        0.0269,
+        0.00025,
+        0.00875,
+        5e-05,
+        0.0175,
+        0.94655
+      ],
+      "soft_voronoi_fractions": [
+        0.02118033568068568,
+        8.517947846430745e-19,
+        0.007441899848265669,
+        1.7510286037119122e-08,
+        0.012926795767586676,
+        0.9584509511931759
+      ],
+      "unbinned_fractions": [
+        5.229160094742164e-13,
+        4.1157162405847576e-66,
+        2.3991918891229294e-08,
+        4.0482342683054606e-78,
+        4.623977251563534e-14,
+        0.9999999760075138
+      ]
+    },
+    {
+      "patient": 11,
+      "true_fractions": [
+        0.02855,
+        0.0053,
+        0.03395,
+        5e-05,
+        0.01585,
+        0.9163
+      ],
+      "soft_voronoi_fractions": [
+        0.023865193023427492,
+        0.002544311943989617,
+        0.03882742505227888,
+        1.978479786091495e-08,
+        0.008065561378581535,
+        0.9266974888169247
+      ],
+      "unbinned_fractions": [
+        2.134850025234026e-08,
+        5.472972478589317e-26,
+        0.021499166275504952,
+        5.504601196618287e-82,
+        1.1048098942500785e-14,
+        0.978500812375979
+      ]
+    },
+    {
+      "patient": 15,
+      "true_fractions": [
+        0.09335,
+        0.0134,
+        0.01235,
+        5e-05,
+        0.0046,
+        0.87625
+      ],
+      "soft_voronoi_fractions": [
+        0.09585176033350183,
+        0.011920677328275979,
+        0.01089846420828494,
+        2.3199063245395852e-17,
+        9.613288346363349e-08,
+        0.881329001997054
+      ],
+      "unbinned_fractions": [
+        0.05249307030369424,
+        7.956257152898331e-26,
+        6.551820188197681e-08,
+        4.748086582317049e-190,
+        7.6925841255728e-55,
+        0.947506864178105
+      ]
+    },
+    {
+      "patient": 20,
+      "true_fractions": [
+        0.0757,
+        0.00615,
+        0.00855,
+        0.0001,
+        0.0078,
+        0.9017
+      ],
+      "soft_voronoi_fractions": [
+        0.07142391415889318,
+        0.003193348509909892,
+        0.006738258496538498,
+        2.5640801924807142e-08,
+        0.007918666785207761,
+        0.9107257864086485
+      ],
+      "unbinned_fractions": [
+        0.027219712888371765,
+        1.45953384218398e-23,
+        8.163575033128052e-10,
+        6.121519627363222e-63,
+        2.313777891398605e-12,
+        0.9727802862929499
+      ]
+    },
+    {
+      "patient": 23,
+      "true_fractions": [
+        0.057,
+        0.01535,
+        0.0086,
+        0.0015,
+        0.00885,
+        0.9087
+      ],
+      "soft_voronoi_fractions": [
+        0.05651611627078917,
+        0.016954219033776113,
+        0.006188326480284793,
+        4.570425116625727e-08,
+        0.0063097157418177605,
+        0.9140315767690809
+      ],
+      "unbinned_fractions": [
+        0.03128306899716746,
+        2.7157625756170486e-08,
+        1.2053739420928327e-12,
+        7.407385328808534e-17,
+        2.9515135864240515e-12,
+        0.9687169038410554
+      ]
+    },
+    {
+      "patient": 28,
+      "true_fractions": [
+        0.03035,
+        5e-05,
+        0.01325,
+        0.00015,
+        0.0084,
+        0.9478
+      ],
+      "soft_voronoi_fractions": [
+        0.029263848582622216,
+        9.54189745957578e-38,
+        0.013428599620653223,
+        5.896440698212127e-13,
+        0.0013550608574802773,
+        0.9559524909386546
+      ],
+      "unbinned_fractions": [
+        3.796028937437222e-22,
+        0.0,
+        3.163827444110401e-07,
+        0.0,
+        1.50122402588765e-165,
+        0.9999996836172622
+      ]
+    },
+    {
+      "patient": 30,
+      "true_fractions": [
+        0.0918,
+        0.00085,
+        0.0058,
+        0.00015,
+        0.0227,
+        0.8787
+      ],
+      "soft_voronoi_fractions": [
+        0.09173008273218308,
+        5.4270032318928284e-14,
+        2.3655363781412882e-12,
+        2.1887693120431222e-08,
+        0.022497709932855173,
+        0.8857721854448491
+      ],
+      "unbinned_fractions": [
+        0.0382391530142071,
+        1.2204273746945802e-117,
+        8.049324036272644e-93,
+        1.2345704181388883e-206,
+        8.463888531802109e-08,
+        0.9617607623469016
+      ]
+    }
+  ],
+  "acceptance": {
+    "rows": [
+      {
+        "n_bins": 5,
+        "beats_random_d_efficiency": true,
+        "no_worse_than_marker_rmse": true
+      },
+      {
+        "n_bins": 8,
+        "beats_random_d_efficiency": true,
+        "no_worse_than_marker_rmse": true
+      },
+      {
+        "n_bins": 10,
+        "beats_random_d_efficiency": true,
+        "no_worse_than_marker_rmse": true
+      },
+      {
+        "n_bins": 15,
+        "beats_random_d_efficiency": true,
+        "no_worse_than_marker_rmse": true
+      },
+      {
+        "n_bins": 20,
+        "beats_random_d_efficiency": true,
+        "no_worse_than_marker_rmse": true
+      },
+      {
+        "n_bins": 30,
+        "beats_random_d_efficiency": true,
+        "no_worse_than_marker_rmse": true
+      }
+    ],
+    "random_d_efficiency_wins": 6,
+    "marker_rmse_noninferiority_wins": 6,
+    "required_random_wins": 5,
+    "required_marker_wins": 4
+  },
+  "run": {
+    "reference_patients": [
+      1,
+      2,
+      3,
+      4,
+      7,
+      10,
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      19,
+      21,
+      22,
+      24,
+      25,
+      26,
+      27,
+      29
+    ],
+    "test_patients": [
+      5,
+      6,
+      8,
+      9,
+      11,
+      15,
+      20,
+      23,
+      28,
+      30
+    ],
+    "reference_composition": [
+      0.07112750000000002,
+      0.019594999999999998,
+      0.0149825,
+      0.00019,
+      0.0081175,
+      0.8859874999999999
+    ],
+    "score_temperature": 2.2194717878611523,
+    "elapsed_seconds": 58.18021195800975,
+    "peak_rss_megabytes": 1400.25,
+    "quick": false,
+    "rows": {
+      "reference": 400000,
+      "test": 200000,
+      "partition": 27607,
+      "validation": 13796,
+      "templates": 99999
+    },
+    "settings": {
+      "score_max_per_patient_class": 2000,
+      "score_max_iter": 120,
+      "partition_max_per_patient_class": 512,
+      "validation_max_per_patient_class": 256,
+      "soft_n_init": 4,
+      "soft_max_steps": 160,
+      "random_repeats": 20,
+      "bootstrap_repeats": 200
+    },
+    "timings_seconds": {
+      "score_model_and_scores": 26.30996383400634,
+      "partitions_and_baselines_5_bins": 7.5710114579997025,
+      "partitions_and_baselines_8_bins": 3.8277283330098726,
+      "partitions_and_baselines_10_bins": 3.878674499981571,
+      "partitions_and_baselines_15_bins": 4.276966541016009,
+      "partitions_and_baselines_20_bins": 5.020253332972061,
+      "partitions_and_baselines_30_bins": 6.906972666969523
+    }
+  },
+  "uncertainty": {
+    "n_bins": 30,
+    "predicted_standard_errors": [
+      [
+        0.0017011582375067026,
+        0.0009599075779033856,
+        0.0015425621373666627,
+        0.0018461411593574803,
+        0.0015242429556114924,
+        0.002339245852533276
+      ],
+      [
+        0.0012566213530680365,
+        0.0007479978960744837,
+        0.0015261976450391757,
+        0.001665972749159836,
+        0.0013624154183650519,
+        0.0020101987003566654
+      ],
+      [
+        0.0012994147647993003,
+        0.0010160491188935914,
+        0.0005154143111693117,
+        0.001177941207767684,
+        0.0007497985593080435,
+        0.0016050093764466476
+      ],
+      [
+        0.0011682685076326057,
+        0.00047059685672010674,
+        0.0008753065224845733,
+        0.0013463379630704315,
+        0.0012638793289127539,
+        0.0016277451711705403
+      ],
+      [
+        0.0012407150254814283,
+        0.0007204259140696066,
+        0.0017023767090996573,
+        0.0016632538686668183,
+        0.0012225073258145358,
+        0.002043547794327972
+      ],
+      [
+        0.0022200042248623052,
+        0.0010878738959634296,
+        0.001023506324722438,
+        0.001504116433984186,
+        0.0008486314122470919,
+        0.002436943724950714
+      ],
+      [
+        0.0019566550701801215,
+        0.0007104205117630056,
+        0.0008594823198159031,
+        0.0014224394582672652,
+        0.001130041514527146,
+        0.0021797393434810487
+      ],
+      [
+        0.001773480667596437,
+        0.0012482763761384886,
+        0.0008614474147519913,
+        0.0015532003055400135,
+        0.0011198648607787613,
+        0.002157945383288471
+      ],
+      [
+        0.0013282968427697425,
+        0.0004296974455710365,
+        0.0010601100218773972,
+        0.001172870005423263,
+        0.0007708139598599524,
+        0.0016536391886911956
+      ],
+      [
+        0.0021835598614205047,
+        0.0005415381065158433,
+        0.0005691399399949829,
+        0.0016309250897163254,
+        0.0015868486436137709,
+        0.0023986501804011346
+      ]
+    ],
+    "bootstrap_standard_errors": [
+      [
+        0.0015663399019055925,
+        0.0008933018326785469,
+        0.0013758876575890226,
+        2.1782898870770966e-09,
+        0.0011571348792517623,
+        0.002249880608171867
+      ],
+      [
+        0.0013150092599273024,
+        0.0007384237414725457,
+        0.0015089773355049627,
+        5.701196037217435e-09,
+        0.001117484640929995,
+        0.0020621374681273944
+      ],
+      [
+        0.0011873476567059343,
+        0.0009200089034430815,
+        0.0004393047607246415,
+        1.1179055563979212e-09,
+        0.0005309194557071088,
+        0.0015227914132277373
+      ],
+      [
+        0.0012788863705157094,
+        4.745442496682595e-16,
+        0.0008385224670980549,
+        1.9467638858694022e-09,
+        0.001007830842174773,
+        0.0017487991855019158
+      ],
+      [
+        0.0012088285176692533,
+        0.0006165962815250411,
+        0.0016021540697974148,
+        4.44237149017673e-09,
+        0.0010352560796499004,
+        0.002089486409142767
+      ],
+      [
+        0.00227845259975475,
+        0.0008500703167613422,
+        0.0009128886742664232,
+        1.3459835973679756e-10,
+        0.00010215766745909113,
+        0.0026126971941890197
+      ],
+      [
+        0.001961872436566733,
+        0.000637900289610714,
+        0.0008123439752585962,
+        2.7807317882112733e-09,
+        0.0009872855122163907,
+        0.0022940377752366696
+      ],
+      [
+        0.0016291945080263402,
+        0.0011826201933470236,
+        0.0008051627011011282,
+        8.767882781415492e-09,
+        0.0008874640138981267,
+        0.0021674755232372993
+      ],
+      [
+        0.0012918497865604505,
+        2.156614810875399e-23,
+        0.001024406547705362,
+        1.3486342858028949e-09,
+        0.0006153416861867388,
+        0.0016337364084877614
+      ],
+      [
+        0.0022051867924145676,
+        3.7348417036721827e-11,
+        2.472293621349074e-11,
+        2.2839592613402895e-09,
+        0.0013542670985439834,
+        0.0024985938591300036
+      ]
+    ],
+    "median_ratio_by_class": [
+      1.011859321540078,
+      1.1410387121398835,
+      1.0662298512640045,
+      702827.7206974986,
+      1.253359530574654,
+      0.9764137694067933
+    ]
+  },
+  "source": {
+    "title": "FlowCyt bounded all-patient FisherBin research sample",
+    "source_url": "https://cuicloud.unige.ch/index.php/s/55PHBLEynrp5pN8",
+    "source_repository": "https://github.com/VIPER-GENEVA/FlowCyt-Classification-Benchmark",
+    "source_license": "CC-BY-NC-SA-4.0",
+    "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "seed": 2026,
+    "sampling": "component-stratified ranges with largest-remainder allocation from exact FCS totals",
+    "max_per_patient": 20000,
+    "blocks_per_component": 16,
+    "workers": 12,
+    "sample_rows": 600000,
+    "sample_sha256": "a08e9bf183fe32b913e155d413eeacfdb65c7f99017a42e69c4b91bdde20d987",
+    "reference_patients": [
+      1,
+      2,
+      3,
+      4,
+      7,
+      10,
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      19,
+      21,
+      22,
+      24,
+      25,
+      26,
+      27,
+      29
+    ],
+    "test_patients": [
+      5,
+      6,
+      8,
+      9,
+      11,
+      15,
+      20,
+      23,
+      28,
+      30
+    ],
+    "feature_names": [
+      "FS INT",
+      "SS INT",
+      "FL1 INT_CD14-FITC",
+      "FL2 INT_CD19-PE",
+      "FL3 INT_CD13-ECD",
+      "FL4 INT_CD33-PC5.5",
+      "FL5 INT_CD34-PC7",
+      "FL6 INT_CD117-APC",
+      "FL7 INT_CD7-APC700",
+      "FL8 INT_CD16-APC750",
+      "FL9 INT_HLA-PB",
+      "FL10 INT_CD45-KO"
+    ],
+    "class_names": [
+      "T cells",
+      "B cells",
+      "monocytes",
+      "mast cells",
+      "HSPCs",
+      "other"
+    ],
+    "upstream_file_totals": {
+      "Case1_O.fcs": 66439,
+      "Case1_N.fcs": 11773,
+      "Case1_G.fcs": 12768,
+      "Case1_P.fcs": 66,
+      "Case1_K.fcs": 3618,
+      "Case1_B.fcs": 449803,
+      "Case2_O.fcs": 7839,
+      "Case2_N.fcs": 2982,
+      "Case2_G.fcs": 6073,
+      "Case2_P.fcs": 100,
+      "Case2_K.fcs": 4921,
+      "Case2_B.fcs": 250397,
+      "Case3_O.fcs": 49738,
+      "Case3_N.fcs": 13307,
+      "Case3_G.fcs": 8938,
+      "Case3_P.fcs": 86,
+      "Case3_K.fcs": 13148,
+      "Case3_B.fcs": 501262,
+      "Case4_O.fcs": 44914,
+      "Case4_N.fcs": 7521,
+      "Case4_G.fcs": 16964,
+      "Case4_P.fcs": 138,
+      "Case4_K.fcs": 7167,
+      "Case4_B.fcs": 547788,
+      "Case7_O.fcs": 61417,
+      "Case7_N.fcs": 7484,
+      "Case7_G.fcs": 4753,
+      "Case7_P.fcs": 18,
+      "Case7_K.fcs": 7510,
+      "Case7_B.fcs": 894766,
+      "Case10_O.fcs": 68396,
+      "Case10_N.fcs": 47653,
+      "Case10_G.fcs": 3788,
+      "Case10_P.fcs": 136,
+      "Case10_K.fcs": 681,
+      "Case10_B.fcs": 409780,
+      "Case12_O.fcs": 19633,
+      "Case12_N.fcs": 1582,
+      "Case12_G.fcs": 5116,
+      "Case12_P.fcs": 3,
+      "Case12_K.fcs": 757,
+      "Case12_B.fcs": 476463,
+      "Case13_O.fcs": 22788,
+      "Case13_N.fcs": 3768,
+      "Case13_G.fcs": 8522,
+      "Case13_P.fcs": 232,
+      "Case13_K.fcs": 2487,
+      "Case13_B.fcs": 379684,
+      "Case14_O.fcs": 16627,
+      "Case14_N.fcs": 4307,
+      "Case14_G.fcs": 2156,
+      "Case14_P.fcs": 42,
+      "Case14_K.fcs": 1494,
+      "Case14_B.fcs": 308398,
+      "Case16_O.fcs": 43842,
+      "Case16_N.fcs": 12719,
+      "Case16_G.fcs": 4764,
+      "Case16_P.fcs": 11,
+      "Case16_K.fcs": 2414,
+      "Case16_B.fcs": 189888,
+      "Case17_O.fcs": 37995,
+      "Case17_N.fcs": 39854,
+      "Case17_G.fcs": 20879,
+      "Case17_P.fcs": 278,
+      "Case17_K.fcs": 10775,
+      "Case17_B.fcs": 890420,
+      "Case18_O.fcs": 61466,
+      "Case18_N.fcs": 6487,
+      "Case18_G.fcs": 12614,
+      "Case18_P.fcs": 26,
+      "Case18_K.fcs": 7408,
+      "Case18_B.fcs": 891313,
+      "Case19_O.fcs": 12920,
+      "Case19_N.fcs": 3656,
+      "Case19_G.fcs": 2620,
+      "Case19_P.fcs": 27,
+      "Case19_K.fcs": 989,
+      "Case19_B.fcs": 417054,
+      "Case21_O.fcs": 55871,
+      "Case21_N.fcs": 14300,
+      "Case21_G.fcs": 8307,
+      "Case21_P.fcs": 4,
+      "Case21_K.fcs": 8509,
+      "Case21_B.fcs": 913133,
+      "Case22_O.fcs": 46971,
+      "Case22_N.fcs": 15616,
+      "Case22_G.fcs": 5681,
+      "Case22_P.fcs": 38,
+      "Case22_K.fcs": 6171,
+      "Case22_B.fcs": 925567,
+      "Case24_O.fcs": 111218,
+      "Case24_N.fcs": 5749,
+      "Case24_G.fcs": 10868,
+      "Case24_P.fcs": 51,
+      "Case24_K.fcs": 5934,
+      "Case24_B.fcs": 866237,
+      "Case25_O.fcs": 37326,
+      "Case25_N.fcs": 576,
+      "Case25_G.fcs": 11163,
+      "Case25_P.fcs": 30,
+      "Case25_K.fcs": 4097,
+      "Case25_B.fcs": 946820,
+      "Case26_O.fcs": 42925,
+      "Case26_N.fcs": 974,
+      "Case26_G.fcs": 16500,
+      "Case26_P.fcs": 399,
+      "Case26_K.fcs": 6174,
+      "Case26_B.fcs": 247678,
+      "Case27_O.fcs": 8100,
+      "Case27_N.fcs": 11386,
+      "Case27_G.fcs": 2027,
+      "Case27_P.fcs": 4,
+      "Case27_K.fcs": 736,
+      "Case27_B.fcs": 187730,
+      "Case29_O.fcs": 50091,
+      "Case29_N.fcs": 3452,
+      "Case29_G.fcs": 5826,
+      "Case29_P.fcs": 271,
+      "Case29_K.fcs": 4929,
+      "Case29_B.fcs": 935466,
+      "Case5_O.fcs": 52221,
+      "Case5_N.fcs": 9787,
+      "Case5_G.fcs": 27350,
+      "Case5_P.fcs": 160,
+      "Case5_K.fcs": 18119,
+      "Case5_B.fcs": 892516,
+      "Case6_O.fcs": 26920,
+      "Case6_N.fcs": 4768,
+      "Case6_G.fcs": 30124,
+      "Case6_P.fcs": 158,
+      "Case6_K.fcs": 14155,
+      "Case6_B.fcs": 904826,
+      "Case8_O.fcs": 30190,
+      "Case8_N.fcs": 10799,
+      "Case8_G.fcs": 3064,
+      "Case8_P.fcs": 68,
+      "Case8_K.fcs": 4022,
+      "Case8_B.fcs": 940859,
+      "Case9_O.fcs": 13667,
+      "Case9_N.fcs": 136,
+      "Case9_G.fcs": 4431,
+      "Case9_P.fcs": 30,
+      "Case9_K.fcs": 8873,
+      "Case9_B.fcs": 480588,
+      "Case11_O.fcs": 28560,
+      "Case11_N.fcs": 5313,
+      "Case11_G.fcs": 33976,
+      "Case11_P.fcs": 31,
+      "Case11_K.fcs": 15824,
+      "Case11_B.fcs": 916417,
+      "Case15_O.fcs": 86021,
+      "Case15_N.fcs": 12369,
+      "Case15_G.fcs": 11357,
+      "Case15_P.fcs": 51,
+      "Case15_K.fcs": 4245,
+      "Case15_B.fcs": 807578,
+      "Case20_O.fcs": 38406,
+      "Case20_N.fcs": 3111,
+      "Case20_G.fcs": 4340,
+      "Case20_P.fcs": 40,
+      "Case20_K.fcs": 3966,
+      "Case20_B.fcs": 457477,
+      "Case23_O.fcs": 31063,
+      "Case23_N.fcs": 8375,
+      "Case23_G.fcs": 4699,
+      "Case23_P.fcs": 815,
+      "Case23_K.fcs": 4822,
+      "Case23_B.fcs": 495410,
+      "Case28_O.fcs": 24857,
+      "Case28_N.fcs": 51,
+      "Case28_G.fcs": 10836,
+      "Case28_P.fcs": 117,
+      "Case28_K.fcs": 6897,
+      "Case28_B.fcs": 776482,
+      "Case30_O.fcs": 91772,
+      "Case30_N.fcs": 867,
+      "Case30_G.fcs": 5809,
+      "Case30_P.fcs": 149,
+      "Case30_K.fcs": 22690,
+      "Case30_B.fcs": 878727
+    },
+    "notes": "Rows are spread deterministically within each upstream labelled component so the bounded sample preserves patient composition. Test labels remain evaluation-only after dataset assembly."
+  }
+}

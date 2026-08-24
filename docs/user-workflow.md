@@ -115,3 +115,11 @@ new_bins = result.predict(scores_new)
 ```
 
 The result type makes the prediction representation explicit: variable-level results accept `X`, component-level results accept `Phi`, and score-level results accept scores.
+
+## 6. Connect labels to a downstream likelihood
+
+FisherBin does not estimate application parameters after assigning bins. A real
+analysis should freeze the partition, estimate its per-component bin templates
+on independent reference rows, and consume observed bin counts in its own
+likelihood. The [FlowCyt population-quantification use case](usecases/cellpopulation.md)
+shows this complete boundary for a six-component mixture.

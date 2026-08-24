@@ -54,6 +54,17 @@ The committed [synthetic evidence gallery](gallery/index.md) exercises analytic 
 
 [![Spatial-source optimization and diagnostics](gallery/spatial_sources.png)](gallery/index.md)
 
+## A realistic application
+
+The [FlowCyt cell-population use case](usecases/cellpopulation.md) learns a few
+hard multidimensional gates from labelled reference patients, keeps the labels
+of ten test patients out of inference, and estimates six population fractions
+from bin counts.
+On the frozen 600,000-cell study, eight gates retain 94.4% of held-out Fisher
+information and reach 0.00226 macro RMSE on the five target fractions.
+
+[![FlowCyt population quantification](usecases/assets/cell_population.png)](usecases/cellpopulation.md)
+
 !!! note "Pre-release project"
 
     FisherBin is currently installed from source. The mathematical v0.1 core is feature-complete; packaging and release hardening are tracked in the [roadmap](roadmap.md).

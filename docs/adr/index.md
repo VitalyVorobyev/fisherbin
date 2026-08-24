@@ -8,3 +8,4 @@ Only decisions that materially constrain future implementation are recorded here
 4. [ADR 0004 — Use a JAX-native core with an array-oriented boundary](0004-jax-first.md)
 5. [ADR 0005 — Make variables, components, and scores explicit API layers](0005-explicit-representations.md)
 6. [ADR 0006 — Publish generated documentation through GitHub Pages](0006-documentation-site.md)
+7. [ADR 0007 — Evolve the API around generic statistical contracts](0007-generic-api-evolution.md)

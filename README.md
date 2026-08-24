@@ -86,6 +86,13 @@ Set `JAX_ENABLE_X64=1` before Python for the high-precision reference mode used 
 
 The reproducible [synthetic gallery](docs/gallery/index.md) covers an analytic Gaussian score, non-monotonic spectral templates, and an importance-weighted spatial intensity model.
 
+The first realistic end-to-end case learns information-aware multidimensional
+gates for [cell-population quantification in the FlowCyt benchmark](docs/usecases/cellpopulation.md),
+then estimates six population fractions from frozen bin counts on held-out patients.
+The full 600,000-cell study covers all 30 patients; eight learned gates retain
+94.4% held-out Fisher information and reach 0.00226 macro RMSE on the five
+target fractions.
+
 ## Documents
 
 - [User workflow](docs/user-workflow.md)
@@ -95,6 +102,7 @@ The reproducible [synthetic gallery](docs/gallery/index.md) covers an analytic G
 - [Method](docs/method.md)
 - [System design](docs/system-design.md)
 - [Roadmap](docs/roadmap.md)
+- [FlowCyt cell-population use case](docs/usecases/cellpopulation.md)
 - [Architecture decisions](docs/adr/index.md)
 
 FisherBin is available under the [MIT license](LICENSE).

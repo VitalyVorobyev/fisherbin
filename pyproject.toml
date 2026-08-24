@@ -35,6 +35,8 @@ examples = [
     "matplotlib>=3.10",
     "nbclient>=0.10",
     "nbformat>=5.10",
+    "pandas>=2.3,<4",
+    "scikit-learn>=1.9,<2",
 ]
 
 [dependency-groups]

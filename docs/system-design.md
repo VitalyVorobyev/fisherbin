@@ -29,6 +29,12 @@ physical variables X -- LinearComponents --> component matrix Phi
 
 JAX is the v0.1 numerical implementation and Optax supplies Adam. The public concepts remain arrays, configs, transforms, reports, traces, and fitted partitions; no backend registry or protocol is introduced yet.
 
+The current API is not a compatibility target by itself. Public types and entry
+points may change when a smaller or more expressive domain-independent contract
+emerges. Dataset vocabulary, experiment splits, estimator selection, tuning,
+and reporting remain outside the core even when one use case would benefit from
+a convenience wrapper.
+
 ## Public workflows
 
 ```python
