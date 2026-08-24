@@ -38,7 +38,9 @@ nav:
   - Getting started:
       - User workflow: user-workflow.md
   - Examples:
-      - Synthetic evidence: gallery/index.md
+      - Evidence gallery: gallery/index.md
+  - Use cases:
+      - Cell population quantification: usecases/cellpopulation.md
   - Concepts:
       - Motivation: motivation.md
       - Method: method.md
@@ -64,6 +66,7 @@ nav:
       - JAX-native core: adr/0004-jax-first.md
       - Explicit representation layers: adr/0005-explicit-representations.md
       - Documentation and Pages deployment: adr/0006-documentation-site.md
+      - Generic API evolution: adr/0007-generic-api-evolution.md
 
 plugins:
   - search

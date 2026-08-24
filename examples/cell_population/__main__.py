@@ -1,0 +1,113 @@
+"""Command-line entry point for the FlowCyt example."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+import numpy as np
+
+from .data import (
+    REFERENCE_PATIENTS,
+    TEST_PATIENTS,
+    FlowCytData,
+    load_csv_directory_sampled,
+    load_fixture,
+)
+from .experiment import run_experiment
+from .figures import write_outputs
+from .fixture import write_fixture, write_remote_fixture, write_remote_sample
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the FlowCyt FisherBin use case")
+    source = parser.add_mutually_exclusive_group()
+    source.add_argument("--fixture", type=Path, help="compressed fixture path")
+    source.add_argument("--data-dir", type=Path, help="FlowCyt data_original directory")
+    parser.add_argument(
+        "--output-dir", type=Path, help="result directory (defaults under flowcyt-results)"
+    )
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--quick", action="store_true", help="use short optimizer settings")
+    mode.add_argument("--full", action="store_true", help="use the frozen research settings")
+    parser.add_argument("--bins", type=int, nargs="+", default=[5, 8, 10, 15, 20, 30])
+    parser.add_argument("--max-per-patient", type=int, default=20_000)
+    parser.add_argument("--write-fixture", type=Path, help="create fixture from --data-dir")
+    parser.add_argument(
+        "--download-fixture", type=Path, help="range-read the public FCS files into a fixture"
+    )
+    parser.add_argument(
+        "--download-sample",
+        type=Path,
+        help="range-read a bounded all-patient sample from the public FCS files",
+    )
+    parser.add_argument(
+        "--sample-blocks",
+        type=int,
+        default=16,
+        help="stratified contiguous ranges per component for --download-sample",
+    )
+    parser.add_argument("--download-workers", type=int, default=12)
+    parser.add_argument("--source-sha256", default="", help="upstream archive SHA-256")
+    return parser
+
+
+def _load_data(args: argparse.Namespace) -> FlowCytData:
+    if args.fixture is not None:
+        return load_fixture(args.fixture)
+    if args.data_dir is not None:
+        reference = load_csv_directory_sampled(
+            args.data_dir,
+            REFERENCE_PATIENTS,
+            max_per_patient=args.max_per_patient,
+        )
+        test = load_csv_directory_sampled(
+            args.data_dir,
+            TEST_PATIENTS,
+            max_per_patient=args.max_per_patient,
+            seed=2027,
+        )
+        return FlowCytData(
+            features=np.concatenate([reference.features, test.features]),
+            labels=np.concatenate([reference.labels, test.labels]),
+            patients=np.concatenate([reference.patients, test.patients]),
+            source_rows=np.concatenate([reference.source_rows, test.source_rows]),
+        )
+    default_fixture = Path("examples/data/flowcyt_fixture.npz")
+    return load_fixture(default_fixture)
+
+
+def main() -> None:
+    """Parse arguments, run the experiment, and write reproducible artifacts."""
+    args = _parser().parse_args()
+    if args.download_fixture is not None:
+        write_remote_fixture(args.download_fixture)
+        return
+    if args.download_sample is not None:
+        write_remote_sample(
+            args.download_sample,
+            max_per_patient=args.max_per_patient,
+            blocks_per_component=args.sample_blocks,
+            workers=args.download_workers,
+        )
+        return
+    if args.write_fixture is not None:
+        if args.data_dir is None or not args.source_sha256:
+            raise SystemExit("--write-fixture requires --data-dir and --source-sha256")
+        write_fixture(args.data_dir, args.write_fixture, source_sha256=args.source_sha256)
+        return
+    data = _load_data(args)
+    quick = args.quick or (not args.full and (args.fixture is not None or args.data_dir is None))
+    result = run_experiment(data, bin_counts=tuple(args.bins), quick=quick)
+    if args.fixture is not None:
+        manifest_path = args.fixture.with_suffix(".json")
+        if manifest_path.is_file():
+            result.metrics["source"] = json.loads(manifest_path.read_text(encoding="utf-8"))
+    output_dir = args.output_dir or Path("flowcyt-results") / ("quick" if quick else "full")
+    write_outputs(result, output_dir)
+    print(result.metrics["run"])
+
+
+if __name__ == "__main__":
+    main()
