@@ -116,7 +116,9 @@ def test_component_adapter() -> None:
     components = jnp.asarray([[1.0, 2.0], [3.0, 1.0]])
     coefficients = jnp.asarray([2.0, 0.5])
     expected = np.asarray(components) / (np.asarray(components) @ np.asarray(coefficients))[:, None]
-    np.testing.assert_allclose(scorequant.scores_from_components(components, coefficients), expected)
+    np.testing.assert_allclose(
+        scorequant.scores_from_components(components, coefficients), expected
+    )
     with pytest.raises(ValueError, match="strictly positive"):
         scorequant.scores_from_components(jnp.zeros((2, 2)), coefficients)
 
