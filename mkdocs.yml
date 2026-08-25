@@ -12,8 +12,6 @@ exclude_docs: |
   roadmap.md
   system-design.md
   adr/**
-  motivation.md
-  method.md
 
 theme:
   name: material
@@ -43,6 +41,10 @@ theme:
 
 nav:
   - Home: index.md
+  - Why ScoreQuant: motivation.md
+  - Method overview: method.md
+  - Three doors: three-doors.md
+  - Choosing your workflow: user-workflow.md
   - Book:
       - Overview: book/index.md
       - Likelihood, score, and score law: book/01-likelihood-score-law.md
@@ -64,11 +66,8 @@ nav:
   - Evidence:
       - Synthetic gallery: gallery/index.md
       - FlowCyt study: usecases/cellpopulation.md
-  - How-to and API:
-      - Workflow guide: user-workflow.md
-      - Sources and providers: score-sources.md
+  - API:
       - API guide: api.md
-      - Migration guide: migration.md
       - Reference:
           - Overview: reference/index.md
           - Fitting: reference/fitting.md
@@ -79,6 +78,7 @@ nav:
           - Information: reference/information.md
           - Transforms: reference/transforms.md
           - Visualization: reference/visualization.md
+  - Related work: related-work.md
   - Glossary: glossary.md
   - Bibliography: bibliography.md
 

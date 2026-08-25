@@ -1,114 +1,220 @@
-# Workflow guide
+# Choosing your workflow
 
-## Fixed score table: optimize its labels
+Four questions decide a ScoreQuant call: which task, which door, which criterion, which solver.
+This page answers them in that order. Every snippet runs, and they share one namespace.
 
-Use this when the rows themselves are the final object.
+```python
+import numpy as np
 
-<!-- TODO(phase2): illustrative fragment (scores/weights defined in prose); slated for docs rewrite. -->
-<!-- snippet: skip -->
+import scorequant as sq
+
+rng = np.random.default_rng(21)
+scores = rng.normal(size=(1_200, 2))  # N(mu, I2) at mu0 = 0 has s(x) = x
+weights = np.ones(scores.shape[0])
+```
+
+## 1. Which task?
+
+> **Will you ever label an event that is not in this table?**
+
+**No — the rows are the final object.** Use `optimize_partition`. You are solving a finite
+assignment problem, and the answer is a label vector for those rows. Typical cases: a frozen Monte
+Carlo template set, a fixed calibration sample, a study of how much information a given cell budget
+can retain.
+
+**Yes — future events must be labeled the same way.** Use `fit_quantizer`. You are choosing a
+geometric rule on score space, and the answer is something `predict_scores` can apply anywhere.
+Typical cases: a trigger, a gate applied to new runs, a categorization shipped with an analysis.
+
+`PartitionResult` has no predict method, and that is deliberate: many different rules reproduce the
+same labels on a finite sample and disagree everywhere else, so the sample optimum does not name
+one of them. The exception is a theorem — see the crossing below.
+
+## 2. Which door?
+
+The door is fixed by what you already have, not by preference:
+
+- Scores already computed \(\rightarrow\) `ScoreSample`, or pass the array straight to
+  `optimize_partition`.
+- A component or analytic model \(\rightarrow\) `LinearComponentScore` or `ScoreFunction`, paired
+  with `ObservationSample` or `IntegrationSource`.
+- A trained classifier \(\rightarrow\) `ClassifierScore` with `MixturePosteriorTransform` or
+  `CentralLogRatioTransform`, paired with `ObservationSample`.
+
+[Three doors](three-doors.md) works each one through in full, including the source-versus-provider
+contract and the shape rules.
+
+## 3. Which criterion?
+
+| Use | When |
+| --- | --- |
+| `DOptimality` | Every parameter matters. Maximizes \(\log\det I_B\), balancing all information directions; the default |
+| `ProfiledDOptimality(interest=...)` | Some parameters are of interest and the rest are nuisance. Maximizes the Schur complement of the interest block under the same labels |
+| `NormalizedTrace` | You want the well-understood baseline: after whitening it is exactly weighted k-means |
+
+`NormalizedTrace` is worth running even when `DOptimality` is the goal, because the gap between the
+two tells you whether the determinant geometry is buying anything on your data.
+
+## 4. Which solver?
+
+| Configuration | Choose it when |
+| --- | --- |
+| `DExchangeConfig` | Default for both D criteria. Exact positive-gain relocation, monotone, terminates exchange-stable |
+| `MahalanobisLloydConfig` | You want whole-sample relabeling in the criterion metric rather than row-by-row relocation; each proposed batch is still verified against the exactly rebuilt objective before it is accepted |
+| `SoftVoronoiConfig` | You want a reusable rule fitted directly in score space, including for profiled \(D_s\), and can accept a local optimum with a reported hardening gap |
+| `KMeansConfig` | Pairs with `NormalizedTrace`, and makes a fast, deterministic baseline |
+| `ScalarDPConfig` | The score space is rank one. Then the interval dynamic program returns the global optimum, not a local one |
+
+Unsupported pairs are rejected before optimization starts, so a mistake here is an immediate error
+rather than a silent substitution.
+
+## Fixed sample, D-optimal
+
 ```python
 partition = sq.optimize_partition(
     scores,
     weights=weights,
-    n_bins=8,
+    n_bins=5,
     criterion=sq.DOptimality(),
-    config=sq.DExchangeConfig(seed=11),
+    config=sq.DExchangeConfig(seed=21),
 )
-labels = partition.labels
+diagnostics = {
+    "stable": bool(partition.exchange_stable),
+    "best_remaining_gain": float(partition.best_remaining_gain),
+    "accepted_moves": partition.accepted_moves,
+    "scans": partition.scans,
+    "efficiency": float(partition.train_report.geometric_mean_retention),
+}
 ```
 
-Inspect `exchange_stable`, `best_remaining_gain`, `accepted_moves`, `scans`, cell statistics,
-information matrices, and `train_report`. Do not invent future labels from an ordinary partition.
+The exchange runs until no relocation improves the objective, accepting many verified relocations
+per scan; `max_scans` bounds the work, `batch_moves=False` forces one relocation per scan, and
+`n_restarts` with `init` searches several seeded starting labelings and keeps the best exact final
+objective.
 
-By default the exchange runs until no relocation improves the objective, accepting many verified
-relocations per scan. Set `max_scans` to bound the work, `batch_moves=False` for one relocation per
-scan, and `n_restarts`/`init` to search several seeded starting labelings.
+To check labels this solver did not produce — an external tool, a hand edit, a batch run stopped by
+`guard="reject"` — run one exact scan over them:
 
-`MahalanobisLloydConfig` is the other finite solver. It proposes the complete nearest-centroid
-relabeling in the current criterion metric and accepts it only when the exactly rebuilt objective
-strictly improves, since the unguarded batch step can lower it. Its default `guard="exchange"`
-finishes with exact relocations, so the result stays exchange-stable and compilable; `"reject"`
-stops at the last accepted batch and reports the stability it actually reached. Read
-`lloyd_iterations` and `accepted_lloyd_steps` next to `scans` and `accepted_moves`.
-
-To check labels the solver did not produce, call `sq.exchange_stability_report(scores, labels,
-weights=weights)`; to ask whether an exchange result is globally optimal on a small score table,
-call `sq.certify_partition(scores, weights=weights, n_bins=8, incumbent=partition.labels)` and read
-`status`, `gap`, and `incumbent_was_optimal`.
-
-## Ready scores: learn a reusable rule
-
-<!-- TODO(phase2): illustrative fragment (scores/weights/provenance defined in prose); slated for docs rewrite. -->
-<!-- snippet: skip -->
 ```python
+report = sq.exchange_stability_report(scores, partition.labels, weights=weights)
+stability = (bool(report.stable), float(report.best_gain), report.best_move)
+```
+
+## The one crossing: compiling a partition
+
+If, and only if, an exchange-stable D partition has nonsingular between-cell information, its
+labels are already the strict Voronoi partition of the \(I_B^{-1}\)-Mahalanobis metric. That rule
+is canonical, so it can be handed back:
+
+```python
+if partition.exchange_stable:
+    compiled = partition.compile_quantizer()
+    future_bins = compiled.predict_scores(rng.normal(loc=0.2, size=(300, 2)))
+```
+
+`compile_quantizer()` verifies that the compiled rule reproduces every positive-weight training
+label, and refuses an unstable or degenerate result. It exists only for `DOptimality`: exact
+fixtures show that a globally optimal profiled partition can violate the corresponding nearest-cell
+geometry, so a profiled result has no compilation method that could succeed by accident.
+
+## Reusable rule from ready scores
+
+Fit the rule directly when that is what you actually want, and let validation stay diagnostic:
+
+```python
+holdout = rng.normal(size=(400, 2))
 quantizer = sq.fit_quantizer(
-    sq.ScoreSample(scores, weights, provenance=provenance),
-    validation=sq.ScoreSample(validation_scores, validation_weights),
-    n_bins=8,
+    sq.ScoreSample(scores, weights),
+    validation=sq.ScoreSample(holdout),
+    n_bins=5,
     criterion=sq.DOptimality(),
-    config=sq.SoftVoronoiConfig(seed=11),
+    config=sq.SoftVoronoiConfig(seed=21, n_init=4, max_steps=120, record_every=20),
 )
-labels_new = quantizer.predict_scores(scores_new)
-report_new = quantizer.evaluate_scores(scores_new, weights_new)
+soft_fit = {
+    "train": float(quantizer.train_report.geometric_mean_retention),
+    "validation": float(quantizer.validation_report.geometric_mean_retention),
+    "hardening_gap": float(quantizer.hardening_gap),
+    "objective_label": quantizer.trace.objective_label,
+}
 ```
 
-Validation is diagnostic only. Use `NormalizedTrace` with `KMeansConfig` for the weighted k-means
-baseline or `DOptimality` with `DExchangeConfig` for theorem-backed finite-D compilation.
+The hardening gap is the difference between the last soft objective and the retention of the final
+hard labels. A large gap means the annealed surrogate did not commit; judge the run by the hard
+number, never by the soft one.
 
-## Physical observations and an exact callback
+The k-means baseline for comparison:
 
-<!-- TODO(phase2): illustrative fragment (score_fn/X_train/weights defined in prose); slated for docs rewrite. -->
-<!-- snippet: skip -->
 ```python
-provider = sq.ScoreFunction(score_fn, provenance=sq.ScoreProvenance(kind="exact"))
-quantizer = sq.fit_quantizer(
-    sq.ObservationSample(X_train, weights),
-    score=provider,
-    n_bins=8,
+baseline = sq.fit_quantizer(
+    sq.ScoreSample(scores, weights),
+    n_bins=5,
+    criterion=sq.NormalizedTrace(),
+    config=sq.KMeansConfig(seed=21, n_init=4),
 )
-labels_new = quantizer.predict_scores(provider.score(X_new))
+baseline_efficiency = float(baseline.train_report.geometric_mean_retention)
 ```
 
-No ambiguous observation-space prediction is hidden inside the result.
+## Parameters of interest with nuisance
 
-## Linear components
+For a profiled objective, compute the certified ceiling first and use its labels as the
+initializer. The bound is exact for one interest parameter, so the remaining gap is a real
+measurement of how much the solver left on the table:
 
-<!-- TODO(phase2): illustrative fragment (signal/background/X_mc defined in prose); slated for docs rewrite. -->
-<!-- snippet: skip -->
 ```python
-model = sq.LinearComponents(
-    components={"signal": signal, "background": background},
-    coefficients={"signal": 1.0, "background": 0.4},
+bound = sq.efficient_score_bound(scores, interest=(0,), weights=weights, n_bins=5)
+profiled = sq.optimize_partition(
+    scores,
+    weights=weights,
+    n_bins=5,
+    criterion=sq.ProfiledDOptimality(interest=(0,)),
+    config=sq.DExchangeConfig(seed=21),
+    initial_labels=bound.labels,
 )
-provider = sq.LinearComponentScore(model)
-quantizer = sq.fit_quantizer(
-    sq.ObservationSample(X_mc, mc_weights),
-    score=provider,
-    n_bins=8,
-)
+profiled_gap = float(bound.gap_to(profiled))
 ```
 
-If component values are already evaluated, call `scores_from_components(Phi, coefficients)` and
-then choose either fixed assignment or reusable quantizer fitting.
+`gap_to` is nonnegative up to floating-point error. More than one interest column raises
+`NotImplementedError` rather than returning an uncertified number.
 
-## Bounded model without a sampled table
+## Rank-one score spaces
 
-<!-- TODO(phase2): illustrative fragment (provider defined in prose); slated for docs rewrite. -->
-<!-- snippet: skip -->
+When the informative score space is one-dimensional — one parameter, or a model whose scores
+collapse to a single direction — the optimal cells are ordered intervals and the exact dynamic
+program finds the global optimum:
+
 ```python
-source = sq.IntegrationSource(
-    [[-1.0, 1.0]],
-    density=lambda x: 0.5 * np.ones(len(x)),
-    quadrature=sq.GaussLegendreConfig(order=24),
+scalar = sq.fit_quantizer(
+    sq.ScoreSample(np.asarray(scores[:, :1])),
+    n_bins=5,
+    criterion=sq.DOptimality(),
+    config=sq.ScalarDPConfig(),
 )
-quantizer = sq.fit_quantizer(source, score=provider, n_bins=4)
+scalar_efficiency = float(scalar.train_report.geometric_mean_retention)
 ```
 
-This path is for low-dimensional bounded domains. Use an empirical source for high-dimensional
-observations.
+A higher-rank score space is rejected by name rather than approximated, and `max_rows` bounds the
+exact quadratic recursion.
 
-## Ready classifier probabilities
+## Proving a small instance optimal
 
-Construct a pure transform, wrap the already trained callback in `ClassifierScore`, and retain all
-training/calibration/fold details in application evidence. Evaluate true-score information
-separately whenever an exact validation score is available.
+For a genuinely small table, global optimality can be decided rather than assumed:
+
+```python
+small = rng.normal(size=(24, 2))
+incumbent = sq.optimize_partition(small, n_bins=3, config=sq.DExchangeConfig(seed=1))
+certificate = sq.certify_partition(small, n_bins=3, incumbent=incumbent.labels)
+verdict = (certificate.status, float(certificate.gap), bool(certificate.incumbent_was_optimal))
+```
+
+The search is exponential in the number of distinct score atoms, so `CertificationConfig` guards
+both the node budget and the instance size and refuses an oversized problem by name. A spent budget
+returns `status="budget_exhausted"` with the outstanding gap — never a claim of optimality.
+
+## What to read afterwards
+
+Whatever the path, check the same handful of numbers: the retention spectrum and its geometric mean
+(the D-efficiency), the effective rank against the number of parameters, the bin weights and
+effective sample sizes, `exchange_stable` with `best_remaining_gain`, the geometry report's
+Voronoi violation, and the score provenance behind `information_kind`. The
+[API guide](api.md) states what each one means; [Method overview](method.md) explains where they
+come from.
