@@ -12,6 +12,10 @@ centroid in that metric, and recomputes the binned information is *not*
 monotone: the tangent of the concave log determinant is an upper bound, not a
 minorizer. Every batch proposal is therefore accepted only against the exactly
 rebuilt objective, exactly as guarded batch exchange acceptance already is.
+
+The same scan certifies labels the engine did not produce:
+``exchange_stability_report`` runs one scan and nothing else, so a labeling of
+any origin can be checked before it is trusted.
 """
 
 from __future__ import annotations
@@ -34,11 +38,22 @@ from .config import DExchangeConfig, KMeansConfig, MahalanobisLloydConfig, Parti
 from .criteria import DOptimality, ProfiledDOptimality
 from .information import _profiled_blocks, information_report, profiled_information_report
 from .quantizers import hard_assign, weighted_kmeans
-from .result import PartitionResult, ProfiledGeometryReport, ProfiledInformationReport
+from .result import (
+    GeometryReport,
+    PartitionResult,
+    ProfiledGeometryReport,
+    ProfiledInformationReport,
+    StabilityReport,
+)
 from .sources import ScoreProvenance
 from .transforms import FisherTransform, fisher_transform
 
 _CANDIDATE_WORKING_SET_BYTES = 64 * 1024 * 1024
+
+# Relative slack allowed when certifying the leverage bound q_delta <= 1/W_a +
+# 1/W_b. The bound is exact mathematics, so this only absorbs the rounding of
+# one inverse and two quadratic forms; it never hides a real violation.
+_SEPARATION_RTOL = 1e-8
 
 # Strict positive-gain acceptance cannot revisit a labeling, so the exchange
 # terminates without any scan cap. This bound only stops a run that a numerical
@@ -317,11 +332,7 @@ def optimize_d_partition(
 ) -> PartitionResult:
     """Optimize arbitrary labels of one fixed weighted score table."""
     prepared = _prepare_partition(scores, weights, n_bins=n_bins, config=config)
-    if n_bins < prepared.transform.rank:
-        raise ValueError(
-            "D-optimality requires at least as many bins as informative directions; "
-            "a normalized mean-zero score law generally requires one additional bin"
-        )
+    _require_d_bin_budget(prepared, n_bins)
     run = _optimize_labels(
         points=prepared.coordinates,
         coordinates=prepared.coordinates,
@@ -358,7 +369,17 @@ def optimize_d_partition(
         provenance=provenance,
         transformed_centers=state.means,
         metric=state.inverse,
+        geometry=_geometry_report(prepared.coordinates, prepared.weights, run.labels, state),
     )
+
+
+def _require_d_bin_budget(prepared: _PreparedPartition, n_bins: int) -> None:
+    """Reject a cell budget that cannot make the binned D information regular."""
+    if n_bins < prepared.transform.rank:
+        raise ValueError(
+            "D-optimality requires at least as many bins as informative directions; "
+            "a normalized mean-zero score law generally requires one additional bin"
+        )
 
 
 def optimize_profiled_d_partition(
@@ -431,6 +452,142 @@ def optimize_profiled_d_partition(
     )
 
 
+def exchange_stability_report(
+    scores: ArrayLike,
+    labels: ArrayLike,
+    *,
+    weights: ArrayLike | None = None,
+    criterion: DOptimality | ProfiledDOptimality | None = None,
+    rank_rtol: float | None = None,
+    gain_tolerance: float = 1e-10,
+) -> StabilityReport:
+    """Certify one supplied labeling against every single-row relocation.
+
+    This runs exactly one complete exact scan of the same engine
+    ``optimize_partition`` uses, on labels of any origin: a guarded
+    Mahalanobis-Lloyd run stopped by ``guard="reject"``, an external tool, or a
+    hand edit. Nothing is optimized and nothing is repaired; the report states
+    whether an improving relocation exists and, when it does, names it.
+
+    Rows are scanned as supplied. Identical score rows are deliberately not
+    merged, because relocating one row of a repeated score atom is an ordinary
+    single-point move that the certificate must consider.
+
+    Parameters
+    ----------
+    scores
+        Finite score matrix with shape ``[N, P]``.
+    labels
+        Integer labeling with shape ``[N]``. Cell count is taken from the
+        labels, and every cell below it must hold positive weight. Labels of
+        zero-weight rows carry no measure but still count toward the declared
+        cell range.
+    weights
+        Optional finite, nonnegative weights with shape ``[N]``.
+    criterion
+        ``DOptimality`` by default; ``ProfiledDOptimality`` certifies the
+        same-label profiled objective instead.
+    rank_rtol
+        Relative threshold of the informative Fisher subspace, matching the
+        solver configuration that produced the labels.
+    gain_tolerance
+        Strict minimum gain that counts as an improvement, matching the
+        ``gain_tolerance`` of the solver configuration.
+
+    Returns
+    -------
+    StabilityReport
+        Stability verdict, exact objective, best remaining gain, and the
+        improving move in original row indexing when one exists.
+    """
+    resolved = DOptimality() if criterion is None else criterion
+    if not isinstance(resolved, (DOptimality, ProfiledDOptimality)):
+        raise TypeError("exchange stability supports DOptimality or ProfiledDOptimality")
+    sample = validate_sample(scores, weights)
+    n_bins, effective_labels = _validate_labeling(labels, sample)
+    points, objective = _stability_objective(sample, resolved, rank_rtol=rank_rtol)
+    weights_array = sample.effective_weights
+    state = objective.init_state(
+        _cell_statistics(points, weights_array, jnp.asarray(effective_labels), n_bins)
+    )
+    outcome = _scan(
+        points,
+        weights_array,
+        effective_labels,
+        state,
+        objective,
+        DExchangeConfig(rank_rtol=rank_rtol, gain_tolerance=gain_tolerance),
+        rows=False,
+    )
+    best_gain = float("-inf") if outcome.best is None else outcome.best.gain
+    stable = best_gain <= gain_tolerance
+    best_move = None
+    if not stable and outcome.best is not None:
+        rows = np.flatnonzero(np.asarray(sample.positive_weight_mask))
+        best_move = (int(rows[outcome.best.row]), int(outcome.best.destination))
+    return StabilityReport(
+        stable=stable,
+        best_gain=best_gain,
+        best_move=best_move,
+        objective=state.objective,
+        n_bins=n_bins,
+        criterion=resolved,
+    )
+
+
+def _validate_labeling(labels: ArrayLike, sample: _ValidatedSample) -> tuple[int, np.ndarray]:
+    """Return the declared cell count and the positive-weight part of a labeling."""
+    array = jnp.asarray(labels)
+    n_rows = int(sample.scores.shape[0])
+    if array.shape != (n_rows,):
+        raise ValueError(f"labels must have shape [{n_rows}], got {array.shape}")
+    if not jnp.issubdtype(array.dtype, jnp.integer):
+        raise TypeError("labels must contain integer bin labels")
+    declared = np.asarray(array, dtype=np.int64)
+    if int(declared.min()) < 0:
+        raise ValueError("labels must be nonnegative bin indices")
+    n_bins = int(declared.max()) + 1
+    effective = declared[np.asarray(sample.positive_weight_mask)]
+    if int(np.bincount(effective, minlength=n_bins)[:n_bins].min()) == 0:
+        raise ValueError(
+            f"labels declare {n_bins} cells but at least one of them holds no "
+            "positive-weight row; every declared cell must carry measure"
+        )
+    return n_bins, effective
+
+
+def _stability_objective(
+    sample: _ValidatedSample,
+    criterion: DOptimality | ProfiledDOptimality,
+    *,
+    rank_rtol: float | None,
+) -> tuple[jnp.ndarray, _ExchangeObjective]:
+    """Build the scan coordinates and criterion algebra of a supplied labeling.
+
+    The D scan runs in Fisher-whitened coordinates and the profiled scan runs in
+    the declared interest/nuisance parameterization, exactly as the two solvers
+    do, so the reported objective matches ``PartitionResult.objective``.
+    """
+    scores = sample.effective_scores
+    information = jnp.einsum("n,np,nq->pq", sample.effective_weights, scores, scores)
+    transform = fisher_transform(information, whiten=True, rank_rtol=rank_rtol)
+    if isinstance(criterion, DOptimality):
+        return transform.apply(scores), _DObjective()
+    dimension = int(scores.shape[1])
+    if any(index >= dimension for index in criterion.interest):
+        raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
+    interest = set(criterion.interest)
+    nuisance = tuple(index for index in range(dimension) if index not in interest)
+    if not nuisance:
+        raise ValueError("profiled D requires a nuisance block; use DOptimality")
+    if transform.rank != dimension:
+        raise ValueError(
+            "profiled D requires full-rank supplied-score information in the declared "
+            "interest/nuisance parameterization"
+        )
+    return scores, _ProfiledDObjective(interest=criterion.interest, nuisance=nuisance)
+
+
 def _partition_result(
     prepared: _PreparedPartition,
     run: _ExchangeRun,
@@ -443,6 +600,7 @@ def _partition_result(
     provenance: ScoreProvenance,
     transformed_centers: jnp.ndarray | None = None,
     metric: jnp.ndarray | None = None,
+    geometry: GeometryReport | None = None,
     profiled_report: ProfiledInformationReport | None = None,
     profiled_geometry: ProfiledGeometryReport | None = None,
 ) -> PartitionResult:
@@ -479,6 +637,7 @@ def _partition_result(
         best_remaining_gain=run.best_remaining_gain,
         objective_history=jnp.asarray(run.objective_history),
         positive_weight_mask=sample.positive_weight_mask,
+        geometry=geometry,
         profiled_report=profiled_report,
         profiled_geometry=profiled_geometry,
     )
@@ -1244,6 +1403,79 @@ def _candidate_chunk_rows(scores: jnp.ndarray, n_bins: int) -> int:
     values_per_row = n_bins * (rank + 4) + 4 * rank
     return max(
         1, min(scores.shape[0], _CANDIDATE_WORKING_SET_BYTES // (item_size * values_per_row))
+    )
+
+
+def _geometry_report(
+    coordinates: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: jnp.ndarray,
+    state: _ExchangeState,
+) -> GeometryReport:
+    """Measure the self-consistent Voronoi geometry of a terminal D state.
+
+    Distances are evaluated once per row chunk against every cell, so the same
+    ``[chunk, B]`` table supplies the own-cell distance, the nearest competing
+    distance, and the Voronoi-violating move set. The cell-separation lemma
+    needs only the ``[B, B]`` table of centroid distances.
+    """
+    n_bins = int(state.weights.shape[0])
+    n_rows = int(coordinates.shape[0])
+    destinations = np.arange(n_bins)
+    cell_weights = np.asarray(state.weights, dtype=np.float64)
+
+    differences = state.means[:, None, :] - state.means[None, :, :]
+    separations = np.asarray(
+        jnp.einsum("abr,rs,abs->ab", differences, state.inverse, differences), dtype=np.float64
+    )
+    leverage = 1 / cell_weights[:, None] + 1 / cell_weights[None, :]
+    pairs = np.triu(np.ones((n_bins, n_bins), dtype=bool), k=1)
+    separation_residual = float(np.max(np.where(pairs, separations - leverage, -np.inf)))
+    separation_scale = float(np.max(np.where(pairs, leverage, 0.0)))
+
+    worst_violation = -np.inf
+    guaranteed_gain = 0.0
+    violating = 0
+    evaluated = 0
+    chunk_rows = _candidate_chunk_rows(coordinates, n_bins)
+    label_array = jnp.asarray(labels)
+    for start in range(0, n_rows, chunk_rows):
+        stop = min(start + chunk_rows, n_rows)
+        residuals = coordinates[start:stop, None, :] - state.means[None, :, :]
+        distances = np.asarray(
+            jnp.einsum("nbr,rs,nbs->nb", residuals, state.inverse, residuals), dtype=np.float64
+        )
+        sources = np.asarray(label_array[start:stop], dtype=np.int64)
+        row_weights = np.asarray(weights[start:stop], dtype=np.float64)
+        own = distances[np.arange(stop - start), sources]
+        elsewhere = destinations[None, :] != sources[:, None]
+        worst_violation = max(
+            worst_violation, float(np.max(own - np.min(np.where(elsewhere, distances, np.inf), 1)))
+        )
+
+        source_weights = cell_weights[sources]
+        shrinks = source_weights > row_weights
+        admissible = shrinks[:, None] & elsewhere
+        violates = admissible & (own[:, None] >= distances)
+        alpha = row_weights * source_weights / np.where(shrinks, source_weights - row_weights, 1.0)
+        beta = (
+            row_weights[:, None]
+            * cell_weights[None, :]
+            / (cell_weights[None, :] + row_weights[:, None])
+        )
+        bounds = np.log1p(alpha[:, None] * beta * separations[sources] ** 2 / 4)
+        guaranteed_gain = max(guaranteed_gain, float(np.max(np.where(violates, bounds, 0.0))))
+        violating += int(np.count_nonzero(violates))
+        evaluated += int(np.count_nonzero(admissible))
+
+    return GeometryReport(
+        maximum_voronoi_violation=worst_violation,
+        guaranteed_violation_gain=guaranteed_gain,
+        maximum_separation_residual=separation_residual,
+        violating_moves=violating,
+        evaluated_moves=evaluated,
+        voronoi_consistent=worst_violation <= 0.0,
+        separation_certified=separation_residual <= _SEPARATION_RTOL * separation_scale,
     )
 
 

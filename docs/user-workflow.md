@@ -29,6 +29,11 @@ finishes with exact relocations, so the result stays exchange-stable and compila
 stops at the last accepted batch and reports the stability it actually reached. Read
 `lloyd_iterations` and `accepted_lloyd_steps` next to `scans` and `accepted_moves`.
 
+To check labels the solver did not produce, call `sq.exchange_stability_report(scores, labels,
+weights=weights)`; to ask whether an exchange result is globally optimal on a small score table,
+call `sq.certify_partition(scores, weights=weights, n_bins=8, incumbent=partition.labels)` and read
+`status`, `gap`, and `incumbent_was_optimal`.
+
 ## Ready scores: learn a reusable rule
 
 ```python

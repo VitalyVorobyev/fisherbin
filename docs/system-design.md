@@ -35,7 +35,11 @@ plugin until multiple implementations demonstrate a stable common contract.
 
 - `information.py`: Fisher and retained-information algebra.
 - `transforms.py`: informative subspace and whitening.
-- `partition.py`: exact D finite relocation and the private small-instance oracle.
+- `partition.py`: exact D finite relocation, its standalone stability certificate, and geometry
+  diagnostics.
+- `certify.py`: explicit bounded branch-and-bound global certification of D partitions. Its tree
+  search is sequential NumPy in float64: per-node JAX dispatch would dominate a search whose nodes
+  are one small log determinant each.
 - `quantizers.py`: private weighted k-means and soft-D numerical kernels.
 - `sources.py`: empirical and quadrature measures plus provenance.
 - `providers.py`: framework-neutral observation-to-score adapters.

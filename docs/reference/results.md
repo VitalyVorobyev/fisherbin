@@ -8,6 +8,8 @@
 
 ::: scorequant.ProfiledInformationReport
 
+::: scorequant.GeometryReport
+
 ::: scorequant.ProfiledGeometryReport
 
 ::: scorequant.EfficientScoreBound

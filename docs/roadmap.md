@@ -109,6 +109,14 @@ In order: population samplers and moment oracles; branch-and-bound certificates;
 factorization updates; then versioned persistence. Signed weights, additional backends, and advanced
 objectives remain outside scope until their mathematical contracts and independent use cases exist.
 
+**Certificate gate completed:** `exchange_stability_report` certifies any supplied labeling with one
+exact scan and reproduces the engine's own `best_remaining_gain`; `PartitionResult.geometry` reports
+the Voronoi violation, the Theorem-3 guaranteed gain, and the cell-separation residual of a D
+partition; and `certify_partition` proves global optimality by branch and bound with the
+singleton-completion bound, agreeing with the exhaustive oracle on seeded weighted and unweighted
+instances and downgrading to `status="budget_exhausted"` with a genuine outstanding bound when its
+node budget runs out. Certification is D-only and never runs implicitly, per ADR 0013.
+
 ## Explicitly outside the development plan
 
 An E-optimal solver is not planned. The E-optimality chapter and deterministic counterexample stay

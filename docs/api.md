@@ -80,6 +80,48 @@ returns the remaining slack and is nonnegative up to floating-point error; `labe
 `NotImplementedError`, because a multivariate efficient score would need a multivariate solver and
 the result would no longer be certified.
 
+## Certificates
+
+```python
+exchange_stability_report(
+    scores,
+    labels,
+    *,
+    weights=None,
+    criterion=None,
+    rank_rtol=None,
+    gain_tolerance=1e-10,
+) -> StabilityReport
+
+certify_partition(
+    scores,
+    *,
+    weights=None,
+    n_bins,
+    incumbent=None,
+    criterion=None,
+    rank_rtol=None,
+    config=None,
+) -> PartitionCertificate
+```
+
+`exchange_stability_report` runs exactly one complete exact scan of a supplied labeling and
+nothing else, so labels from any source — a `guard="reject"` batch result, an external tool, a
+hand edit — can be checked before they are trusted. It reports the exact objective, the best
+remaining gain, and the improving `(row, destination)` move when one exists. The cell count comes
+from the labels, and every declared cell must hold positive weight.
+
+`certify_partition` decides global optimality by branch and bound with the singleton-completion
+upper bound: unassigned atoms are left as singleton cells, so refinement monotonicity of the log
+determinant bounds every completion of a partial assignment. It starts from an incumbent — normally
+`PartitionResult.labels`, otherwise one default exchange — and returns `status="optimal"` only when
+the tree was exhausted; a spent node budget returns `status="budget_exhausted"` with the best
+outstanding bound and the remaining `gap`. The search is exponential, so `CertificationConfig`
+guards both the node count and the number of distinct score atoms, refusing an oversized instance
+by name. Certification is `DOptimality` only: the refinement bound uses Loewner monotonicity of
+`logdet`, which the profiled Schur objective does not inherit, and a profiled criterion is rejected
+rather than approximated. Neither entry point ever runs implicitly during fitting.
+
 ## Result semantics
 
 `PartitionResult` has labels, cell statistics, information matrices, `rank`, `accepted_moves`,
@@ -89,6 +131,15 @@ the default `batch_moves` a single scan may relocate many rows, so `accepted_mov
 exceeds `scans`. The two Lloyd counters stay zero unless the guarded batch solver ran, and
 `objective_history` records every accepted step of every phase in order. Its `compile_quantizer()`
 rejects an unstable or geometrically degenerate result.
+
+Geometry diagnostics are criterion-specific and never shared. A `DOptimality` result carries
+`geometry`, a `GeometryReport` measuring the largest Mahalanobis-Voronoi violation of the terminal
+metric, the guaranteed log-determinant gain such a violation would leave on the table, and the
+cell-separation residual against the leverage bound; a `ProfiledDOptimality` result carries
+`profiled_geometry` instead and leaves `geometry` as `None`. The two describe different objects —
+a strict Voronoi rule that exchange stability forces, and an efficient semimetric whose Voronoi
+rule a stable profiled partition may violate — so one shared name would claim an implication that
+does not hold.
 
 `QuantizerResult.predict_scores(scores)` is the only prediction method. `evaluate_scores` assigns
 new scores with the frozen rule and computes supplied-score information. The stored transform,

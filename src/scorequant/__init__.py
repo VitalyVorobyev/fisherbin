@@ -1,6 +1,7 @@
 """Information-preserving hard quantization for statistical inference."""
 
 from .api import fit_quantizer, optimize_partition
+from .certify import CertificationConfig, certify_partition
 from .components import (
     LinearComponents,
     LinearProblem,
@@ -24,6 +25,7 @@ from .information import (
     information_report,
     profiled_information_report,
 )
+from .partition import exchange_stability_report
 from .providers import (
     CentralLogRatioTransform,
     ClassifierScore,
@@ -33,12 +35,15 @@ from .providers import (
 )
 from .result import (
     EfficientScoreBound,
+    GeometryReport,
     InformationReport,
     OptimizationTrace,
+    PartitionCertificate,
     PartitionResult,
     ProfiledGeometryReport,
     ProfiledInformationReport,
     QuantizerResult,
+    StabilityReport,
 )
 from .sources import (
     GaussLegendreConfig,
@@ -52,12 +57,14 @@ from .visualization import plot_information, plot_optimization, plot_partition, 
 
 __all__ = [
     "CentralLogRatioTransform",
+    "CertificationConfig",
     "ClassifierScore",
     "DExchangeConfig",
     "DOptimality",
     "EfficientScoreBound",
     "FisherTransform",
     "GaussLegendreConfig",
+    "GeometryReport",
     "InformationReport",
     "IntegrationSource",
     "KMeansConfig",
@@ -69,19 +76,23 @@ __all__ = [
     "NormalizedTrace",
     "ObservationSample",
     "OptimizationTrace",
+    "PartitionCertificate",
     "PartitionResult",
     "ProfiledDOptimality",
     "ProfiledGeometryReport",
     "ProfiledInformationReport",
     "QuantizerResult",
+    "ScalarDPConfig",
     "ScoreFunction",
     "ScoreProvenance",
     "ScoreSample",
-    "ScalarDPConfig",
     "SoftVoronoiConfig",
+    "StabilityReport",
     "binned_fisher_information",
+    "certify_partition",
     "efficient_score_bound",
     "efficient_scores",
+    "exchange_stability_report",
     "fisher_information",
     "fit_quantizer",
     "fractional_fisher_information",

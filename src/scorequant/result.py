@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import jax.numpy as jnp
 import numpy as np
@@ -72,6 +72,104 @@ class ProfiledInformationReport:
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible profiled-information representation."""
+        return json_ready(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
+class GeometryReport:
+    r"""Certify the self-consistent Voronoi geometry of a finite D partition.
+
+    At a one-point-exchange-stable, positive-definite D partition every
+    admissible move that violates the Mahalanobis-Voronoi rule of the terminal
+    metric \(I^{-1}\) would raise the log determinant by at least
+    \(\log(1+\alpha\beta q_\delta^2/4)>0\), where
+    \(q_\delta=(\mu_a-\mu_b)^\top I^{-1}(\mu_a-\mu_b)\) separates the two cell
+    means. Exchange stability therefore forces strict Voronoi geometry, which is
+    what makes ``PartitionResult.compile_quantizer`` well posed. This report
+    measures both sides of that statement on the terminal state instead of
+    assuming them.
+
+    All quadratic forms use the same metric and cell means the solver ended
+    with, evaluated over the distinct positive-weight score atoms.
+
+    Attributes
+    ----------
+    maximum_voronoi_violation
+        Largest value over rows of the own-cell distance minus the smallest
+        other-cell distance. A nonpositive value means every row already sits in
+        its nearest cell under the terminal metric. It is ``-inf`` for a
+        single-cell partition, which has no alternative destination.
+    guaranteed_violation_gain
+        Largest Theorem-3 lower bound \(\log(1+\alpha\beta q_\delta^2/4)\) over
+        admissible Voronoi-violating moves, and exactly ``0.0`` when no such
+        move exists. A positive value is the log-determinant gain that
+        exchange stability rules out.
+    maximum_separation_residual
+        Largest value over unordered cell pairs of \(q_\delta-(1/W_a+1/W_b)\).
+        The leverage lemma makes this nonpositive for every labeling, so a
+        positive value indicates numerical trouble rather than a better
+        partition. It is ``-inf`` for a single-cell partition.
+    violating_moves, evaluated_moves
+        Number of admissible Voronoi-violating moves and of admissible moves.
+        A move is admissible when its source cell keeps positive weight and its
+        destination differs from its source.
+    voronoi_consistent
+        Whether ``maximum_voronoi_violation`` is nonpositive.
+    separation_certified
+        Whether ``maximum_separation_residual`` respects the leverage lemma up
+        to a small relative floating-point tolerance.
+    """
+
+    maximum_voronoi_violation: float
+    guaranteed_violation_gain: float
+    maximum_separation_residual: float
+    violating_moves: int
+    evaluated_moves: int
+    voronoi_consistent: bool
+    separation_certified: bool
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible Voronoi-geometry representation."""
+        return json_ready(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
+class StabilityReport:
+    """Certify that no single-row relocation improves one supplied labeling.
+
+    The report is produced by ``exchange_stability_report`` from exactly one
+    complete exact scan, so it verifies labels of any origin: a guarded
+    Mahalanobis-Lloyd run that stopped early, an external tool, or a hand edit.
+
+    Attributes
+    ----------
+    stable
+        Whether no admissible relocation improves the criterion by more than the
+        requested gain tolerance.
+    best_gain
+        Largest exact objective gain found in the scan. It is ``-inf`` when the
+        labeling admits no relocation at all.
+    best_move
+        ``(row, destination)`` of that gain in original input row indexing, or
+        ``None`` when the labeling is stable.
+    objective
+        Exact criterion value of the supplied labeling, in the convention
+        ``PartitionResult.objective`` uses for the same criterion.
+    n_bins
+        Number of cells the labeling declares.
+    criterion
+        Criterion the scan certified against.
+    """
+
+    stable: bool
+    best_gain: float
+    best_move: tuple[int, int] | None
+    objective: float
+    n_bins: int
+    criterion: DOptimality | ProfiledDOptimality
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible stability representation."""
         return json_ready(asdict(self))
 
 
@@ -233,6 +331,14 @@ class PartitionResult:
     ``accepted_lloyd_steps`` describe guarded batch relabelings. Both stay zero
     for a solver that performs neither. ``objective_history`` records every
     accepted step of every phase in order and is strictly increasing.
+
+    Geometry diagnostics are criterion-specific and never shared: a
+    ``DOptimality`` result carries ``geometry`` and no ``profiled_geometry``, a
+    ``ProfiledDOptimality`` result carries ``profiled_geometry`` and no
+    ``geometry``. The two measure different objects — a strict Mahalanobis
+    Voronoi rule that exchange stability guarantees, and an efficient
+    semimetric whose Voronoi rule a stable profiled partition may violate — so
+    one name for both would claim an implication that does not hold.
     """
 
     labels: jnp.ndarray
@@ -258,6 +364,7 @@ class PartitionResult:
     positive_weight_mask: jnp.ndarray
     lloyd_iterations: int = 0
     accepted_lloyd_steps: int = 0
+    geometry: GeometryReport | None = None
     profiled_report: ProfiledInformationReport | None = None
     profiled_geometry: ProfiledGeometryReport | None = None
 
@@ -363,6 +470,7 @@ class PartitionResult:
                 "exchange_stable": self.exchange_stable,
                 "best_remaining_gain": self.best_remaining_gain,
                 "objective_history": self.objective_history,
+                "geometry": (None if self.geometry is None else self.geometry.to_dict()),
                 "profiled_report": (
                     None if self.profiled_report is None else self.profiled_report.to_dict()
                 ),
@@ -371,6 +479,59 @@ class PartitionResult:
                 ),
             }
         )
+
+
+@dataclass(frozen=True, slots=True)
+class PartitionCertificate:
+    r"""Report what a bounded global D search actually proved.
+
+    ``certify_partition`` explores hard labelings with the singleton-completion
+    upper bound: any completion of a partial assignment is coarser than the
+    partial cells together with singleton cells for the unassigned atoms, so
+    Loewner monotonicity of the log determinant makes
+    \(\log\det(I_{\text{partial}}+R_t)\) a valid ceiling for the whole subtree.
+    The search is exponential in the worst case and therefore explicitly
+    bounded; the certificate always states which of the two outcomes occurred.
+
+    Attributes
+    ----------
+    status
+        ``"optimal"`` when the tree was exhausted, so no labeling beats
+        ``objective`` by more than the configured gain tolerance.
+        ``"budget_exhausted"`` when the node budget stopped the search first.
+    objective
+        Best log determinant found, in the Fisher-whitened convention of
+        ``PartitionResult.objective`` under ``DOptimality``.
+    labels
+        Labels attaining ``objective``, defined for every input row.
+        Zero-weight rows carry the label of their nearest cell mean in the
+        terminal metric and never influenced the search.
+    upper_bound
+        Global ceiling at termination. It equals ``objective`` for a proved
+        optimum and is otherwise the best bound still outstanding on an
+        abandoned subtree.
+    gap
+        ``upper_bound`` minus ``objective``, nonnegative by construction and
+        exactly zero for a proved optimum.
+    nodes_explored
+        Number of search nodes visited, including pruned children.
+    incumbent_was_optimal
+        Whether the search proved the starting incumbent optimal without
+        improving it. It is ``False`` whenever the budget was exhausted,
+        because an unfinished search proves nothing about the incumbent.
+    """
+
+    status: Literal["optimal", "budget_exhausted"]
+    objective: float
+    labels: jnp.ndarray
+    upper_bound: float
+    gap: float
+    nodes_explored: int
+    incumbent_was_optimal: bool
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible representation of the certificate."""
+        return json_ready(asdict(self))
 
 
 @dataclass(frozen=True, slots=True)
