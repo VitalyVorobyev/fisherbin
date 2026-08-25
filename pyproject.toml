@@ -1,5 +1,5 @@
 [project]
-name = "fisherbin"
+name = "scorequant"
 version = "0.1.0"
 description = "Information-preserving binning for statistical inference"
 readme = "README.md"
@@ -24,9 +24,9 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://vitalyvorobyev.github.io/fisherbin/"
-Issues = "https://github.com/VitalyVorobyev/fisherbin/issues"
-Repository = "https://github.com/VitalyVorobyev/fisherbin"
+Documentation = "https://vitalyvorobyev.github.io/scorequant/"
+Issues = "https://github.com/VitalyVorobyev/scorequant/issues"
+Repository = "https://github.com/VitalyVorobyev/scorequant"
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.10"]

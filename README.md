@@ -1,9 +1,9 @@
-# FisherBin
+# ScoreQuant
 
 **Turn continuous or high-dimensional events into a small histogram designed for parameter estimation.**
 
-[![CI](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/ci.yml/badge.svg)](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/ci.yml)
-[![Documentation](https://github.com/VitalyVorobyev/fisherbin/actions/workflows/docs.yml/badge.svg)](https://vitalyvorobyev.github.io/fisherbin/)
+[![CI](https://github.com/VitalyVorobyev/scorequant/actions/workflows/ci.yml/badge.svg)](https://github.com/VitalyVorobyev/scorequant/actions/workflows/ci.yml)
+[![Documentation](https://github.com/VitalyVorobyev/scorequant/actions/workflows/docs.yml/badge.svg)](https://vitalyvorobyev.github.io/scorequant/)
 
 Many analyses start with thousands or millions of events and end by estimating
 an unknown parameter vector. The events may be cells with twelve marker
@@ -13,7 +13,7 @@ simulator. The final likelihood may still need a small set of hard bins.
 An ordinary grid preserves geometry in the measured variables. That is not
 necessarily the geometry that matters for inference. Two nearby events can
 support different parameter values, while two distant events can carry the same
-statistical evidence. FisherBin learns bins from that evidence.
+statistical evidence. ScoreQuant learns bins from that evidence.
 
 ## The core idea
 
@@ -24,7 +24,7 @@ parameter changes:
 s(x)=\nabla_\theta\log p(x\mid\theta)\big|_{\theta_0}.
 \]
 
-Events with similar scores affect the parameter fit in similar ways. FisherBin
+Events with similar scores affect the parameter fit in similar ways. ScoreQuant
 partitions score space, assigns every event to one hard bin, and reports how much
 local Fisher information the resulting counts retain.
 
@@ -37,10 +37,10 @@ parameter fit. It builds the information-aware hard interface between them.
 
 ## Install
 
-Add FisherBin directly from GitHub:
+Add ScoreQuant directly from GitHub:
 
 ```bash
-uv add "fisherbin @ git+https://github.com/VitalyVorobyev/fisherbin.git"
+uv add "scorequant @ git+https://github.com/VitalyVorobyev/scorequant.git"
 ```
 
 ## A complete first partition
@@ -52,7 +52,7 @@ score is exact and needs no classifier or density estimator.
 <!-- quickstart-test:start -->
 ```python
 import numpy as np
-import fisherbin as fb
+import scorequant as fb
 
 rng = np.random.default_rng(7)
 reference = rng.normal(size=20_000)
@@ -86,7 +86,7 @@ Fisher information available in the supplied exact scores.
 
 ## Choose the input you already have
 
-FisherBin keeps the path to score vectors explicit:
+ScoreQuant keeps the path to score vectors explicit:
 
 | You have | Use | The fitted result predicts from |
 | --- | --- | --- |
@@ -95,13 +95,13 @@ FisherBin keeps the path to score vectors explicit:
 | Statistical scores | `fit_scores` | scores |
 | Classifier posteriors for a finite mixture | `mixture_scores_from_posteriors`, then `fit_scores` | scores |
 
-The [workflow guide](https://vitalyvorobyev.github.io/fisherbin/user-workflow/)
+The [workflow guide](https://vitalyvorobyev.github.io/scorequant/user-workflow/)
 explains these representations and their contracts. The
-[classifier-mixture tutorial](https://vitalyvorobyev.github.io/fisherbin/tutorials/classifier-mixtures/)
+[classifier-mixture tutorial](https://vitalyvorobyev.github.io/scorequant/tutorials/classifier-mixtures/)
 shows how calibrated class probabilities become mixture-fraction scores without
 making classifier training part of the library.
 
-## When FisherBin is a good fit
+## When ScoreQuant is a good fit
 
 Use it when:
 
@@ -110,7 +110,7 @@ Use it when:
 - preserving parameter sensitivity matters more than preserving geometric locality.
 
 There is no required ordering between the observation dimension and the number
-of parameters. Once scores have been constructed, FisherBin works in the
+of parameters. Once scores have been constructed, ScoreQuant works in the
 parameter-score space and no longer depends on the dimension of the original
 observations. The common high-dimensional-event/few-parameter setting is an
 important use case, not a mathematical assumption.
@@ -131,27 +131,27 @@ of the supplied-score Fisher information and reaches a macro fraction RMSE of
 
 ![FlowCyt population quantification](docs/usecases/assets/cell_population.png)
 
-This result has an important limitation. FisherBin measures compression loss
+This result has an important limitation. ScoreQuant measures compression loss
 for the supplied scores; it cannot remove bias in the learned likelihood ratios.
 The complete study therefore reports classifier closure, fixed-total
 identifiability, patient-level shift, hard-bin occupancy, downstream convergence,
 and boundary behavior separately.
 
-Read the [complete FlowCyt study](https://vitalyvorobyev.github.io/fisherbin/usecases/cellpopulation/)
-or browse the reproducible [synthetic gallery](https://vitalyvorobyev.github.io/fisherbin/gallery/).
+Read the [complete FlowCyt study](https://vitalyvorobyev.github.io/scorequant/usecases/cellpopulation/)
+or browse the reproducible [synthetic gallery](https://vitalyvorobyev.github.io/scorequant/gallery/).
 
 ## Learn the method
 
 The documentation starts from basic statistical estimation and does not assume
 prior knowledge of score compression:
 
-- [The estimation problem](https://vitalyvorobyev.github.io/fisherbin/learn/estimation-problem/)
-- [Likelihood and score](https://vitalyvorobyev.github.io/fisherbin/learn/likelihood-and-score/)
-- [What binning loses](https://vitalyvorobyev.github.io/fisherbin/learn/binning-loss/)
-- [First analytic tutorial](https://vitalyvorobyev.github.io/fisherbin/tutorials/first-partition/)
-- [API guide](https://vitalyvorobyev.github.io/fisherbin/api/)
-- [Generated reference](https://vitalyvorobyev.github.io/fisherbin/reference/)
-- [Bibliography](https://vitalyvorobyev.github.io/fisherbin/bibliography/)
+- [The estimation problem](https://vitalyvorobyev.github.io/scorequant/learn/estimation-problem/)
+- [Likelihood and score](https://vitalyvorobyev.github.io/scorequant/learn/likelihood-and-score/)
+- [What binning loses](https://vitalyvorobyev.github.io/scorequant/learn/binning-loss/)
+- [First analytic tutorial](https://vitalyvorobyev.github.io/scorequant/tutorials/first-partition/)
+- [API guide](https://vitalyvorobyev.github.io/scorequant/api/)
+- [Generated reference](https://vitalyvorobyev.github.io/scorequant/reference/)
+- [Bibliography](https://vitalyvorobyev.github.io/scorequant/bibliography/)
 
 The executable notebooks show the same ideas without hiding the work behind an
 experiment wrapper:
@@ -162,4 +162,4 @@ experiment wrapper:
 - [spatial sources](examples/notebooks/spatial_sources.ipynb): compare physical and score geometry;
 - [FlowCyt](examples/notebooks/cell_population.ipynb): inspect data, build classifier scores, learn gates, and fit count templates step by step.
 
-FisherBin is available under the [MIT license](LICENSE).
+ScoreQuant is available under the [MIT license](LICENSE).

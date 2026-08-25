@@ -53,7 +53,7 @@ physical variables X
 Start directly from evaluated components when that is what your simulation or template pipeline already produces:
 
 ```python
-import fisherbin as fb
+import scorequant as fb
 
 result = fb.fit_components(
     Phi,

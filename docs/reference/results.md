@@ -1,11 +1,11 @@
 # Results and diagnostics
 
-::: fisherbin.FitResult
+::: scorequant.FitResult
 
-::: fisherbin.ComponentFitResult
+::: scorequant.ComponentFitResult
 
-::: fisherbin.ModelFitResult
+::: scorequant.ModelFitResult
 
-::: fisherbin.InformationReport
+::: scorequant.InformationReport
 
-::: fisherbin.OptimizationTrace
+::: scorequant.OptimizationTrace

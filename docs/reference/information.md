@@ -1,9 +1,9 @@
 # Fisher information
 
-::: fisherbin.fisher_information
+::: scorequant.fisher_information
 
-::: fisherbin.binned_fisher_information
+::: scorequant.binned_fisher_information
 
-::: fisherbin.fractional_fisher_information
+::: scorequant.fractional_fisher_information
 
-::: fisherbin.information_report
+::: scorequant.information_report

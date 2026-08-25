@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import fisherbin as fb
+import scorequant as fb
 
 
 def _posteriors_from_ratios(ratios: np.ndarray, priors: np.ndarray) -> np.ndarray:

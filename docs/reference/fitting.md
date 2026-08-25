@@ -4,12 +4,12 @@ Choose the entry point matching the representation already available to the call
 
 ## Physical variables
 
-::: fisherbin.fit
+::: scorequant.fit
 
 ## Evaluated components
 
-::: fisherbin.fit_components
+::: scorequant.fit_components
 
 ## Scores
 
-::: fisherbin.fit_scores
+::: scorequant.fit_scores

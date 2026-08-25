@@ -11,7 +11,7 @@ For \(x\sim\mathcal N(\mu,1)\) at \(\mu_0=0\), the score is \(s(x)=x\).
 ```python
 import jax.numpy as jnp
 import numpy as np
-import fisherbin as fb
+import scorequant as fb
 
 rng = np.random.default_rng(7)
 x_reference = rng.normal(size=20_000)

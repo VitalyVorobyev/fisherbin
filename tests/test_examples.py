@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-import fisherbin
+import scorequant
 from examples.run import run_experiment
 from examples.synthetic_problems import (
     SyntheticProblem,
@@ -59,17 +59,17 @@ def test_soft_d_optimality_improves_a_targeted_nonlinear_fixture() -> None:
 
     train_scores, train_weights = generate(1003, 5_000)
     test_scores, test_weights = generate(2003, 20_000)
-    kmeans = fisherbin.fit_scores(
+    kmeans = scorequant.fit_scores(
         train_scores,
         weights=train_weights,
         n_bins=2,
-        config=fisherbin.KMeansConfig(seed=0, n_init=8),
+        config=scorequant.KMeansConfig(seed=0, n_init=8),
     )
-    soft = fisherbin.fit_scores(
+    soft = scorequant.fit_scores(
         train_scores,
         weights=train_weights,
         n_bins=2,
-        config=fisherbin.SoftVoronoiConfig(seed=0, n_init=8, max_steps=400, record_every=100),
+        config=scorequant.SoftVoronoiConfig(seed=0, n_init=8, max_steps=400, record_every=100),
     )
     improvement = (
         soft.evaluate(test_scores, test_weights).geometric_mean_retention

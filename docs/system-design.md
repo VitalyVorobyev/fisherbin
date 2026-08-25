@@ -38,12 +38,12 @@ a convenience wrapper.
 ## Public workflows
 
 ```python
-result = fisherbin.fit(
+result = scorequant.fit(
     X,
     model=model,
     weights=weights,
     n_bins=16,
-    config=fisherbin.KMeansConfig(seed=0),
+    config=scorequant.KMeansConfig(seed=0),
     validation_X=validation_X,
     validation_weights=validation_weights,
 )

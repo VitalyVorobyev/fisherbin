@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import fisherbin
+import scorequant
 
 
 def _scores(n: int = 400) -> jnp.ndarray:
@@ -18,10 +18,10 @@ def _scores(n: int = 400) -> jnp.ndarray:
 
 def test_kmeans_fit_predict_evaluate_and_monotonic_trace() -> None:
     scores = _scores()
-    result = fisherbin.fit_scores(
+    result = scorequant.fit_scores(
         scores,
         n_bins=4,
-        config=fisherbin.KMeansConfig(seed=4, n_init=3, max_iter=40),
+        config=scorequant.KMeansConfig(seed=4, n_init=3, max_iter=40),
     )
     assert result.predict(scores).shape == (scores.shape[0],)
     assert result.evaluate(scores).geometric_mean_retention > 0.7
@@ -33,11 +33,11 @@ def test_kmeans_fit_predict_evaluate_and_monotonic_trace() -> None:
 def test_zero_weights_are_ignored_but_rows_remain_predictable() -> None:
     scores = jnp.asarray([[-2.0], [-1.0], [1.0], [2.0], [100.0]])
     weights = jnp.asarray([1.0, 1.0, 1.0, 1.0, 0.0])
-    result = fisherbin.fit_scores(
+    result = scorequant.fit_scores(
         scores,
         weights=weights,
         n_bins=2,
-        config=fisherbin.KMeansConfig(n_init=2),
+        config=scorequant.KMeansConfig(n_init=2),
     )
     assert result.predict(scores).shape == (5,)
     assert int(np.asarray(result.train_report.bin_counts).sum()) == 4
@@ -45,9 +45,9 @@ def test_zero_weights_are_ignored_but_rows_remain_predictable() -> None:
 
 def test_validation_is_diagnostic_only() -> None:
     scores = _scores()
-    config = fisherbin.KMeansConfig(seed=9, n_init=2)
-    without = fisherbin.fit_scores(scores, n_bins=3, config=config)
-    with_validation = fisherbin.fit_scores(
+    config = scorequant.KMeansConfig(seed=9, n_init=2)
+    without = scorequant.fit_scores(scores, n_bins=3, config=config)
+    with_validation = scorequant.fit_scores(
         scores,
         n_bins=3,
         config=config,
@@ -60,19 +60,19 @@ def test_validation_is_diagnostic_only() -> None:
 
 def test_same_seed_reproduces_centers_and_trace() -> None:
     scores = _scores(240)
-    config = fisherbin.KMeansConfig(seed=17, n_init=3)
-    first = fisherbin.fit_scores(scores, n_bins=5, config=config)
-    second = fisherbin.fit_scores(scores, n_bins=5, config=config)
+    config = scorequant.KMeansConfig(seed=17, n_init=3)
+    first = scorequant.fit_scores(scores, n_bins=5, config=config)
+    second = scorequant.fit_scores(scores, n_bins=5, config=config)
     np.testing.assert_allclose(first.centers, second.centers)
     np.testing.assert_allclose(first.trace.objective, second.trace.objective)
 
 
 def test_soft_voronoi_has_finite_trace_and_hard_result() -> None:
     scores = _scores(240)
-    result = fisherbin.fit_scores(
+    result = scorequant.fit_scores(
         scores,
         n_bins=3,
-        config=fisherbin.SoftVoronoiConfig(
+        config=scorequant.SoftVoronoiConfig(
             seed=3,
             n_init=2,
             kmeans_max_iter=30,
@@ -88,10 +88,10 @@ def test_soft_voronoi_has_finite_trace_and_hard_result() -> None:
 
 def test_soft_requires_enough_bins_for_rank() -> None:
     with pytest.raises(ValueError, match="n_bins >="):
-        fisherbin.fit_scores(
+        scorequant.fit_scores(
             _scores(100),
             n_bins=1,
-            config=fisherbin.SoftVoronoiConfig(max_steps=2),
+            config=scorequant.SoftVoronoiConfig(max_steps=2),
         )
 
 
@@ -99,9 +99,9 @@ def test_whitened_partition_is_parameter_reparameterization_invariant() -> None:
     scores = _scores(300)
     change = jnp.asarray([[2.0, 0.3], [-0.4, 1.3]])
     transformed_scores = scores @ jnp.linalg.inv(change)
-    config = fisherbin.KMeansConfig(seed=11, n_init=4)
-    original = np.asarray(fisherbin.fit_scores(scores, n_bins=4, config=config).predict(scores))
-    transformed_result = fisherbin.fit_scores(transformed_scores, n_bins=4, config=config)
+    config = scorequant.KMeansConfig(seed=11, n_init=4)
+    original = np.asarray(scorequant.fit_scores(scores, n_bins=4, config=config).predict(scores))
+    transformed_result = scorequant.fit_scores(transformed_scores, n_bins=4, config=config)
     changed = np.asarray(transformed_result.predict(transformed_scores))
     np.testing.assert_array_equal(
         original[:, None] == original[None, :], changed[:, None] == changed[None, :]
@@ -110,23 +110,23 @@ def test_whitened_partition_is_parameter_reparameterization_invariant() -> None:
 
 def test_too_many_distinct_bins_fails() -> None:
     with pytest.raises(ValueError, match="distinct"):
-        fisherbin.fit_scores(jnp.asarray([[0.0], [0.0], [1.0]]), n_bins=3)
+        scorequant.fit_scores(jnp.asarray([[0.0], [0.0], [1.0]]), n_bins=3)
 
 
 @pytest.mark.parametrize(
     ("factory", "message"),
     [
-        (lambda: fisherbin.KMeansConfig(n_init=0), "n_init"),
-        (lambda: fisherbin.KMeansConfig(seed=-1), "seed"),
-        (lambda: fisherbin.KMeansConfig(whiten=1), "whiten"),
-        (lambda: fisherbin.KMeansConfig(rank_rtol=True), "rank_rtol"),
-        (lambda: fisherbin.KMeansConfig(rank_rtol=1.0), "rank_rtol"),
-        (lambda: fisherbin.SoftVoronoiConfig(learning_rate=np.nan), "learning_rate"),
-        (lambda: fisherbin.SoftVoronoiConfig(temperature_end_ratio=1.1), "temperature"),
+        (lambda: scorequant.KMeansConfig(n_init=0), "n_init"),
+        (lambda: scorequant.KMeansConfig(seed=-1), "seed"),
+        (lambda: scorequant.KMeansConfig(whiten=1), "whiten"),
+        (lambda: scorequant.KMeansConfig(rank_rtol=True), "rank_rtol"),
+        (lambda: scorequant.KMeansConfig(rank_rtol=1.0), "rank_rtol"),
+        (lambda: scorequant.SoftVoronoiConfig(learning_rate=np.nan), "learning_rate"),
+        (lambda: scorequant.SoftVoronoiConfig(temperature_end_ratio=1.1), "temperature"),
     ],
 )
 def test_configs_fail_during_construction(
-    factory: Callable[[], fisherbin.KMeansConfig | fisherbin.SoftVoronoiConfig],
+    factory: Callable[[], scorequant.KMeansConfig | scorequant.SoftVoronoiConfig],
     message: str,
 ) -> None:
     with pytest.raises((TypeError, ValueError), match=message):
@@ -134,11 +134,11 @@ def test_configs_fail_during_construction(
 
 
 def test_config_method_is_derived_and_serialized() -> None:
-    config = fisherbin.KMeansConfig()
+    config = scorequant.KMeansConfig()
     assert config.method == "kmeans"
     assert config.to_dict()["method"] == "kmeans"
     with pytest.raises(TypeError, match="method"):
-        fisherbin.KMeansConfig(method="kmeans")
+        scorequant.KMeansConfig(method="kmeans")
 
 
 def test_evaluate_reuses_fitted_rank_tolerance() -> None:
@@ -150,10 +150,10 @@ def test_evaluate_reuses_fitted_rank_tolerance() -> None:
             [0.0, 0.01],
         ]
     )
-    result = fisherbin.fit_scores(
+    result = scorequant.fit_scores(
         scores,
         n_bins=2,
-        config=fisherbin.KMeansConfig(rank_rtol=1e-3, n_init=2),
+        config=scorequant.KMeansConfig(rank_rtol=1e-3, n_init=2),
     )
     assert result.transform.rank == 1
     assert result.evaluate(scores).effective_rank == 1

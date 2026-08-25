@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-import fisherbin as fb
+import scorequant as fb
 
 
 def signal(X: np.ndarray) -> np.ndarray:

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-import fisherbin as fb
+import scorequant as fb
 from examples.cell_population.closure import (
     ClosureInputs,
     conditional_binned_fisher_information,
