@@ -81,6 +81,9 @@ def run_experiment(
             max_steps=soft_steps,
             record_every=max(soft_steps // 30, 1),
         ),
+        # The optimization plot below draws the full train/validation hard
+        # retention curve, so every recorded snapshot must be scored.
+        diagnostics="full",
         **common,
     )
     kmeans_test = kmeans.evaluate_scores(problem.test.scores, problem.test.weights)

@@ -21,7 +21,16 @@ def json_ready(value: object) -> JsonValue: ...
 
 
 def json_ready(value: object) -> JsonValue:
-    """Recursively convert arrays, NumPy scalars, and dataclasses to JSON values."""
+    """Recursively convert arrays, NumPy scalars, and dataclasses to JSON values.
+
+    A non-finite float (``inf``, ``-inf``, ``nan``) becomes the string
+    ``"Infinity"``, ``"-Infinity"``, or ``"NaN"`` rather than ``None``, so a
+    genuinely missing value and a certified-unbounded one (for example
+    ``StabilityReport.best_gain`` on a labeling with no admissible
+    relocation) stay distinguishable in the JSON output. ``json.dumps`` with
+    ``allow_nan=False`` still succeeds, since every value returned here is a
+    standard JSON type.
+    """
     if is_dataclass(value) and not isinstance(value, type):
         return json_ready(asdict(value))
     if isinstance(value, Mapping):
@@ -35,5 +44,9 @@ def json_ready(value: object) -> JsonValue:
     if value is None or isinstance(value, (bool, int, str)):
         return value
     if isinstance(value, float):
-        return value if np.isfinite(value) else None
+        if np.isnan(value):
+            return "NaN"
+        if np.isinf(value):
+            return "Infinity" if value > 0 else "-Infinity"
+        return value
     raise TypeError(f"cannot convert {type(value).__name__} to JSON")

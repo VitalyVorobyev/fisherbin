@@ -59,3 +59,21 @@ jobs:
       - run: uv python install 3.13
       - run: uv sync --dev --locked
       - run: uv run pytest tests/test_float32.py
+
+  benchmarks:
+    needs: [quality, test]
+    runs-on: ubuntu-latest
+    env:
+      JAX_ENABLE_X64: "1"
+      MPLBACKEND: Agg
+      UV_PYTHON: "3.13"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+      - run: uv python install 3.13
+      - run: uv sync --all-extras --dev --locked
+      - run: >
+          uv run python benchmarks/bench.py --check benchmarks/baselines.json
+          --time-tolerance 2.5 --quality-rtol 1e-6

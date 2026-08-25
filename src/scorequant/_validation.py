@@ -9,6 +9,39 @@ import numpy as np
 
 from ._typing import ArrayLike
 
+# ``None`` means automatic: below this many effective rows, collapsing pays
+# for itself because its O(N log N) sort is negligible next to the O(N)
+# exchange scan it speeds up by merging repeated score atoms; above it the
+# up-front sort is skipped by default so a huge sample is not forced to pay
+# for a benefit it may not need.
+_AUTO_COLLAPSE_MAX_ROWS = 100_000
+
+
+def promote_low_precision(array: jnp.ndarray) -> jnp.ndarray:
+    """Promote a non-float, float16, or bfloat16 array to float32.
+
+    ScoreQuant's numerical kernels assume at least float32 precision. This
+    conversion happens once, at a public validation boundary, never inside a
+    JIT-compiled hot path.
+    """
+    if not jnp.issubdtype(array.dtype, jnp.inexact):
+        return array.astype(jnp.float32)
+    if array.dtype in (jnp.float16, jnp.bfloat16):
+        return array.astype(jnp.float32)
+    return array
+
+
+def resolve_collapse_duplicates(collapse_duplicates: bool | None, n_rows: int) -> bool:
+    """Resolve the auto/opt-out duplicate-score-collapsing policy.
+
+    ``None`` (the config default) collapses below ``_AUTO_COLLAPSE_MAX_ROWS``
+    effective rows and skips it above; an explicit ``True``/``False`` always
+    wins.
+    """
+    if collapse_duplicates is None:
+        return n_rows <= _AUTO_COLLAPSE_MAX_ROWS
+    return collapse_duplicates
+
 
 @dataclass(frozen=True, slots=True)
 class _ValidatedSample:
@@ -50,10 +83,7 @@ def validate_sample(
         raise ValueError(
             f"scores have {score_array.shape[1]} parameters, expected {expected_features}"
         )
-    if not jnp.issubdtype(score_array.dtype, jnp.inexact):
-        score_array = score_array.astype(jnp.float32)
-    elif score_array.dtype in (jnp.float16, jnp.bfloat16):
-        score_array = score_array.astype(jnp.float32)
+    score_array = promote_low_precision(score_array)
 
     if weights is None:
         weight_array = jnp.ones(score_array.shape[0], dtype=score_array.dtype)

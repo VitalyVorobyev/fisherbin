@@ -24,8 +24,8 @@ MkDocs pass.
 - Regression gates cover direct recomputation, monotonicity, small global optima, the D separation
   bound, invariants, and reproduction of positive-weight labels.
 
-**Next:** profile factorization updates before optimizing performance; add branch-and-bound only
-after a concrete certificate workflow exists.
+**Next:** profile factorization updates before optimizing performance further. The branch-and-bound
+certificate workflow this milestone deferred is implemented; see the M7 certificate gate.
 
 ## M3 — Breaking task-explicit API
 
@@ -70,13 +70,20 @@ same 27,607-row partition sample as the learned quantizers. The compiled rule mu
 positive-weight training label. This is deliberately not described as optimization over all 600,000
 events.
 
-**Next solver gate:** profile factorization updates and chunked scans before raising the bounded
-partition-table capacity or claiming full-corpus/streaming optimization.
+**Solver-scale gate completed:** exact rank-two state/inverse updates and deterministic
+memory-bounded candidate scans agree with full recomputation over repeated moves. The recorded CPU
+benchmark covers 200k rows/ten moves and one million rows/one scan. Stored arrays and initialization
+remain \(O(N)\), so this is not a claim of full-corpus or one-pass fitting.
 
-**Next data gate:** run the full 21.25M corpus transport audit from an external manifest without
-retuning on frozen test patients. Commit hashes, aggregates, tables, and plots, never raw data.
+**Data gate completed:** the reproducible downloader reconstructed all 30 `Case_*.csv` files
+(21,254,866 events), and the frozen 600k sample was audited against every full-corpus row without
+retuning. Maximum patient/class fraction error is \(3.39\times10^{-5}\); maximum standardized
+marker-mean error is 0.0296. Hashes, aggregates, the patient table, and the plot are committed;
+raw CSV/FCS data remain external.
 
 ## M6 — Profiled \(D_s\)
+
+**Status:** implemented.
 
 Implement finite exchange and a separate inductive solver. Add efficient scores, the finite
 geometry-gap bound, the full-information upper problem, and exact scalar dynamic programming where
@@ -85,11 +92,30 @@ applicable.
 **Gate:** exact relocation tests; rational non-Voronoi counterexample; no implicit compilation from
 finite labels; clear same-data versus external-nuisance semantics.
 
+**Upper-problem gate completed:** `efficient_score_bound` certifies a ceiling on the profiled
+objective by solving the exact scalar interval program on the full-data efficient score, in the same
+log-determinant convention the finite profiled solver reports, and its labels initialize profiled
+exchange through `optimize_partition(..., initial_labels=...)`. The certificate is limited to one
+interest column; a multivariate efficient score would need a multivariate solver and is refused
+rather than approximated.
+
+**Exact scalar gate completed:** the interval dynamic program is evaluated in memory-bounded
+vectorized stripes instead of a per-stop Python loop, reproduces the previous implementation's
+labels and objective bit for bit, and attains the exhaustive small-instance optimum.
+
 ## M7 — Population, scale, and persistence
 
-In order: population samplers and moment oracles; branch-and-bound certificates; streaming and
-factorization updates; then versioned persistence. Signed weights, additional backends, and advanced
-objectives remain outside scope until their mathematical contracts and independent use cases exist.
+In order: population samplers and moment oracles; streaming and factorization updates; then
+versioned persistence. Signed weights, additional backends, and advanced objectives remain outside
+scope until their mathematical contracts and independent use cases exist.
+
+**Certificate gate completed:** `exchange_stability_report` certifies any supplied labeling with one
+exact scan and reproduces the engine's own `best_remaining_gain`; `PartitionResult.geometry` reports
+the Voronoi violation, the Theorem-3 guaranteed gain, and the cell-separation residual of a D
+partition; and `certify_partition` proves global optimality by branch and bound with the
+singleton-completion bound, agreeing with the exhaustive oracle on seeded weighted and unweighted
+instances and downgrading to `status="budget_exhausted"` with a genuine outstanding bound when its
+node budget runs out. Certification is D-only and never runs implicitly, per ADR 0014.
 
 ## Explicitly outside the development plan
 
@@ -100,12 +126,9 @@ decision.
 
 ## Next execution order
 
-1. Run and publish the 21.25M-row FlowCyt transport audit once the external CSV corpus is available.
-2. Profile exact-D factorization updates and chunked candidate scans before increasing the bounded
-   partition-table capacity.
-3. Design and gate finite profiled-\(D_s\) exchange before exposing any new public API.
-4. Add population samplers and moment oracles, then certificates, streaming, and persistence in
-   that order.
+1. Add population samplers and moment oracles.
+2. Add streaming diagnostic aggregation and profile further exact-D factorization updates.
+3. Add versioned, non-pickle quantizer persistence (`save_quantizer`/`load_quantizer`).
 
 ## Full handoff gate
 

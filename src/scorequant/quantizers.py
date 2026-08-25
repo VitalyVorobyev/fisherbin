@@ -3,25 +3,40 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import partial
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
 
-from .config import KMeansConfig, SoftVoronoiConfig
+from ._binstats import scatter_bin_statistics
+from ._chunking import assignment_chunk_rows
+from .config import KMeansConfig, ScalarDPConfig, SoftVoronoiConfig
+from .criteria import DOptimality, ProfiledDOptimality
 from .transforms import fisher_transform
+
+# One dynamic-programming stripe materializes this many [stripe, n_states]
+# temporaries, and the whole stripe set is held inside the byte budget.
+_DYNAMIC_STRIPE_TEMPORARIES = 8
+_DYNAMIC_WORKING_SET_BYTES = 64 * 1024 * 1024
 
 
 @dataclass(slots=True)
 class QuantizerRun:
-    """Aggregate state returned by a private quantizer implementation."""
+    """Aggregate state returned by a private quantizer implementation.
+
+    ``objective_label`` names the units of ``objective_history`` so that a
+    reported trace is never read in the wrong convention: a within-segment
+    squared error and a log determinant are both scalars but not comparable.
+    """
 
     centers: jnp.ndarray
     steps: list[int]
     center_history: list[jnp.ndarray]
     objective_history: list[float]
     bin_weight_history: list[jnp.ndarray]
+    objective_label: str = "whitened_sse"
     soft_retention_history: list[float] | None = None
     temperature_history: list[float] | None = None
     gradient_norm_history: list[float] | None = None
@@ -33,8 +48,37 @@ def squared_distances(points: jnp.ndarray, centers: jnp.ndarray) -> jnp.ndarray:
 
 
 def hard_assign(points: jnp.ndarray, centers: jnp.ndarray) -> jnp.ndarray:
-    """Assign each point to its nearest center."""
+    """Assign each point to its nearest center.
+
+    Materializes the dense ``[n_rows, n_bins, rank]`` distance tensor at
+    once, so this stays the right choice inside ``jax.jit``- or
+    ``jax.grad``-traced code (XLA fuses the reduction and never keeps the
+    full tensor resident). For eager, inference-scale row counts, use
+    ``chunked_hard_assign`` instead.
+    """
     return jnp.argmin(squared_distances(points, centers), axis=1)
+
+
+def chunked_hard_assign(points: jnp.ndarray, centers: jnp.ndarray) -> jnp.ndarray:
+    """Assign each point to its nearest center in memory-bounded row chunks.
+
+    Eager counterpart to ``hard_assign`` for inference- and diagnostic-scale
+    row counts, where nothing traces or fuses the computation so the naive
+    form would materialize the full ``[n_rows, n_bins, rank]`` tensor. Do not
+    use this inside ``jax.jit`` or ``jax.grad``-traced code: the Python-level
+    chunk loop would just unroll into an equivalent, larger traced graph.
+    Chunking rows is bit-identical to the unchunked assignment because each
+    row's distance and argmin are independent of every other row.
+    """
+    n_rows = int(points.shape[0])
+    chunk_rows = assignment_chunk_rows(points.dtype, n_rows, int(centers.shape[0]), points.shape[1])
+    if chunk_rows >= n_rows:
+        return hard_assign(points, centers)
+    chunks = [
+        hard_assign(points[start : start + chunk_rows], centers)
+        for start in range(0, n_rows, chunk_rows)
+    ]
+    return jnp.concatenate(chunks)
 
 
 def _bin_weights(labels: jnp.ndarray, weights: jnp.ndarray, n_bins: int) -> jnp.ndarray:
@@ -67,6 +111,137 @@ def _weighted_kmeans_plus_plus(
     return points[jnp.asarray(indices)]
 
 
+def _repair_empty_bins(
+    proposed: jnp.ndarray, occupancies: jnp.ndarray, residual: jnp.ndarray, points: jnp.ndarray
+) -> jnp.ndarray:
+    """Reseed every empty bin from the row of largest remaining residual.
+
+    In-graph port of the eager repair: bin indices are scanned in order
+    ``0..n_bins - 1`` and, for each empty one, the current
+    ``jnp.argmax(residual)`` row becomes its new center and is then excluded
+    (``-inf``) from later picks in the same pass, exactly as the eager
+    ``for empty_bin in np.flatnonzero(...)`` loop did. Non-empty bins pass
+    ``proposed``/``residual`` through unchanged via ``jnp.where``, so this is
+    bit-identical to the eager repair, not merely close to it.
+    """
+
+    def body(
+        bin_index: jnp.ndarray, state: tuple[jnp.ndarray, jnp.ndarray]
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
+        proposed, residual = state
+        is_empty = occupancies[bin_index] == 0
+        replacement = jnp.argmax(residual)
+        proposed = jnp.where(is_empty, proposed.at[bin_index].set(points[replacement]), proposed)
+        residual = jnp.where(is_empty, residual.at[replacement].set(-jnp.inf), residual)
+        return proposed, residual
+
+    repaired, _ = jax.lax.fori_loop(0, occupancies.shape[0], body, (proposed, residual))
+    return repaired
+
+
+@partial(jax.jit, static_argnames=("n_bins", "max_iter"))
+def _lloyd_scan(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    centers0: jnp.ndarray,
+    n_bins: int,
+    max_iter: int,
+    tolerance: jnp.ndarray | float,
+) -> tuple[
+    jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray
+]:
+    """Run every Lloyd iteration of one k-means restart without host syncs.
+
+    A plain Python loop around eager JAX calls pays roughly two device/host
+    barriers per iteration (the objective and empty-bin checks), so a
+    default fit (``n_init=8``, ``max_iter=100``) issues on the order of a
+    thousand round trips. This runs the whole restart as one
+    ``jax.lax.scan`` and returns the entire per-iteration schedule in stacked
+    arrays plus the true post-loop state, so the caller pays exactly one host
+    sync for the whole restart instead of one or two per iteration.
+
+    Once an iteration's objective first satisfies the tolerance, the carried
+    ``centers``/``previous_objective`` freeze (``jnp.where(converged_before,
+    ...)``) for the remaining, otherwise-unused scan steps, matching the
+    eager loop's ``break``: further Lloyd updates never run past that point.
+    The caller truncates the stacked history to the first frozen index, which
+    is exactly where the eager loop would have stopped.
+
+    Returns
+    -------
+    tuple
+        ``(centers_history, objective_history, occupancy_history,
+        converged_flags, final_centers, final_objective,
+        final_occupancies)``. The first four are stacked along a leading
+        ``max_iter`` axis and hold, for step ``i``, the centers entering that
+        step (matching ``center_history.append(centers)`` before the
+        update), that step's objective and occupancies, and whether
+        convergence was first detected at that step. The last three describe
+        the true state after the loop exits, mirroring the eager function's
+        trailing recomputation on the post-loop ``centers``.
+    """
+    n_rows = points.shape[0]
+
+    def step(
+        carry: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray], _: None
+    ) -> tuple[
+        tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
+        tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
+    ]:
+        centers, previous_objective, converged_before = carry
+        distances = squared_distances(points, centers)
+        labels = jnp.argmin(distances, axis=1)
+        selected = distances[jnp.arange(n_rows), labels]
+        objective = jnp.sum(weights * selected)
+        statistics = scatter_bin_statistics(labels, weights, points, n_bins)
+        occupancies, proposed = statistics.weights, statistics.means
+        proposed = jax.lax.cond(
+            jnp.any(occupancies == 0),
+            lambda proposed: _repair_empty_bins(proposed, occupancies, weights * selected, points),
+            lambda proposed: proposed,
+            proposed,
+        )
+        # A NaN ``previous_objective`` sentinel makes every IEEE-754 comparison
+        # below false, so the first iteration is never flagged converged
+        # without a separate "is this the first iteration" carry field.
+        this_converged = jnp.abs(previous_objective - objective) <= tolerance * jnp.maximum(
+            jnp.abs(previous_objective), 1.0
+        )
+        just_converged = this_converged & jnp.logical_not(converged_before)
+        next_centers = jnp.where(converged_before, centers, proposed)
+        next_objective = jnp.where(converged_before, previous_objective, objective)
+        next_converged_before = converged_before | this_converged
+        return (next_centers, next_objective, next_converged_before), (
+            centers,
+            objective,
+            occupancies,
+            just_converged,
+        )
+
+    init_carry = (
+        centers0,
+        jnp.asarray(jnp.nan, dtype=points.dtype),
+        jnp.asarray(False),
+    )
+    final_carry, (centers_history, objective_history, occupancy_history, converged_flags) = (
+        jax.lax.scan(step, init_carry, xs=None, length=max_iter)
+    )
+    final_centers = final_carry[0]
+    final_distances = squared_distances(points, final_centers)
+    final_labels = jnp.argmin(final_distances, axis=1)
+    final_objective = jnp.sum(weights * final_distances[jnp.arange(n_rows), final_labels])
+    final_occupancies = _bin_weights(final_labels, weights, n_bins)
+    return (
+        centers_history,
+        objective_history,
+        occupancy_history,
+        converged_flags,
+        final_centers,
+        final_objective,
+        final_occupancies,
+    )
+
+
 def _single_kmeans(
     points: jnp.ndarray,
     weights: jnp.ndarray,
@@ -74,61 +249,54 @@ def _single_kmeans(
     config: KMeansConfig,
     key: jax.Array,
 ) -> QuantizerRun:
-    centers = _weighted_kmeans_plus_plus(points, weights, n_bins, key)
+    centers0 = _weighted_kmeans_plus_plus(points, weights, n_bins, key)
+    (
+        centers_history,
+        objective_history,
+        occupancy_history,
+        converged_flags,
+        final_centers,
+        final_objective,
+        final_occupancies,
+    ) = _lloyd_scan(points, weights, centers0, n_bins, config.max_iter, config.tolerance)
+
+    # One host sync for the whole restart: pull the entire per-iteration
+    # schedule at once instead of checking the objective and empty-bin
+    # conditions on every iteration.
+    converged_np = np.asarray(converged_flags)
+    objective_np = np.asarray(objective_history)
+    convergence_indices = np.flatnonzero(converged_np)
+    last_iteration = (
+        int(convergence_indices[0]) if convergence_indices.size else config.max_iter - 1
+    )
+
     steps: list[int] = []
     center_history: list[jnp.ndarray] = []
-    objective_history: list[float] = []
+    recorded_objectives: list[float] = []
     bin_weight_history: list[jnp.ndarray] = []
-    previous_objective: float | None = None
-
-    for iteration in range(config.max_iter):
-        distances = squared_distances(points, centers)
-        labels = jnp.argmin(distances, axis=1)
-        selected_distances = distances[jnp.arange(points.shape[0]), labels]
-        objective = float(np.asarray(jnp.sum(weights * selected_distances)))
-        occupancies = _bin_weights(labels, weights, n_bins)
-        weighted_sums = jnp.zeros((n_bins, points.shape[1]), dtype=points.dtype)
-        weighted_sums = weighted_sums.at[labels].add(weights[:, None] * points)
-        proposed = weighted_sums / jnp.where(occupancies > 0, occupancies, 1)[:, None]
-
-        if bool(np.asarray(jnp.any(occupancies == 0))):
-            residual = weights * selected_distances
-            for empty_bin in np.flatnonzero(np.asarray(occupancies == 0)):
-                replacement = int(np.asarray(jnp.argmax(residual)))
-                proposed = proposed.at[empty_bin].set(points[replacement])
-                residual = residual.at[replacement].set(-jnp.inf)
-
+    for iteration in range(last_iteration + 1):
         should_record = iteration % config.record_every == 0
-        converged = previous_objective is not None and abs(
-            previous_objective - objective
-        ) <= config.tolerance * max(abs(previous_objective), 1.0)
-        if should_record or converged or iteration == config.max_iter - 1:
+        converged = bool(converged_np[iteration])
+        if should_record or converged or iteration == last_iteration:
             steps.append(iteration)
-            center_history.append(centers)
-            objective_history.append(objective)
-            bin_weight_history.append(occupancies)
-        centers = proposed
-        if converged:
-            break
-        previous_objective = objective
+            center_history.append(centers_history[iteration])
+            recorded_objectives.append(float(objective_np[iteration]))
+            bin_weight_history.append(occupancy_history[iteration])
 
     # Record the updated final centers if they differ from the last recorded state.
-    distances = squared_distances(points, centers)
-    labels = jnp.argmin(distances, axis=1)
-    final_objective = float(
-        np.asarray(jnp.sum(weights * distances[jnp.arange(points.shape[0]), labels]))
-    )
-    if not objective_history or not np.isclose(final_objective, objective_history[-1]):
+    final_objective_value = float(np.asarray(final_objective))
+    if not recorded_objectives or not np.isclose(final_objective_value, recorded_objectives[-1]):
         steps.append(steps[-1] + 1 if steps else 0)
-        center_history.append(centers)
-        objective_history.append(final_objective)
-        bin_weight_history.append(_bin_weights(labels, weights, n_bins))
+        center_history.append(final_centers)
+        recorded_objectives.append(final_objective_value)
+        bin_weight_history.append(final_occupancies)
     return QuantizerRun(
-        centers=centers,
+        centers=final_centers,
         steps=steps,
         center_history=center_history,
-        objective_history=objective_history,
+        objective_history=recorded_objectives,
         bin_weight_history=bin_weight_history,
+        objective_label="whitened_sse",
     )
 
 
@@ -146,6 +314,132 @@ def weighted_kmeans(
     keys = jax.random.split(jax.random.PRNGKey(config.seed), config.n_init)
     runs = [_single_kmeans(ordered_points, ordered_weights, n_bins, config, key) for key in keys]
     return min(runs, key=lambda run: run.objective_history[-1])
+
+
+def _dynamic_stripe_rows(n_states: int, item_size: int) -> int:
+    """Return how many dynamic-programming stops one memory-bounded stripe holds.
+
+    One stripe materializes a handful of ``[stripe, n_states]`` prefix-difference
+    blocks, so the budget is divided by that temporary count rather than by one.
+    """
+    per_row = item_size * n_states * _DYNAMIC_STRIPE_TEMPORARIES
+    return max(1, min(n_states, _DYNAMIC_WORKING_SET_BYTES // max(per_row, 1)))
+
+
+def scalar_interval_dp(
+    values: np.ndarray, weights: np.ndarray, n_bins: int
+) -> tuple[np.ndarray, float]:
+    """Solve exact one-dimensional weighted interval k-means by dynamic programming.
+
+    On a scalar score law an optimal hard partition has ordered interval cells,
+    so the global optimum is the minimal total weighted within-segment squared
+    error over ``n_bins`` consecutive segments of the sorted values. Prefix sums
+    turn every segment cost into a constant-time expression, and each dynamic
+    stage evaluates whole blocks of stop/split pairs at once, so the quadratic
+    recursion runs in a handful of memory-bounded stripes instead of one Python
+    iteration per stop.
+
+    Parameters
+    ----------
+    values
+        Finite scalar coordinates with shape ``[N]``.
+    weights
+        Finite nonnegative weights with shape ``[N]``.
+    n_bins
+        Number of requested interval cells.
+
+    Returns
+    -------
+    tuple
+        Integer labels aligned with ``values`` and the minimal weighted
+        within-segment squared error.
+    """
+    n_rows = int(values.shape[0])
+    if n_bins > n_rows:
+        raise ValueError("scalar dynamic programming requires n_bins <= the number of atoms")
+    order = np.argsort(values, kind="stable")
+    ordered_values = values[order]
+    ordered_weights = weights[order]
+    prefix_weight = np.r_[0.0, np.cumsum(ordered_weights)]
+    prefix_sum = np.r_[0.0, np.cumsum(ordered_weights * ordered_values)]
+    prefix_square = np.r_[0.0, np.cumsum(ordered_weights * ordered_values**2)]
+    # ``previous`` is the completed stage of the recursion; only one stage and
+    # the predecessor table are retained, so storage stays O(n_bins * n_rows).
+    previous = np.full(n_rows + 1, np.inf)
+    previous[0] = 0.0
+    predecessor = np.zeros((n_bins + 1, n_rows + 1), dtype=np.int32)
+    stripe = _dynamic_stripe_rows(n_rows + 1, prefix_weight.dtype.itemsize)
+    for bin_count in range(1, n_bins + 1):
+        current = np.full(n_rows + 1, np.inf)
+        first_start = bin_count - 1
+        for begin in range(bin_count, n_rows + 1, stripe):
+            end = min(begin + stripe, n_rows + 1)
+            stops = np.arange(begin, end)
+            # A stop of ``end - 1`` admits no split point beyond ``end - 2``, so
+            # the block is cut to the columns this stripe can actually use.
+            columns = np.arange(first_start, end - 1)
+            admissible = columns[None, :] < stops[:, None]
+            segment_weight = prefix_weight[stops, None] - prefix_weight[None, columns]
+            segment_sum = prefix_sum[stops, None] - prefix_sum[None, columns]
+            segment_square = prefix_square[stops, None] - prefix_square[None, columns]
+            # A zero-weight segment carries no measure, so its exact cost is
+            # zero; the substituted denominator only avoids a spurious divide.
+            safe_weight = np.where(segment_weight > 0, segment_weight, 1.0)
+            costs = segment_square - segment_sum**2 / safe_weight
+            candidates = np.where(admissible, previous[None, columns] + costs, np.inf)
+            selected = np.argmin(candidates, axis=1)
+            current[begin:end] = candidates[np.arange(end - begin), selected]
+            predecessor[bin_count, begin:end] = first_start + selected
+        previous = current
+    objective = float(previous[n_rows])
+    if not np.isfinite(objective):
+        raise ValueError("scalar dynamic programming found no feasible interval partition")
+    ordered_labels = np.empty(n_rows, dtype=np.int32)
+    stop = n_rows
+    for label in range(n_bins - 1, -1, -1):
+        start = int(predecessor[label + 1, stop])
+        ordered_labels[start:stop] = label
+        stop = start
+    labels = np.empty(n_rows, dtype=np.int32)
+    labels[order] = ordered_labels
+    return labels, objective
+
+
+def scalar_weighted_kmeans_dp(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    config: ScalarDPConfig,
+) -> QuantizerRun:
+    """Solve one-dimensional weighted interval k-means exactly by dynamic programming."""
+    rank = int(points.shape[1]) if points.ndim == 2 else 0
+    if rank != 1:
+        raise ValueError(
+            "scalar dynamic programming requires an effective score rank of one, got "
+            f"rank {rank}; reduce the score dimension or choose another solver"
+        )
+    n_rows = int(points.shape[0])
+    if n_rows > config.max_rows:
+        raise ValueError(
+            f"scalar dynamic programming received {n_rows} distinct rows, "
+            f"exceeding max_rows={config.max_rows}"
+        )
+    labels, objective = scalar_interval_dp(
+        np.asarray(points[:, 0], dtype=np.float64),
+        np.asarray(weights, dtype=np.float64),
+        n_bins,
+    )
+    label_array = jnp.asarray(labels)
+    statistics = scatter_bin_statistics(label_array, weights, points, n_bins)
+    centers = statistics.means
+    return QuantizerRun(
+        centers=centers,
+        steps=[0],
+        center_history=[centers],
+        objective_history=[objective],
+        bin_weight_history=[statistics.weights],
+        objective_label="whitened_sse",
+    )
 
 
 def _normalized_objective_scores(
@@ -208,14 +502,29 @@ def _soft_temperature_bounds(
     return start, start * end_ratio
 
 
-def _soft_retention(fisher: jnp.ndarray) -> float:
-    eigenvalues = jnp.linalg.eigvalsh(fisher)
-    value = jnp.where(
-        jnp.any(eigenvalues <= 0),
-        0.0,
-        jnp.exp(jnp.mean(jnp.log(eigenvalues))),
-    )
-    return float(np.asarray(value))
+def criterion_objective_label(criterion: DOptimality | ProfiledDOptimality) -> str:
+    """Name the units of a log-determinant objective recorded for one criterion."""
+    return "profiled_logdet" if isinstance(criterion, ProfiledDOptimality) else "logdet_retained"
+
+
+def _criterion_logdet(
+    fisher: jnp.ndarray, criterion: DOptimality | ProfiledDOptimality
+) -> tuple[jnp.ndarray, jnp.ndarray, int]:
+    if isinstance(criterion, DOptimality):
+        sign, value = jnp.linalg.slogdet(fisher)
+        return sign, value, fisher.shape[0]
+    dimension = fisher.shape[0]
+    interest_set = set(criterion.interest)
+    nuisance = tuple(index for index in range(dimension) if index not in interest_set)
+    interest_indices = jnp.asarray(criterion.interest)
+    nuisance_indices = jnp.asarray(nuisance)
+    interest_block = fisher[jnp.ix_(interest_indices, interest_indices)]
+    cross_block = fisher[jnp.ix_(interest_indices, nuisance_indices)]
+    nuisance_block = fisher[jnp.ix_(nuisance_indices, nuisance_indices)]
+    nuisance_sign, _ = jnp.linalg.slogdet(nuisance_block)
+    schur = interest_block - cross_block @ jnp.linalg.solve(nuisance_block, cross_block.T)
+    schur_sign, value = jnp.linalg.slogdet(0.5 * (schur + schur.T))
+    return nuisance_sign * schur_sign, value, len(criterion.interest)
 
 
 @dataclass(slots=True)
@@ -224,6 +533,9 @@ class _SoftHistory:
     weights: jnp.ndarray
     objective_scores: jnp.ndarray
     n_bins: int
+    criterion: DOptimality | ProfiledDOptimality
+    reference_objective: float
+    objective_dimension: int
     steps: list[int] = field(default_factory=list)
     centers: list[jnp.ndarray] = field(default_factory=list)
     objectives: list[float] = field(default_factory=list)
@@ -244,12 +556,18 @@ class _SoftHistory:
         """Record one aggregate soft-optimization checkpoint."""
         responsibilities = soft_responsibilities(self.points, centers, temperature)
         soft_fisher = _soft_fisher(self.objective_scores, responsibilities, self.weights)
-        labels = hard_assign(self.points, centers)
+        labels = chunked_hard_assign(self.points, centers)
         self.steps.append(step)
         self.centers.append(centers)
         self.objectives.append(float(np.asarray(-loss)))
         self.bin_weights.append(_bin_weights(labels, self.weights, self.n_bins))
-        self.retentions.append(_soft_retention(soft_fisher))
+        sign, value, _ = _criterion_logdet(soft_fisher, self.criterion)
+        retention = jnp.where(
+            sign > 0,
+            jnp.exp((value - self.reference_objective) / self.objective_dimension),
+            0.0,
+        )
+        self.retentions.append(float(np.asarray(retention)))
         self.temperatures.append(float(temperature))
         self.gradient_norms.append(float(np.asarray(gradient_norm)))
 
@@ -261,58 +579,88 @@ class _SoftHistory:
             center_history=self.centers,
             objective_history=self.objectives,
             bin_weight_history=self.bin_weights,
+            objective_label=criterion_objective_label(self.criterion),
             soft_retention_history=self.retentions,
             temperature_history=self.temperatures,
             gradient_norm_history=self.gradient_norms,
         )
 
 
-def soft_voronoi(
+def _soft_voronoi_single_cell(
+    centers: jnp.ndarray, weights: jnp.ndarray, criterion: DOptimality | ProfiledDOptimality
+) -> QuantizerRun:
+    """Return the degenerate one-cell run: every row already shares the only center."""
+    return QuantizerRun(
+        centers=centers,
+        steps=[0],
+        center_history=[centers],
+        objective_history=[0.0],
+        bin_weight_history=[jnp.asarray([jnp.sum(weights)])],
+        objective_label=criterion_objective_label(criterion),
+        soft_retention_history=[1.0],
+        temperature_history=[1.0],
+        gradient_norm_history=[0.0],
+    )
+
+
+def _soft_voronoi_reference(
+    objective_scores: jnp.ndarray,
+    weights: jnp.ndarray,
+    criterion: DOptimality | ProfiledDOptimality,
+    *,
+    effective_rank: int,
+    rank_rtol: float | None,
+) -> tuple[jnp.ndarray, float, int]:
+    """Normalize D-optimal objective scores and check the full-data reference is regular."""
+    if isinstance(criterion, DOptimality):
+        objective_scores = _normalized_objective_scores(objective_scores, weights, rank_rtol)
+    elif objective_scores.shape[1] != effective_rank:
+        raise ValueError("profiled-D soft fitting requires full-rank supplied-score information")
+    full_fisher = jnp.einsum("n,np,nq->pq", weights, objective_scores, objective_scores)
+    reference_sign, reference_value, objective_dimension = _criterion_logdet(full_fisher, criterion)
+    if float(np.asarray(reference_sign)) <= 0:
+        raise ValueError("soft fitting requires nonsingular criterion information")
+    return objective_scores, float(np.asarray(reference_value)), objective_dimension
+
+
+def _soft_voronoi_optimizer(
+    config: SoftVoronoiConfig, start_temperature: float
+) -> optax.GradientTransformation:
+    """Build the scale-invariant Adam chain for one soft-Voronoi fit.
+
+    Fisher whitening contains the total information scale, so coordinate
+    magnitudes shrink as total sample weight grows. Expressing Adam's step in
+    units of the initialized center separation keeps fitting scale-invariant.
+    """
+    return optax.chain(
+        optax.clip_by_global_norm(config.gradient_clip),
+        optax.adam(config.learning_rate * start_temperature),
+    )
+
+
+def _run_soft_schedule(
     points: jnp.ndarray,
     weights: jnp.ndarray,
+    objective_scores: jnp.ndarray,
     n_bins: int,
-    effective_rank: int,
+    criterion: DOptimality | ProfiledDOptimality,
     config: SoftVoronoiConfig,
+    *,
+    centers: jnp.ndarray,
+    optimizer: optax.GradientTransformation,
+    start_temperature: float,
+    end_temperature: float,
+    reference_objective: float,
+    objective_dimension: int,
 ) -> QuantizerRun:
-    """Optimize soft Fisher retention, then return centers for hard assignment."""
-    if n_bins < effective_rank:
-        raise ValueError(
-            "soft D-optimal fitting requires n_bins >= the effective Fisher rank; "
-            "use k-means for smaller partitions"
-        )
-    centers = _soft_initial_centers(points, weights, n_bins, config)
-    if n_bins == 1:
-        return QuantizerRun(
-            centers=centers,
-            steps=[0],
-            center_history=[centers],
-            objective_history=[0.0],
-            bin_weight_history=[jnp.asarray([jnp.sum(weights)])],
-            soft_retention_history=[1.0],
-            temperature_history=[1.0],
-            gradient_norm_history=[0.0],
-        )
-
-    start_temperature, end_temperature = _soft_temperature_bounds(
-        centers, config.temperature_end_ratio
-    )
-    objective_scores = _normalized_objective_scores(points, weights, config.rank_rtol)
-    epsilon = 1e-8 if points.dtype == jnp.float64 else 1e-5
-    identity = jnp.eye(effective_rank, dtype=points.dtype)
+    """Run the annealed Adam schedule from prepared centers and return its history."""
 
     def loss_fn(current_centers: jnp.ndarray, temperature: jnp.ndarray) -> jnp.ndarray:
         resp = soft_responsibilities(points, current_centers, temperature)
         soft_fisher = _soft_fisher(objective_scores, resp, weights)
-        _, logdet = jnp.linalg.slogdet(soft_fisher + epsilon * identity)
-        return -logdet
+        sign, logdet, _ = _criterion_logdet(soft_fisher, criterion)
+        return jnp.where(sign > 0, -logdet, jnp.inf)
 
-    # Fisher whitening contains the total information scale, so coordinate
-    # magnitudes shrink as total sample weight grows. Express Adam's step in
-    # units of the initialized center separation to keep fitting scale-invariant.
-    optimizer = optax.chain(
-        optax.clip_by_global_norm(config.gradient_clip),
-        optax.adam(config.learning_rate * start_temperature),
-    )
     state = optimizer.init(centers)
 
     @jax.jit
@@ -328,7 +676,15 @@ def soft_voronoi(
             jnp.asarray(optax.tree.norm(gradients)),
         )
 
-    history = _SoftHistory(points, weights, objective_scores, n_bins)
+    history = _SoftHistory(
+        points,
+        weights,
+        objective_scores,
+        n_bins,
+        criterion,
+        reference_objective,
+        objective_dimension,
+    )
 
     for step in range(config.max_steps + 1):
         fraction = step / config.max_steps
@@ -348,3 +704,49 @@ def soft_voronoi(
             )
 
     return history.finish(centers)
+
+
+def soft_voronoi(
+    points: jnp.ndarray,
+    objective_scores: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    effective_rank: int,
+    criterion: DOptimality | ProfiledDOptimality,
+    config: SoftVoronoiConfig,
+) -> QuantizerRun:
+    """Optimize soft Fisher retention, then return centers for hard assignment."""
+    if n_bins < effective_rank:
+        raise ValueError(
+            "soft D-optimal fitting requires n_bins >= the effective Fisher rank; "
+            "use k-means for smaller partitions"
+        )
+    centers = _soft_initial_centers(points, weights, n_bins, config)
+    if n_bins == 1:
+        return _soft_voronoi_single_cell(centers, weights, criterion)
+
+    start_temperature, end_temperature = _soft_temperature_bounds(
+        centers, config.temperature_end_ratio
+    )
+    objective_scores, reference_objective, objective_dimension = _soft_voronoi_reference(
+        objective_scores,
+        weights,
+        criterion,
+        effective_rank=effective_rank,
+        rank_rtol=config.rank_rtol,
+    )
+    optimizer = _soft_voronoi_optimizer(config, start_temperature)
+    return _run_soft_schedule(
+        points,
+        weights,
+        objective_scores,
+        n_bins,
+        criterion,
+        config,
+        centers=centers,
+        optimizer=optimizer,
+        start_temperature=start_temperature,
+        end_temperature=end_temperature,
+        reference_objective=reference_objective,
+        objective_dimension=objective_dimension,
+    )

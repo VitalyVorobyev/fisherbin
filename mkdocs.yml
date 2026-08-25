@@ -75,6 +75,7 @@ nav:
           - Linear models: reference/models.md
           - Configuration: reference/configuration.md
           - Results: reference/results.md
+          - Certificates: reference/certification.md
           - Information: reference/information.md
           - Transforms: reference/transforms.md
           - Visualization: reference/visualization.md

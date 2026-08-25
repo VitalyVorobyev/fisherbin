@@ -443,7 +443,6 @@ def _evaluate_bin_count(
             config=sq.DExchangeConfig(
                 seed=seed,
                 n_init=3 if quick else 8,
-                max_sweeps=200 if quick else 500,
             ),
             provenance=score_provenance,
         )

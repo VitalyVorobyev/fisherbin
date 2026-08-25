@@ -25,7 +25,7 @@ provider = sq.ScoreFunction(
 `LinearComponentScore(model)` evaluates frozen component functions and applies
 `scores_from_components`.
 
-`ClassifierScore(callback, transform, description=...)` accepts a ready probability callback.
+`ClassifierScore(predict, transform, description=...)` accepts a ready probability callback.
 Training, calibration, feature preprocessing, and cross-fitting remain outside ScoreQuant.
 
 For central finite differences:

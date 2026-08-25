@@ -15,8 +15,24 @@ partition = sq.optimize_partition(
 labels = partition.labels
 ```
 
-Inspect `exchange_stable`, `best_remaining_gain`, `accepted_moves`, cell statistics, information
-matrices, and `train_report`. Do not invent future labels from an ordinary partition.
+Inspect `exchange_stable`, `best_remaining_gain`, `accepted_moves`, `scans`, cell statistics,
+information matrices, and `train_report`. Do not invent future labels from an ordinary partition.
+
+By default the exchange runs until no relocation improves the objective, accepting many verified
+relocations per scan. Set `max_scans` to bound the work, `batch_moves=False` for one relocation per
+scan, and `n_restarts`/`init` to search several seeded starting labelings.
+
+`MahalanobisLloydConfig` is the other finite solver. It proposes the complete nearest-centroid
+relabeling in the current criterion metric and accepts it only when the exactly rebuilt objective
+strictly improves, since the unguarded batch step can lower it. Its default `guard="exchange"`
+finishes with exact relocations, so the result stays exchange-stable and compilable; `"reject"`
+stops at the last accepted batch and reports the stability it actually reached. Read
+`lloyd_iterations` and `accepted_lloyd_steps` next to `scans` and `accepted_moves`.
+
+To check labels the solver did not produce, call `sq.exchange_stability_report(scores, labels,
+weights=weights)`; to ask whether an exchange result is globally optimal on a small score table,
+call `sq.certify_partition(scores, weights=weights, n_bins=8, incumbent=partition.labels)` and read
+`status`, `gap`, and `incumbent_was_optimal`.
 
 ## Ready scores: learn a reusable rule
 

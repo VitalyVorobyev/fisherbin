@@ -31,9 +31,20 @@ $$w_i q_{aa}\left(W_a^{-1}+W_b^{-1}\right).$$
 For balanced uniform cells this is typically \(O(K/N)\), explaining why population geometry can be
 a good approximation without becoming an exact finite theorem.
 
-The full-information efficient score supplies a lower-dimensional D upper problem when nuisance
-information is external or fixed. It is not automatically identical to profiling nuisance from the
-same binned labels.
+The full-information efficient score supplies a lower-dimensional D upper problem. It is not
+automatically identical to profiling nuisance from the same binned labels, but it does dominate it.
+
+**Theorem (efficient-score domination).** Let \(\hat s=s_\psi-B^\ast s_\lambda\) use the nuisance
+regression \(B^\ast=BC^{-1}\) of the *unbinned* information. For every hard rule \(q\),
+
+$$\mathrm{Schur}_\psi\!\left(I_q\right)\preceq
+\mathbb{E}\!\left[\hat s\mid q\right]\text{-between-cell information}.$$
+
+Maximizing the right-hand side over all \(K\)-cell rules of \(\hat s\) therefore bounds the profiled
+objective of every \(K\)-cell rule of the whole score space. For one parameter of interest the
+right-hand side is scalar, its maximizer has ordered interval cells, and exact weighted interval
+dynamic programming attains it, so the ceiling is a certificate rather than an estimate. The same
+labels are also a strong initializer for finite profiled exchange.
 
 **Open problem.** Design an inductive profiled-\(D_s\) solver with a useful certified geometry gap
 and robust behavior near singular nuisance blocks.

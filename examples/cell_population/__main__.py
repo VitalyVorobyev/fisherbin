@@ -17,7 +17,12 @@ from .data import (
 )
 from .experiment import run_experiment
 from .figures import write_outputs
-from .fixture import write_fixture, write_remote_fixture, write_remote_sample
+from .fixture import (
+    write_fixture,
+    write_remote_fixture,
+    write_remote_full_csvs,
+    write_remote_sample,
+)
 from .transport_audit import write_transport_audit
 
 
@@ -44,6 +49,17 @@ def _parser() -> argparse.ArgumentParser:
         "--download-sample",
         type=Path,
         help="range-read a bounded all-patient sample from the public FCS files",
+    )
+    parser.add_argument(
+        "--download-full-csv-dir",
+        type=Path,
+        help="stream all public component FCS files into thirty external Case_*.csv files",
+    )
+    parser.add_argument(
+        "--download-chunk-rows",
+        type=int,
+        default=200_000,
+        help="FCS rows per range request when building the full CSV corpus",
     )
     parser.add_argument(
         "--sample-blocks",
@@ -103,6 +119,13 @@ def main() -> None:
             args.download_sample,
             max_per_patient=args.max_per_patient,
             blocks_per_component=args.sample_blocks,
+            workers=args.download_workers,
+        )
+        return
+    if args.download_full_csv_dir is not None:
+        write_remote_full_csvs(
+            args.download_full_csv_dir,
+            chunk_rows=args.download_chunk_rows,
             workers=args.download_workers,
         )
         return

@@ -7,7 +7,8 @@ import numpy as np
 import pytest
 
 import scorequant as sq
-from scorequant.partition import _exhaustive_d_oracle
+
+from ._oracles import _exhaustive_d_oracle
 
 
 def _canonical_partitions(n_rows: int, n_bins: int) -> list[tuple[int, ...]]:
@@ -33,7 +34,7 @@ def test_small_d_exchange_matches_exhaustive_global_oracle() -> None:
     result = sq.optimize_partition(
         scores,
         n_bins=3,
-        config=sq.DExchangeConfig(seed=8, n_init=12, max_sweeps=200),
+        config=sq.DExchangeConfig(seed=8, n_init=12, max_scans=200),
     )
     assert result.objective == pytest.approx(optimum, abs=1e-10)
 

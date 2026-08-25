@@ -174,30 +174,66 @@ class SoftVoronoiConfig:
 class DExchangeConfig:
     """Configure exact positive-gain D-optimal point exchange.
 
+    One *scan* is one complete evaluation of every admissible single-row
+    relocation. A scan accepts either one move or, under ``batch_moves``, many
+    relocations at once, so ``accepted_moves`` and ``scans`` are different
+    quantities.
+
     Parameters
     ----------
     rank_rtol
         Relative threshold for the informative Fisher subspace.
     seed
-        Seed used by deterministic k-means initialization.
+        Base seed of deterministic initialization. Exchange restart ``r`` uses
+        ``seed + r``.
     n_init
-        Number of k-means initialization restarts.
-    max_sweeps
-        Maximum complete scans of candidate point moves.
+        Number of k-means seeding restarts inside one exchange restart.
+    max_scans
+        Maximum number of complete candidate scans. ``None`` runs until the
+        exchange is stable, which strict positive-gain acceptance guarantees;
+        a generous internal safety bound still stops a numerically pathological
+        run and records ``best_remaining_gain``.
+    batch_moves
+        Relocate many positive-gain rows per scan. The batch is ranked by gain,
+        truncated before it would displace too much of any cell's weight, and
+        accepted only when the exactly recomputed objective strictly improves;
+        a rejected batch is halved and retried, finally falling back to the
+        single best move. Small improving sets always use that single exact
+        move, so results match ``batch_moves=False`` on small samples. Ignored
+        when ``first_improvement`` is set.
+    n_restarts
+        Number of independent exchange restarts. The restart with the best
+        exact final objective wins, ties resolving to the earliest restart, and
+        every reported diagnostic describes that winning restart.
+    init
+        Initial labeling of each restart: weighted k-means++ seeding or a
+        balanced random labeling.
     gain_tolerance
         Strict minimum accepted log-determinant gain.
     first_improvement
         Accept the first improving move in deterministic row/bin order instead
-        of the best move in a sweep.
+        of the best move in a scan. This stops each scan early, so it forces
+        single-move acceptance and disables ``batch_moves``.
+    collapse_duplicates
+        Merge identical score rows into one weighted atom before solving.
+        ``None`` (default) collapses automatically below 100,000 effective
+        rows and skips it above, since the O(N log N) merge only pays for
+        itself against the O(N) exchange scan it speeds up on samples with
+        many repeated score atoms. ``True``/``False`` always collapses or
+        always skips, regardless of sample size.
     """
 
     method: Literal["d_exchange"] = field(default="d_exchange", init=False)
     rank_rtol: float | None = None
     seed: int = 0
     n_init: int = 8
-    max_sweeps: int = 200
+    max_scans: int | None = None
+    batch_moves: bool = True
+    n_restarts: int = 1
+    init: Literal["kmeans++", "random"] = "kmeans++"
     gain_tolerance: float = 1e-10
     first_improvement: bool = False
+    collapse_duplicates: bool | None = None
 
     def __post_init__(self) -> None:
         """Validate exchange settings at construction time."""
@@ -207,13 +243,139 @@ class DExchangeConfig:
                 raise ValueError("rank_rtol must be less than one")
         _validate_integer("seed", self.seed, minimum=0)
         _validate_integer("n_init", self.n_init, minimum=1)
-        _validate_integer("max_sweeps", self.max_sweeps, minimum=1)
+        if self.max_scans is not None:
+            _validate_integer("max_scans", self.max_scans, minimum=1)
+        _validate_bool("batch_moves", self.batch_moves)
+        _validate_integer("n_restarts", self.n_restarts, minimum=1)
+        if self.init not in ("kmeans++", "random"):
+            raise ValueError("init must be 'kmeans++' or 'random'")
         _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
         _validate_bool("first_improvement", self.first_improvement)
+        if self.collapse_duplicates is not None:
+            _validate_bool("collapse_duplicates", self.collapse_duplicates)
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible configuration mapping."""
         return json_ready(asdict(self))
 
 
-type QuantizerConfig = KMeansConfig | SoftVoronoiConfig | DExchangeConfig
+@dataclass(frozen=True, slots=True)
+class MahalanobisLloydConfig:
+    """Configure guarded batch Mahalanobis-Lloyd iteration.
+
+    One *iteration* freezes the current criterion metric, proposes the complete
+    nearest-centroid relabeling of every row in that metric, and accepts the
+    proposal only when the exactly rebuilt objective strictly improves. The
+    unguarded batch step is not monotone: the tangent of the concave log
+    determinant is an upper bound, not a minorizer, and a committed eight-row
+    fixture loses 0.136521 nat in one such step. The guard is therefore part of
+    the solver contract, not an optional safeguard.
+
+    Parameters
+    ----------
+    rank_rtol
+        Relative threshold for the informative Fisher subspace.
+    seed
+        Nonnegative seed of the deterministic k-means seeding.
+    n_init
+        Number of weighted k-means++ restarts used to seed the labels.
+    max_iter
+        Maximum number of guarded batch iterations.
+    guard
+        Behavior once a proposal stops improving. ``"exchange"`` hands the
+        labels to the exact positive-gain exchange engine, so the reported
+        state is exchange-stable and a nonsingular D result stays compilable.
+        ``"reject"`` stops at the last accepted labeling and only certifies
+        exchange stability with one final scan, which may report ``False``.
+    gain_tolerance
+        Strict minimum accepted objective gain, shared by the guarded batch and
+        the exchange phase.
+    collapse_duplicates
+        Merge identical score rows into one weighted atom before solving.
+        ``None`` (default) collapses automatically below 100,000 effective
+        rows and skips it above, since the O(N log N) merge only pays for
+        itself against the O(N) work it speeds up on samples with many
+        repeated score atoms. ``True``/``False`` always collapses or always
+        skips, regardless of sample size.
+    """
+
+    method: Literal["mahalanobis_lloyd"] = field(default="mahalanobis_lloyd", init=False)
+    rank_rtol: float | None = None
+    seed: int = 0
+    n_init: int = 8
+    max_iter: int = 100
+    guard: Literal["exchange", "reject"] = "exchange"
+    gain_tolerance: float = 1e-10
+    collapse_duplicates: bool | None = None
+
+    def __post_init__(self) -> None:
+        """Validate the guarded batch settings at construction time."""
+        if self.rank_rtol is not None:
+            _validate_finite("rank_rtol", self.rank_rtol, positive=False)
+            if self.rank_rtol >= 1:
+                raise ValueError("rank_rtol must be less than one")
+        _validate_integer("seed", self.seed, minimum=0)
+        _validate_integer("n_init", self.n_init, minimum=1)
+        _validate_integer("max_iter", self.max_iter, minimum=1)
+        if self.guard not in ("exchange", "reject"):
+            raise ValueError("guard must be 'exchange' or 'reject'")
+        _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
+        if self.collapse_duplicates is not None:
+            _validate_bool("collapse_duplicates", self.collapse_duplicates)
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible configuration mapping."""
+        return json_ready(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
+class ScalarDPConfig:
+    """Configure exact interval dynamic programming for one score coordinate.
+
+    The solver is exact and deterministic: on a rank-one score law the optimal
+    hard partition has ordered interval cells, and the weighted interval dynamic
+    program returns the global optimum rather than a local one.
+
+    Parameters
+    ----------
+    whiten
+        Whiten the single retained Fisher direction before solving. Scalar
+        whitening is a strictly positive rescaling, so it never changes the
+        optimal interval labels; it fixes the units of the reported
+        within-segment objective and matches the other score-space solvers.
+    rank_rtol
+        Relative threshold for the informative score direction.
+    seed
+        Nonnegative seed recorded for reproducibility. The dynamic program
+        consumes no randomness and resolves ties by the smallest split index.
+    max_rows
+        Maximum number of distinct positive-weight score atoms. The exact
+        dynamic program uses quadratic work in this count and is evaluated in
+        memory-bounded stripes.
+    """
+
+    method: Literal["scalar_dp"] = field(default="scalar_dp", init=False)
+    whiten: bool = True
+    rank_rtol: float | None = None
+    seed: int = 0
+    max_rows: int = 20_000
+
+    def __post_init__(self) -> None:
+        """Validate the exact-solver capacity contract."""
+        _validate_bool("whiten", self.whiten)
+        if self.rank_rtol is not None:
+            _validate_finite("rank_rtol", self.rank_rtol, positive=False)
+            if self.rank_rtol >= 1:
+                raise ValueError("rank_rtol must be less than one")
+        _validate_integer("seed", self.seed, minimum=0)
+        _validate_integer("max_rows", self.max_rows, minimum=1)
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible configuration mapping."""
+        return json_ready(asdict(self))
+
+
+type PartitionConfig = DExchangeConfig | MahalanobisLloydConfig
+type QuantizerConfig = (
+    KMeansConfig | SoftVoronoiConfig | DExchangeConfig | MahalanobisLloydConfig | ScalarDPConfig
+)

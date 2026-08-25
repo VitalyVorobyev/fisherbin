@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from typing import Literal
 
 import jax.numpy as jnp
 
@@ -13,12 +14,26 @@ from ._validation import (
     validate_n_bins,
     validate_sample,
 )
-from .config import DExchangeConfig, KMeansConfig, QuantizerConfig, SoftVoronoiConfig
-from .criteria import Criterion, DOptimality, NormalizedTrace
-from .information import information_report
-from .partition import optimize_d_partition
+from .config import (
+    DExchangeConfig,
+    KMeansConfig,
+    MahalanobisLloydConfig,
+    PartitionConfig,
+    QuantizerConfig,
+    ScalarDPConfig,
+    SoftVoronoiConfig,
+)
+from .criteria import Criterion, DOptimality, NormalizedTrace, ProfiledDOptimality
+from .information import information_report, profiled_information_report
+from .partition import optimize_d_partition, optimize_profiled_d_partition
 from .providers import ScoreProvider
-from .quantizers import QuantizerRun, hard_assign, soft_voronoi, weighted_kmeans
+from .quantizers import (
+    QuantizerRun,
+    chunked_hard_assign,
+    scalar_weighted_kmeans_dp,
+    soft_voronoi,
+    weighted_kmeans,
+)
 from .result import InformationReport, OptimizationTrace, PartitionResult, QuantizerResult
 from .sources import (
     IntegrationSource,
@@ -32,14 +47,24 @@ from .transforms import FisherTransform, fisher_transform
 
 @dataclass(frozen=True, slots=True)
 class _PreparedFit:
-    config: KMeansConfig | SoftVoronoiConfig
+    config: KMeansConfig | SoftVoronoiConfig | ScalarDPConfig
     train_sample: _ValidatedSample
     validation_sample: _ValidatedSample | None
     transform: FisherTransform
     train_coordinates: jnp.ndarray
     train_weights: jnp.ndarray
+    train_objective_scores: jnp.ndarray
     all_train_coordinates: jnp.ndarray
     validation_coordinates: jnp.ndarray | None
+
+
+# How many recorded center snapshots ``fit_quantizer`` re-scores with a full
+# information report while building ``train_hard_retention`` /
+# ``validation_hard_retention``: every snapshot ("full"), only the first and
+# terminal snapshots ("endpoints"), or only the terminal snapshot ("final").
+# Unscored snapshots hold ``nan`` so the history stays aligned with
+# ``OptimizationTrace.steps`` regardless of the mode.
+DiagnosticsMode = Literal["final", "endpoints", "full"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,28 +76,147 @@ class _FitDiagnostics:
     validation_hard_retention: list[float] | None
 
 
+# Every ``Criterion`` subtype the library defines, used only to tell a
+# recognized-but-mismatched criterion (``ValueError``) apart from a value that
+# is not a criterion at all (``TypeError``).
+_CRITERION_TYPES: tuple[type[Criterion], ...] = (DOptimality, ProfiledDOptimality, NormalizedTrace)
+
+
+@dataclass(frozen=True, slots=True)
+class _SolverSpec:
+    """One configuration type's declared criteria for each finite task.
+
+    An empty tuple means the type is not part of that task's own declared
+    configuration contract at all: ``optimize_partition`` never accepted
+    ``KMeansConfig`` and never will, so supplying it there is a Python type
+    violation of that task's own signature, not a semantic choice among
+    otherwise-valid alternatives.
+    """
+
+    partition_criteria: tuple[type[Criterion], ...] = ()
+    quantizer_criteria: tuple[type[Criterion], ...] = ()
+
+
+# The single source of truth for which (config type, criterion type) pairs
+# ``optimize_partition`` and ``fit_quantizer`` accept. Both entry points
+# validate against this one table instead of each hand-rolling its own
+# isinstance chain, and the two tasks can (and do) disagree about which
+# criteria one config type supports: ``DExchangeConfig`` and
+# ``MahalanobisLloydConfig`` accept both finite criteria for
+# ``optimize_partition`` but only ``DOptimality`` for ``fit_quantizer``,
+# because a profiled partition has no canonical inductive rule to compile
+# into a reusable quantizer.
+_SOLVER_TABLE: dict[type, _SolverSpec] = {
+    DExchangeConfig: _SolverSpec(
+        partition_criteria=(DOptimality, ProfiledDOptimality),
+        quantizer_criteria=(DOptimality,),
+    ),
+    MahalanobisLloydConfig: _SolverSpec(
+        partition_criteria=(DOptimality, ProfiledDOptimality),
+        quantizer_criteria=(DOptimality,),
+    ),
+    KMeansConfig: _SolverSpec(quantizer_criteria=(NormalizedTrace,)),
+    SoftVoronoiConfig: _SolverSpec(quantizer_criteria=(DOptimality, ProfiledDOptimality)),
+    ScalarDPConfig: _SolverSpec(quantizer_criteria=(DOptimality,)),
+}
+
+
+def _task_criteria(task: str, spec: _SolverSpec) -> tuple[type[Criterion], ...]:
+    return spec.partition_criteria if task == "optimize_partition" else spec.quantizer_criteria
+
+
+def _validate_solver(config: object, criterion: Criterion, task: str) -> None:
+    """Validate one (config, criterion) pair against the declarative solver table.
+
+    Parameters
+    ----------
+    config, criterion
+        Resolved (non-``None``) configuration and criterion.
+    task
+        Either ``"optimize_partition"`` or ``"fit_quantizer"``.
+
+    Raises
+    ------
+    TypeError
+        ``config`` is not a type this task's own signature declares, or
+        ``criterion`` is not one of the library's ``Criterion`` subtypes.
+    ValueError
+        Both ``config`` and ``criterion`` are individually valid, but this
+        task does not implement that particular pairing. The message names
+        the config, the task, and the criteria it does support.
+    """
+    spec = _SOLVER_TABLE.get(type(config))
+    allowed = _task_criteria(task, spec) if spec is not None else ()
+    if not allowed:
+        recognized = sorted(
+            config_type.__name__
+            for config_type, entry in _SOLVER_TABLE.items()
+            if _task_criteria(task, entry)
+        )
+        raise TypeError(f"{task} requires {' or '.join(recognized)}, got {type(config).__name__}")
+    if not isinstance(criterion, _CRITERION_TYPES):
+        raise TypeError(
+            "criterion must be DOptimality, ProfiledDOptimality, or NormalizedTrace, "
+            f"got {type(criterion).__name__}"
+        )
+    if not isinstance(criterion, allowed):
+        names = " or ".join(sorted(t.__name__ for t in allowed))
+        raise ValueError(f"{type(config).__name__} implements only {names} for {task}")
+
+
 def optimize_partition(
     scores: ArrayLike,
     *,
     weights: ArrayLike | None = None,
     n_bins: int,
-    criterion: DOptimality | None = None,
-    config: DExchangeConfig | None = None,
+    criterion: DOptimality | ProfiledDOptimality | None = None,
+    config: PartitionConfig | None = None,
     provenance: ScoreProvenance | None = None,
+    initial_labels: ArrayLike | None = None,
 ) -> PartitionResult:
-    """Optimize labels of one fixed score table without prediction semantics."""
+    """Optimize labels of one fixed score table without prediction semantics.
+
+    Both finite criteria accept either the exact positive-gain exchange or the
+    guarded Mahalanobis-Lloyd solver; the guarded batch never accepts a step
+    that the exactly rebuilt objective does not certify.
+
+    Parameters
+    ----------
+    scores, weights, n_bins, criterion, config, provenance
+        Fixed-sample assignment contract described in the API guide.
+    initial_labels
+        Optional starting labeling with shape ``[N]`` and values in
+        ``[0, n_bins)``, for example
+        ``EfficientScoreBound.labels``. Zero-weight rows carry
+        no measure and their labels are ignored; identical score rows are merged
+        before the solver runs and must therefore already agree on their bin,
+        and every requested cell must remain nonempty afterwards. Supplied
+        labels replace the seeding of the first exchange restart only, so
+        ``init`` and ``n_init`` still govern any further restart; the guarded
+        Mahalanobis-Lloyd solver starts from them directly.
+    """
     resolved_criterion = DOptimality() if criterion is None else criterion
-    if not isinstance(resolved_criterion, DOptimality):
-        raise TypeError("finite assignment currently supports only DOptimality")
     resolved_config = DExchangeConfig() if config is None else config
-    if not isinstance(resolved_config, DExchangeConfig):
-        raise TypeError("optimize_partition requires DExchangeConfig")
-    return optimize_d_partition(
+    _validate_solver(resolved_config, resolved_criterion, "optimize_partition")
+    if isinstance(resolved_criterion, DOptimality):
+        return optimize_d_partition(
+            scores,
+            weights=weights,
+            n_bins=n_bins,
+            config=resolved_config,
+            provenance=provenance or ScoreProvenance(),
+            initial_labels=initial_labels,
+        )
+    # ``_validate_solver`` accepted the pair, and the only other criterion it
+    # can have accepted for this task is ProfiledDOptimality.
+    return optimize_profiled_d_partition(
         scores,
         weights=weights,
         n_bins=n_bins,
+        criterion=resolved_criterion,
         config=resolved_config,
         provenance=provenance or ScoreProvenance(),
+        initial_labels=initial_labels,
     )
 
 
@@ -84,11 +228,25 @@ def fit_quantizer(
     n_bins: int,
     criterion: Criterion | None = None,
     config: QuantizerConfig | None = None,
+    diagnostics: DiagnosticsMode = "endpoints",
 ) -> QuantizerResult:
     """Fit a reusable hard rule from an empirical or bounded score law.
 
     A score callback alone is deliberately insufficient: observations must be
     paired with an empirical or integration source that defines their measure.
+
+    Parameters
+    ----------
+    diagnostics
+        How much of the recorded center history to re-score into
+        ``trace.train_hard_retention`` and ``trace.validation_hard_retention``.
+        ``"final"`` scores only the terminal centers (one full-dataset pass),
+        ``"endpoints"`` (the default) scores the first and terminal centers
+        (two passes), and ``"full"`` scores every recorded snapshot, matching
+        the historical behavior. Snapshots that are not scored hold ``nan``,
+        so the returned history always stays aligned with ``trace.steps``.
+        This only affects diagnostic reporting; it never changes ``centers``,
+        ``labels``, or either report.
     """
     train, source_kind = _materialize_source(source, score)
     validation_sample = None
@@ -99,9 +257,13 @@ def fit_quantizer(
             raise ValueError("validation scores must use the training parameter order")
     resolved_config = DExchangeConfig() if config is None else config
     resolved_criterion: Criterion = DOptimality() if criterion is None else criterion
-    _validate_solver_pair(resolved_criterion, resolved_config)
+    _validate_solver(resolved_config, resolved_criterion, "fit_quantizer")
 
-    if isinstance(resolved_config, DExchangeConfig):
+    if isinstance(resolved_config, (DExchangeConfig, MahalanobisLloydConfig)):
+        # ``_validate_solver`` already restricted this pairing to DOptimality:
+        # finite profiled-D exchange has no implicit inductive rule, so a
+        # profiled fit must go through ``optimize_partition`` or
+        # ``SoftVoronoiConfig`` instead.
         partition = optimize_d_partition(
             train.scores,
             weights=train.weights,
@@ -127,26 +289,48 @@ def fit_quantizer(
         n_bins=n_bins,
         config=resolved_config,
     )
-    run = _run_geometric_quantizer(prepared, n_bins)
-    diagnostics = _build_fit_diagnostics(prepared, run, n_bins)
+    run = _run_geometric_quantizer(prepared, n_bins, resolved_criterion)
+    fit_diagnostics = _build_fit_diagnostics(
+        prepared, run, n_bins, resolved_criterion, diagnostics=diagnostics
+    )
+    train_profiled_report = None
+    validation_profiled_report = None
+    hard_retention = fit_diagnostics.train_report.geometric_mean_retention
+    if isinstance(resolved_criterion, ProfiledDOptimality):
+        train_profiled_report = profiled_information_report(
+            prepared.train_sample.scores,
+            fit_diagnostics.labels,
+            interest=resolved_criterion.interest,
+            weights=prepared.train_sample.weights,
+            n_bins=n_bins,
+        )
+        hard_retention = train_profiled_report.geometric_mean_retention
+        if prepared.validation_sample is not None and prepared.validation_coordinates is not None:
+            validation_profiled_report = profiled_information_report(
+                prepared.validation_sample.scores,
+                chunked_hard_assign(prepared.validation_coordinates, run.centers),
+                interest=resolved_criterion.interest,
+                weights=prepared.validation_sample.weights,
+                n_bins=n_bins,
+            )
     hardening_gap = None
     if run.soft_retention_history:
-        hardening_gap = (
-            run.soft_retention_history[-1] - diagnostics.train_report.geometric_mean_retention
-        )
+        hardening_gap = run.soft_retention_history[-1] - hard_retention
     return QuantizerResult(
         centers=run.centers,
         metric=None,
         transform=prepared.transform,
         criterion=resolved_criterion,
         config=resolved_config,
-        trace=_build_optimization_trace(run, diagnostics),
-        labels=diagnostics.labels,
-        train_report=diagnostics.train_report,
-        validation_report=diagnostics.validation_report,
+        trace=_build_optimization_trace(run, fit_diagnostics),
+        labels=fit_diagnostics.labels,
+        train_report=fit_diagnostics.train_report,
+        validation_report=fit_diagnostics.validation_report,
         provenance=train.provenance,
         hardening_gap=hardening_gap,
         source_kind=source_kind,
+        train_profiled_report=train_profiled_report,
+        validation_profiled_report=validation_profiled_report,
     )
 
 
@@ -181,21 +365,12 @@ def _materialize_source(source: Source, provider: ScoreProvider | None) -> tuple
     raise TypeError("source must be ScoreSample, ObservationSample, or IntegrationSource")
 
 
-def _validate_solver_pair(criterion: Criterion, config: QuantizerConfig) -> None:
-    if isinstance(config, KMeansConfig) and not isinstance(criterion, NormalizedTrace):
-        raise ValueError("KMeansConfig implements only NormalizedTrace")
-    if isinstance(config, (DExchangeConfig, SoftVoronoiConfig)) and not isinstance(
-        criterion, DOptimality
-    ):
-        raise ValueError(f"{type(config).__name__} implements only DOptimality")
-
-
 def _prepare_score_fit(
     source: ScoreSample,
     validation: ScoreSample | None,
     *,
     n_bins: int,
-    config: KMeansConfig | SoftVoronoiConfig,
+    config: KMeansConfig | SoftVoronoiConfig | ScalarDPConfig,
 ) -> _PreparedFit:
     train_sample = validate_sample(source.scores, source.weights)
     validate_n_bins(n_bins, train_sample.n_effective)
@@ -229,6 +404,7 @@ def _prepare_score_fit(
         transform=transform,
         train_coordinates=train_coordinates,
         train_weights=effective_weights,
+        train_objective_scores=effective_scores,
         all_train_coordinates=transform.apply(train_sample.scores),
         validation_coordinates=(
             None if validation_sample is None else transform.apply(validation_sample.scores)
@@ -236,7 +412,9 @@ def _prepare_score_fit(
     )
 
 
-def _run_geometric_quantizer(prepared: _PreparedFit, n_bins: int) -> QuantizerRun:
+def _run_geometric_quantizer(
+    prepared: _PreparedFit, n_bins: int, criterion: Criterion
+) -> QuantizerRun:
     if isinstance(prepared.config, KMeansConfig):
         return weighted_kmeans(
             prepared.train_coordinates,
@@ -244,13 +422,43 @@ def _run_geometric_quantizer(prepared: _PreparedFit, n_bins: int) -> QuantizerRu
             n_bins,
             prepared.config,
         )
+    if isinstance(prepared.config, ScalarDPConfig):
+        return scalar_weighted_kmeans_dp(
+            prepared.train_coordinates,
+            prepared.train_weights,
+            n_bins,
+            prepared.config,
+        )
+    # SoftVoronoiConfig is the only remaining case: ``_validate_solver`` has
+    # already restricted its criterion to this union before this function
+    # ever runs, so the assertion only narrows the type for ``soft_voronoi``.
+    assert isinstance(criterion, (DOptimality, ProfiledDOptimality))
     return soft_voronoi(
         prepared.train_coordinates,
+        prepared.train_objective_scores,
         prepared.train_weights,
         n_bins,
         prepared.transform.rank,
+        criterion,
         prepared.config,
     )
+
+
+def _diagnostics_snapshot_indices(n_snapshots: int, diagnostics: DiagnosticsMode) -> set[int]:
+    """Return which recorded center snapshots ``diagnostics`` re-scores.
+
+    ``"final"`` selects only the terminal snapshot, ``"endpoints"`` the first
+    and terminal snapshots (deduplicated when there is only one snapshot),
+    and ``"full"`` every snapshot.
+    """
+    if n_snapshots == 0:
+        return set()
+    last = n_snapshots - 1
+    if diagnostics == "full":
+        return set(range(n_snapshots))
+    if diagnostics == "endpoints":
+        return {0, last}
+    return {last}
 
 
 def _hard_retention_history(
@@ -260,29 +468,59 @@ def _hard_retention_history(
     run: QuantizerRun,
     *,
     rank_rtol: float | None,
+    criterion: Criterion,
+    diagnostics: DiagnosticsMode,
 ) -> list[float]:
-    return [
-        information_report(
-            scores,
-            hard_assign(transformed_scores, centers),
-            weights,
-            n_bins=centers.shape[0],
-            rank_rtol=rank_rtol,
-        ).geometric_mean_retention
-        for centers in run.center_history
-    ]
+    """Re-score a subset of recorded center snapshots into a retention history.
+
+    A full-dataset information report costs an ``O(N)`` pass, so scoring every
+    recorded snapshot is expensive for long soft-Voronoi schedules. Unscored
+    snapshots hold ``nan`` rather than being omitted, so the returned list
+    always has the same length as ``run.center_history`` and stays aligned
+    with ``OptimizationTrace.steps``.
+    """
+    selected = _diagnostics_snapshot_indices(len(run.center_history), diagnostics)
+    values: list[float] = [float("nan")] * len(run.center_history)
+    for index in selected:
+        centers = run.center_history[index]
+        labels = chunked_hard_assign(transformed_scores, centers)
+        if isinstance(criterion, ProfiledDOptimality):
+            retention = profiled_information_report(
+                scores,
+                labels,
+                interest=criterion.interest,
+                weights=weights,
+                n_bins=centers.shape[0],
+            ).geometric_mean_retention
+        else:
+            retention = information_report(
+                scores,
+                labels,
+                weights,
+                n_bins=centers.shape[0],
+                rank_rtol=rank_rtol,
+            ).geometric_mean_retention
+        values[index] = retention
+    return values
 
 
 def _build_fit_diagnostics(
-    prepared: _PreparedFit, run: QuantizerRun, n_bins: int
+    prepared: _PreparedFit,
+    run: QuantizerRun,
+    n_bins: int,
+    criterion: Criterion,
+    *,
+    diagnostics: DiagnosticsMode,
 ) -> _FitDiagnostics:
-    labels = hard_assign(prepared.all_train_coordinates, run.centers)
+    labels = chunked_hard_assign(prepared.all_train_coordinates, run.centers)
     train_hard = _hard_retention_history(
         prepared.train_sample.scores,
         prepared.train_sample.weights,
         prepared.all_train_coordinates,
         run,
         rank_rtol=prepared.config.rank_rtol,
+        criterion=criterion,
+        diagnostics=diagnostics,
     )
     train_report = information_report(
         prepared.train_sample.scores,
@@ -299,10 +537,12 @@ def _build_fit_diagnostics(
         prepared.validation_coordinates,
         run,
         rank_rtol=prepared.config.rank_rtol,
+        criterion=criterion,
+        diagnostics=diagnostics,
     )
     validation_report = information_report(
         prepared.validation_sample.scores,
-        hard_assign(prepared.validation_coordinates, run.centers),
+        chunked_hard_assign(prepared.validation_coordinates, run.centers),
         prepared.validation_sample.weights,
         n_bins=n_bins,
         rank_rtol=prepared.config.rank_rtol,
@@ -323,6 +563,7 @@ def _build_optimization_trace(run: QuantizerRun, diagnostics: _FitDiagnostics) -
         objective=jnp.asarray(run.objective_history),
         bin_weights=jnp.stack(run.bin_weight_history),
         train_hard_retention=jnp.asarray(diagnostics.train_hard_retention),
+        objective_label=run.objective_label,
         validation_hard_retention=(
             None
             if diagnostics.validation_hard_retention is None
