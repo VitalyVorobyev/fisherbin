@@ -18,10 +18,11 @@ from .data import (
 from .experiment import run_experiment
 from .figures import write_outputs
 from .fixture import write_fixture, write_remote_fixture, write_remote_sample
+from .transport_audit import write_transport_audit
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run the FlowCyt FisherBin use case")
+    parser = argparse.ArgumentParser(description="Run the FlowCyt ScoreQuant use case")
     source = parser.add_mutually_exclusive_group()
     source.add_argument("--fixture", type=Path, help="compressed fixture path")
     source.add_argument("--data-dir", type=Path, help="FlowCyt data_original directory")
@@ -52,6 +53,17 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--download-workers", type=int, default=12)
     parser.add_argument("--source-sha256", default="", help="upstream archive SHA-256")
+    parser.add_argument(
+        "--transport-audit-sample",
+        type=Path,
+        help="compare this bounded sample with every row under --data-dir",
+    )
+    parser.add_argument(
+        "--transport-audit-output",
+        type=Path,
+        help="JSON path for the full-corpus transport audit",
+    )
+    parser.add_argument("--transport-audit-chunksize", type=int, default=200_000)
     return parser
 
 
@@ -99,6 +111,18 @@ def main() -> None:
             raise SystemExit("--write-fixture requires --data-dir and --source-sha256")
         write_fixture(args.data_dir, args.write_fixture, source_sha256=args.source_sha256)
         return
+    if args.transport_audit_sample is not None:
+        if args.data_dir is None or args.transport_audit_output is None:
+            raise SystemExit(
+                "--transport-audit-sample requires --data-dir and --transport-audit-output"
+            )
+        write_transport_audit(
+            args.data_dir,
+            args.transport_audit_sample,
+            args.transport_audit_output,
+            chunksize=args.transport_audit_chunksize,
+        )
+        return
     data = _load_data(args)
     quick = args.quick or (not args.full and (args.fixture is not None or args.data_dir is None))
     result = run_experiment(
@@ -111,7 +135,9 @@ def main() -> None:
     if args.fixture is not None:
         manifest_path = args.fixture.with_suffix(".json")
         if manifest_path.is_file():
-            result.metrics["source"] = json.loads(manifest_path.read_text(encoding="utf-8"))
+            source_metadata = json.loads(manifest_path.read_text(encoding="utf-8"))
+            source_metadata["title"] = "FlowCyt ScoreQuant source manifest"
+            result.metrics["source"] = source_metadata
     output_dir = args.output_dir or Path("flowcyt-results") / ("quick" if quick else "full")
     write_outputs(result, output_dir)
     print(result.metrics["run"])

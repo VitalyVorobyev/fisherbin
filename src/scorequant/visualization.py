@@ -1,4 +1,4 @@
-"""Optional Matplotlib views over structured FisherBin results."""
+"""Optional Matplotlib views over structured ScoreQuant results."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from ._typing import ArrayLike
-from .result import FitResult, InformationReport, OptimizationTrace
+from .result import InformationReport, OptimizationTrace, QuantizerResult
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
@@ -89,7 +89,7 @@ def plot_optimization(trace: OptimizationTrace) -> Figure:
 
 
 def plot_partition(
-    result: FitResult, scores: ArrayLike, weights: ArrayLike | None = None
+    result: QuantizerResult, scores: ArrayLike, weights: ArrayLike | None = None
 ) -> Figure:
     """Plot observations in the fitted informative coordinate system.
 
@@ -122,7 +122,7 @@ def plot_partition(
             "plot_partition supports effective rank 1 or 2 only; "
             "use plot_summary for a projection-free diagnostic"
         )
-    labels = np.asarray(result.predict(scores))
+    labels = np.asarray(result.predict_scores(scores))
     point_sizes = None
     if weights is not None:
         weight_array = np.asarray(weights)
@@ -190,7 +190,9 @@ def plot_information(report: InformationReport) -> Figure:
     return figure
 
 
-def plot_summary(result: FitResult, scores: ArrayLike, weights: ArrayLike | None = None) -> Figure:
+def plot_summary(
+    result: QuantizerResult, scores: ArrayLike, weights: ArrayLike | None = None
+) -> Figure:
     """Create a compact final-partition and optimization summary.
 
     Parameters
@@ -211,8 +213,8 @@ def plot_summary(result: FitResult, scores: ArrayLike, weights: ArrayLike | None
     import matplotlib.pyplot as plt
 
     coordinates = np.asarray(result.transform.apply(scores))
-    labels = np.asarray(result.predict(scores))
-    report = result.evaluate(scores, weights)
+    labels = np.asarray(result.predict_scores(scores))
+    report = result.evaluate_scores(scores, weights)
     figure, axes = plt.subplots(2, 2, figsize=(11, 8), constrained_layout=True)
     if coordinates.shape[1] == 1:
         axes[0, 0].scatter(coordinates[:, 0], labels, c=labels, cmap="tab20", s=8, alpha=0.5)

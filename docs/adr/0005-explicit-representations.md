@@ -1,6 +1,6 @@
 # ADR 0005: Make variables, components, and scores explicit API layers
 
-**Status:** Accepted
+**Status:** Superseded by [ADR 0009](0009-partition-quantizer-separation.md)
 
 ## Context
 

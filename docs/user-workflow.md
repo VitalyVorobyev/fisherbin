@@ -1,125 +1,88 @@
-# User workflow: variables to component values to scores to bins
+# Workflow guide
 
-## 1. Start from an integration sample
+## Fixed score table: optimize its labels
 
-The fitting sample is normally Monte Carlo, quadrature, or another reference sample used to approximate Fisher integrals. It is not necessarily observed experimental data.
+Use this when the rows themselves are the final object.
 
 ```python
-X_mc = np.column_stack([energy_mc, cos_theta_mc])  # shape [N, K]
-mc_weights = ...  # optional shape [N]
+partition = sq.optimize_partition(
+    scores,
+    weights=weights,
+    n_bins=8,
+    criterion=sq.DOptimality(),
+    config=sq.DExchangeConfig(seed=11),
+)
+labels = partition.labels
 ```
 
-Variable names are metadata rather than algorithm objects. Use plain strings when they help component validation and plots.
+Inspect `exchange_stable`, `best_remaining_gain`, `accepted_moves`, cell statistics, information
+matrices, and `train_report`. Do not invent future labels from an ordinary partition.
 
-## 2. Define the linear intensity
-
-For
-
-$$
-\lambda(x;\theta)=\sum_{\alpha=1}^{M}\theta_\alpha\phi_\alpha(x),
-$$
-
-define one vectorized callable per component:
+## Ready scores: learn a reusable rule
 
 ```python
-def signal(X: np.ndarray) -> np.ndarray:
-    energy, cos_theta = X.T
-    return signal_energy_shape(energy) * signal_angle_shape(cos_theta)
+quantizer = sq.fit_quantizer(
+    sq.ScoreSample(scores, weights, provenance=provenance),
+    validation=sq.ScoreSample(validation_scores, validation_weights),
+    n_bins=8,
+    criterion=sq.DOptimality(),
+    config=sq.SoftVoronoiConfig(seed=11),
+)
+labels_new = quantizer.predict_scores(scores_new)
+report_new = quantizer.evaluate_scores(scores_new, weights_new)
+```
 
+Validation is diagnostic only. Use `NormalizedTrace` with `KMeansConfig` for the weighted k-means
+baseline or `DOptimality` with `DExchangeConfig` for theorem-backed finite-D compilation.
 
-model = fb.LinearComponents(
-    components={
-        "signal": signal,
-        "background_1": background_1,
-        "background_2": background_2,
-    },
-    coefficients={
-        "signal": 1.0,
-        "background_1": 0.4,
-        "background_2": 0.2,
-    },
-    variables=["energy", "cos_theta"],
+## Physical observations and an exact callback
+
+```python
+provider = sq.ScoreFunction(score_fn, provenance=sq.ScoreProvenance(kind="exact"))
+quantizer = sq.fit_quantizer(
+    sq.ObservationSample(X_train, weights),
+    score=provider,
+    n_bins=8,
+)
+labels_new = quantizer.predict_scores(provider.score(X_new))
+```
+
+No ambiguous observation-space prediction is hidden inside the result.
+
+## Linear components
+
+```python
+model = sq.LinearComponents(
+    components={"signal": signal, "background": background},
+    coefficients={"signal": 1.0, "background": 0.4},
+)
+provider = sq.LinearComponentScore(model)
+quantizer = sq.fit_quantizer(
+    sq.ObservationSample(X_mc, mc_weights),
+    score=provider,
+    n_bins=8,
 )
 ```
 
-The callable contract is exactly `[N, K] -> [N]`. Names determine a stable component order and coefficient mappings must have exactly the same keys.
+If component values are already evaluated, call `scores_from_components(Phi, coefficients)` and
+then choose either fixed assignment or reusable quantizer fitting.
 
-The functions are intensity components, not necessarily normalized PDFs. Only the total reference intensity must be positive. Signed basis terms and signed coefficients are allowed when their sum remains a valid intensity.
-
-## 3. Fit and inspect the partition
+## Bounded model without a sampled table
 
 ```python
-result = fb.fit(
-    X_mc,
-    model=model,
-    weights=mc_weights,
-    n_bins=16,
-    config=fb.SoftVoronoiConfig(seed=7),
+source = sq.IntegrationSource(
+    [[-1.0, 1.0]],
+    density=lambda x: 0.5 * np.ones(len(x)),
+    quadrature=sq.GaussLegendreConfig(order=24),
 )
-
-print(result.report())
-training_bins = result.labels
-figure = result.plot_summary(X_mc, mc_weights)
+quantizer = sq.fit_quantizer(source, score=provider, n_bins=4)
 ```
 
-Internally, this performs:
+This path is for low-dimensional bounded domains. Use an empirical source for high-dimensional
+observations.
 
-```python
-problem = model.evaluate(X_mc, weights=mc_weights)
-Phi = problem.components
-density = Phi @ problem.coefficients
-scores = Phi / density[:, None]
-```
+## Ready classifier probabilities
 
-Only the final score matrix enters the optimizer.
-
-## 4. Freeze the binning and apply it to data
-
-```python
-X_data = np.column_stack([energy_data, cos_theta_data])
-data_bins = result.predict(X_data)
-counts = np.bincount(data_bins, minlength=result.n_bins)
-```
-
-The result retains the component model and reference coefficients used during fitting. Asking for the model again during prediction would permit accidental component reordering, so `predict` accepts only `X_data`.
-
-FisherBin stops at labels, counts, and information diagnostics. A likelihood or template-fitting package should consume the resulting bins downstream.
-
-## 5. Use a lower-level entry point when appropriate
-
-If component values already exist:
-
-```python
-result = fb.fit_components(
-    Phi,
-    coefficients=theta0,
-    weights=mc_weights,
-    n_bins=16,
-)
-
-new_bins = result.predict(Phi_new)
-```
-
-An evaluated problem is equally valid:
-
-```python
-problem = fb.LinearProblem(Phi, theta0, weights=mc_weights)
-result = fb.fit_components(problem, n_bins=16)
-```
-
-If scores come from another analytic, automatic-differentiation, simulator, or learned workflow:
-
-```python
-result = fb.fit_scores(scores, weights=weights, n_bins=16)
-new_bins = result.predict(scores_new)
-```
-
-The result type makes the prediction representation explicit: variable-level results accept `X`, component-level results accept `Phi`, and score-level results accept scores.
-
-## 6. Connect labels to a downstream likelihood
-
-FisherBin does not estimate application parameters after assigning bins. A real
-analysis should freeze the partition, estimate its per-component bin templates
-on independent reference rows, and consume observed bin counts in its own
-likelihood. The [FlowCyt population-quantification use case](usecases/cellpopulation.md)
-shows this complete boundary for a six-component mixture.
+Construct a pure transform, wrap the already trained callback in `ClassifierScore`, and retain all
+training/calibration/fold details in application evidence. Evaluate true-score information
+separately whenever an exact validation score is available.

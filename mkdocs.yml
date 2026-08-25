@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
-site_name: FisherBin
+site_name: ScoreQuant
 site_description: Information-preserving binning for statistical inference
 site_url: https://vitalyvorobyev.github.io/scorequant/
 repo_url: https://github.com/VitalyVorobyev/scorequant
@@ -43,15 +43,20 @@ theme:
 
 nav:
   - Home: index.md
-  - Learn:
-      - The estimation problem: learn/estimation-problem.md
-      - Likelihood and score: learn/likelihood-and-score.md
-      - Fisher information: learn/fisher-information.md
-      - What binning loses: learn/binning-loss.md
-      - Constructing scores: learn/score-construction.md
-      - Algorithms: learn/algorithms.md
-      - Diagnostics: learn/diagnostics.md
-      - Limitations and alternatives: learn/limitations.md
+  - Book:
+      - Overview: book/index.md
+      - Likelihood, score, and score law: book/01-likelihood-score-law.md
+      - Probability and intensity scores: book/02-probability-intensity.md
+      - Information after hard labels: book/03-hard-label-information.md
+      - Three optimization levels: book/04-three-optimization-levels.md
+      - Trace and weighted k-means: book/05-trace-kmeans.md
+      - Population geometry: book/06-population-geometry.md
+      - D-optimality: book/07-d-optimality.md
+      - Profiled D-s: book/08-profiled-ds.md
+      - E-optimality: book/09-e-optimality.md
+      - Randomized rules and consistency: book/10-randomized-consistency.md
+      - Exact and estimated scores: book/11-score-estimation.md
+      - Diagnostics and method choice: book/12-diagnostics-choice.md
   - Tutorials:
       - First analytic partition: tutorials/first-partition.md
       - Linear components: tutorials/linear-components.md
@@ -61,7 +66,9 @@ nav:
       - FlowCyt study: usecases/cellpopulation.md
   - How-to and API:
       - Workflow guide: user-workflow.md
+      - Sources and providers: score-sources.md
       - API guide: api.md
+      - Migration guide: migration.md
       - Reference:
           - Overview: reference/index.md
           - Fitting: reference/fitting.md

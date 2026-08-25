@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-import scorequant as fb
+import scorequant as sq
 
 
 def signal(X: np.ndarray) -> np.ndarray:
@@ -22,8 +22,8 @@ def background_2(X: np.ndarray) -> np.ndarray:
     return 0.15 + energy * (1 + 0.4 * cos_theta**2)
 
 
-def build_model() -> fb.LinearComponents:
-    return fb.LinearComponents(
+def build_model() -> sq.LinearComponents:
+    return sq.LinearComponents(
         components={
             "signal": signal,
             "background_1": background_1,
@@ -34,15 +34,21 @@ def build_model() -> fb.LinearComponents:
     )
 
 
-def run(seed: int = 17) -> tuple[fb.ModelFitResult, np.ndarray]:
+def run(seed: int = 17) -> tuple[sq.QuantizerResult, np.ndarray]:
     rng = np.random.default_rng(seed)
     X_mc = np.column_stack([rng.uniform(0, 1, 2_000), rng.uniform(-1, 1, 2_000)])
     mc_weights = 0.5 + rng.random(len(X_mc))
     model = build_model()
-    result = fb.fit(X_mc, model=model, weights=mc_weights, n_bins=8)
+    result = sq.fit_quantizer(
+        sq.ObservationSample(X_mc, mc_weights),
+        score=sq.LinearComponentScore(model),
+        n_bins=8,
+        criterion=sq.DOptimality(),
+        config=sq.DExchangeConfig(seed=seed),
+    )
 
     X_data = np.column_stack([rng.uniform(0, 1, 500), rng.uniform(-1, 1, 500)])
-    data_bins = result.predict(X_data)
+    data_bins = result.predict_scores(sq.LinearComponentScore(model).score(X_data))
     counts = np.bincount(np.asarray(data_bins), minlength=result.n_bins)
     return result, counts
 

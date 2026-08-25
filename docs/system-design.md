@@ -1,71 +1,68 @@
-# System Design
+# System design
 
-## Design goal
-
-Keep the mathematics obvious in code while producing structured diagnostics that can drive both today's Python figures and a future local application.
+## Public task boundary
 
 ```text
-physical variables X -- LinearComponents --> component matrix Phi
-                                                |
-                                                v
-                                   scores = Phi / (Phi @ theta0)
-                                                |
-                                                v
-                                      score-space optimizer
-                                                |
-                                                v
-                                      frozen hard partition
+scores ---------------------------------> optimize_partition() -> PartitionResult
+
+ScoreSample ----------------------------+
+ObservationSample + ScoreProvider ------+-> fit_quantizer() ----> QuantizerResult
+IntegrationSource + ScoreProvider ------+
 ```
 
-## Boundaries
+`PartitionResult` owns one fixed assignment: labels, cell weights/moments/means, full and retained
+information, objective, rank diagnostics, accepted moves, exchange stability, remaining gain, and
+provenance. It has no prediction method. `compile_quantizer()` is available only for a stable,
+nonsingular D result whose rule reproduces every positive-weight training label.
 
-- `information.py` owns full, hard-binned, and fractionally binned Fisher calculations.
-- `transforms.py` owns informative-rank selection, projection, and optional whitening.
-- `quantizers.py` privately implements weighted k-means and soft Voronoi optimization.
-- `components.py` owns `LinearComponents`, evaluated `LinearProblem`, linear score construction, and the classifier-posterior-to-mixture-score transform.
-- `config.py`, `result.py`, and `api.py` define the representation-specific fitting contract.
-- `visualization.py` imports Matplotlib lazily and only consumes structured results.
-- Dataset-specific generators, baselines, notebooks, and figure layouts live in `examples/`.
+`QuantizerResult` owns score-space centers and metric, `predict_scores`, train/validation reports,
+hardening gap, trace, criterion/configuration, source kind, and provenance. There is deliberately
+no ambiguous `predict` method.
 
-JAX is the numerical implementation and Optax supplies Adam. The public concepts remain arrays, configs, transforms, reports, traces, and fitted partitions; no backend registry or protocol is introduced.
+## Stable first-wave combinations
 
-The current API is not a compatibility target by itself. Public types and entry
-points may change when a smaller or more expressive domain-independent contract
-emerges. Dataset vocabulary, experiment splits, estimator selection, tuning,
-and reporting remain outside the core even when one use case would benefit from
-a convenience wrapper.
+| Task | Criterion | Configuration | Meaning |
+| --- | --- | --- | --- |
+| finite assignment | `DOptimality` | `DExchangeConfig` | exact positive-gain relocation |
+| reusable quantizer | `DOptimality` | `DExchangeConfig` | finite D assignment followed by explicit verified compilation |
+| reusable quantizer | `DOptimality` | `SoftVoronoiConfig` | direct differentiable soft-D fit and hardening |
+| reusable quantizer | `NormalizedTrace` | `KMeansConfig` | Fisher-whitened weighted k-means baseline |
 
-## Public workflows
+Unsupported criterion/configuration pairs fail before optimization. There is no generic criterion
+plugin until multiple implementations demonstrate a stable common contract.
 
-```python
-result = scorequant.fit(
-    X,
-    model=model,
-    weights=weights,
-    n_bins=16,
-    config=scorequant.KMeansConfig(seed=0),
-    validation_X=validation_X,
-    validation_weights=validation_weights,
-)
+## Module ownership
 
-bins = result.predict(X_new)
-report = result.evaluate(X_new, weights_new)
-payload = result.to_dict()
-```
+- `information.py`: Fisher and retained-information algebra.
+- `transforms.py`: informative subspace and whitening.
+- `partition.py`: exact D finite relocation and the private small-instance oracle.
+- `quantizers.py`: private weighted k-means and soft-D numerical kernels.
+- `sources.py`: empirical and quadrature measures plus provenance.
+- `providers.py`: framework-neutral observation-to-score adapters.
+- `components.py`: linear models and pure posterior-to-score algebra.
+- `criteria.py`, `config.py`, `result.py`, `api.py`: public contracts and orchestration.
+- `examples/`, tests, and `research/`: datasets, tuning, counterexample search, and application logic.
 
-`fit_components` and `fit_scores` expose the two lower representation layers. Every result predicts in the same representation used to fit. All three paths delegate to one score optimizer; component functions and application variables never enter numerical optimization.
+JAX is the sole numerical kernel implementation and Optax supplies gradient optimization. Optional
+visualization imports remain lazy. Research exploration is provenance and is excluded from the
+product Ruff gate; every relied-upon identity or counterexample is copied into a deterministic
+regression test.
 
-The config type selects the method. Validation is diagnostic only. `to_dict()` is JSON-ready but is not a durable versioned artifact format. High-level model metadata is serialized, but callable functions are not.
+## Source/provider rules
 
-## Numerical behavior
+A score callback without a source has no measure and is rejected. A `ScoreSample` already contains
+scores, so supplying a provider with it is also rejected. Observation and integration sources
+require a provider. Equivalent source/provider constructions must materialize the same core
+result.
 
-- Inputs must be finite; weights must be nonnegative with at least one positive value.
-- Fisher matrices are symmetrized before eigendecomposition.
-- Directions below a dtype-aware relative eigenvalue threshold are projected out and reported.
-- Score coordinates are never centered.
-- X64 is enabled by the application or CI, never as an import-time side effect.
-- Fitting is full-batch and uses dense `[N, B]` distances/responsibilities, but histories contain only aggregate values and `[B, R]` center snapshots.
+`ScoreProvenance.exact_fisher` is derived from provenance kind; an estimated classifier cannot set
+it independently. The classifier boundary stores only a ready callback, an explicit pure transform,
+and metadata. Training frameworks remain outside dependencies and application splits remain
+visible.
 
-The classifier-posterior bridge accepts already evaluated arrays. Classifier
-training, posterior calibration, split policy, and downstream likelihoods stay
-outside the library.
+## Complexity and durability
+
+The current exact exchange scan is \(O(NKP^2)\) per accepted move and avoids \(O(N^2)\) storage.
+Geometric solvers materialize \([N,K]\) distances. Histories store aggregate metrics and center
+snapshots, never per-event responsibilities. `to_dict()` is JSON-ready diagnostic state, not a
+versioned persistence format.

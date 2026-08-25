@@ -4,7 +4,7 @@
 
 ## Context
 
-FisherBin has mathematical guides, executable examples, and a growing typed Python API. Hand-maintaining signatures in Markdown would drift from the implementation, while a future frontend should not become the documentation system for the scientific core.
+ScoreQuant has mathematical guides, executable examples, and a growing typed Python API. Hand-maintaining signatures in Markdown would drift from the implementation, while a future frontend should not become the documentation system for the scientific core.
 
 ## Decision
 

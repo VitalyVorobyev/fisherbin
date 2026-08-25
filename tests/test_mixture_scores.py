@@ -4,7 +4,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import scorequant as fb
+import scorequant as sq
+from tests._fit import fit_test_quantizer
 
 
 def _posteriors_from_ratios(ratios: np.ndarray, priors: np.ndarray) -> np.ndarray:
@@ -20,7 +21,7 @@ def test_mixture_scores_match_simplex_derivative() -> None:
     density = ratios @ np.asarray(reference)
     expected = (ratios[:, :2] - ratios[:, [2]]) / density[:, None]
 
-    scores = fb.mixture_scores_from_posteriors(posteriors, priors, reference)
+    scores = sq.mixture_scores_from_posteriors(posteriors, priors, reference)
 
     np.testing.assert_allclose(scores, expected, rtol=1e-6, atol=1e-7)
     assert scores.shape == (2, 2)
@@ -33,10 +34,10 @@ def test_prior_correction_recovers_the_same_density_ratio_scores() -> None:
     uniform_prior = np.full(4, 0.25)
     skewed_prior = np.asarray([0.45, 0.15, 0.10, 0.30])
 
-    uniform = fb.mixture_scores_from_posteriors(
+    uniform = sq.mixture_scores_from_posteriors(
         _posteriors_from_ratios(ratios, uniform_prior), uniform_prior, reference
     )
-    skewed = fb.mixture_scores_from_posteriors(
+    skewed = sq.mixture_scores_from_posteriors(
         _posteriors_from_ratios(ratios, skewed_prior), skewed_prior, reference
     )
 
@@ -48,14 +49,14 @@ def test_reference_component_changes_only_the_score_parameterization() -> None:
     posteriors = rng.dirichlet(np.ones(4), size=300)
     priors = np.full(4, 0.25)
     reference = np.asarray([0.2, 0.25, 0.15, 0.4])
-    last_scores = fb.mixture_scores_from_posteriors(posteriors, priors, reference)
-    first_scores = fb.mixture_scores_from_posteriors(
+    last_scores = sq.mixture_scores_from_posteriors(posteriors, priors, reference)
+    first_scores = sq.mixture_scores_from_posteriors(
         posteriors, priors, reference, reference_component=0
     )
-    config = fb.KMeansConfig(seed=7, n_init=4)
+    config = sq.KMeansConfig(seed=7, n_init=4)
 
-    last_labels = np.asarray(fb.fit_scores(last_scores, n_bins=6, config=config).labels)
-    first_labels = np.asarray(fb.fit_scores(first_scores, n_bins=6, config=config).labels)
+    last_labels = np.asarray(fit_test_quantizer(last_scores, n_bins=6, config=config).labels)
+    first_labels = np.asarray(fit_test_quantizer(first_scores, n_bins=6, config=config).labels)
 
     np.testing.assert_array_equal(
         last_labels[:, None] == last_labels[None, :],
@@ -69,8 +70,8 @@ def test_class_permutation_preserves_scores_up_to_column_order() -> None:
     reference = np.asarray([0.2, 0.3, 0.5])
     permutation = np.asarray([2, 0, 1])
 
-    expected = fb.mixture_scores_from_posteriors(posteriors, priors, reference)
-    permuted = fb.mixture_scores_from_posteriors(
+    expected = sq.mixture_scores_from_posteriors(posteriors, priors, reference)
+    permuted = sq.mixture_scores_from_posteriors(
         posteriors[:, permutation],
         priors[permutation],
         reference[permutation],
@@ -81,7 +82,7 @@ def test_class_permutation_preserves_scores_up_to_column_order() -> None:
 
 
 def test_zero_posteriors_are_allowed_without_clipping() -> None:
-    scores = fb.mixture_scores_from_posteriors(
+    scores = sq.mixture_scores_from_posteriors(
         jnp.asarray([[1.0, 0.0, 0.0], [0.0, 0.25, 0.75]], dtype=jnp.float32),
         [0.4, 0.3, 0.3],
         [0.2, 0.3, 0.5],
@@ -108,7 +109,7 @@ def test_invalid_mixture_score_inputs_fail(
     message: str,
 ) -> None:
     with pytest.raises(ValueError, match=message):
-        fb.mixture_scores_from_posteriors(
+        sq.mixture_scores_from_posteriors(
             posteriors,
             priors,
             reference,
@@ -118,6 +119,6 @@ def test_invalid_mixture_score_inputs_fail(
 
 def test_reference_component_rejects_non_integer() -> None:
     with pytest.raises(TypeError, match="integer"):
-        fb.mixture_scores_from_posteriors(
+        sq.mixture_scores_from_posteriors(
             [[0.5, 0.5]], [0.5, 0.5], [0.5, 0.5], reference_component=True
         )

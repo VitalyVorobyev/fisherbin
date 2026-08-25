@@ -1,1 +1,1 @@
-"""Reproducible FisherBin examples; not part of the public library API."""
+"""Reproducible ScoreQuant examples; not part of the public library API."""

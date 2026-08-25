@@ -2,11 +2,11 @@
 
 `flowcyt_fixture.npz` contains a small deterministic subset of the public
 [FlowCyt benchmark](https://github.com/VIPER-GENEVA/FlowCyt-Classification-Benchmark).
-It is used only by the example and tests; it is not included in the FisherBin
+It is used only by the example and tests; it is not included in the ScoreQuant
 Python package.
 
 The FlowCyt data, and therefore this derived fixture, are licensed separately
-from FisherBin under
+from ScoreQuant under
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 Copyright belongs to Lorenzo Bini, Fatemeh Nassajian Mojarrad, Margarita
 Liarou, Thomas Matthes, and Stéphane Marchand-Maillet. See

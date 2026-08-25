@@ -9,6 +9,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 import scorequant
+from tests._fit import fit_test_quantizer
 
 
 def test_hard_information_loss_identity_and_psd() -> None:
@@ -106,7 +107,7 @@ def test_event_order_bin_relabeling_and_partition_limits() -> None:
 
 def test_rank_projection_and_json_are_explicit() -> None:
     scores = jnp.asarray([[-1.0, -2.0], [0.0, 0.0], [1.0, 2.0]])
-    result = scorequant.fit_scores(scores, n_bins=2)
+    result = fit_test_quantizer(scores, n_bins=2)
     assert result.transform.rank == 1
     assert result.transform.dropped_directions == 1
     json.dumps(result.to_dict(), allow_nan=False)

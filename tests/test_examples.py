@@ -11,6 +11,7 @@ from examples.synthetic_problems import (
     spatial_sources,
     spectral_templates,
 )
+from tests._fit import fit_test_quantizer
 
 
 @pytest.mark.parametrize(
@@ -59,20 +60,20 @@ def test_soft_d_optimality_improves_a_targeted_nonlinear_fixture() -> None:
 
     train_scores, train_weights = generate(1003, 5_000)
     test_scores, test_weights = generate(2003, 20_000)
-    kmeans = scorequant.fit_scores(
+    kmeans = fit_test_quantizer(
         train_scores,
         weights=train_weights,
         n_bins=2,
         config=scorequant.KMeansConfig(seed=0, n_init=8),
     )
-    soft = scorequant.fit_scores(
+    soft = fit_test_quantizer(
         train_scores,
         weights=train_weights,
         n_bins=2,
         config=scorequant.SoftVoronoiConfig(seed=0, n_init=8, max_steps=400, record_every=100),
     )
     improvement = (
-        soft.evaluate(test_scores, test_weights).geometric_mean_retention
-        - kmeans.evaluate(test_scores, test_weights).geometric_mean_retention
+        soft.evaluate_scores(test_scores, test_weights).geometric_mean_retention
+        - kmeans.evaluate_scores(test_scores, test_weights).geometric_mean_retention
     )
     assert improvement >= 0.02

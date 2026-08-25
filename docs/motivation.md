@@ -1,48 +1,62 @@
 # Motivation
 
-## Problem
+ScoreQuant reduces continuous or high-dimensional events to hard labels while preserving
+information about a local parameter vector. Its canonical pipeline is
 
-Many analyses start with high-dimensional observations $x$ but ultimately estimate a much smaller parameter vector $\theta$.
+```text
+Source + ScoreProvider -> score law -> partition or quantizer
+```
 
-Sometimes the data must be reduced to a finite number of bins: for template fits, interpretability, storage, speed, or compatibility with existing inference tools. Conventional binning groups observations by geometric proximity in $x$. In several dimensions this scales poorly and does not directly optimize the quality of parameter estimation.
+The source supplies a measure. The provider supplies the observation-to-score map. Neither
+capability substitutes for the other.
 
-FisherBin asks a different question:
+## Statistical object
 
-> Given a fixed number of bins, how should observations be grouped to preserve as much information as possible about the parameters of interest?
-
-The key idea is to represent each observation by its **score**
+At a reference point \(\theta_0\), a probability model has score
 
 $$
-s(x;\theta_0)=\nabla_\theta \log p(x\mid\theta)\big|_{\theta_0},
+s(x)=\nabla_\theta\log p(x\mid\theta)\vert_{\theta_0}.
 $$
 
-or the corresponding score of an event intensity. Two observations should share a bin when they have similar parameter sensitivity, even if they are far apart in the original observation space.
+An intensity model uses the corresponding event score
+\(\nabla_\theta\log\lambda(x;\theta)\). A hard rule \(q\) retains the between-cell information
 
-## Scope
+$$
+I_q=\sum_b W_b\mu_b\mu_b^\top,
+\qquad W_b=E[1_{q(s)=b}],\quad \mu_b=E[s\mid q(s)=b].
+$$
 
-The core problem is intentionally small:
+ScoreQuant optimizes a matrix criterion of this supplied-score information. It never centers
+scores: the score-space origin has statistical meaning.
 
-- input: score vectors and optional event weights;
-- output: a mapping from score space to a finite set of bins;
-- objective: retain Fisher information after binning.
+## Three different optimization problems
 
-How the scores are obtained is a separate concern. They may come from an analytic model, linear components, automatic differentiation, finite differences, a simulator, or a learned estimator.
+1. **Population design** optimizes a measurable rule under a specified score law.
+2. **Empirical quantizer fitting** learns a reusable rule in a chosen function family from a
+   finite or quadrature approximation to that law.
+3. **Finite assignment** chooses labels for one fixed weighted score table.
 
-## Applications
+The first two are inductive; the third is transductive. A finite labeling underdetermines what
+happens to a future score. D-optimal exchange has a theorem-backed compilation at a nonsingular,
+one-point-stable state. Profiled \(D_s\) and E-optimality do not have that implication in general.
 
-The method is useful whenever a continuous or high-dimensional measurement must be reduced while preserving information for parameter estimation. Candidate areas include:
+## Exact, supplied, and surrogate information
 
-- template and mixture fits in physics and other sciences;
-- spectroscopy and chemometrics;
-- astronomy and photon/event data analysis;
-- hyperspectral and remote-sensing measurements;
-- mass spectrometry and chromatography;
-- microscopy and other photon-counting instruments;
-- distributed sensing or bandwidth-limited measurements;
-- simulation-based inference.
+If supplied vectors are the true model score, their second moment is Fisher information. If they
+are estimated classifier scores \(\hat s\), the same algebra is exact for the supplied vectors but
+is only a surrogate for the original model:
 
-The common structure matters more than the domain: many observed variables, relatively few parameters, and a finite representation required downstream.
+$$
+\widehat I_q=\operatorname{Var}(E[\hat s\mid q(\hat s)]),\qquad
+I_q^{\mathrm{true}}=\operatorname{Var}(E[s\mid q(\hat s)]).
+$$
 
-## Non-goals
+Results therefore carry score provenance. Classifier calibration, cross-fitting, and training are
+application responsibilities; their error must not be reported as quantization loss.
 
-FisherBin is not a general compression library, a neural-network quantizer, or a complete inference framework. It focuses only on information-aware partitioning and the diagnostics needed to trust that partition.
+## Intended use and non-goals
+
+ScoreQuant is useful when downstream inference requires hard gates, categories, or template
+counts and local parameter sensitivity matters more than proximity in observation space. It is
+not a general compressor, classifier trainer, complete likelihood framework, or proof that an
+upstream simulator or learned ratio is unbiased.

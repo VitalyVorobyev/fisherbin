@@ -90,3 +90,16 @@ def validate_n_bins(n_bins: int, n_observations: int) -> None:
         raise ValueError("n_bins must be at least one")
     if n_bins > n_observations:
         raise ValueError("n_bins cannot exceed the number of positive-weight observations")
+
+
+def collapse_duplicate_scores(
+    scores: jnp.ndarray, weights: jnp.ndarray
+) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
+    """Merge identical score atoms and return their inverse row mapping."""
+    unique, inverse = np.unique(np.asarray(scores), axis=0, return_inverse=True)
+    collapsed_weights = np.bincount(inverse, weights=np.asarray(weights), minlength=len(unique))
+    return (
+        jnp.asarray(unique, dtype=scores.dtype),
+        jnp.asarray(collapsed_weights, dtype=weights.dtype),
+        jnp.asarray(inverse),
+    )

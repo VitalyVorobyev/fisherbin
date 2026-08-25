@@ -69,7 +69,7 @@ def write_fixture(
         class_names=np.asarray(CLASS_NAMES),
     )
     manifest = {
-        "title": "FlowCyt deterministic FisherBin fixture",
+        "title": "FlowCyt deterministic ScoreQuant fixture",
         "source_url": SOURCE_URL,
         "source_repository": SOURCE_REPOSITORY,
         "source_sha256": source_sha256,
@@ -291,7 +291,7 @@ def write_remote_sample(
     )
     digest = sha256(output.read_bytes()).hexdigest()
     manifest = {
-        "title": "FlowCyt bounded all-patient FisherBin research sample",
+        "title": "FlowCyt bounded all-patient ScoreQuant research sample",
         "source_url": SOURCE_URL,
         "source_repository": SOURCE_REPOSITORY,
         "source_license": "CC-BY-NC-SA-4.0",
@@ -366,7 +366,7 @@ def write_remote_fixture(
         class_names=np.asarray(CLASS_NAMES),
     )
     manifest = {
-        "title": "FlowCyt deterministic FisherBin fixture",
+        "title": "FlowCyt deterministic ScoreQuant fixture",
         "source_url": SOURCE_URL,
         "source_repository": SOURCE_REPOSITORY,
         "source_license": "CC-BY-NC-SA-4.0",

@@ -1,11 +1,11 @@
-# Results and diagnostics
+# Results
 
-::: scorequant.FitResult
+::: scorequant.PartitionResult
 
-::: scorequant.ComponentFitResult
-
-::: scorequant.ModelFitResult
+::: scorequant.QuantizerResult
 
 ::: scorequant.InformationReport
 
 ::: scorequant.OptimizationTrace
+
+::: scorequant.ScoreProvenance

@@ -5,11 +5,12 @@ import jax.numpy as jnp
 import numpy as np
 
 import scorequant
+from tests._fit import fit_test_quantizer
 
 
 def test_float32_fit_and_soft_step() -> None:
     scores = jax.random.normal(jax.random.PRNGKey(5), (256, 3), dtype=jnp.float32)
-    result = scorequant.fit_scores(
+    result = fit_test_quantizer(
         scores,
         n_bins=5,
         config=scorequant.SoftVoronoiConfig(

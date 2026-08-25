@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-import scorequant as fb
+import scorequant as sq
 
 from .data import CLASS_NAMES, FlowCytData
 from .likelihood import estimate_bin_templates, fit_binned_mixture, fit_unbinned_mixture
@@ -313,18 +313,18 @@ def _fit_partition(
     *,
     seed: int,
     quick: bool,
-) -> fb.FitResult:
+) -> sq.QuantizerResult:
     validation_weights = integration_weights(
         inputs.reference.labels[inputs.validation_mask],
         inputs.reference.patients[inputs.validation_mask],
         inputs.theta0,
     )
     if method == "score_kmeans":
-        config: fb.KMeansConfig | fb.SoftVoronoiConfig = fb.KMeansConfig(
+        config: sq.KMeansConfig | sq.SoftVoronoiConfig = sq.KMeansConfig(
             seed=seed, n_init=3 if quick else 8
         )
     elif method == "soft_voronoi":
-        config = fb.SoftVoronoiConfig(
+        config = sq.SoftVoronoiConfig(
             seed=seed,
             n_init=3 if quick else 4,
             max_steps=50 if quick else 160,
@@ -332,22 +332,25 @@ def _fit_partition(
         )
     else:
         raise ValueError(f"unknown closure partition method: {method}")
-    return fb.fit_scores(
-        inputs.reference_scores[inputs.partition_mask],
-        weights=inputs.partition_weights,
-        validation_scores=inputs.reference_scores[inputs.validation_mask],
-        validation_weights=validation_weights,
+    return sq.fit_quantizer(
+        sq.ScoreSample(inputs.reference_scores[inputs.partition_mask], inputs.partition_weights),
+        validation=sq.ScoreSample(
+            inputs.reference_scores[inputs.validation_mask], validation_weights
+        ),
         n_bins=n_bins,
+        criterion=(
+            sq.NormalizedTrace() if isinstance(config, sq.KMeansConfig) else sq.DOptimality()
+        ),
         config=config,
     )
 
 
 def _partition_templates(
     inputs: ClosureInputs,
-    result: fb.FitResult,
+    result: sq.QuantizerResult,
     n_bins: int,
 ) -> np.ndarray:
-    labels = np.asarray(result.predict(inputs.reference_scores[inputs.template_mask]))
+    labels = np.asarray(result.predict_scores(inputs.reference_scores[inputs.template_mask]))
     return estimate_bin_templates(
         inputs.reference.labels[inputs.template_mask],
         labels,
@@ -400,7 +403,7 @@ def _summarize_errors(
 
 def _pseudo_patient_audit(
     inputs: ClosureInputs,
-    partitions: Mapping[str, tuple[fb.FitResult, np.ndarray]],
+    partitions: Mapping[str, tuple[sq.QuantizerResult, np.ndarray]],
     compositions: list[tuple[str, np.ndarray]],
     *,
     repeats: int,
@@ -449,7 +452,7 @@ def _pseudo_patient_audit(
                 unbinned.iterations,
             )
             for name, (partition, templates) in partitions.items():
-                labels = np.asarray(partition.predict(inputs.reference_scores[indices]))
+                labels = np.asarray(partition.predict_scores(inputs.reference_scores[indices]))
                 counts = np.bincount(labels, minlength=templates.shape[0])
                 estimate = fit_binned_mixture(counts, templates, max_iter=2_000)
                 error = estimate.fractions - truth
@@ -582,7 +585,7 @@ def _range(values: list[float]) -> dict[str, float]:
 def _seed_stability_audit(
     inputs: ClosureInputs,
     compositions: list[tuple[str, np.ndarray]],
-    representative: Mapping[str, tuple[fb.FitResult, np.ndarray]],
+    representative: Mapping[str, tuple[sq.QuantizerResult, np.ndarray]],
     *,
     seeds: range,
     quick: bool,
@@ -603,7 +606,7 @@ def _seed_stability_audit(
                 else:
                     partition = _fit_partition(inputs, method, n_bins, seed=seed, quick=quick)
                     templates = _partition_templates(inputs, partition, n_bins)
-                validation_labels = np.asarray(partition.predict(validation_scores))
+                validation_labels = np.asarray(partition.predict_scores(validation_scores))
                 information = fixed_total_partition_audit(
                     validation_scores,
                     validation_labels,
@@ -673,7 +676,7 @@ def run_scientific_closure(
 ) -> dict[str, object]:
     """Run the complete reference-only FlowCyt scientific audit."""
     compositions = _composition_grid(inputs.theta0)
-    representative: dict[str, tuple[fb.FitResult, np.ndarray]] = {}
+    representative: dict[str, tuple[sq.QuantizerResult, np.ndarray]] = {}
     fixed_total: dict[str, object] = {}
     identifiability: dict[str, object] = {}
     population_limit: dict[str, object] = {}
@@ -689,7 +692,7 @@ def run_scientific_closure(
             partition = _fit_partition(inputs, method, n_bins, seed=seed, quick=quick)
             templates = _partition_templates(inputs, partition, n_bins)
             representative[name] = (partition, templates)
-            validation_labels = np.asarray(partition.predict(validation_scores))
+            validation_labels = np.asarray(partition.predict_scores(validation_scores))
             fixed_total[name] = fixed_total_partition_audit(
                 validation_scores,
                 validation_labels,

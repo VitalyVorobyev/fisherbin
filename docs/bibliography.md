@@ -1,6 +1,6 @@
 # Bibliography
 
-These primary sources introduce the statistical ideas used by FisherBin. The
+These primary sources introduce the statistical ideas used by ScoreQuant. The
 library combines established score compression, learned ratio/score estimation,
 inference-aware optimization, and Fisher-aware quantization in a small hard-
 partition workflow.
@@ -13,5 +13,5 @@ partition workflow.
 - Farias and Brossier, [*Optimal Scalar Quantization for Parameter Estimation*](https://arxiv.org/abs/1310.6945). Studies quantizer design through Fisher-information loss.
 
 The links point to the papers themselves rather than secondary summaries. See
-the [limitations chapter](learn/limitations.md) for where the local Fisher
+the [diagnostics and method-choice chapter](book/12-diagnostics-choice.md) for where the local Fisher
 picture needs additional validation.

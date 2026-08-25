@@ -6,38 +6,22 @@ from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING
 
 import jax.numpy as jnp
+import numpy as np
 
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
-from .config import FitConfig
+from .config import DExchangeConfig, QuantizerConfig
+from .criteria import Criterion, DOptimality
+from .sources import ScoreProvenance
 from .transforms import FisherTransform
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
-    from .components import LinearComponents
-
 
 @dataclass(frozen=True, slots=True)
 class InformationReport:
-    """Report Fisher retention and per-bin diagnostics for one sample.
-
-    Attributes
-    ----------
-    fisher_unbinned, fisher_binned
-        Unregularized Fisher matrices before and after hard binning.
-    retained_matrix, retained_eigenvalues
-        Fisher-normalized retained matrix and its informative-direction spectrum.
-    arithmetic_mean_retention, geometric_mean_retention, logdet_retention
-        Scalar A- and D-style retention summaries.
-    bin_weights, bin_counts, bin_effective_sample_sizes
-        Per-bin weighted and unweighted occupancy diagnostics.
-    effective_rank, rank_threshold
-        Numerical informative rank and the absolute eigenvalue threshold used.
-    psd_residual_min_eigenvalue
-        Smallest eigenvalue of ``F_unbinned - F_binned``; small negative values
-        quantify floating-point PSD residuals.
-    """
+    """Report supplied-score retention and per-bin diagnostics for one sample."""
 
     fisher_unbinned: jnp.ndarray
     fisher_binned: jnp.ndarray
@@ -58,10 +42,10 @@ class InformationReport:
         return json_ready(asdict(self))
 
     def __str__(self) -> str:
-        """Format the headline retention diagnostics for interactive use."""
+        """Format headline supplied-score diagnostics."""
         eigenvalues = ", ".join(f"{float(value):.4f}" for value in self.retained_eigenvalues)
         return (
-            "FisherBin information report\n"
+            "ScoreQuant information report\n"
             f"  effective rank: {self.effective_rank}\n"
             f"  D-efficiency: {self.geometric_mean_retention:.6f}\n"
             f"  mean retention: {self.arithmetic_mean_retention:.6f}\n"
@@ -72,12 +56,7 @@ class InformationReport:
 
 @dataclass(frozen=True, slots=True)
 class OptimizationTrace:
-    """Store aggregate optimization history.
-
-    Center snapshots and aggregate metrics are retained at configured trace
-    steps. Per-observation assignments and responsibilities are never stored.
-    Method-specific fields are ``None`` when they do not apply.
-    """
+    """Store aggregate quantizer optimization history."""
 
     steps: jnp.ndarray
     centers: jnp.ndarray
@@ -95,55 +74,74 @@ class OptimizationTrace:
 
 
 @dataclass(frozen=True, slots=True)
-class FitResult:
-    """Represent a fitted hard score-space partition and its diagnostics.
-
-    Prediction and evaluation accept raw score matrices with the same parameter
-    dimension used during fitting.
-    """
+class QuantizerResult:
+    """Represent a reusable hard rule on raw score vectors."""
 
     centers: jnp.ndarray
+    metric: jnp.ndarray | None
     transform: FisherTransform
-    config: FitConfig
+    criterion: Criterion
+    config: QuantizerConfig
     trace: OptimizationTrace
     labels: jnp.ndarray
     train_report: InformationReport
-    validation_report: InformationReport | None = None
+    validation_report: InformationReport | None
+    provenance: ScoreProvenance
+    hardening_gap: float | None = None
+    source_kind: str = "score_sample"
 
     @property
     def n_bins(self) -> int:
-        """Return the number of fitted hard bins."""
+        """Return the number of hard output labels."""
         return int(self.centers.shape[0])
 
-    def predict(self, scores: ArrayLike) -> jnp.ndarray:
-        """Assign new raw score vectors to their nearest fitted center."""
+    @property
+    def rank(self) -> int:
+        """Return the numerically informative score-space rank."""
+        return self.transform.rank
+
+    @property
+    def information_kind(self) -> str:
+        """Describe whether supplied-score matrices justify exact Fisher language."""
+        return "exact_fisher" if self.provenance.exact_fisher else "supplied_score_surrogate"
+
+    def predict_scores(self, scores: ArrayLike) -> jnp.ndarray:
+        """Assign raw score rows with the frozen score-space rule."""
         coordinates = self.transform.apply(scores)
-        distances = jnp.sum((coordinates[:, None, :] - self.centers[None, :, :]) ** 2, axis=2)
+        differences = coordinates[:, None, :] - self.centers[None, :, :]
+        distances = (
+            jnp.sum(differences**2, axis=2)
+            if self.metric is None
+            else jnp.einsum("nbr,rs,nbs->nb", differences, self.metric, differences)
+        )
         return jnp.argmin(distances, axis=1)
 
-    def evaluate(self, scores: ArrayLike, weights: ArrayLike | None = None) -> InformationReport:
-        """Evaluate the fixed hard partition on a new weighted sample."""
+    def evaluate_scores(
+        self, scores: ArrayLike, weights: ArrayLike | None = None
+    ) -> InformationReport:
+        """Evaluate the frozen rule on a new weighted score sample."""
         from .information import information_report
 
-        labels = self.predict(scores)
         return information_report(
             scores,
-            labels,
-            weights=weights,
+            self.predict_scores(scores),
+            weights,
             n_bins=self.n_bins,
             rank_rtol=self.config.rank_rtol,
         )
 
     def report(self) -> InformationReport:
-        """Return the final hard-partition report on the fitting sample."""
+        """Return final hard training-sample diagnostics."""
         return self.train_report
 
     def to_dict(self) -> dict[str, JsonValue]:
-        """Return all stable in-memory fields as JSON-compatible data."""
+        """Return JSON-ready in-memory state, not a versioned artifact format."""
         return json_ready(
             {
                 "centers": self.centers,
+                "metric": self.metric,
                 "transform": self.transform.to_dict(),
+                "criterion": self.criterion.to_dict(),
                 "config": self.config.to_dict(),
                 "trace": self.trace.to_dict(),
                 "labels": self.labels,
@@ -151,155 +149,137 @@ class FitResult:
                 "validation_report": (
                     None if self.validation_report is None else self.validation_report.to_dict()
                 ),
+                "provenance": self.provenance.to_dict(),
+                "information_kind": self.information_kind,
+                "hardening_gap": self.hardening_gap,
+                "source_kind": self.source_kind,
             }
         )
 
     def plot_summary(self, scores: ArrayLike, weights: ArrayLike | None = None) -> Figure:
-        """Create the optional Matplotlib summary figure."""
+        """Create the optional score-space summary figure."""
         from .visualization import plot_summary
 
         return plot_summary(self, scores, weights)
 
 
-class _ResultView:
-    """Shared read-only view over a representation-specific score result."""
+@dataclass(frozen=True, slots=True)
+class PartitionResult:
+    """Represent optimized labels of one fixed weighted score table."""
 
-    __slots__ = ()
-
-    @property
-    def _fit_result(self) -> FitResult:
-        raise NotImplementedError
-
-    @property
-    def labels(self) -> jnp.ndarray:
-        """Final hard labels for the fitting rows."""
-        return self._fit_result.labels
+    labels: jnp.ndarray
+    training_scores: jnp.ndarray
+    cell_weights: jnp.ndarray
+    cell_score_sums: jnp.ndarray
+    cell_score_means: jnp.ndarray
+    information_full: jnp.ndarray
+    information_partitioned: jnp.ndarray
+    objective: float
+    transform: FisherTransform
+    transformed_centers: jnp.ndarray
+    metric: jnp.ndarray
+    criterion: DOptimality
+    config: DExchangeConfig
+    train_report: InformationReport
+    provenance: ScoreProvenance
+    accepted_moves: int
+    sweeps: int
+    exchange_stable: bool
+    best_remaining_gain: float
+    objective_history: jnp.ndarray
+    positive_weight_mask: jnp.ndarray
 
     @property
     def n_bins(self) -> int:
-        """Number of fitted hard bins."""
-        return self._fit_result.n_bins
+        """Return the number of nonempty requested cells."""
+        return int(self.cell_weights.shape[0])
 
     @property
-    def centers(self) -> jnp.ndarray:
-        """Fitted centers in optimization coordinates."""
-        return self._fit_result.centers
+    def rank(self) -> int:
+        """Return the numerically informative score-space rank."""
+        return self.transform.rank
 
     @property
-    def transform(self) -> FisherTransform:
-        """Fitted informative-subspace transform."""
-        return self._fit_result.transform
-
-    @property
-    def config(self) -> FitConfig:
-        """Validated optimizer configuration used for fitting."""
-        return self._fit_result.config
-
-    @property
-    def trace(self) -> OptimizationTrace:
-        """Recorded aggregate optimization history."""
-        return self._fit_result.trace
-
-    @property
-    def train_report(self) -> InformationReport:
-        """Final hard-partition report on the fitting sample."""
-        return self._fit_result.train_report
-
-    @property
-    def validation_report(self) -> InformationReport | None:
-        """Optional final report on the diagnostic validation sample."""
-        return self._fit_result.validation_report
+    def information_kind(self) -> str:
+        """Describe whether supplied-score matrices justify exact Fisher language."""
+        return "exact_fisher" if self.provenance.exact_fisher else "supplied_score_surrogate"
 
     def report(self) -> InformationReport:
-        """Return the final hard-partition report on the fitting sample."""
+        """Return supplied-score information for the fixed partition."""
         return self.train_report
 
-
-@dataclass(frozen=True, slots=True)
-class ComponentFitResult(_ResultView):
-    """Represent a fitted partition whose prediction input is components.
-
-    The reference coefficients and component ordering are frozen with the
-    score-level result so prediction cannot silently change parameter order.
-    """
-
-    score_result: FitResult
-    coefficients: jnp.ndarray
-    component_names: tuple[str, ...]
-
-    @property
-    def _fit_result(self) -> FitResult:
-        return self.score_result
-
-    def predict(self, components: ArrayLike) -> jnp.ndarray:
-        """Assign a new component matrix using the frozen reference coefficients."""
-        from .components import scores_from_components
-
-        return self.score_result.predict(scores_from_components(components, self.coefficients))
-
-    def evaluate(
-        self, components: ArrayLike, weights: ArrayLike | None = None
-    ) -> InformationReport:
-        """Evaluate the fixed partition on a new weighted component sample."""
-        from .components import scores_from_components
-
-        return self.score_result.evaluate(
-            scores_from_components(components, self.coefficients), weights
+    def compile_quantizer(self) -> QuantizerResult:
+        """Compile an exchange-stable D partition into its canonical rule."""
+        if not self.exchange_stable:
+            raise ValueError("only an exchange-stable D partition can be compiled")
+        coordinates = self.transform.apply(self.training_scores)
+        predicted = _predict_transformed(coordinates, self.transformed_centers, self.metric)
+        positive = np.asarray(self.positive_weight_mask)
+        if not np.array_equal(np.asarray(predicted)[positive], np.asarray(self.labels)[positive]):
+            raise ValueError(
+                "D compilation is degenerate: training labels are not strictly reproduced"
+            )
+        trace = OptimizationTrace(
+            steps=jnp.arange(self.objective_history.shape[0]),
+            centers=jnp.repeat(
+                self.transformed_centers[None, :, :], self.objective_history.shape[0], axis=0
+            ),
+            objective=self.objective_history,
+            bin_weights=jnp.repeat(
+                self.cell_weights[None, :], self.objective_history.shape[0], axis=0
+            ),
+            train_hard_retention=jnp.full(
+                self.objective_history.shape,
+                self.train_report.geometric_mean_retention,
+                dtype=self.cell_weights.dtype,
+            ),
+        )
+        return QuantizerResult(
+            centers=self.transformed_centers,
+            metric=self.metric,
+            transform=self.transform,
+            criterion=self.criterion,
+            config=self.config,
+            trace=trace,
+            labels=self.labels,
+            train_report=self.train_report,
+            validation_report=None,
+            provenance=self.provenance,
+            hardening_gap=0.0,
+            source_kind="compiled_partition",
         )
 
     def to_dict(self) -> dict[str, JsonValue]:
-        """Return component metadata and the score result as JSON-ready data."""
+        """Return the fixed-sample result as JSON-ready data."""
         return json_ready(
             {
-                "input_representation": "components",
-                "coefficients": self.coefficients,
-                "component_names": self.component_names,
-                "score_result": self.score_result.to_dict(),
+                "labels": self.labels,
+                "cell_weights": self.cell_weights,
+                "cell_score_sums": self.cell_score_sums,
+                "cell_score_means": self.cell_score_means,
+                "information_full": self.information_full,
+                "information_partitioned": self.information_partitioned,
+                "objective": self.objective,
+                "transform": self.transform.to_dict(),
+                "transformed_centers": self.transformed_centers,
+                "metric": self.metric,
+                "criterion": self.criterion.to_dict(),
+                "config": self.config.to_dict(),
+                "train_report": self.train_report.to_dict(),
+                "provenance": self.provenance.to_dict(),
+                "information_kind": self.information_kind,
+                "accepted_moves": self.accepted_moves,
+                "sweeps": self.sweeps,
+                "exchange_stable": self.exchange_stable,
+                "best_remaining_gain": self.best_remaining_gain,
+                "objective_history": self.objective_history,
             }
         )
 
-    def plot_summary(self, components: ArrayLike, weights: ArrayLike | None = None) -> Figure:
-        """Create a score-space summary from a component matrix."""
-        from .components import scores_from_components
 
-        return self.score_result.plot_summary(
-            scores_from_components(components, self.coefficients), weights
-        )
-
-
-@dataclass(frozen=True, slots=True)
-class ModelFitResult(_ResultView):
-    """Represent a fitted partition whose prediction input is physical variables.
-
-    The in-memory component model is retained for prediction. Callable component
-    functions are intentionally omitted from JSON conversion.
-    """
-
-    component_result: ComponentFitResult
-    model: LinearComponents
-
-    @property
-    def _fit_result(self) -> FitResult:
-        return self.component_result.score_result
-
-    def predict(self, X: ArrayLike) -> jnp.ndarray:
-        """Evaluate the frozen model and assign physical observations to bins."""
-        return self.component_result.predict(self.model.evaluate_components(X))
-
-    def evaluate(self, X: ArrayLike, weights: ArrayLike | None = None) -> InformationReport:
-        """Evaluate the frozen model and partition on a new weighted sample."""
-        return self.component_result.evaluate(self.model.evaluate_components(X), weights)
-
-    def to_dict(self) -> dict[str, JsonValue]:
-        """Return model metadata and nested fitted state as JSON-ready data."""
-        return json_ready(
-            {
-                "input_representation": "variables",
-                "model": self.model.to_dict(),
-                "component_result": self.component_result.to_dict(),
-            }
-        )
-
-    def plot_summary(self, X: ArrayLike, weights: ArrayLike | None = None) -> Figure:
-        """Evaluate the model and create a score-space summary figure."""
-        return self.component_result.plot_summary(self.model.evaluate_components(X), weights)
+def _predict_transformed(
+    coordinates: jnp.ndarray, centers: jnp.ndarray, metric: jnp.ndarray
+) -> jnp.ndarray:
+    differences = coordinates[:, None, :] - centers[None, :, :]
+    distances = jnp.einsum("nbr,rs,nbs->nb", differences, metric, differences)
+    return jnp.argmin(distances, axis=1)
