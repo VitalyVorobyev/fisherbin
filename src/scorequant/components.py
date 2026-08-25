@@ -10,6 +10,7 @@ import numpy as np
 
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
+from ._validation import promote_low_precision
 
 ComponentFunction = Callable[[np.ndarray], ArrayLike]
 _SIMPLEX_RTOL = 1e-5
@@ -65,10 +66,7 @@ def scores_from_components(components: ArrayLike, coefficients: ArrayLike) -> jn
     component_array = jnp.asarray(components)
     if component_array.ndim != 2 or min(component_array.shape) == 0:
         raise ValueError("components must have non-empty shape [N, M]")
-    if not jnp.issubdtype(component_array.dtype, jnp.inexact):
-        component_array = component_array.astype(jnp.float32)
-    elif component_array.dtype in (jnp.float16, jnp.bfloat16):
-        component_array = component_array.astype(jnp.float32)
+    component_array = promote_low_precision(component_array)
     coefficient_array = jnp.asarray(coefficients, dtype=component_array.dtype)
     if coefficient_array.shape != (component_array.shape[1],):
         raise ValueError(
@@ -141,10 +139,7 @@ def mixture_scores_from_posteriors(
     values = jnp.asarray(posteriors)
     if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] < 2:
         raise ValueError("posteriors must have non-empty shape [N, K] with K >= 2")
-    if not jnp.issubdtype(values.dtype, jnp.inexact):
-        values = values.astype(jnp.float32)
-    elif values.dtype in (jnp.float16, jnp.bfloat16):
-        values = values.astype(jnp.float32)
+    values = promote_low_precision(values)
     if not bool(np.asarray(jnp.all(jnp.isfinite(values)))):
         raise ValueError("posteriors must be finite")
     if bool(np.asarray(jnp.any(values < 0))):

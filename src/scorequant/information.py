@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import jax.numpy as jnp
 import numpy as np
 
+from ._binstats import scatter_bin_statistics
 from ._typing import ArrayLike
 from ._validation import (
     _ValidatedSample,
@@ -16,7 +17,7 @@ from ._validation import (
 )
 from .config import ScalarDPConfig
 from .quantizers import hard_assign, scalar_interval_dp
-from .result import EfficientScoreBound, InformationReport, ProfiledInformationReport
+from .reports import EfficientScoreBound, InformationReport, ProfiledInformationReport
 from .transforms import fisher_transform
 
 
@@ -87,16 +88,11 @@ def _hard_binned_fisher(
     labels: jnp.ndarray,
     n_bins: int,
 ) -> tuple[jnp.ndarray, jnp.ndarray]:
-    scores = sample.effective_scores
-    weights = sample.effective_weights
-    weighted_scores = weights[:, None] * scores
-    bin_weights = jnp.zeros(n_bins, dtype=scores.dtype).at[labels].add(weights)
-    bin_score_sums = jnp.zeros((n_bins, scores.shape[1]), dtype=scores.dtype)
-    bin_score_sums = bin_score_sums.at[labels].add(weighted_scores)
-    safe_weights = jnp.where(bin_weights > 0, bin_weights, 1)
-    means = bin_score_sums / safe_weights[:, None]
-    fisher = jnp.einsum("b,bp,bq->pq", bin_weights, means, means)
-    return fisher, bin_weights
+    statistics = scatter_bin_statistics(
+        labels, sample.effective_weights, sample.effective_scores, n_bins
+    )
+    fisher = jnp.einsum("b,bp,bq->pq", statistics.weights, statistics.means, statistics.means)
+    return fisher, statistics.weights
 
 
 def _hard_bin_statistics(
@@ -513,19 +509,14 @@ def efficient_score_bound(
     )
 
     label_array = jnp.asarray(atom_labels)
-    cell_weights = jnp.zeros(n_bins, dtype=atom_weights.dtype).at[label_array].add(atom_weights)
-    weighted_atoms = atom_weights[:, None] * atoms
-    cell_sums = jnp.zeros((n_bins, 1), dtype=atoms.dtype).at[label_array].add(weighted_atoms)
-    cell_means = cell_sums / cell_weights[:, None]
+    atom_statistics = scatter_bin_statistics(label_array, atom_weights, atoms, n_bins)
+    cell_weights, cell_means = atom_statistics.weights, atom_statistics.means
     between = float(np.asarray(jnp.sum(cell_weights * cell_means[:, 0] ** 2)))
     if between <= 0:
         raise ValueError("the efficient score retains no information under any partition")
 
     # Zero-weight rows carry no measure; the interval rule still labels them.
-    weighted_coordinates = atom_weights[:, None] * coordinates
-    center_sums = jnp.zeros((n_bins, 1), dtype=coordinates.dtype)
-    center_sums = center_sums.at[label_array].add(weighted_coordinates)
-    centers = center_sums / cell_weights[:, None]
+    centers = scatter_bin_statistics(label_array, atom_weights, coordinates, n_bins).means
     labels = hard_assign(transform.apply(efficient), centers)
     labels = labels.at[sample.positive_weight_mask].set(label_array[inverse_rows])
     return EfficientScoreBound(

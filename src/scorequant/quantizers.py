@@ -9,6 +9,7 @@ import jax.numpy as jnp
 import numpy as np
 import optax
 
+from ._binstats import scatter_bin_statistics
 from .config import KMeansConfig, ScalarDPConfig, SoftVoronoiConfig
 from .criteria import DOptimality, ProfiledDOptimality
 from .transforms import fisher_transform
@@ -98,10 +99,8 @@ def _single_kmeans(
         labels = jnp.argmin(distances, axis=1)
         selected_distances = distances[jnp.arange(points.shape[0]), labels]
         objective = float(np.asarray(jnp.sum(weights * selected_distances)))
-        occupancies = _bin_weights(labels, weights, n_bins)
-        weighted_sums = jnp.zeros((n_bins, points.shape[1]), dtype=points.dtype)
-        weighted_sums = weighted_sums.at[labels].add(weights[:, None] * points)
-        proposed = weighted_sums / jnp.where(occupancies > 0, occupancies, 1)[:, None]
+        statistics = scatter_bin_statistics(labels, weights, points, n_bins)
+        occupancies, proposed = statistics.weights, statistics.means
 
         if bool(np.asarray(jnp.any(occupancies == 0))):
             residual = weights * selected_distances
@@ -275,16 +274,14 @@ def scalar_weighted_kmeans_dp(
         n_bins,
     )
     label_array = jnp.asarray(labels)
-    bin_weights = _bin_weights(label_array, weights, n_bins)
-    sums = jnp.zeros((n_bins, 1), dtype=points.dtype)
-    sums = sums.at[label_array].add(weights[:, None] * points)
-    centers = sums / bin_weights[:, None]
+    statistics = scatter_bin_statistics(label_array, weights, points, n_bins)
+    centers = statistics.means
     return QuantizerRun(
         centers=centers,
         steps=[0],
         center_history=[centers],
         objective_history=[objective],
-        bin_weight_history=[bin_weights],
+        bin_weight_history=[statistics.weights],
         objective_label="whitened_sse",
     )
 
@@ -433,47 +430,74 @@ class _SoftHistory:
         )
 
 
-def soft_voronoi(
-    points: jnp.ndarray,
+def _soft_voronoi_single_cell(
+    centers: jnp.ndarray, weights: jnp.ndarray, criterion: DOptimality | ProfiledDOptimality
+) -> QuantizerRun:
+    """Return the degenerate one-cell run: every row already shares the only center."""
+    return QuantizerRun(
+        centers=centers,
+        steps=[0],
+        center_history=[centers],
+        objective_history=[0.0],
+        bin_weight_history=[jnp.asarray([jnp.sum(weights)])],
+        objective_label=criterion_objective_label(criterion),
+        soft_retention_history=[1.0],
+        temperature_history=[1.0],
+        gradient_norm_history=[0.0],
+    )
+
+
+def _soft_voronoi_reference(
     objective_scores: jnp.ndarray,
     weights: jnp.ndarray,
-    n_bins: int,
-    effective_rank: int,
     criterion: DOptimality | ProfiledDOptimality,
-    config: SoftVoronoiConfig,
-) -> QuantizerRun:
-    """Optimize soft Fisher retention, then return centers for hard assignment."""
-    if n_bins < effective_rank:
-        raise ValueError(
-            "soft D-optimal fitting requires n_bins >= the effective Fisher rank; "
-            "use k-means for smaller partitions"
-        )
-    centers = _soft_initial_centers(points, weights, n_bins, config)
-    if n_bins == 1:
-        return QuantizerRun(
-            centers=centers,
-            steps=[0],
-            center_history=[centers],
-            objective_history=[0.0],
-            bin_weight_history=[jnp.asarray([jnp.sum(weights)])],
-            objective_label=criterion_objective_label(criterion),
-            soft_retention_history=[1.0],
-            temperature_history=[1.0],
-            gradient_norm_history=[0.0],
-        )
-
-    start_temperature, end_temperature = _soft_temperature_bounds(
-        centers, config.temperature_end_ratio
-    )
+    *,
+    effective_rank: int,
+    rank_rtol: float | None,
+) -> tuple[jnp.ndarray, float, int]:
+    """Normalize D-optimal objective scores and check the full-data reference is regular."""
     if isinstance(criterion, DOptimality):
-        objective_scores = _normalized_objective_scores(objective_scores, weights, config.rank_rtol)
+        objective_scores = _normalized_objective_scores(objective_scores, weights, rank_rtol)
     elif objective_scores.shape[1] != effective_rank:
         raise ValueError("profiled-D soft fitting requires full-rank supplied-score information")
     full_fisher = jnp.einsum("n,np,nq->pq", weights, objective_scores, objective_scores)
     reference_sign, reference_value, objective_dimension = _criterion_logdet(full_fisher, criterion)
     if float(np.asarray(reference_sign)) <= 0:
         raise ValueError("soft fitting requires nonsingular criterion information")
-    reference_objective = float(np.asarray(reference_value))
+    return objective_scores, float(np.asarray(reference_value)), objective_dimension
+
+
+def _soft_voronoi_optimizer(
+    config: SoftVoronoiConfig, start_temperature: float
+) -> optax.GradientTransformation:
+    """Build the scale-invariant Adam chain for one soft-Voronoi fit.
+
+    Fisher whitening contains the total information scale, so coordinate
+    magnitudes shrink as total sample weight grows. Expressing Adam's step in
+    units of the initialized center separation keeps fitting scale-invariant.
+    """
+    return optax.chain(
+        optax.clip_by_global_norm(config.gradient_clip),
+        optax.adam(config.learning_rate * start_temperature),
+    )
+
+
+def _run_soft_schedule(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    objective_scores: jnp.ndarray,
+    n_bins: int,
+    criterion: DOptimality | ProfiledDOptimality,
+    config: SoftVoronoiConfig,
+    *,
+    centers: jnp.ndarray,
+    optimizer: optax.GradientTransformation,
+    start_temperature: float,
+    end_temperature: float,
+    reference_objective: float,
+    objective_dimension: int,
+) -> QuantizerRun:
+    """Run the annealed Adam schedule from prepared centers and return its history."""
 
     def loss_fn(current_centers: jnp.ndarray, temperature: jnp.ndarray) -> jnp.ndarray:
         resp = soft_responsibilities(points, current_centers, temperature)
@@ -481,13 +505,6 @@ def soft_voronoi(
         sign, logdet, _ = _criterion_logdet(soft_fisher, criterion)
         return jnp.where(sign > 0, -logdet, jnp.inf)
 
-    # Fisher whitening contains the total information scale, so coordinate
-    # magnitudes shrink as total sample weight grows. Express Adam's step in
-    # units of the initialized center separation to keep fitting scale-invariant.
-    optimizer = optax.chain(
-        optax.clip_by_global_norm(config.gradient_clip),
-        optax.adam(config.learning_rate * start_temperature),
-    )
     state = optimizer.init(centers)
 
     @jax.jit
@@ -531,3 +548,49 @@ def soft_voronoi(
             )
 
     return history.finish(centers)
+
+
+def soft_voronoi(
+    points: jnp.ndarray,
+    objective_scores: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    effective_rank: int,
+    criterion: DOptimality | ProfiledDOptimality,
+    config: SoftVoronoiConfig,
+) -> QuantizerRun:
+    """Optimize soft Fisher retention, then return centers for hard assignment."""
+    if n_bins < effective_rank:
+        raise ValueError(
+            "soft D-optimal fitting requires n_bins >= the effective Fisher rank; "
+            "use k-means for smaller partitions"
+        )
+    centers = _soft_initial_centers(points, weights, n_bins, config)
+    if n_bins == 1:
+        return _soft_voronoi_single_cell(centers, weights, criterion)
+
+    start_temperature, end_temperature = _soft_temperature_bounds(
+        centers, config.temperature_end_ratio
+    )
+    objective_scores, reference_objective, objective_dimension = _soft_voronoi_reference(
+        objective_scores,
+        weights,
+        criterion,
+        effective_rank=effective_rank,
+        rank_rtol=config.rank_rtol,
+    )
+    optimizer = _soft_voronoi_optimizer(config, start_temperature)
+    return _run_soft_schedule(
+        points,
+        weights,
+        objective_scores,
+        n_bins,
+        criterion,
+        config,
+        centers=centers,
+        optimizer=optimizer,
+        start_temperature=start_temperature,
+        end_temperature=end_temperature,
+        reference_objective=reference_objective,
+        objective_dimension=objective_dimension,
+    )

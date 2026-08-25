@@ -214,6 +214,13 @@ class DExchangeConfig:
         Accept the first improving move in deterministic row/bin order instead
         of the best move in a scan. This stops each scan early, so it forces
         single-move acceptance and disables ``batch_moves``.
+    collapse_duplicates
+        Merge identical score rows into one weighted atom before solving.
+        ``None`` (default) collapses automatically below 100,000 effective
+        rows and skips it above, since the O(N log N) merge only pays for
+        itself against the O(N) exchange scan it speeds up on samples with
+        many repeated score atoms. ``True``/``False`` always collapses or
+        always skips, regardless of sample size.
     """
 
     method: Literal["d_exchange"] = field(default="d_exchange", init=False)
@@ -226,6 +233,7 @@ class DExchangeConfig:
     init: Literal["kmeans++", "random"] = "kmeans++"
     gain_tolerance: float = 1e-10
     first_improvement: bool = False
+    collapse_duplicates: bool | None = None
 
     def __post_init__(self) -> None:
         """Validate exchange settings at construction time."""
@@ -243,6 +251,8 @@ class DExchangeConfig:
             raise ValueError("init must be 'kmeans++' or 'random'")
         _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
         _validate_bool("first_improvement", self.first_improvement)
+        if self.collapse_duplicates is not None:
+            _validate_bool("collapse_duplicates", self.collapse_duplicates)
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible configuration mapping."""
@@ -280,6 +290,13 @@ class MahalanobisLloydConfig:
     gain_tolerance
         Strict minimum accepted objective gain, shared by the guarded batch and
         the exchange phase.
+    collapse_duplicates
+        Merge identical score rows into one weighted atom before solving.
+        ``None`` (default) collapses automatically below 100,000 effective
+        rows and skips it above, since the O(N log N) merge only pays for
+        itself against the O(N) work it speeds up on samples with many
+        repeated score atoms. ``True``/``False`` always collapses or always
+        skips, regardless of sample size.
     """
 
     method: Literal["mahalanobis_lloyd"] = field(default="mahalanobis_lloyd", init=False)
@@ -289,6 +306,7 @@ class MahalanobisLloydConfig:
     max_iter: int = 100
     guard: Literal["exchange", "reject"] = "exchange"
     gain_tolerance: float = 1e-10
+    collapse_duplicates: bool | None = None
 
     def __post_init__(self) -> None:
         """Validate the guarded batch settings at construction time."""
@@ -302,6 +320,8 @@ class MahalanobisLloydConfig:
         if self.guard not in ("exchange", "reject"):
             raise ValueError("guard must be 'exchange' or 'reject'")
         _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
+        if self.collapse_duplicates is not None:
+            _validate_bool("collapse_duplicates", self.collapse_duplicates)
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible configuration mapping."""

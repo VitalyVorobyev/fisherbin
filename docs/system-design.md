@@ -44,7 +44,15 @@ plugin until multiple implementations demonstrate a stable common contract.
 - `sources.py`: empirical and quadrature measures plus provenance.
 - `providers.py`: framework-neutral observation-to-score adapters.
 - `components.py`: linear models and pure posterior-to-score algebra.
-- `criteria.py`, `config.py`, `result.py`, `api.py`: public contracts and orchestration.
+- `reports.py`: diagnostic and certificate dataclasses (`InformationReport`,
+  `ProfiledInformationReport`, `GeometryReport`, `ProfiledGeometryReport`, `StabilityReport`,
+  `PartitionCertificate`, `EfficientScoreBound`). It depends on nothing that depends back on it,
+  which is what lets `result.py` and `information.py` both build on it without importing each other.
+- `criteria.py`, `config.py`, `result.py`, `api.py`: public contracts and orchestration. `api.py`
+  validates every `(config, criterion, task)` combination against one declarative table instead of
+  scattered isinstance chains.
+- `_binstats.py`, `_validation.py`: private numerical helpers shared across modules (weighted
+  per-bin scatter-add statistics, and input validation including dtype promotion).
 - `examples/`, tests, and `research/`: datasets, tuning, counterexample search, and application logic.
 
 JAX is the sole numerical kernel implementation and Optax supplies gradient optimization. Optional

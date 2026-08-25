@@ -27,10 +27,12 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ._binstats import scatter_bin_statistics
 from ._typing import ArrayLike
 from ._validation import (
     _ValidatedSample,
     collapse_duplicate_scores,
+    resolve_collapse_duplicates,
     validate_n_bins,
     validate_sample,
 )
@@ -38,13 +40,13 @@ from .config import DExchangeConfig, KMeansConfig, MahalanobisLloydConfig, Parti
 from .criteria import DOptimality, ProfiledDOptimality
 from .information import _profiled_blocks, information_report, profiled_information_report
 from .quantizers import hard_assign, weighted_kmeans
-from .result import (
+from .reports import (
     GeometryReport,
-    PartitionResult,
     ProfiledGeometryReport,
     ProfiledInformationReport,
     StabilityReport,
 )
+from .result import PartitionResult
 from .sources import ScoreProvenance
 from .transforms import FisherTransform, fisher_transform
 
@@ -68,6 +70,14 @@ _MAX_BATCH_SHRINKS = 32
 # cell's weight that one batch may move in or out of it.
 _MIN_BATCH_ROWS = 8
 _BATCH_MASS_FRACTION = 0.25
+
+# Largest tolerated max-norm residual of I @ I^-1 - identity after two chained
+# Sherman-Morrison rank-one updates, dtype-dependent because the accumulated
+# rounding of the chained updates scales with machine epsilon. Above this the
+# incremental inverse is judged to have drifted too far from the exactly
+# rebuilt one, and _rank_two_inverse_update falls back to a fresh inversion.
+_RANK_TWO_RESIDUAL_TOLERANCE_F64 = 1e-8
+_RANK_TWO_RESIDUAL_TOLERANCE_F32 = 2e-3
 
 
 @dataclass(frozen=True, slots=True)
@@ -656,6 +666,21 @@ class _PreparedPartition:
     coordinates: jnp.ndarray
 
 
+def _maybe_collapse_duplicates(
+    scores: jnp.ndarray, weights: jnp.ndarray, collapse_duplicates: bool | None
+) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
+    """Apply the configured duplicate-score-collapsing policy, or skip it.
+
+    Skipping returns an identity row mapping, so downstream code that expands
+    atom-level results back to input rows behaves the same either way; only
+    the effective atom count, and therefore the search space the solver
+    explores, changes.
+    """
+    if resolve_collapse_duplicates(collapse_duplicates, int(scores.shape[0])):
+        return collapse_duplicate_scores(scores, weights)
+    return scores, weights, jnp.arange(scores.shape[0])
+
+
 def _prepare_partition(
     scores: ArrayLike,
     weights: ArrayLike | None,
@@ -665,8 +690,8 @@ def _prepare_partition(
 ) -> _PreparedPartition:
     sample = validate_sample(scores, weights)
     validate_n_bins(n_bins, sample.n_effective)
-    effective_scores, effective_weights, inverse_rows = collapse_duplicate_scores(
-        sample.effective_scores, sample.effective_weights
+    effective_scores, effective_weights, inverse_rows = _maybe_collapse_duplicates(
+        sample.effective_scores, sample.effective_weights, config.collapse_duplicates
     )
     if n_bins > effective_scores.shape[0]:
         raise ValueError("n_bins exceeds distinct positive-weight score rows")
@@ -1231,12 +1256,10 @@ def _cell_statistics(
     points: jnp.ndarray, weights: jnp.ndarray, labels: jnp.ndarray, n_bins: int
 ) -> _CellStatistics:
     """Accumulate exact weighted cell occupancy, score sums, and score means."""
-    cell_weights = jnp.zeros(n_bins, dtype=weights.dtype).at[labels].add(weights)
-    sums = jnp.zeros((n_bins, points.shape[1]), dtype=points.dtype)
-    sums = sums.at[labels].add(weights[:, None] * points)
-    if bool(np.asarray(jnp.any(cell_weights <= 0))):
+    statistics = scatter_bin_statistics(labels, weights, points, n_bins)
+    if bool(np.asarray(jnp.any(statistics.weights <= 0))):
         raise ValueError("exact exchange requires exactly n_bins nonempty cells")
-    return _CellStatistics(weights=cell_weights, sums=sums, means=sums / cell_weights[:, None])
+    return _CellStatistics(weights=statistics.weights, sums=statistics.sums, means=statistics.means)
 
 
 def _cell_information(cells: _CellStatistics) -> jnp.ndarray:
@@ -1371,7 +1394,11 @@ def _rank_two_inverse_update(
     updated = 0.5 * (updated + updated.T)
     identity = jnp.eye(information.shape[0], dtype=information.dtype)
     residual = jnp.max(jnp.abs(information @ updated - identity))
-    tolerance = 1e-8 if information.dtype == jnp.float64 else 2e-3
+    tolerance = (
+        _RANK_TWO_RESIDUAL_TOLERANCE_F64
+        if information.dtype == jnp.float64
+        else _RANK_TWO_RESIDUAL_TOLERANCE_F32
+    )
     if (
         not bool(np.asarray(jnp.isfinite(destination_denominator)))
         or float(np.asarray(destination_denominator)) <= 0
@@ -1529,9 +1556,7 @@ def _metric_assign(scores: jnp.ndarray, means: jnp.ndarray, inverse: jnp.ndarray
 def _raw_cell_statistics(
     sample: _ValidatedSample, labels: jnp.ndarray, n_bins: int
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
-    weights = sample.effective_weights
-    scores = sample.effective_scores
-    cell_weights = jnp.zeros(n_bins, dtype=weights.dtype).at[labels].add(weights)
-    sums = jnp.zeros((n_bins, scores.shape[1]), dtype=scores.dtype)
-    sums = sums.at[labels].add(weights[:, None] * scores)
-    return cell_weights, sums, sums / cell_weights[:, None]
+    statistics = scatter_bin_statistics(
+        labels, sample.effective_weights, sample.effective_scores, n_bins
+    )
+    return statistics.weights, statistics.sums, statistics.means

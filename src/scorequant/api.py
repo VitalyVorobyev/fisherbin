@@ -66,6 +66,94 @@ class _FitDiagnostics:
     validation_hard_retention: list[float] | None
 
 
+# Every ``Criterion`` subtype the library defines, used only to tell a
+# recognized-but-mismatched criterion (``ValueError``) apart from a value that
+# is not a criterion at all (``TypeError``).
+_CRITERION_TYPES: tuple[type[Criterion], ...] = (DOptimality, ProfiledDOptimality, NormalizedTrace)
+
+
+@dataclass(frozen=True, slots=True)
+class _SolverSpec:
+    """One configuration type's declared criteria for each finite task.
+
+    An empty tuple means the type is not part of that task's own declared
+    configuration contract at all: ``optimize_partition`` never accepted
+    ``KMeansConfig`` and never will, so supplying it there is a Python type
+    violation of that task's own signature, not a semantic choice among
+    otherwise-valid alternatives.
+    """
+
+    partition_criteria: tuple[type[Criterion], ...] = ()
+    quantizer_criteria: tuple[type[Criterion], ...] = ()
+
+
+# The single source of truth for which (config type, criterion type) pairs
+# ``optimize_partition`` and ``fit_quantizer`` accept. Both entry points
+# validate against this one table instead of each hand-rolling its own
+# isinstance chain, and the two tasks can (and do) disagree about which
+# criteria one config type supports: ``DExchangeConfig`` and
+# ``MahalanobisLloydConfig`` accept both finite criteria for
+# ``optimize_partition`` but only ``DOptimality`` for ``fit_quantizer``,
+# because a profiled partition has no canonical inductive rule to compile
+# into a reusable quantizer.
+_SOLVER_TABLE: dict[type, _SolverSpec] = {
+    DExchangeConfig: _SolverSpec(
+        partition_criteria=(DOptimality, ProfiledDOptimality),
+        quantizer_criteria=(DOptimality,),
+    ),
+    MahalanobisLloydConfig: _SolverSpec(
+        partition_criteria=(DOptimality, ProfiledDOptimality),
+        quantizer_criteria=(DOptimality,),
+    ),
+    KMeansConfig: _SolverSpec(quantizer_criteria=(NormalizedTrace,)),
+    SoftVoronoiConfig: _SolverSpec(quantizer_criteria=(DOptimality, ProfiledDOptimality)),
+    ScalarDPConfig: _SolverSpec(quantizer_criteria=(DOptimality,)),
+}
+
+
+def _task_criteria(task: str, spec: _SolverSpec) -> tuple[type[Criterion], ...]:
+    return spec.partition_criteria if task == "optimize_partition" else spec.quantizer_criteria
+
+
+def _validate_solver(config: object, criterion: Criterion, task: str) -> None:
+    """Validate one (config, criterion) pair against the declarative solver table.
+
+    Parameters
+    ----------
+    config, criterion
+        Resolved (non-``None``) configuration and criterion.
+    task
+        Either ``"optimize_partition"`` or ``"fit_quantizer"``.
+
+    Raises
+    ------
+    TypeError
+        ``config`` is not a type this task's own signature declares, or
+        ``criterion`` is not one of the library's ``Criterion`` subtypes.
+    ValueError
+        Both ``config`` and ``criterion`` are individually valid, but this
+        task does not implement that particular pairing. The message names
+        the config, the task, and the criteria it does support.
+    """
+    spec = _SOLVER_TABLE.get(type(config))
+    allowed = _task_criteria(task, spec) if spec is not None else ()
+    if not allowed:
+        recognized = sorted(
+            config_type.__name__
+            for config_type, entry in _SOLVER_TABLE.items()
+            if _task_criteria(task, entry)
+        )
+        raise TypeError(f"{task} requires {' or '.join(recognized)}, got {type(config).__name__}")
+    if not isinstance(criterion, _CRITERION_TYPES):
+        raise TypeError(
+            "criterion must be DOptimality, ProfiledDOptimality, or NormalizedTrace, "
+            f"got {type(criterion).__name__}"
+        )
+    if not isinstance(criterion, allowed):
+        names = " or ".join(sorted(t.__name__ for t in allowed))
+        raise ValueError(f"{type(config).__name__} implements only {names} for {task}")
+
+
 def optimize_partition(
     scores: ArrayLike,
     *,
@@ -99,8 +187,7 @@ def optimize_partition(
     """
     resolved_criterion = DOptimality() if criterion is None else criterion
     resolved_config = DExchangeConfig() if config is None else config
-    if not isinstance(resolved_config, (DExchangeConfig, MahalanobisLloydConfig)):
-        raise TypeError("optimize_partition requires DExchangeConfig or MahalanobisLloydConfig")
+    _validate_solver(resolved_config, resolved_criterion, "optimize_partition")
     if isinstance(resolved_criterion, DOptimality):
         return optimize_d_partition(
             scores,
@@ -110,17 +197,17 @@ def optimize_partition(
             provenance=provenance or ScoreProvenance(),
             initial_labels=initial_labels,
         )
-    if isinstance(resolved_criterion, ProfiledDOptimality):
-        return optimize_profiled_d_partition(
-            scores,
-            weights=weights,
-            n_bins=n_bins,
-            criterion=resolved_criterion,
-            config=resolved_config,
-            provenance=provenance or ScoreProvenance(),
-            initial_labels=initial_labels,
-        )
-    raise TypeError("finite assignment supports DOptimality or ProfiledDOptimality")
+    # ``_validate_solver`` accepted the pair, and the only other criterion it
+    # can have accepted for this task is ProfiledDOptimality.
+    return optimize_profiled_d_partition(
+        scores,
+        weights=weights,
+        n_bins=n_bins,
+        criterion=resolved_criterion,
+        config=resolved_config,
+        provenance=provenance or ScoreProvenance(),
+        initial_labels=initial_labels,
+    )
 
 
 def fit_quantizer(
@@ -146,14 +233,13 @@ def fit_quantizer(
             raise ValueError("validation scores must use the training parameter order")
     resolved_config = DExchangeConfig() if config is None else config
     resolved_criterion: Criterion = DOptimality() if criterion is None else criterion
-    _validate_solver_pair(resolved_criterion, resolved_config)
+    _validate_solver(resolved_config, resolved_criterion, "fit_quantizer")
 
     if isinstance(resolved_config, (DExchangeConfig, MahalanobisLloydConfig)):
-        if not isinstance(resolved_criterion, DOptimality):
-            raise ValueError(
-                "finite profiled-D exchange has no implicit inductive rule; "
-                "use optimize_partition or SoftVoronoiConfig"
-            )
+        # ``_validate_solver`` already restricted this pairing to DOptimality:
+        # finite profiled-D exchange has no implicit inductive rule, so a
+        # profiled fit must go through ``optimize_partition`` or
+        # ``SoftVoronoiConfig`` instead.
         partition = optimize_d_partition(
             train.scores,
             weights=train.weights,
@@ -253,21 +339,6 @@ def _materialize_source(source: Source, provider: ScoreProvider | None) -> tuple
     raise TypeError("source must be ScoreSample, ObservationSample, or IntegrationSource")
 
 
-def _validate_solver_pair(criterion: Criterion, config: QuantizerConfig) -> None:
-    if isinstance(config, KMeansConfig) and not isinstance(criterion, NormalizedTrace):
-        raise ValueError("KMeansConfig implements only NormalizedTrace")
-    if isinstance(config, (DExchangeConfig, MahalanobisLloydConfig)) and not isinstance(
-        criterion, DOptimality
-    ):
-        raise ValueError(f"{type(config).__name__} implements only DOptimality")
-    if isinstance(config, ScalarDPConfig) and not isinstance(criterion, DOptimality):
-        raise ValueError("ScalarDPConfig implements only DOptimality")
-    if isinstance(config, SoftVoronoiConfig) and not isinstance(
-        criterion, (DOptimality, ProfiledDOptimality)
-    ):
-        raise ValueError("SoftVoronoiConfig implements DOptimality or ProfiledDOptimality")
-
-
 def _prepare_score_fit(
     source: ScoreSample,
     validation: ScoreSample | None,
@@ -332,8 +403,10 @@ def _run_geometric_quantizer(
             n_bins,
             prepared.config,
         )
-    if not isinstance(criterion, (DOptimality, ProfiledDOptimality)):
-        raise ValueError("SoftVoronoiConfig requires a D-family criterion")
+    # SoftVoronoiConfig is the only remaining case: ``_validate_solver`` has
+    # already restricted its criterion to this union before this function
+    # ever runs, so the assertion only narrows the type for ``soft_voronoi``.
+    assert isinstance(criterion, (DOptimality, ProfiledDOptimality))
     return soft_voronoi(
         prepared.train_coordinates,
         prepared.train_objective_scores,

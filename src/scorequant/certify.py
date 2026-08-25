@@ -48,7 +48,7 @@ from .partition import (
     _PreparedPartition,
     _require_d_bin_budget,
 )
-from .result import PartitionCertificate
+from .reports import PartitionCertificate
 
 # The search recursion is one frame per atom, so the capacity guard also keeps
 # the deepest supported instance far inside the interpreter recursion limit.
