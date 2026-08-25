@@ -16,6 +16,7 @@ PMLR open-access proceedings. Publisher-only papers are listed with their DOI in
 | `erdmann_2026_learning_to_bin_arXiv2601.07756.pdf` | J. Erdmann, N. K. Kasaraguppe, F. Mausolf. "Learning to bin: differentiable and Bayesian optimization for multi-dimensional discriminants in high-energy physics." arXiv:2601.07756 (2026). |
 | `telgarsky_vattani_2010_hartigan_kmeans_pmlr_v9.pdf` | M. Telgarsky, A. Vattani. "Hartigan's Method: k-means Clustering without Voronoi." AISTATS, PMLR 9, 820–827 (2010). |
 | `barnes_han_ozgur_2019_fisher_communication_constraints_arXiv1902.02890.pdf` | L. P. Barnes, Y. Han, A. Özgür. "Lower Bounds for Learning Distributions under Communication Constraints via Fisher Information." JMLR 21(236) (2020). arXiv:1902.02890. Extends the Allerton 2018 quantized-Fisher-information geometry below. |
+| `the-equivalence-of-two-extremum-problems.pdf` | J. Kiefer, J. Wolfowitz. "The Equivalence of Two Extremum Problems." Canadian J. Math. 12, 363–366 (1960). doi:10.4153/CJM-1960-030-4. Origin of the D-/G-optimality equivalence theorem. |
 
 ## Referenced, not redistributable here (use the DOI)
 
@@ -33,3 +34,11 @@ PMLR open-access proceedings. Publisher-only papers are listed with their DOI in
 - Q. Du, M. Emelianenko, L. Ju. "Convergence of the Lloyd Algorithm for Computing Centroidal Voronoi Tessellations." SIAM J. Numer. Anal. 44(1), 102–119 (2006). doi:10.1137/040617364.
 - F. Pukelsheim. *Optimal Design of Experiments.* SIAM Classics. doi:10.1137/1.9780898719109.
 - W. Näther, V. Reinsch. "D_s-optimality and Whittle's equivalence theorem." Series Statistics 12(3), 307–316 (1981). doi:10.1080/02331888108801591.
+- P. Whittle. "Some General Points in the Theory of Optimal Experimental Design." JRSS B 35(1), 123–130 (1973). doi:10.1111/j.2517-6161.1973.tb00944.x.
+- F. H. C. Marriott. "Practical Problems in a Method of Cluster Analysis." Biometrics 27(3), 501–514 (1971). doi:10.2307/2528592.
+- D. R. Cox. "Note on Grouping." JASA 52(280), 543–547 (1957). doi:10.1080/01621459.1957.10501411. (Early direct prior art: 1D grouping chosen to minimize information loss.)
+- J. Ogawa. "Contributions to the theory of systematic statistics, I." Osaka Math. J. 3(2), 175–213 (1951). (Optimal spacings of order statistics maximizing retained Fisher information — asymptotic 1D ancestor.)
+- S. P. Lloyd. "Least Squares Quantization in PCM." IEEE Trans. Inf. Theory 28(2), 129–137 (1982; Bell Labs memo 1957). doi:10.1109/TIT.1982.1056489.
+- J. Max. "Quantizing for minimum distortion." IRE Trans. Inf. Theory 6(1), 7–12 (1960). doi:10.1109/TIT.1960.1057548.
+- J. N. Tsitsiklis. "Extremal properties of likelihood-ratio quantizers." IEEE Trans. Commun. 41(4), 550–558 (1993). doi:10.1109/26.223779. (Detection-side analogue: sufficiency of likelihood-ratio space for quantizer design.)
+- R. M. Gray, D. L. Neuhoff. "Quantization." IEEE Trans. Inf. Theory 44(6), 2325–2383 (1998). doi:10.1109/18.720541. (Canonical survey of quantization theory.)
