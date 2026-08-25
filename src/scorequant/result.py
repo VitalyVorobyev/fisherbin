@@ -94,13 +94,24 @@ class ProfiledGeometryReport:
 
 @dataclass(frozen=True, slots=True)
 class OptimizationTrace:
-    """Store aggregate quantizer optimization history."""
+    """Store aggregate quantizer optimization history.
+
+    Attributes
+    ----------
+    objective_label
+        Units of ``objective``. Solvers do not share one objective convention:
+        ``"whitened_sse"`` is a minimized weighted within-cell squared error in
+        Fisher-whitened coordinates, ``"logdet_retained"`` is a maximized
+        retained log determinant, and ``"profiled_logdet"`` is a maximized
+        profiled log determinant. Never compare two traces across labels.
+    """
 
     steps: jnp.ndarray
     centers: jnp.ndarray
     objective: jnp.ndarray
     bin_weights: jnp.ndarray
     train_hard_retention: jnp.ndarray
+    objective_label: str
     validation_hard_retention: jnp.ndarray | None = None
     soft_retention: jnp.ndarray | None = None
     temperatures: jnp.ndarray | None = None
@@ -309,6 +320,7 @@ class PartitionResult:
                 self.train_report.geometric_mean_retention,
                 dtype=self.cell_weights.dtype,
             ),
+            objective_label="logdet_retained",
         )
         return QuantizerResult(
             centers=self.transformed_centers,
@@ -359,6 +371,95 @@ class PartitionResult:
                 ),
             }
         )
+
+
+@dataclass(frozen=True, slots=True)
+class EfficientScoreBound:
+    r"""Certify a ceiling on profiled information from the full-data efficient score.
+
+    Let \(\hat s=s_\psi-B^\ast s_\lambda\) be the efficient score built from the
+    *full-data* information matrix, and let \(q\) be any hard rule with at most
+    ``n_bins`` cells. Efficient-score domination states
+
+    \[
+        \mathrm{Schur}_\psi\!\left(I_q\right)\;\preceq\;
+        \mathbb{E}\!\left[\hat s \mid q\right]\text{-between-cell information},
+    \]
+
+    so maximizing the right-hand side over all ``n_bins``-cell rules of
+    \(\hat s\) upper-bounds the profiled objective of every ``n_bins``-cell rule
+    of the *full* score space. For one parameter of interest the right-hand side
+    is scalar, the maximizer has ordered interval cells, and the exact weighted
+    interval dynamic program attains it. ``upper_bound`` is the logarithm of
+    that maximum, in the same convention as ``PartitionResult.objective`` under
+    ``ProfiledDOptimality``: an uncentered between-cell second moment of raw
+    score columns, never a mean-centered variance.
+
+    Attributes
+    ----------
+    upper_bound
+        Log-scale certified ceiling on the profiled objective.
+    labels
+        Interval labels of the efficient score, defined for every input row.
+        Zero-weight rows carry the label of their nearest cell mean and never
+        influence the bound. These labels are also a strong initializer: pass
+        them as ``initial_labels`` to ``optimize_partition`` under
+        ``ProfiledDOptimality``.
+    efficient_scores
+        Full-information efficient scores with shape ``[N, 1]``.
+    n_bins, interest
+        Cell budget and interest columns the bound was certified for.
+
+    Notes
+    -----
+    The bound is a property of one weighted score table. Comparing it to a
+    partition of different scores or weights is meaningless, and ``gap_to``
+    cannot detect that mismatch; it only checks the criterion convention and the
+    cell budget. Refinement monotonicity makes the bound valid for any partition
+    with at most ``n_bins`` cells.
+    """
+
+    upper_bound: float
+    labels: jnp.ndarray
+    efficient_scores: jnp.ndarray
+    n_bins: int
+    interest: tuple[int, ...]
+
+    def gap_to(self, partition_result: PartitionResult) -> float:
+        r"""Return the certified slack between the bound and an achieved objective.
+
+        Parameters
+        ----------
+        partition_result
+            Profiled-\(D_s\) result on the same weighted score table, with the
+            same interest columns and at most ``n_bins`` cells.
+
+        Returns
+        -------
+        float
+            ``upper_bound`` minus the achieved profiled objective. The value is
+            nonnegative up to floating-point error on valid inputs.
+        """
+        criterion = partition_result.criterion
+        if not isinstance(criterion, ProfiledDOptimality):
+            raise ValueError(
+                "the efficient-score bound compares only against a profiled-D partition"
+            )
+        if criterion.interest != self.interest:
+            raise ValueError(
+                f"partition interest {criterion.interest} differs from the certified "
+                f"interest {self.interest}"
+            )
+        if partition_result.n_bins > self.n_bins:
+            raise ValueError(
+                f"the bound certifies at most {self.n_bins} cells, but the partition "
+                f"has {partition_result.n_bins}"
+            )
+        return self.upper_bound - partition_result.objective
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible representation of the certified bound."""
+        return json_ready(asdict(self))
 
 
 def _predict_transformed(

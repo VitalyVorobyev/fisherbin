@@ -313,6 +313,7 @@ def optimize_d_partition(
     n_bins: int,
     config: PartitionConfig,
     provenance: ScoreProvenance,
+    initial_labels: ArrayLike | None = None,
 ) -> PartitionResult:
     """Optimize arbitrary labels of one fixed weighted score table."""
     prepared = _prepare_partition(scores, weights, n_bins=n_bins, config=config)
@@ -328,6 +329,7 @@ def optimize_d_partition(
         n_bins=n_bins,
         objective=_DObjective(),
         config=config,
+        initial_labels=_collapsed_initial_labels(prepared, initial_labels, n_bins),
     )
     state = run.state
     sample = prepared.sample
@@ -367,6 +369,7 @@ def optimize_profiled_d_partition(
     criterion: ProfiledDOptimality,
     config: PartitionConfig,
     provenance: ScoreProvenance,
+    initial_labels: ArrayLike | None = None,
 ) -> PartitionResult:
     """Optimize same-label profiled-D labels of one fixed score table."""
     prepared = _prepare_partition(scores, weights, n_bins=n_bins, config=config)
@@ -392,6 +395,7 @@ def optimize_profiled_d_partition(
         n_bins=n_bins,
         objective=objective,
         config=config,
+        initial_labels=_collapsed_initial_labels(prepared, initial_labels, n_bins),
     )
     state = run.state
     sample = prepared.sample
@@ -522,6 +526,39 @@ def _prepare_partition(
     )
 
 
+def _collapsed_initial_labels(
+    prepared: _PreparedPartition, initial_labels: ArrayLike | None, n_bins: int
+) -> jnp.ndarray | None:
+    """Reduce a caller-supplied ``[N]`` labeling to one label per distinct score atom.
+
+    Zero-weight rows carry no measure and are dropped with the rest of the
+    zero-measure sample, and identical score rows are collapsed before the
+    solver runs, so they must already agree on their bin.
+    """
+    if initial_labels is None:
+        return None
+    labels = jnp.asarray(initial_labels)
+    n_rows = int(prepared.sample.scores.shape[0])
+    if labels.shape != (n_rows,):
+        raise ValueError(f"initial_labels must have shape [{n_rows}], got {labels.shape}")
+    if not jnp.issubdtype(labels.dtype, jnp.integer):
+        raise TypeError("initial_labels must contain integer bin labels")
+    effective = np.asarray(labels[prepared.sample.positive_weight_mask], dtype=np.int64)
+    if effective.size and (effective.min() < 0 or effective.max() >= n_bins):
+        raise ValueError("initial_labels contain a label outside [0, n_bins)")
+    inverse = np.asarray(prepared.inverse_rows)
+    collapsed = np.zeros(int(prepared.scores.shape[0]), dtype=np.int32)
+    collapsed[inverse] = effective
+    if not np.array_equal(collapsed[inverse], effective):
+        raise ValueError("initial_labels must assign identical score rows to the same bin")
+    if int(np.bincount(collapsed, minlength=n_bins)[:n_bins].min()) == 0:
+        raise ValueError(
+            "initial_labels must leave every one of the n_bins cells nonempty once "
+            "zero-weight rows are dropped and identical score rows are merged"
+        )
+    return jnp.asarray(collapsed)
+
+
 def _optimize_labels(
     *,
     points: jnp.ndarray,
@@ -530,6 +567,7 @@ def _optimize_labels(
     n_bins: int,
     objective: _ExchangeObjective,
     config: PartitionConfig,
+    initial_labels: jnp.ndarray | None = None,
 ) -> _ExchangeRun:
     """Route one prepared finite problem to its configured solver."""
     if isinstance(config, MahalanobisLloydConfig):
@@ -540,6 +578,7 @@ def _optimize_labels(
             n_bins=n_bins,
             objective=objective,
             config=config,
+            initial_labels=initial_labels,
         )
     return _optimize_exchange(
         points=points,
@@ -548,6 +587,7 @@ def _optimize_labels(
         n_bins=n_bins,
         objective=objective,
         config=config,
+        initial_labels=initial_labels,
     )
 
 
@@ -559,11 +599,21 @@ def _optimize_exchange(
     n_bins: int,
     objective: _ExchangeObjective,
     config: DExchangeConfig,
+    initial_labels: jnp.ndarray | None = None,
 ) -> _ExchangeRun:
-    """Run every seeded exchange restart and keep the best exact objective."""
+    """Run every seeded exchange restart and keep the best exact objective.
+
+    Supplied labels replace the seeding of the first restart only, so ``init``
+    and ``n_init`` still govern restarts one and above and an initializer can be
+    compared against ordinary seeding inside a single call.
+    """
     best: _ExchangeRun | None = None
     for restart in range(config.n_restarts):
-        labels = _initial_labels(coordinates, weights, n_bins, config, restart)
+        labels = (
+            initial_labels
+            if restart == 0 and initial_labels is not None
+            else _initial_labels(coordinates, weights, n_bins, config, restart)
+        )
         run = _run_exchange(points, weights, labels, n_bins, objective, config)
         # Strict comparison makes the earliest restart win exact ties.
         if best is None or run.state.objective > best.state.objective:
@@ -630,6 +680,7 @@ def _optimize_lloyd(
     n_bins: int,
     objective: _ExchangeObjective,
     config: MahalanobisLloydConfig,
+    initial_labels: jnp.ndarray | None = None,
 ) -> _ExchangeRun:
     """Iterate guarded nearest-centroid batches, then settle the exchange guard.
 
@@ -639,9 +690,11 @@ def _optimize_lloyd(
     rebuilt state strictly improves, because the frozen-metric batch step is not
     monotone on its own. Iteration stops at the first non-improving or unchanged
     proposal, or at ``max_iter``; ``guard`` then decides whether the labels are
-    handed to the exchange engine or merely certified by one final scan.
+    handed to the exchange engine or merely certified by one final scan. Supplied
+    labels replace the k-means seeding, so ``n_init`` then governs only the
+    exchange handoff.
     """
-    labels = np.asarray(
+    seeded = (
         _kmeans_labels(
             coordinates,
             weights,
@@ -649,9 +702,11 @@ def _optimize_lloyd(
             rank_rtol=config.rank_rtol,
             seed=config.seed,
             n_init=config.n_init,
-        ),
-        dtype=np.int32,
-    ).copy()
+        )
+        if initial_labels is None
+        else initial_labels
+    )
+    labels = np.asarray(seeded, dtype=np.int32).copy()
     state = objective.init_state(_cell_statistics(points, weights, jnp.asarray(labels), n_bins))
     history = [state.objective]
     iterations = 0

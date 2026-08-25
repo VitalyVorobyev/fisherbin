@@ -7,3 +7,9 @@
 ::: scorequant.fractional_fisher_information
 
 ::: scorequant.information_report
+
+::: scorequant.profiled_information_report
+
+::: scorequant.efficient_scores
+
+::: scorequant.efficient_score_bound

@@ -6,6 +6,12 @@
 
 ::: scorequant.InformationReport
 
+::: scorequant.ProfiledInformationReport
+
+::: scorequant.ProfiledGeometryReport
+
+::: scorequant.EfficientScoreBound
+
 ::: scorequant.OptimizationTrace
 
 ::: scorequant.ScoreProvenance

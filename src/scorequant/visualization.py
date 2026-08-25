@@ -41,7 +41,8 @@ def plot_optimization(trace: OptimizationTrace) -> Figure:
     centers = np.asarray(trace.centers)
     figure, axes = plt.subplots(2, 2, figsize=(11, 8), constrained_layout=True)
 
-    axes[0, 0].plot(steps, np.asarray(trace.objective), label="optimizer objective")
+    # The objective units differ by solver, so the legend names the convention.
+    axes[0, 0].plot(steps, np.asarray(trace.objective), label=trace.objective_label)
     if trace.soft_retention is not None:
         axes[0, 0].plot(steps, np.asarray(trace.soft_retention), label="soft D-efficiency")
     axes[0, 0].set(title="Optimization", xlabel="step")

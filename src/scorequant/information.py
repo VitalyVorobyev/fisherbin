@@ -8,8 +8,15 @@ import jax.numpy as jnp
 import numpy as np
 
 from ._typing import ArrayLike
-from ._validation import _ValidatedSample, validate_sample
-from .result import InformationReport, ProfiledInformationReport
+from ._validation import (
+    _ValidatedSample,
+    collapse_duplicate_scores,
+    validate_n_bins,
+    validate_sample,
+)
+from .config import ScalarDPConfig
+from .quantizers import hard_assign, scalar_interval_dp
+from .result import EfficientScoreBound, InformationReport, ProfiledInformationReport
 from .transforms import fisher_transform
 
 
@@ -397,4 +404,134 @@ def efficient_scores(
     return (
         sample.scores[:, interest_indices]
         - sample.scores[:, nuisance_indices] @ nuisance_coefficients
+    )
+
+
+def efficient_score_bound(
+    scores: ArrayLike,
+    *,
+    interest: tuple[int, ...],
+    weights: ArrayLike | None = None,
+    n_bins: int,
+    config: ScalarDPConfig | None = None,
+) -> EfficientScoreBound:
+    r"""Certify a ceiling on profiled information by quantizing the efficient score.
+
+    The full-data efficient score \(\hat s=s_\psi-B^\ast s_\lambda\) uses the
+    nuisance regression of the *unbinned* information matrix. Efficient-score
+    domination bounds the same-label profiled information of every hard rule
+    \(q\) with at most ``n_bins`` cells by the between-cell information of
+    \(\hat s\) under that rule, so the best ``n_bins``-cell rule *of the
+    efficient score* certifies a ceiling for the whole score space. For one
+    parameter of interest that best rule has ordered interval cells and is found
+    exactly by weighted interval dynamic programming, which makes the returned
+    ceiling both certified and cheap.
+
+    The returned labels are also the natural initializer for
+    ``optimize_partition`` with ``ProfiledDOptimality``: they already solve the
+    relaxed upper problem, so profiled exchange starts inside the
+    efficient-score geometry instead of at generic k-means seeding.
+
+    Parameters
+    ----------
+    scores
+        Finite score matrix with shape ``[N, P]`` in the declared parameter
+        order.
+    interest
+        Unique nonnegative score-column indices for parameters of interest.
+        Only one interest column is supported.
+    weights
+        Optional finite, nonnegative weights with shape ``[N]``.
+    n_bins
+        Cell budget the bound is certified for.
+    config
+        Exact scalar solver settings. Whitening a scalar coordinate is a
+        strictly positive rescaling, so it changes neither the labels nor the
+        bound; ``rank_rtol`` still rejects a numerically vanishing efficient
+        score and ``max_rows`` still bounds the exact quadratic recursion.
+
+    Returns
+    -------
+    EfficientScoreBound
+        Certified log-scale ceiling, the interval labels attaining it, and the
+        efficient scores it was computed from.
+
+    Raises
+    ------
+    NotImplementedError
+        When more than one interest column is requested. A multivariate
+        efficient score needs a genuine multivariate D solver, which would make
+        the returned value a heuristic rather than a certificate.
+
+    Notes
+    -----
+    The bound follows the uncentered convention of
+    ``binned_fisher_information``: scores are never mean-centered, so the
+    between-cell quantity is a weighted second moment of cell means about the
+    score-space origin. This matches ``PartitionResult.objective`` for the
+    profiled criterion exactly, which is what makes the reported gap meaningful.
+    """
+    if not interest or len(set(interest)) != len(interest) or any(index < 0 for index in interest):
+        raise ValueError("interest must contain unique nonnegative indices")
+    if len(interest) > 1:
+        raise NotImplementedError(
+            "the certified efficient-score bound supports one interest column; a "
+            f"{len(interest)}-dimensional efficient score requires a multivariate "
+            "D-optimal solver, which would return a heuristic rather than a certificate"
+        )
+    resolved_config = ScalarDPConfig() if config is None else config
+    if not isinstance(resolved_config, ScalarDPConfig):
+        raise TypeError("efficient_score_bound requires ScalarDPConfig")
+    sample = validate_sample(scores, weights)
+    validate_n_bins(n_bins, sample.n_effective)
+    efficient = efficient_scores(sample.scores, interest=interest, weights=sample.weights)
+
+    # Identical efficient-score atoms cannot be separated by any rule, so the
+    # exact program runs on the distinct atoms and their pooled weights.
+    atoms, atom_weights, inverse_rows = collapse_duplicate_scores(
+        efficient[sample.positive_weight_mask], sample.effective_weights
+    )
+    if n_bins > atoms.shape[0]:
+        raise ValueError("n_bins exceeds distinct positive-weight efficient-score atoms")
+    n_atoms = int(atoms.shape[0])
+    if n_atoms > resolved_config.max_rows:
+        raise ValueError(
+            f"the efficient-score bound received {n_atoms} distinct atoms, "
+            f"exceeding max_rows={resolved_config.max_rows}"
+        )
+    atom_information = jnp.einsum("n,np,nq->pq", atom_weights, atoms, atoms)
+    transform = fisher_transform(
+        atom_information,
+        whiten=resolved_config.whiten,
+        rank_rtol=resolved_config.rank_rtol,
+    )
+    coordinates = transform.apply(atoms)
+    atom_labels, _ = scalar_interval_dp(
+        np.asarray(coordinates[:, 0], dtype=np.float64),
+        np.asarray(atom_weights, dtype=np.float64),
+        n_bins,
+    )
+
+    label_array = jnp.asarray(atom_labels)
+    cell_weights = jnp.zeros(n_bins, dtype=atom_weights.dtype).at[label_array].add(atom_weights)
+    weighted_atoms = atom_weights[:, None] * atoms
+    cell_sums = jnp.zeros((n_bins, 1), dtype=atoms.dtype).at[label_array].add(weighted_atoms)
+    cell_means = cell_sums / cell_weights[:, None]
+    between = float(np.asarray(jnp.sum(cell_weights * cell_means[:, 0] ** 2)))
+    if between <= 0:
+        raise ValueError("the efficient score retains no information under any partition")
+
+    # Zero-weight rows carry no measure; the interval rule still labels them.
+    weighted_coordinates = atom_weights[:, None] * coordinates
+    center_sums = jnp.zeros((n_bins, 1), dtype=coordinates.dtype)
+    center_sums = center_sums.at[label_array].add(weighted_coordinates)
+    centers = center_sums / cell_weights[:, None]
+    labels = hard_assign(transform.apply(efficient), centers)
+    labels = labels.at[sample.positive_weight_mask].set(label_array[inverse_rows])
+    return EfficientScoreBound(
+        upper_bound=float(np.log(between)),
+        labels=labels,
+        efficient_scores=efficient,
+        n_bins=n_bins,
+        interest=interest,
     )

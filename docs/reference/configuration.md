@@ -2,6 +2,8 @@
 
 ::: scorequant.DOptimality
 
+::: scorequant.ProfiledDOptimality
+
 ::: scorequant.NormalizedTrace
 
 ::: scorequant.DExchangeConfig
@@ -11,3 +13,5 @@
 ::: scorequant.KMeansConfig
 
 ::: scorequant.SoftVoronoiConfig
+
+::: scorequant.ScalarDPConfig

@@ -17,6 +17,7 @@ from .config import (
 from .criteria import DOptimality, NormalizedTrace, ProfiledDOptimality
 from .information import (
     binned_fisher_information,
+    efficient_score_bound,
     efficient_scores,
     fisher_information,
     fractional_fisher_information,
@@ -31,6 +32,7 @@ from .providers import (
     ScoreFunction,
 )
 from .result import (
+    EfficientScoreBound,
     InformationReport,
     OptimizationTrace,
     PartitionResult,
@@ -53,6 +55,7 @@ __all__ = [
     "ClassifierScore",
     "DExchangeConfig",
     "DOptimality",
+    "EfficientScoreBound",
     "FisherTransform",
     "GaussLegendreConfig",
     "InformationReport",
@@ -77,6 +80,7 @@ __all__ = [
     "ScalarDPConfig",
     "SoftVoronoiConfig",
     "binned_fisher_information",
+    "efficient_score_bound",
     "efficient_scores",
     "fisher_information",
     "fit_quantizer",

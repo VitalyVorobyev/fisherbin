@@ -83,12 +83,25 @@ raw CSV/FCS data remain external.
 
 ## M6 — Profiled \(D_s\)
 
+**Status:** implemented.
+
 Implement finite exchange and a separate inductive solver. Add efficient scores, the finite
 geometry-gap bound, the full-information upper problem, and exact scalar dynamic programming where
 applicable.
 
 **Gate:** exact relocation tests; rational non-Voronoi counterexample; no implicit compilation from
 finite labels; clear same-data versus external-nuisance semantics.
+
+**Upper-problem gate completed:** `efficient_score_bound` certifies a ceiling on the profiled
+objective by solving the exact scalar interval program on the full-data efficient score, in the same
+log-determinant convention the finite profiled solver reports, and its labels initialize profiled
+exchange through `optimize_partition(..., initial_labels=...)`. The certificate is limited to one
+interest column; a multivariate efficient score would need a multivariate solver and is refused
+rather than approximated.
+
+**Exact scalar gate completed:** the interval dynamic program is evaluated in memory-bounded
+vectorized stripes instead of a per-stop Python loop, reproduces the previous implementation's
+labels and objective bit for bit, and attains the exhaustive small-instance optimum.
 
 ## M7 — Population, scale, and persistence
 

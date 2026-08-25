@@ -13,16 +13,27 @@ from .config import KMeansConfig, ScalarDPConfig, SoftVoronoiConfig
 from .criteria import DOptimality, ProfiledDOptimality
 from .transforms import fisher_transform
 
+# One dynamic-programming stripe materializes this many [stripe, n_states]
+# temporaries, and the whole stripe set is held inside the byte budget.
+_DYNAMIC_STRIPE_TEMPORARIES = 8
+_DYNAMIC_WORKING_SET_BYTES = 64 * 1024 * 1024
+
 
 @dataclass(slots=True)
 class QuantizerRun:
-    """Aggregate state returned by a private quantizer implementation."""
+    """Aggregate state returned by a private quantizer implementation.
+
+    ``objective_label`` names the units of ``objective_history`` so that a
+    reported trace is never read in the wrong convention: a within-segment
+    squared error and a log determinant are both scalars but not comparable.
+    """
 
     centers: jnp.ndarray
     steps: list[int]
     center_history: list[jnp.ndarray]
     objective_history: list[float]
     bin_weight_history: list[jnp.ndarray]
+    objective_label: str = "whitened_sse"
     soft_retention_history: list[float] | None = None
     temperature_history: list[float] | None = None
     gradient_norm_history: list[float] | None = None
@@ -130,6 +141,7 @@ def _single_kmeans(
         center_history=center_history,
         objective_history=objective_history,
         bin_weight_history=bin_weight_history,
+        objective_label="whitened_sse",
     )
 
 
@@ -149,41 +161,84 @@ def weighted_kmeans(
     return min(runs, key=lambda run: run.objective_history[-1])
 
 
-def scalar_weighted_kmeans_dp(
-    points: jnp.ndarray,
-    weights: jnp.ndarray,
-    n_bins: int,
-    config: ScalarDPConfig,
-) -> QuantizerRun:
-    """Solve one-dimensional weighted interval k-means exactly by dynamic programming."""
-    if points.ndim != 2 or points.shape[1] != 1:
-        raise ValueError("ScalarDPConfig requires exactly one informative score direction")
-    n_rows = points.shape[0]
-    if n_rows > config.max_rows:
-        raise ValueError(
-            f"scalar dynamic programming received {n_rows} distinct rows, "
-            f"exceeding max_rows={config.max_rows}"
-        )
-    order = np.argsort(np.asarray(points[:, 0]), kind="stable")
-    values = np.asarray(points[order, 0], dtype=np.float64)
-    ordered_weights = np.asarray(weights[order], dtype=np.float64)
+def _dynamic_stripe_rows(n_states: int, item_size: int) -> int:
+    """Return how many dynamic-programming stops one memory-bounded stripe holds.
+
+    One stripe materializes a handful of ``[stripe, n_states]`` prefix-difference
+    blocks, so the budget is divided by that temporary count rather than by one.
+    """
+    per_row = item_size * n_states * _DYNAMIC_STRIPE_TEMPORARIES
+    return max(1, min(n_states, _DYNAMIC_WORKING_SET_BYTES // max(per_row, 1)))
+
+
+def scalar_interval_dp(
+    values: np.ndarray, weights: np.ndarray, n_bins: int
+) -> tuple[np.ndarray, float]:
+    """Solve exact one-dimensional weighted interval k-means by dynamic programming.
+
+    On a scalar score law an optimal hard partition has ordered interval cells,
+    so the global optimum is the minimal total weighted within-segment squared
+    error over ``n_bins`` consecutive segments of the sorted values. Prefix sums
+    turn every segment cost into a constant-time expression, and each dynamic
+    stage evaluates whole blocks of stop/split pairs at once, so the quadratic
+    recursion runs in a handful of memory-bounded stripes instead of one Python
+    iteration per stop.
+
+    Parameters
+    ----------
+    values
+        Finite scalar coordinates with shape ``[N]``.
+    weights
+        Finite nonnegative weights with shape ``[N]``.
+    n_bins
+        Number of requested interval cells.
+
+    Returns
+    -------
+    tuple
+        Integer labels aligned with ``values`` and the minimal weighted
+        within-segment squared error.
+    """
+    n_rows = int(values.shape[0])
+    if n_bins > n_rows:
+        raise ValueError("scalar dynamic programming requires n_bins <= the number of atoms")
+    order = np.argsort(values, kind="stable")
+    ordered_values = values[order]
+    ordered_weights = weights[order]
     prefix_weight = np.r_[0.0, np.cumsum(ordered_weights)]
-    prefix_sum = np.r_[0.0, np.cumsum(ordered_weights * values)]
-    prefix_square = np.r_[0.0, np.cumsum(ordered_weights * values**2)]
-    dynamic = np.full((n_bins + 1, n_rows + 1), np.inf)
-    predecessor = np.full((n_bins + 1, n_rows + 1), -1, dtype=np.int32)
-    dynamic[0, 0] = 0.0
+    prefix_sum = np.r_[0.0, np.cumsum(ordered_weights * ordered_values)]
+    prefix_square = np.r_[0.0, np.cumsum(ordered_weights * ordered_values**2)]
+    # ``previous`` is the completed stage of the recursion; only one stage and
+    # the predecessor table are retained, so storage stays O(n_bins * n_rows).
+    previous = np.full(n_rows + 1, np.inf)
+    previous[0] = 0.0
+    predecessor = np.zeros((n_bins + 1, n_rows + 1), dtype=np.int32)
+    stripe = _dynamic_stripe_rows(n_rows + 1, prefix_weight.dtype.itemsize)
     for bin_count in range(1, n_bins + 1):
-        for stop in range(bin_count, n_rows + 1):
-            starts = np.arange(bin_count - 1, stop)
-            segment_weight = prefix_weight[stop] - prefix_weight[starts]
-            segment_sum = prefix_sum[stop] - prefix_sum[starts]
-            segment_square = prefix_square[stop] - prefix_square[starts]
-            costs = segment_square - segment_sum**2 / segment_weight
-            candidates = dynamic[bin_count - 1, starts] + costs
-            selected = int(np.argmin(candidates))
-            dynamic[bin_count, stop] = candidates[selected]
-            predecessor[bin_count, stop] = starts[selected]
+        current = np.full(n_rows + 1, np.inf)
+        first_start = bin_count - 1
+        for begin in range(bin_count, n_rows + 1, stripe):
+            end = min(begin + stripe, n_rows + 1)
+            stops = np.arange(begin, end)
+            # A stop of ``end - 1`` admits no split point beyond ``end - 2``, so
+            # the block is cut to the columns this stripe can actually use.
+            columns = np.arange(first_start, end - 1)
+            admissible = columns[None, :] < stops[:, None]
+            segment_weight = prefix_weight[stops, None] - prefix_weight[None, columns]
+            segment_sum = prefix_sum[stops, None] - prefix_sum[None, columns]
+            segment_square = prefix_square[stops, None] - prefix_square[None, columns]
+            # A zero-weight segment carries no measure, so its exact cost is
+            # zero; the substituted denominator only avoids a spurious divide.
+            safe_weight = np.where(segment_weight > 0, segment_weight, 1.0)
+            costs = segment_square - segment_sum**2 / safe_weight
+            candidates = np.where(admissible, previous[None, columns] + costs, np.inf)
+            selected = np.argmin(candidates, axis=1)
+            current[begin:end] = candidates[np.arange(end - begin), selected]
+            predecessor[bin_count, begin:end] = first_start + selected
+        previous = current
+    objective = float(previous[n_rows])
+    if not np.isfinite(objective):
+        raise ValueError("scalar dynamic programming found no feasible interval partition")
     ordered_labels = np.empty(n_rows, dtype=np.int32)
     stop = n_rows
     for label in range(n_bins - 1, -1, -1):
@@ -192,18 +247,45 @@ def scalar_weighted_kmeans_dp(
         stop = start
     labels = np.empty(n_rows, dtype=np.int32)
     labels[order] = ordered_labels
+    return labels, objective
+
+
+def scalar_weighted_kmeans_dp(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    config: ScalarDPConfig,
+) -> QuantizerRun:
+    """Solve one-dimensional weighted interval k-means exactly by dynamic programming."""
+    rank = int(points.shape[1]) if points.ndim == 2 else 0
+    if rank != 1:
+        raise ValueError(
+            "scalar dynamic programming requires an effective score rank of one, got "
+            f"rank {rank}; reduce the score dimension or choose another solver"
+        )
+    n_rows = int(points.shape[0])
+    if n_rows > config.max_rows:
+        raise ValueError(
+            f"scalar dynamic programming received {n_rows} distinct rows, "
+            f"exceeding max_rows={config.max_rows}"
+        )
+    labels, objective = scalar_interval_dp(
+        np.asarray(points[:, 0], dtype=np.float64),
+        np.asarray(weights, dtype=np.float64),
+        n_bins,
+    )
     label_array = jnp.asarray(labels)
     bin_weights = _bin_weights(label_array, weights, n_bins)
     sums = jnp.zeros((n_bins, 1), dtype=points.dtype)
     sums = sums.at[label_array].add(weights[:, None] * points)
     centers = sums / bin_weights[:, None]
-    objective = float(dynamic[n_bins, n_rows])
     return QuantizerRun(
         centers=centers,
         steps=[0],
         center_history=[centers],
         objective_history=[objective],
         bin_weight_history=[bin_weights],
+        objective_label="whitened_sse",
     )
 
 
@@ -265,6 +347,11 @@ def _soft_temperature_bounds(
     if not np.isfinite(start) or start <= 0:
         raise ValueError("soft optimization requires distinct initial centers")
     return start, start * end_ratio
+
+
+def criterion_objective_label(criterion: DOptimality | ProfiledDOptimality) -> str:
+    """Name the units of a log-determinant objective recorded for one criterion."""
+    return "profiled_logdet" if isinstance(criterion, ProfiledDOptimality) else "logdet_retained"
 
 
 def _criterion_logdet(
@@ -339,6 +426,7 @@ class _SoftHistory:
             center_history=self.centers,
             objective_history=self.objectives,
             bin_weight_history=self.bin_weights,
+            objective_label=criterion_objective_label(self.criterion),
             soft_retention_history=self.retentions,
             temperature_history=self.temperatures,
             gradient_norm_history=self.gradient_norms,
@@ -368,6 +456,7 @@ def soft_voronoi(
             center_history=[centers],
             objective_history=[0.0],
             bin_weight_history=[jnp.asarray([jnp.sum(weights)])],
+            objective_label=criterion_objective_label(criterion),
             soft_retention_history=[1.0],
             temperature_history=[1.0],
             gradient_norm_history=[0.0],

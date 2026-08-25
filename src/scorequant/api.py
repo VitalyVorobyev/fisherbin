@@ -74,12 +74,28 @@ def optimize_partition(
     criterion: DOptimality | ProfiledDOptimality | None = None,
     config: PartitionConfig | None = None,
     provenance: ScoreProvenance | None = None,
+    initial_labels: ArrayLike | None = None,
 ) -> PartitionResult:
     """Optimize labels of one fixed score table without prediction semantics.
 
     Both finite criteria accept either the exact positive-gain exchange or the
     guarded Mahalanobis-Lloyd solver; the guarded batch never accepts a step
     that the exactly rebuilt objective does not certify.
+
+    Parameters
+    ----------
+    scores, weights, n_bins, criterion, config, provenance
+        Fixed-sample assignment contract described in the API guide.
+    initial_labels
+        Optional starting labeling with shape ``[N]`` and values in
+        ``[0, n_bins)``, for example
+        ``EfficientScoreBound.labels``. Zero-weight rows carry
+        no measure and their labels are ignored; identical score rows are merged
+        before the solver runs and must therefore already agree on their bin,
+        and every requested cell must remain nonempty afterwards. Supplied
+        labels replace the seeding of the first exchange restart only, so
+        ``init`` and ``n_init`` still govern any further restart; the guarded
+        Mahalanobis-Lloyd solver starts from them directly.
     """
     resolved_criterion = DOptimality() if criterion is None else criterion
     resolved_config = DExchangeConfig() if config is None else config
@@ -92,6 +108,7 @@ def optimize_partition(
             n_bins=n_bins,
             config=resolved_config,
             provenance=provenance or ScoreProvenance(),
+            initial_labels=initial_labels,
         )
     if isinstance(resolved_criterion, ProfiledDOptimality):
         return optimize_profiled_d_partition(
@@ -101,6 +118,7 @@ def optimize_partition(
             criterion=resolved_criterion,
             config=resolved_config,
             provenance=provenance or ScoreProvenance(),
+            initial_labels=initial_labels,
         )
     raise TypeError("finite assignment supports DOptimality or ProfiledDOptimality")
 
@@ -411,6 +429,7 @@ def _build_optimization_trace(run: QuantizerRun, diagnostics: _FitDiagnostics) -
         objective=jnp.asarray(run.objective_history),
         bin_weights=jnp.stack(run.bin_weight_history),
         train_hard_retention=jnp.asarray(diagnostics.train_hard_retention),
+        objective_label=run.objective_label,
         validation_hard_retention=(
             None
             if diagnostics.validation_hard_retention is None

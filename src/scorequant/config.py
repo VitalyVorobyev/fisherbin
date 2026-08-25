@@ -312,25 +312,42 @@ class MahalanobisLloydConfig:
 class ScalarDPConfig:
     """Configure exact interval dynamic programming for one score coordinate.
 
+    The solver is exact and deterministic: on a rank-one score law the optimal
+    hard partition has ordered interval cells, and the weighted interval dynamic
+    program returns the global optimum rather than a local one.
+
     Parameters
     ----------
+    whiten
+        Whiten the single retained Fisher direction before solving. Scalar
+        whitening is a strictly positive rescaling, so it never changes the
+        optimal interval labels; it fixes the units of the reported
+        within-segment objective and matches the other score-space solvers.
     rank_rtol
         Relative threshold for the informative score direction.
+    seed
+        Nonnegative seed recorded for reproducibility. The dynamic program
+        consumes no randomness and resolves ties by the smallest split index.
     max_rows
         Maximum number of distinct positive-weight score atoms. The exact
-        dynamic program uses quadratic storage and work in this count.
+        dynamic program uses quadratic work in this count and is evaluated in
+        memory-bounded stripes.
     """
 
     method: Literal["scalar_dp"] = field(default="scalar_dp", init=False)
+    whiten: bool = True
     rank_rtol: float | None = None
-    max_rows: int = 2_000
+    seed: int = 0
+    max_rows: int = 20_000
 
     def __post_init__(self) -> None:
         """Validate the exact-solver capacity contract."""
+        _validate_bool("whiten", self.whiten)
         if self.rank_rtol is not None:
             _validate_finite("rank_rtol", self.rank_rtol, positive=False)
             if self.rank_rtol >= 1:
                 raise ValueError("rank_rtol must be less than one")
+        _validate_integer("seed", self.seed, minimum=0)
         _validate_integer("max_rows", self.max_rows, minimum=1)
 
     def to_dict(self) -> dict[str, JsonValue]:
