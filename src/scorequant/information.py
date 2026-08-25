@@ -9,7 +9,7 @@ import numpy as np
 
 from ._typing import ArrayLike
 from ._validation import _ValidatedSample, validate_sample
-from .result import InformationReport
+from .result import InformationReport, ProfiledInformationReport
 from .transforms import fisher_transform
 
 
@@ -259,4 +259,142 @@ def information_report(
         statistics.counts,
         statistics.effective_sample_sizes,
         rank_rtol=rank_rtol,
+    )
+
+
+def _profiled_blocks(
+    information: jnp.ndarray, interest: tuple[int, ...]
+) -> tuple[jnp.ndarray, jnp.ndarray, tuple[int, ...]]:
+    dimension = information.shape[0]
+    if any(index >= dimension for index in interest):
+        raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
+    nuisance = tuple(index for index in range(dimension) if index not in set(interest))
+    if not nuisance:
+        raise ValueError("profiled D requires at least one nuisance score column; use DOptimality")
+    interest_indices = jnp.asarray(interest)
+    nuisance_indices = jnp.asarray(nuisance)
+    interest_block = information[jnp.ix_(interest_indices, interest_indices)]
+    cross_block = information[jnp.ix_(interest_indices, nuisance_indices)]
+    nuisance_block = information[jnp.ix_(nuisance_indices, nuisance_indices)]
+    nuisance_sign, _ = jnp.linalg.slogdet(nuisance_block)
+    if float(np.asarray(nuisance_sign)) <= 0:
+        raise ValueError("profiled D requires nonsingular nuisance information")
+    schur = interest_block - cross_block @ jnp.linalg.solve(nuisance_block, cross_block.T)
+    return 0.5 * (schur + schur.T), nuisance_block, nuisance
+
+
+def profiled_information_report(
+    scores: ArrayLike,
+    assignments: ArrayLike,
+    *,
+    interest: tuple[int, ...],
+    weights: ArrayLike | None = None,
+    n_bins: int | None = None,
+) -> ProfiledInformationReport:
+    r"""Build same-label profiled-\(D_s\) diagnostics without regularization.
+
+    Parameters
+    ----------
+    scores
+        Finite score matrix with shape ``[N, P]`` in the declared parameter order.
+    assignments
+        Integer bin label for every input row.
+    interest
+        Unique nonnegative score-column indices for parameters of interest.
+    weights
+        Optional nonnegative measure weights.
+    n_bins
+        Total number of bins, including empty bins.
+
+    Returns
+    -------
+    ProfiledInformationReport
+        Full-data and same-label Schur information plus determinant retention.
+    """
+    if not interest or len(set(interest)) != len(interest) or any(index < 0 for index in interest):
+        raise ValueError("interest must contain unique nonnegative indices")
+    sample = validate_sample(scores, weights)
+    labels, resolved_n_bins = _validate_hard_assignments(sample, assignments, n_bins)
+    binned, _ = _hard_binned_fisher(sample, labels, resolved_n_bins)
+    unbinned = _unbinned_fisher(sample)
+    schur_unbinned, nuisance_unbinned, nuisance = _profiled_blocks(unbinned, interest)
+    schur_binned, nuisance_binned, _ = _profiled_blocks(binned, interest)
+    binned_sign, binned_logdet = jnp.linalg.slogdet(schur_binned)
+    unbinned_sign, unbinned_logdet = jnp.linalg.slogdet(schur_unbinned)
+    if float(np.asarray(unbinned_sign)) <= 0:
+        raise ValueError("full-data profiled information is singular")
+    interest_rank = int(np.linalg.matrix_rank(np.asarray(schur_binned)))
+    nuisance_rank = int(np.linalg.matrix_rank(np.asarray(nuisance_binned)))
+    if float(np.asarray(binned_sign)) <= 0:
+        objective = float("-inf")
+        logdet_retention = float("-inf")
+        retention = 0.0
+    else:
+        objective = float(np.asarray(binned_logdet))
+        logdet_retention = objective - float(np.asarray(unbinned_logdet))
+        retention = float(np.exp(logdet_retention / len(interest)))
+    return ProfiledInformationReport(
+        interest=interest,
+        nuisance=nuisance,
+        schur_unbinned=schur_unbinned,
+        schur_binned=schur_binned,
+        nuisance_unbinned=nuisance_unbinned,
+        nuisance_binned=nuisance_binned,
+        objective=objective,
+        logdet_retention=logdet_retention,
+        geometric_mean_retention=retention,
+        interest_rank=interest_rank,
+        nuisance_rank=nuisance_rank,
+    )
+
+
+def efficient_scores(
+    scores: ArrayLike,
+    *,
+    interest: tuple[int, ...],
+    weights: ArrayLike | None = None,
+) -> jnp.ndarray:
+    """Project scores with the full-information nuisance regression.
+
+    This constructs the explicit lower-dimensional upper problem for profiled
+    information. Quantizing the result with ordinary D-optimality is not the
+    same finite task as profiling nuisance from the resulting labels.
+
+    Parameters
+    ----------
+    scores
+        Finite score matrix in the declared parameter order.
+    interest
+        Unique nonnegative score-column indices for parameters of interest.
+    weights
+        Optional nonnegative reference-measure weights used for the full
+        information regression.
+
+    Returns
+    -------
+    jax.Array
+        Full-information efficient scores with shape ``[N, len(interest)]``.
+    """
+    if not interest or len(set(interest)) != len(interest) or any(index < 0 for index in interest):
+        raise ValueError("interest must contain unique nonnegative indices")
+    sample = validate_sample(scores, weights)
+    dimension = sample.scores.shape[1]
+    if any(index >= dimension for index in interest):
+        raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
+    interest_set = set(interest)
+    nuisance = tuple(index for index in range(dimension) if index not in interest_set)
+    if not nuisance:
+        raise ValueError("efficient-score projection requires at least one nuisance column")
+    information = _unbinned_fisher(sample)
+    interest_indices = jnp.asarray(interest)
+    nuisance_indices = jnp.asarray(nuisance)
+    cross = information[jnp.ix_(interest_indices, nuisance_indices)]
+    nuisance_information = information[jnp.ix_(nuisance_indices, nuisance_indices)]
+    sign, _ = jnp.linalg.slogdet(nuisance_information)
+    if float(np.asarray(sign)) <= 0:
+        raise ValueError("efficient-score projection requires nonsingular nuisance information")
+    nuisance_coefficients = jnp.linalg.solve(nuisance_information, cross.T)
+    return (
+        sample.scores[:, interest_indices]
+        - sample.scores[:, nuisance_indices] @ nuisance_coefficients
     )

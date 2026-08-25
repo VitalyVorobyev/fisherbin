@@ -9,7 +9,8 @@ import jax.numpy as jnp
 import numpy as np
 import optax
 
-from .config import KMeansConfig, SoftVoronoiConfig
+from .config import KMeansConfig, ScalarDPConfig, SoftVoronoiConfig
+from .criteria import DOptimality, ProfiledDOptimality
 from .transforms import fisher_transform
 
 
@@ -148,6 +149,64 @@ def weighted_kmeans(
     return min(runs, key=lambda run: run.objective_history[-1])
 
 
+def scalar_weighted_kmeans_dp(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    config: ScalarDPConfig,
+) -> QuantizerRun:
+    """Solve one-dimensional weighted interval k-means exactly by dynamic programming."""
+    if points.ndim != 2 or points.shape[1] != 1:
+        raise ValueError("ScalarDPConfig requires exactly one informative score direction")
+    n_rows = points.shape[0]
+    if n_rows > config.max_rows:
+        raise ValueError(
+            f"scalar dynamic programming received {n_rows} distinct rows, "
+            f"exceeding max_rows={config.max_rows}"
+        )
+    order = np.argsort(np.asarray(points[:, 0]), kind="stable")
+    values = np.asarray(points[order, 0], dtype=np.float64)
+    ordered_weights = np.asarray(weights[order], dtype=np.float64)
+    prefix_weight = np.r_[0.0, np.cumsum(ordered_weights)]
+    prefix_sum = np.r_[0.0, np.cumsum(ordered_weights * values)]
+    prefix_square = np.r_[0.0, np.cumsum(ordered_weights * values**2)]
+    dynamic = np.full((n_bins + 1, n_rows + 1), np.inf)
+    predecessor = np.full((n_bins + 1, n_rows + 1), -1, dtype=np.int32)
+    dynamic[0, 0] = 0.0
+    for bin_count in range(1, n_bins + 1):
+        for stop in range(bin_count, n_rows + 1):
+            starts = np.arange(bin_count - 1, stop)
+            segment_weight = prefix_weight[stop] - prefix_weight[starts]
+            segment_sum = prefix_sum[stop] - prefix_sum[starts]
+            segment_square = prefix_square[stop] - prefix_square[starts]
+            costs = segment_square - segment_sum**2 / segment_weight
+            candidates = dynamic[bin_count - 1, starts] + costs
+            selected = int(np.argmin(candidates))
+            dynamic[bin_count, stop] = candidates[selected]
+            predecessor[bin_count, stop] = starts[selected]
+    ordered_labels = np.empty(n_rows, dtype=np.int32)
+    stop = n_rows
+    for label in range(n_bins - 1, -1, -1):
+        start = int(predecessor[label + 1, stop])
+        ordered_labels[start:stop] = label
+        stop = start
+    labels = np.empty(n_rows, dtype=np.int32)
+    labels[order] = ordered_labels
+    label_array = jnp.asarray(labels)
+    bin_weights = _bin_weights(label_array, weights, n_bins)
+    sums = jnp.zeros((n_bins, 1), dtype=points.dtype)
+    sums = sums.at[label_array].add(weights[:, None] * points)
+    centers = sums / bin_weights[:, None]
+    objective = float(dynamic[n_bins, n_rows])
+    return QuantizerRun(
+        centers=centers,
+        steps=[0],
+        center_history=[centers],
+        objective_history=[objective],
+        bin_weight_history=[bin_weights],
+    )
+
+
 def _normalized_objective_scores(
     points: jnp.ndarray, weights: jnp.ndarray, rank_rtol: float | None
 ) -> jnp.ndarray:
@@ -208,14 +267,24 @@ def _soft_temperature_bounds(
     return start, start * end_ratio
 
 
-def _soft_retention(fisher: jnp.ndarray) -> float:
-    eigenvalues = jnp.linalg.eigvalsh(fisher)
-    value = jnp.where(
-        jnp.any(eigenvalues <= 0),
-        0.0,
-        jnp.exp(jnp.mean(jnp.log(eigenvalues))),
-    )
-    return float(np.asarray(value))
+def _criterion_logdet(
+    fisher: jnp.ndarray, criterion: DOptimality | ProfiledDOptimality
+) -> tuple[jnp.ndarray, jnp.ndarray, int]:
+    if isinstance(criterion, DOptimality):
+        sign, value = jnp.linalg.slogdet(fisher)
+        return sign, value, fisher.shape[0]
+    dimension = fisher.shape[0]
+    interest_set = set(criterion.interest)
+    nuisance = tuple(index for index in range(dimension) if index not in interest_set)
+    interest_indices = jnp.asarray(criterion.interest)
+    nuisance_indices = jnp.asarray(nuisance)
+    interest_block = fisher[jnp.ix_(interest_indices, interest_indices)]
+    cross_block = fisher[jnp.ix_(interest_indices, nuisance_indices)]
+    nuisance_block = fisher[jnp.ix_(nuisance_indices, nuisance_indices)]
+    nuisance_sign, _ = jnp.linalg.slogdet(nuisance_block)
+    schur = interest_block - cross_block @ jnp.linalg.solve(nuisance_block, cross_block.T)
+    schur_sign, value = jnp.linalg.slogdet(0.5 * (schur + schur.T))
+    return nuisance_sign * schur_sign, value, len(criterion.interest)
 
 
 @dataclass(slots=True)
@@ -224,6 +293,9 @@ class _SoftHistory:
     weights: jnp.ndarray
     objective_scores: jnp.ndarray
     n_bins: int
+    criterion: DOptimality | ProfiledDOptimality
+    reference_objective: float
+    objective_dimension: int
     steps: list[int] = field(default_factory=list)
     centers: list[jnp.ndarray] = field(default_factory=list)
     objectives: list[float] = field(default_factory=list)
@@ -249,7 +321,13 @@ class _SoftHistory:
         self.centers.append(centers)
         self.objectives.append(float(np.asarray(-loss)))
         self.bin_weights.append(_bin_weights(labels, self.weights, self.n_bins))
-        self.retentions.append(_soft_retention(soft_fisher))
+        sign, value, _ = _criterion_logdet(soft_fisher, self.criterion)
+        retention = jnp.where(
+            sign > 0,
+            jnp.exp((value - self.reference_objective) / self.objective_dimension),
+            0.0,
+        )
+        self.retentions.append(float(np.asarray(retention)))
         self.temperatures.append(float(temperature))
         self.gradient_norms.append(float(np.asarray(gradient_norm)))
 
@@ -269,9 +347,11 @@ class _SoftHistory:
 
 def soft_voronoi(
     points: jnp.ndarray,
+    objective_scores: jnp.ndarray,
     weights: jnp.ndarray,
     n_bins: int,
     effective_rank: int,
+    criterion: DOptimality | ProfiledDOptimality,
     config: SoftVoronoiConfig,
 ) -> QuantizerRun:
     """Optimize soft Fisher retention, then return centers for hard assignment."""
@@ -296,15 +376,21 @@ def soft_voronoi(
     start_temperature, end_temperature = _soft_temperature_bounds(
         centers, config.temperature_end_ratio
     )
-    objective_scores = _normalized_objective_scores(points, weights, config.rank_rtol)
-    epsilon = 1e-8 if points.dtype == jnp.float64 else 1e-5
-    identity = jnp.eye(effective_rank, dtype=points.dtype)
+    if isinstance(criterion, DOptimality):
+        objective_scores = _normalized_objective_scores(objective_scores, weights, config.rank_rtol)
+    elif objective_scores.shape[1] != effective_rank:
+        raise ValueError("profiled-D soft fitting requires full-rank supplied-score information")
+    full_fisher = jnp.einsum("n,np,nq->pq", weights, objective_scores, objective_scores)
+    reference_sign, reference_value, objective_dimension = _criterion_logdet(full_fisher, criterion)
+    if float(np.asarray(reference_sign)) <= 0:
+        raise ValueError("soft fitting requires nonsingular criterion information")
+    reference_objective = float(np.asarray(reference_value))
 
     def loss_fn(current_centers: jnp.ndarray, temperature: jnp.ndarray) -> jnp.ndarray:
         resp = soft_responsibilities(points, current_centers, temperature)
         soft_fisher = _soft_fisher(objective_scores, resp, weights)
-        _, logdet = jnp.linalg.slogdet(soft_fisher + epsilon * identity)
-        return -logdet
+        sign, logdet, _ = _criterion_logdet(soft_fisher, criterion)
+        return jnp.where(sign > 0, -logdet, jnp.inf)
 
     # Fisher whitening contains the total information scale, so coordinate
     # magnitudes shrink as total sample weight grows. Express Adam's step in
@@ -328,7 +414,15 @@ def soft_voronoi(
             jnp.asarray(optax.tree.norm(gradients)),
         )
 
-    history = _SoftHistory(points, weights, objective_scores, n_bins)
+    history = _SoftHistory(
+        points,
+        weights,
+        objective_scores,
+        n_bins,
+        criterion,
+        reference_objective,
+        objective_dimension,
+    )
 
     for step in range(config.max_steps + 1):
         fraction = step / config.max_steps

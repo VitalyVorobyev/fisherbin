@@ -7,7 +7,8 @@ import numpy as np
 import pytest
 
 import scorequant as sq
-from scorequant.partition import _exhaustive_d_oracle
+
+from ._oracles import _exhaustive_d_oracle
 
 
 def _canonical_partitions(n_rows: int, n_bins: int) -> list[tuple[int, ...]]:

@@ -1,8 +1,12 @@
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 
 import scorequant as sq
-from scorequant.partition import _exact_d_move_gain
+from scorequant.partition import _apply_move, _best_move, _cell_state
+
+from ._oracles import _exact_d_move_gain
 
 
 def _scores(seed: int = 11, n_rows: int = 72) -> np.ndarray:
@@ -38,6 +42,48 @@ def test_exact_move_gain_matches_direct_recomputation() -> None:
     updated = np.asarray(sq.binned_fisher_information(scores, moved, weights, n_bins=3))
     direct = np.linalg.slogdet(updated)[1] - np.linalg.slogdet(information)[1]
     assert predicted == pytest.approx(direct, abs=1e-10)
+
+
+def test_chunked_scan_and_rank_two_state_update_match_full_recomputation() -> None:
+    scores = _scores(seed=19, n_rows=48)
+    weights = np.linspace(0.5, 1.5, len(scores))
+    labels = np.tile(np.arange(3), 16)
+    state = _cell_state(scores, weights, labels, 3)
+    config = sq.DExchangeConfig(max_sweeps=10)
+    with patch("scorequant.partition._CANDIDATE_WORKING_SET_BYTES", 256):
+        chunked = _best_move(scores, weights, labels, state, config)
+    with patch("scorequant.partition._CANDIDATE_WORKING_SET_BYTES", 1 << 40):
+        unchunked = _best_move(scores, weights, labels, state, config)
+    assert chunked == unchunked
+    assert chunked is not None
+    updated = _apply_move(scores, weights, labels, state, chunked)
+    moved_labels = labels.copy()
+    moved_labels[chunked.row] = chunked.destination
+    recomputed = _cell_state(scores, weights, moved_labels, 3)
+    np.testing.assert_allclose(updated.weights, recomputed.weights, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(updated.means, recomputed.means, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(updated.information, recomputed.information, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(updated.inverse, recomputed.inverse, rtol=1e-10, atol=1e-10)
+    assert updated.objective == pytest.approx(recomputed.objective, abs=1e-12)
+
+
+def test_repeated_rank_two_updates_do_not_accumulate_material_drift() -> None:
+    scores = _scores(seed=191, n_rows=96)
+    weights = np.linspace(0.25, 2.0, len(scores))
+    labels = np.tile(np.arange(4), 24)
+    state = _cell_state(scores, weights, labels, 4)
+    config = sq.DExchangeConfig(max_sweeps=20)
+    for _ in range(12):
+        move = _best_move(scores, weights, labels, state, config)
+        assert move is not None and move.gain > 0
+        state = _apply_move(scores, weights, labels, state, move)
+        labels[move.row] = move.destination
+        recomputed = _cell_state(scores, weights, labels, 4)
+        np.testing.assert_allclose(
+            state.information, recomputed.information, rtol=1e-11, atol=1e-11
+        )
+        np.testing.assert_allclose(state.inverse, recomputed.inverse, rtol=1e-9, atol=1e-9)
+        assert state.objective == pytest.approx(recomputed.objective, abs=1e-11)
 
 
 def test_partition_is_transductive_and_d_compilation_is_explicit() -> None:

@@ -66,3 +66,22 @@ The current exact exchange scan is \(O(NKP^2)\) per accepted move and avoids \(O
 Geometric solvers materialize \([N,K]\) distances. Histories store aggregate metrics and center
 snapshots, never per-event responsibilities. `to_dict()` is JSON-ready diagnostic state, not a
 versioned persistence format.
+
+## Pre-1.0 API audit
+
+The current two-function boundary is sound: it prevents a fixed labeling from masquerading as a
+rule and keeps observation-to-score conversion visible. The main weaknesses are capability gaps,
+not a need for a generic facade:
+
+| Need | Incorrect shortcut | Chosen contract |
+| --- | --- | --- |
+| same-label nuisance profiling | compile finite labels with an efficient metric | explicit `ProfiledDOptimality`; finite and inductive solvers remain separate |
+| Monte Carlo population law | pass an unrecorded callback as a score table | deterministic score/observation sampler source |
+| analytic cell integrals | pretend an oracle contains rows | moment-oracle evaluation of an existing rule |
+| global guarantee | imply exchange stability is global | explicit bounded branch-and-bound certificate |
+| large transported data | call minibatch fitting exact | streaming aggregation for a frozen rule |
+| reuse across processes | treat `to_dict()` as a schema | versioned non-pickle quantizer artifact |
+
+The revision deliberately does not add `predict`, a generic criterion plugin, classifier training,
+or a universal streaming optimizer. See
+[ADR 0013](adr/0013-complete-pre-1-api-boundaries.md) for the complete decision.

@@ -70,11 +70,16 @@ same 27,607-row partition sample as the learned quantizers. The compiled rule mu
 positive-weight training label. This is deliberately not described as optimization over all 600,000
 events.
 
-**Next solver gate:** profile factorization updates and chunked scans before raising the bounded
-partition-table capacity or claiming full-corpus/streaming optimization.
+**Solver-scale gate completed:** exact rank-two state/inverse updates and deterministic
+memory-bounded candidate scans agree with full recomputation over repeated moves. The recorded CPU
+benchmark covers 200k rows/ten moves and one million rows/one scan. Stored arrays and initialization
+remain \(O(N)\), so this is not a claim of full-corpus or one-pass fitting.
 
-**Next data gate:** run the full 21.25M corpus transport audit from an external manifest without
-retuning on frozen test patients. Commit hashes, aggregates, tables, and plots, never raw data.
+**Data gate completed:** the reproducible downloader reconstructed all 30 `Case_*.csv` files
+(21,254,866 events), and the frozen 600k sample was audited against every full-corpus row without
+retuning. Maximum patient/class fraction error is \(3.39\times10^{-5}\); maximum standardized
+marker-mean error is 0.0296. Hashes, aggregates, the patient table, and the plot are committed;
+raw CSV/FCS data remain external.
 
 ## M6 — Profiled \(D_s\)
 
@@ -100,11 +105,10 @@ decision.
 
 ## Next execution order
 
-1. Run and publish the 21.25M-row FlowCyt transport audit once the external CSV corpus is available.
-2. Profile exact-D factorization updates and chunked candidate scans before increasing the bounded
+1. Profile exact-D factorization updates and chunked candidate scans before increasing the bounded
    partition-table capacity.
-3. Design and gate finite profiled-\(D_s\) exchange before exposing any new public API.
-4. Add population samplers and moment oracles, then certificates, streaming, and persistence in
+2. Design and gate finite profiled-\(D_s\) exchange before exposing any new public API.
+3. Add population samplers and moment oracles, then certificates, streaming, and persistence in
    that order.
 
 ## Full handoff gate

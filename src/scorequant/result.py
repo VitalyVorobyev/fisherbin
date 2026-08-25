@@ -11,7 +11,7 @@ import numpy as np
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
 from .config import DExchangeConfig, QuantizerConfig
-from .criteria import Criterion, DOptimality
+from .criteria import Criterion, DOptimality, ProfiledDOptimality
 from .sources import ScoreProvenance
 from .transforms import FisherTransform
 
@@ -55,6 +55,44 @@ class InformationReport:
 
 
 @dataclass(frozen=True, slots=True)
+class ProfiledInformationReport:
+    """Report same-label profiled information for interest and nuisance blocks."""
+
+    interest: tuple[int, ...]
+    nuisance: tuple[int, ...]
+    schur_unbinned: jnp.ndarray
+    schur_binned: jnp.ndarray
+    nuisance_unbinned: jnp.ndarray
+    nuisance_binned: jnp.ndarray
+    objective: float
+    logdet_retention: float
+    geometric_mean_retention: float
+    interest_rank: int
+    nuisance_rank: int
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible profiled-information representation."""
+        return json_ready(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
+class ProfiledGeometryReport:
+    """Diagnose the finite efficient-semimetric gap of a profiled partition."""
+
+    metric: jnp.ndarray
+    maximum_positive_violation: float
+    maximum_theoretical_bound: float
+    maximum_bound_residual: float
+    violating_moves: int
+    evaluated_moves: int
+    bound_certified: bool
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible geometry-gap representation."""
+        return json_ready(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
 class OptimizationTrace:
     """Store aggregate quantizer optimization history."""
 
@@ -89,6 +127,8 @@ class QuantizerResult:
     provenance: ScoreProvenance
     hardening_gap: float | None = None
     source_kind: str = "score_sample"
+    train_profiled_report: ProfiledInformationReport | None = None
+    validation_profiled_report: ProfiledInformationReport | None = None
 
     @property
     def n_bins(self) -> int:
@@ -153,6 +193,16 @@ class QuantizerResult:
                 "information_kind": self.information_kind,
                 "hardening_gap": self.hardening_gap,
                 "source_kind": self.source_kind,
+                "train_profiled_report": (
+                    None
+                    if self.train_profiled_report is None
+                    else self.train_profiled_report.to_dict()
+                ),
+                "validation_profiled_report": (
+                    None
+                    if self.validation_profiled_report is None
+                    else self.validation_profiled_report.to_dict()
+                ),
             }
         )
 
@@ -176,9 +226,9 @@ class PartitionResult:
     information_partitioned: jnp.ndarray
     objective: float
     transform: FisherTransform
-    transformed_centers: jnp.ndarray
-    metric: jnp.ndarray
-    criterion: DOptimality
+    transformed_centers: jnp.ndarray | None
+    metric: jnp.ndarray | None
+    criterion: DOptimality | ProfiledDOptimality
     config: DExchangeConfig
     train_report: InformationReport
     provenance: ScoreProvenance
@@ -188,6 +238,8 @@ class PartitionResult:
     best_remaining_gain: float
     objective_history: jnp.ndarray
     positive_weight_mask: jnp.ndarray
+    profiled_report: ProfiledInformationReport | None = None
+    profiled_geometry: ProfiledGeometryReport | None = None
 
     @property
     def n_bins(self) -> int:
@@ -210,8 +262,15 @@ class PartitionResult:
 
     def compile_quantizer(self) -> QuantizerResult:
         """Compile an exchange-stable D partition into its canonical rule."""
+        if not isinstance(self.criterion, DOptimality):
+            raise ValueError(
+                "finite profiled-D labels have no canonical inductive compilation; "
+                "fit an explicit quantizer instead"
+            )
         if not self.exchange_stable:
             raise ValueError("only an exchange-stable D partition can be compiled")
+        if self.transformed_centers is None or self.metric is None:
+            raise ValueError("D compilation geometry is unavailable")
         coordinates = self.transform.apply(self.training_scores)
         predicted = _predict_transformed(coordinates, self.transformed_centers, self.metric)
         positive = np.asarray(self.positive_weight_mask)
@@ -273,6 +332,12 @@ class PartitionResult:
                 "exchange_stable": self.exchange_stable,
                 "best_remaining_gain": self.best_remaining_gain,
                 "objective_history": self.objective_history,
+                "profiled_report": (
+                    None if self.profiled_report is None else self.profiled_report.to_dict()
+                ),
+                "profiled_geometry": (
+                    None if self.profiled_geometry is None else self.profiled_geometry.to_dict()
+                ),
             }
         )
 

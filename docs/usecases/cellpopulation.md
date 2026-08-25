@@ -457,24 +457,58 @@ JAX_ENABLE_X64=1 MPLBACKEND=Agg \
   --output-dir docs/usecases/assets
 ```
 
-When the unpacked 21.25M-row CSV corpus is available, run the separate
-chunked transport audit. It reads every upstream row, compares per-patient
-class fractions and marker moments with the frozen 600k sample, and makes no
-fit or tuning decision:
+The full CSV corpus can be reconstructed directly from the public component
+FCS files. The downloader streams each component instead of materializing a
+patient in memory, writes atomically, and records every row count and SHA-256:
 
 ```bash
 uv run python -m examples.cell_population \
-  --data-dir /path/to/data_original \
-  --transport-audit-sample flowcyt-results/flowcyt_sample_20000.npz \
-  --transport-audit-output flowcyt-results/full_transport_audit.json
+  --download-full-csv-dir flowcyt-results/data_original \
+  --download-chunk-rows 200000 \
+  --download-workers 6
 ```
 
-The command writes JSON evidence, a per-patient CSV table, and a two-panel PNG
-beside it. The JSON contains the SHA-256 and row count of every full-corpus CSV
-as well as the bounded-sample digest. Only these derived artifacts belong in
-the repository; the full corpus and bounded sample remain external.
+This produced all 30 `Case_*.csv` files: 21,254,866 events and about 3.9 GB of
+CSV data. The files remain ignored local evidence. The separate chunked audit
+then reads every row, compares per-patient class fractions and marker moments
+with the frozen 600k sample, and makes no fit, calibration, or tuning decision:
 
-The generated sample SHA-256 is
+```bash
+uv run python -m examples.cell_population \
+  --data-dir flowcyt-results/data_original \
+  --transport-audit-sample flowcyt-results/flowcyt_sample_20000.npz \
+  --transport-audit-output flowcyt-results/full_transport_audit.json \
+  --transport-audit-chunksize 200000
+```
+
+The completed audit found a maximum absolute patient/class fraction error of
+\(3.39\times10^{-5}\) and a maximum absolute standardized marker-mean error of
+0.0296. Thus the deterministic component-stratified sample is exceptionally
+accurate for class composition and within 0.03 pooled standard deviations for
+every audited patient/marker mean. This validates the bounded measure as a
+transport approximation for the reported low-order moments; it does **not**
+prove that every nonlinear score-space boundary or rare tail is transported
+equally well.
+
+![Transport audit of the 600k sample against all 21.25M events](assets/flowcyt_transport_audit.png)
+
+The committed [JSON evidence](assets/flowcyt_transport_audit.json) contains the
+SHA-256 and row count of every full-corpus CSV, the bounded-sample digest, and
+all patient-level diagnostics. The compact [CSV table](assets/flowcyt_transport_audit.csv)
+supports independent plotting. These are stress-audit results, not another
+opportunity to choose the frozen patient split, classifier, calibration, bin
+count, or quantizer.
+
+The connection to the theory is precise. The information identity in
+[Chapter 3](../book/03-hard-label-information.md) depends on cell masses and
+score first moments, while the empirical-consistency statement in
+[Chapter 10](../book/10-randomized-consistency.md) requires control of the
+underlying score law. Class fractions and marker means are useful necessary
+transport diagnostics, but they are not sufficient statistics for arbitrary
+learned score providers. The held-out score-information, occupancy, geometry,
+and downstream checks above remain indispensable.
+
+The bounded sample SHA-256 is
 `a08e9bf183fe32b913e155d413eeacfdb65c7f99017a42e69c4b91bdde20d987`.
 The JSON evidence records elapsed time, peak resident memory, and per-stage
 timings for the exact run that generated the figures.

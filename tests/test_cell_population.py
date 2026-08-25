@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import fields
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -27,7 +28,12 @@ from examples.cell_population.data import (
     load_fixture,
 )
 from examples.cell_population.experiment import predict_score_bins, run_experiment
-from examples.cell_population.fixture import _proportional_counts, _stratified_patient_ranges
+from examples.cell_population.fixture import (
+    CLASS_CODES,
+    _proportional_counts,
+    _stratified_patient_ranges,
+    _write_remote_patient_csv,
+)
 from examples.cell_population.likelihood import (
     estimate_bin_templates,
     fit_binned_mixture,
@@ -42,6 +48,36 @@ from examples.cell_population.transport_audit import audit_transport
 from tests._fit import fit_test_quantizer
 
 FIXTURE = Path("examples/data/flowcyt_fixture.npz")
+
+
+def test_full_csv_download_is_chunked_labelled_and_atomic(tmp_path: Path) -> None:
+    def metadata(url: str) -> tuple[dict[str, str], int, int]:
+        label = CLASS_CODES.index(url.removesuffix(".fcs").rsplit("_", maxsplit=1)[1])
+        return {"label": str(label)}, 100, label + 1
+
+    def read_range(
+        url: str,
+        metadata_values: dict[str, str],
+        data_start: int,
+        start: int,
+        count: int,
+    ) -> np.ndarray:
+        del url, data_start
+        label = int(metadata_values["label"])
+        return np.full((count, len(FEATURE_NAMES)), label + start / 10, dtype=np.float64)
+
+    with (
+        patch("examples.cell_population.fixture._fcs_metadata", side_effect=metadata),
+        patch("examples.cell_population.fixture._read_fcs_range", side_effect=read_range),
+    ):
+        evidence = _write_remote_patient_csv(1, tmp_path, chunk_rows=2)
+
+    table = pd.read_csv(tmp_path / "Case_1.csv")
+    expected_rows = sum(range(1, len(CLASS_CODES) + 1))
+    assert len(table) == expected_rows == evidence["rows"]
+    assert np.array_equal(table.groupby("label", sort=True).size().to_numpy(), np.arange(1, 7))
+    assert len(str(evidence["sha256"])) == 64
+    assert not (tmp_path / "Case_1.csv.part").exists()
 
 
 def test_transport_audit_reads_full_rows_without_tuning(tmp_path: Path) -> None:

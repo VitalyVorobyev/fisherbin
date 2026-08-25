@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 import numpy as np
+import pandas as pd
 
 from .data import (
     CLASS_NAMES,
@@ -24,6 +25,14 @@ SOURCE_URL = "https://cuicloud.unige.ch/index.php/s/55PHBLEynrp5pN8"
 SOURCE_REPOSITORY = "https://github.com/VIPER-GENEVA/FlowCyt-Classification-Benchmark"
 REMOTE_RAW = "https://cuicloud.unige.ch/public.php/dav/files/55PHBLEynrp5pN8/raw"
 CLASS_CODES = ("O", "N", "G", "P", "K", "B")
+
+
+def _file_sha256(path: Path) -> str:
+    digest = sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def _uniform_sample(data: FlowCytData, size: int, rng: np.random.Generator) -> FlowCytData:
@@ -216,6 +225,89 @@ def _read_fcs_range(
     if n_parameters < 14:
         raise ValueError("FlowCyt sample generator expects at least fourteen channels")
     return matrix[:, [0, 2, *range(4, 14)]].astype(np.float64)
+
+
+def _write_remote_patient_csv(
+    patient: int,
+    output_dir: Path,
+    *,
+    chunk_rows: int,
+) -> dict[str, object]:
+    """Stream one complete labelled patient table from public component FCS files."""
+    output = output_dir / f"Case_{patient}.csv"
+    partial = output.with_suffix(".csv.part")
+    if output.exists():
+        raise FileExistsError(f"refusing to overwrite existing FlowCyt CSV: {output}")
+    if partial.exists():
+        partial.unlink()
+
+    source_files: list[dict[str, object]] = []
+    written_rows = 0
+    header = True
+    for label, code in enumerate(CLASS_CODES):
+        url = f"{REMOTE_RAW}/Case{patient}_{code}.fcs"
+        metadata, data_start, total = _fcs_metadata(url)
+        for start in range(0, total, chunk_rows):
+            count = min(chunk_rows, total - start)
+            features = _read_fcs_range(url, metadata, data_start, start, count)
+            frame = pd.DataFrame(features, columns=FEATURE_NAMES)
+            frame["label"] = label
+            frame.to_csv(partial, mode="w" if header else "a", header=header, index=False)
+            header = False
+            written_rows += count
+        source_files.append({"name": f"Case{patient}_{code}.fcs", "url": url, "rows": total})
+
+    partial.replace(output)
+    return {
+        "name": output.name,
+        "rows": written_rows,
+        "sha256": _file_sha256(output),
+        "source_files": source_files,
+    }
+
+
+def write_remote_full_csvs(
+    output_dir: Path,
+    *,
+    chunk_rows: int = 200_000,
+    workers: int = 4,
+) -> None:
+    """Build all thirty full FlowCyt ``Case_*.csv`` files from public FCS components.
+
+    Files are intentionally external research inputs. Each patient is written
+    through a temporary path and renamed only after all six labelled components
+    have been fetched successfully.
+    """
+    if chunk_rows < 1 or workers < 1:
+        raise ValueError("chunk_rows and workers must be positive")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    patient_ids = (*REFERENCE_PATIENTS, *TEST_PATIENTS)
+
+    def write(patient: int) -> dict[str, object]:
+        return _write_remote_patient_csv(patient, output_dir, chunk_rows=chunk_rows)
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        files = list(executor.map(write, patient_ids))
+    files.sort(key=lambda item: int(str(item["name"]).removeprefix("Case_").removesuffix(".csv")))
+    manifest = {
+        "schema": "scorequant.flowcyt.full-csv-source.v1",
+        "title": "Complete FlowCyt ScoreQuant source corpus",
+        "source_url": SOURCE_URL,
+        "source_repository": SOURCE_REPOSITORY,
+        "source_license": "CC-BY-NC-SA-4.0",
+        "construction": (
+            "streamed public O/N/G/P/K/B component FCS files in upstream class order; "
+            "selected the twelve benchmark channels; appended integer labels 0 through 5"
+        ),
+        "chunk_rows": chunk_rows,
+        "workers": workers,
+        "rows": sum(int(item["rows"]) for item in files),
+        "files": files,
+    }
+    manifest_path = output_dir / "flowcyt_full_csv_manifest.json"
+    partial_manifest = manifest_path.with_suffix(".json.part")
+    partial_manifest.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    partial_manifest.replace(manifest_path)
 
 
 def write_remote_sample(

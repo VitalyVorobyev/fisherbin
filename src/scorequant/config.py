@@ -216,4 +216,34 @@ class DExchangeConfig:
         return json_ready(asdict(self))
 
 
-type QuantizerConfig = KMeansConfig | SoftVoronoiConfig | DExchangeConfig
+@dataclass(frozen=True, slots=True)
+class ScalarDPConfig:
+    """Configure exact interval dynamic programming for one score coordinate.
+
+    Parameters
+    ----------
+    rank_rtol
+        Relative threshold for the informative score direction.
+    max_rows
+        Maximum number of distinct positive-weight score atoms. The exact
+        dynamic program uses quadratic storage and work in this count.
+    """
+
+    method: Literal["scalar_dp"] = field(default="scalar_dp", init=False)
+    rank_rtol: float | None = None
+    max_rows: int = 2_000
+
+    def __post_init__(self) -> None:
+        """Validate the exact-solver capacity contract."""
+        if self.rank_rtol is not None:
+            _validate_finite("rank_rtol", self.rank_rtol, positive=False)
+            if self.rank_rtol >= 1:
+                raise ValueError("rank_rtol must be less than one")
+        _validate_integer("max_rows", self.max_rows, minimum=1)
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible configuration mapping."""
+        return json_ready(asdict(self))
+
+
+type QuantizerConfig = KMeansConfig | SoftVoronoiConfig | DExchangeConfig | ScalarDPConfig

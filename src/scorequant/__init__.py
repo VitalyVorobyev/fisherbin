@@ -7,13 +7,15 @@ from .components import (
     mixture_scores_from_posteriors,
     scores_from_components,
 )
-from .config import DExchangeConfig, KMeansConfig, SoftVoronoiConfig
-from .criteria import DOptimality, NormalizedTrace
+from .config import DExchangeConfig, KMeansConfig, ScalarDPConfig, SoftVoronoiConfig
+from .criteria import DOptimality, NormalizedTrace, ProfiledDOptimality
 from .information import (
     binned_fisher_information,
+    efficient_scores,
     fisher_information,
     fractional_fisher_information,
     information_report,
+    profiled_information_report,
 )
 from .providers import (
     CentralLogRatioTransform,
@@ -22,7 +24,14 @@ from .providers import (
     MixturePosteriorTransform,
     ScoreFunction,
 )
-from .result import InformationReport, OptimizationTrace, PartitionResult, QuantizerResult
+from .result import (
+    InformationReport,
+    OptimizationTrace,
+    PartitionResult,
+    ProfiledGeometryReport,
+    ProfiledInformationReport,
+    QuantizerResult,
+)
 from .sources import (
     GaussLegendreConfig,
     IntegrationSource,
@@ -51,12 +60,17 @@ __all__ = [
     "ObservationSample",
     "OptimizationTrace",
     "PartitionResult",
+    "ProfiledDOptimality",
+    "ProfiledGeometryReport",
+    "ProfiledInformationReport",
     "QuantizerResult",
     "ScoreFunction",
     "ScoreProvenance",
     "ScoreSample",
+    "ScalarDPConfig",
     "SoftVoronoiConfig",
     "binned_fisher_information",
+    "efficient_scores",
     "fisher_information",
     "fit_quantizer",
     "fractional_fisher_information",
@@ -67,5 +81,6 @@ __all__ = [
     "plot_optimization",
     "plot_partition",
     "plot_summary",
+    "profiled_information_report",
     "scores_from_components",
 ]

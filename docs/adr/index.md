@@ -14,3 +14,8 @@ Only decisions that materially constrain future implementation are recorded here
 10. [ADR 0010 — Separate sources from score providers](0010-source-provider-separation.md)
 11. [ADR 0011 — Keep solver semantics criterion-specific](0011-criterion-specific-semantics.md)
 12. [ADR 0012 — Keep classifier training outside the core](0012-classifier-callback-boundary.md)
+13. [ADR 0013 — Complete the pre-1.0 API with capability-specific boundaries](0013-complete-pre-1-api-boundaries.md)
+9. [ADR 0009 — Separate finite partitions from quantizers](0009-partition-quantizer-separation.md)
+10. [ADR 0010 — Separate sources from score providers](0010-source-provider-separation.md)
+11. [ADR 0011 — Keep solver semantics criterion-specific](0011-criterion-specific-semantics.md)
+12. [ADR 0012 — Keep classifier training outside the core](0012-classifier-callback-boundary.md)
