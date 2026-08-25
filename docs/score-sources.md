@@ -15,6 +15,8 @@ explicit constant callback represents a uniform measure. Since point count is `o
 
 ## Providers
 
+<!-- TODO(phase2): illustrative fragment (score_fn defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 provider = sq.ScoreFunction(
     score_fn,
@@ -30,6 +32,8 @@ Training, calibration, feature preprocessing, and cross-fitting remain outside S
 
 For central finite differences:
 
+<!-- TODO(phase2): illustrative fragment (deltas/class_priors defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 transform = sq.CentralLogRatioTransform(deltas, class_priors)
 provider = sq.ClassifierScore(classifier_probabilities, transform)
@@ -40,6 +44,8 @@ divides by `2 * delta`.
 
 For multiclass mixtures:
 
+<!-- TODO(phase2): illustrative fragment (class_priors/reference_fractions defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 transform = sq.MixturePosteriorTransform(class_priors, reference_fractions)
 provider = sq.ClassifierScore(predict_proba, transform)

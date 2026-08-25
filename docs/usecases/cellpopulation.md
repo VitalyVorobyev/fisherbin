@@ -221,6 +221,8 @@ cohort is not used to choose among them.
 This use case learns a reusable rule from externally estimated scores, so it
 uses an explicit `ScoreSample` and `fit_quantizer`:
 
+<!-- TODO(phase2): illustrative fragment (reference_scores/partition_rows from the study script); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 quantizer = sq.fit_quantizer(
     sq.ScoreSample(reference_scores[partition_rows], integration_weights),

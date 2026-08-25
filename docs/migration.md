@@ -12,6 +12,8 @@ The previous fitting entry points were removed without aliases. Migrate each cal
 
 Also choose a criterion/configuration pair explicitly:
 
+<!-- TODO(phase2): illustrative kwarg fragments, not statements; slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 criterion=sq.NormalizedTrace(), config=sq.KMeansConfig(...)
 criterion=sq.DOptimality(), config=sq.SoftVoronoiConfig(...)

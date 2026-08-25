@@ -11,6 +11,8 @@ The distinction matters. Labels for one table do not usually determine labels fo
 
 ## Choose the task first
 
+<!-- TODO(phase2): illustrative fragment (scores/weights defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 import scorequant as sq
 
@@ -26,6 +28,8 @@ partition = sq.optimize_partition(
 `partition.labels` belongs to the fixed table. It has no `predict` method. A verified stable D
 partition can be compiled explicitly.
 
+<!-- TODO(phase2): illustrative fragment (scores defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 quantizer = sq.fit_quantizer(
     sq.ScoreSample(scores, weights),

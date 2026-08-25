@@ -4,6 +4,8 @@
 
 Use this when the rows themselves are the final object.
 
+<!-- TODO(phase2): illustrative fragment (scores/weights defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 partition = sq.optimize_partition(
     scores,
@@ -36,6 +38,8 @@ call `sq.certify_partition(scores, weights=weights, n_bins=8, incumbent=partitio
 
 ## Ready scores: learn a reusable rule
 
+<!-- TODO(phase2): illustrative fragment (scores/weights/provenance defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 quantizer = sq.fit_quantizer(
     sq.ScoreSample(scores, weights, provenance=provenance),
@@ -53,6 +57,8 @@ baseline or `DOptimality` with `DExchangeConfig` for theorem-backed finite-D com
 
 ## Physical observations and an exact callback
 
+<!-- TODO(phase2): illustrative fragment (score_fn/X_train/weights defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 provider = sq.ScoreFunction(score_fn, provenance=sq.ScoreProvenance(kind="exact"))
 quantizer = sq.fit_quantizer(
@@ -67,6 +73,8 @@ No ambiguous observation-space prediction is hidden inside the result.
 
 ## Linear components
 
+<!-- TODO(phase2): illustrative fragment (signal/background/X_mc defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 model = sq.LinearComponents(
     components={"signal": signal, "background": background},
@@ -85,6 +93,8 @@ then choose either fixed assignment or reusable quantizer fitting.
 
 ## Bounded model without a sampled table
 
+<!-- TODO(phase2): illustrative fragment (provider defined in prose); slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 source = sq.IntegrationSource(
     [[-1.0, 1.0]],

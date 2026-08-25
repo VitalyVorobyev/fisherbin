@@ -4,6 +4,8 @@ Train, cross-fit, and calibrate a multiclass classifier in application code. Rec
 transform, group split, class priors, calibration selection, seed, and model hash. ScoreQuant
 starts from the ready probability callback.
 
+<!-- TODO(phase2): pseudo-code with undefined training_priors/theta0/model/X_reference; slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 transform = sq.MixturePosteriorTransform(
     class_priors=training_priors,
@@ -25,6 +27,8 @@ quantizer = sq.fit_quantizer(
 
 For new observations:
 
+<!-- TODO(phase2): pseudo-code with undefined provider/X_test; slated for docs rewrite. -->
+<!-- snippet: skip -->
 ```python
 test_scores = provider.score(X_test)
 test_bins = quantizer.predict_scores(test_scores)
