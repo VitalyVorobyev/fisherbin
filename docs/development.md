@@ -34,24 +34,38 @@ uv run mkdocs serve
 
 The generated API reference is collected from NumPy-style docstrings with mkdocstrings. Public API changes must update docstrings, the handwritten [API guide](api.md), examples, and an ADR when the decision is durable.
 
-## Exact-D scale benchmark
+## Benchmark harness
 
-`benchmarks/exact_d.py` is a deterministic engineering benchmark, not a runtime promise:
+`benchmarks/bench.py` is a deterministic, seeded timing-and-quality harness, not a runtime
+promise. It covers every public solver path — `d_exchange`, `lloyd`, `kmeans`, `soft`,
+`scalar_dp`, `profiled_exchange`, and `predict` (`QuantizerResult.predict_scores`) — over a
+`--rows` × `--dims` × `--bins` × `--scenarios` matrix, reporting wall-clock seconds (minimum over
+`--repeats`), process-lifetime peak RSS, and a solver-appropriate quality metric (a log-determinant
+objective or a geometric-mean retention) alongside solver diagnostics such as `accepted_moves`,
+`scans`, and `exchange_stable`:
 
 ```bash
-uv run python benchmarks/exact_d.py --rows 200000 --max-scans 10
-uv run python benchmarks/exact_d.py --rows 1000000 --max-scans 1
+JAX_ENABLE_X64=1 uv run python benchmarks/bench.py --rows 20000,100000 --bins 8,64
+JAX_ENABLE_X64=1 uv run python benchmarks/bench.py --rows 200000 --bins 8 --scenarios d_exchange --json out.json
 ```
 
-On the 2026-08-25 development machine (Apple Silicon, JAX CPU, float32), the first command took
-2.37 seconds with 564 MiB peak RSS, spending eleven scans on 34,440 verified relocations. The
-one-million-row command took 3.65 seconds with 1.29 GiB peak RSS over two scans and 58,519
-relocations. Candidate gains are scanned in deterministic memory-bounded chunks; a scan accepts
-either one rank-two relocation, updating cell moments, information, and its inverse in \(O(P^2)\)
-with a residual-checked full inverse fallback, or a guarded batch verified against the exactly
-rebuilt objective. Both commands cap the scan budget, so neither reaches exchange stability.
-Initialization and stored input arrays still scale with \(N\), so these measurements do not claim
-full-corpus or one-pass fitting.
+`benchmarks/baselines.json` pins a small CI-suitable matrix (recorded machine, Python, and JAX
+versions live in its `environment` field; see that file rather than dated prose here for absolute
+numbers). Check a fresh run against it with:
+
+```bash
+JAX_ENABLE_X64=1 uv run python benchmarks/bench.py --check benchmarks/baselines.json \
+  --time-tolerance 2.5 --quality-rtol 1e-6
+```
+
+`--check` re-runs exactly the scenarios recorded in the baseline file (its own `--rows`/`--bins`
+flags are ignored in this mode) and prints a comparison table. It fails (exit 1) if any scenario
+runs slower than `--time-tolerance` times its baseline — deliberately loose, since CI machines
+differ — or if a quality metric drifts beyond `--quality-rtol`; deterministic seeds make quality
+the real regression signal, since it is exact for a given seed and code path. The `benchmarks` CI
+job runs this check after the test suite passes. To refresh `benchmarks/baselines.json` after an
+intentional performance or numerical change, regenerate it with `--json` on the same matrix and
+review the diff.
 
 ## Repository guidance
 

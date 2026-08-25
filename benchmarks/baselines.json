@@ -1,0 +1,175 @@
+{
+  "description": "CI-suitable regression matrix for benchmarks/bench.py --check. Not a runtime promise: absolute times vary by machine, so bench.py --check compares against these with a loose --time-tolerance and a tight --quality-rtol (quality is exact for a given seed and code path).",
+  "environment": {
+    "platform_machine": "arm64",
+    "platform_system": "Darwin",
+    "python_version": "3.13.12",
+    "jax_version": "0.11.1",
+    "jax_enable_x64": "1",
+    "jax_default_backend": "cpu"
+  },
+  "runs": [
+    {
+      "scenario": "d_exchange",
+      "rows": 20000,
+      "dims": 3,
+      "bins": 8,
+      "seed": 2026,
+      "skipped": false,
+      "skip_reason": null,
+      "elapsed_seconds": 2.393731000018306,
+      "peak_rss_megabytes": 321.234375,
+      "quality_label": "logdet_objective",
+      "quality": -1.305883873804814,
+      "extra": {
+        "accepted_moves": 2148,
+        "scans": 70,
+        "exchange_stable": true,
+        "best_remaining_gain": -4.1736407750347316e-09,
+        "lloyd_iterations": 0,
+        "accepted_lloyd_steps": 0
+      }
+    },
+    {
+      "scenario": "lloyd",
+      "rows": 20000,
+      "dims": 3,
+      "bins": 8,
+      "seed": 2026,
+      "skipped": false,
+      "skip_reason": null,
+      "elapsed_seconds": 0.9183425409719348,
+      "peak_rss_megabytes": 324.296875,
+      "quality_label": "logdet_objective",
+      "quality": -1.3054193398297413,
+      "extra": {
+        "accepted_moves": 601,
+        "scans": 49,
+        "exchange_stable": true,
+        "best_remaining_gain": -6.899035144764689e-09,
+        "lloyd_iterations": 100,
+        "accepted_lloyd_steps": 100
+      }
+    },
+    {
+      "scenario": "kmeans",
+      "rows": 20000,
+      "dims": 3,
+      "bins": 8,
+      "seed": 2026,
+      "skipped": false,
+      "skip_reason": null,
+      "elapsed_seconds": 1.098739457956981,
+      "peak_rss_megabytes": 342.375,
+      "quality_label": "geometric_mean_retention",
+      "quality": 0.6465641122605803,
+      "extra": {
+        "hardening_gap": null
+      }
+    },
+    {
+      "scenario": "soft",
+      "rows": 20000,
+      "dims": 3,
+      "bins": 8,
+      "seed": 2026,
+      "skipped": false,
+      "skip_reason": null,
+      "elapsed_seconds": 1.1085735420347191,
+      "peak_rss_megabytes": 400.984375,
+      "quality_label": "geometric_mean_retention",
+      "quality": 0.6467363765806038,
+      "extra": {
+        "hardening_gap": -6.5333210040874334e-06
+      }
+    },
+    {
+      "scenario": "scalar_dp",
+      "rows": 20000,
+      "dims": 1,
+      "bins": 8,
+      "seed": 2026,
+      "skipped": false,
+      "skip_reason": null,
+      "elapsed_seconds": 10.033929124998394,
+      "peak_rss_megabytes": 978.21875,
+      "quality_label": "geometric_mean_retention",
+      "quality": 0.9653424222627103,
+      "extra": {}
+    },
+    {
+      "scenario": "profiled_exchange",
+      "rows": 20000,
+      "dims": 3,
+      "bins": 8,
+      "seed": 2026,
+      "skipped": false,
+      "skip_reason": null,
+      "elapsed_seconds": 7.9242063330020756,
+      "peak_rss_megabytes": 978.21875,
+      "quality_label": "profiled_logdet_objective",
+      "quality": 9.873990113674012,
+      "extra": {
+        "accepted_moves": 20046,
+        "scans": 1049,
+        "exchange_stable": true,
+        "best_remaining_gain": -1.0111665970464687e-08,
+        "lloyd_iterations": 0,
+        "accepted_lloyd_steps": 0
+      }
+    },
+    {
+      "scenario": "predict",
+      "rows": 20000,
+      "dims": 3,
+      "bins": 8,
+      "seed": 2026,
+      "skipped": false,
+      "skip_reason": null,
+      "elapsed_seconds": 0.00039433303754776716,
+      "peak_rss_megabytes": 978.21875,
+      "quality_label": "held_out_geometric_mean_retention",
+      "quality": 0.6434860514869526,
+      "extra": {
+        "predicted_rows": 20000
+      }
+    },
+    {
+      "scenario": "d_exchange",
+      "rows": 100000,
+      "dims": 3,
+      "bins": 8,
+      "seed": 2026,
+      "skipped": false,
+      "skip_reason": null,
+      "elapsed_seconds": 4.16336283396231,
+      "peak_rss_megabytes": 447.515625,
+      "quality_label": "logdet_objective",
+      "quality": -1.318254798476379,
+      "extra": {
+        "accepted_moves": 10782,
+        "scans": 153,
+        "exchange_stable": true,
+        "best_remaining_gain": 8.775002946107801e-11,
+        "lloyd_iterations": 0,
+        "accepted_lloyd_steps": 0
+      }
+    },
+    {
+      "scenario": "kmeans",
+      "rows": 100000,
+      "dims": 3,
+      "bins": 8,
+      "seed": 2026,
+      "skipped": false,
+      "skip_reason": null,
+      "elapsed_seconds": 1.6524458330241032,
+      "peak_rss_megabytes": 457.9375,
+      "quality_label": "geometric_mean_retention",
+      "quality": 0.6439532942120401,
+      "extra": {
+        "hardening_gap": null
+      }
+    }
+  ]
+}
