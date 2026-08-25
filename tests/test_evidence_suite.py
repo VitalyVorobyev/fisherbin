@@ -3,15 +3,16 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-import scorequant as fb
+import scorequant as sq
+from tests._fit import fit_test_quantizer
 
 
 def test_rank_deficient_fixture_projects_duplicate_direction() -> None:
     coordinate = np.linspace(-2, 2, 600)
     scores = np.column_stack([coordinate, 2 * coordinate])
-    result = fb.fit_scores(scores, n_bins=4, config=fb.KMeansConfig(seed=31, n_init=3))
+    result = fit_test_quantizer(scores, n_bins=4, config=sq.KMeansConfig(seed=31, n_init=3))
     assert result.transform.rank == 1
-    assert result.evaluate(scores).geometric_mean_retention >= 0.90
+    assert result.evaluate_scores(scores).geometric_mean_retention >= 0.90
 
 
 def test_rare_population_fixture_retains_nonempty_hard_bins() -> None:
@@ -19,7 +20,7 @@ def test_rare_population_fixture_retains_nonempty_hard_bins() -> None:
     common = rng.normal(0, 0.35, size=(1_900, 2))
     rare = rng.normal([3.0, -2.0], 0.12, size=(100, 2))
     scores = np.vstack([common, rare])
-    result = fb.fit_scores(scores, n_bins=6, config=fb.KMeansConfig(seed=32, n_init=4))
+    result = fit_test_quantizer(scores, n_bins=6, config=sq.KMeansConfig(seed=32, n_init=4))
     assert np.all(np.asarray(result.train_report.bin_counts) > 0)
     assert result.train_report.geometric_mean_retention >= 0.70
 
@@ -29,11 +30,11 @@ def test_skewed_and_zero_weight_fixture_remains_finite() -> None:
     scores = rng.normal(size=(1_000, 3))
     weights = rng.lognormal(mean=0, sigma=2, size=len(scores))
     weights[::11] = 0
-    result = fb.fit_scores(
+    result = fit_test_quantizer(
         scores,
         weights=weights,
         n_bins=8,
-        config=fb.KMeansConfig(seed=33, n_init=4),
+        config=sq.KMeansConfig(seed=33, n_init=4),
     )
     assert np.isfinite(np.asarray(result.centers)).all()
     assert np.isfinite(result.train_report.geometric_mean_retention)
@@ -44,9 +45,9 @@ def test_controlled_train_test_shift_is_reported_not_optimized(shift: float) -> 
     rng = np.random.default_rng(34)
     train = rng.normal(size=(1_200, 2))
     test = rng.normal(loc=[shift, -shift / 2], size=(2_000, 2))
-    config = fb.KMeansConfig(seed=34, n_init=3)
-    without_validation = fb.fit_scores(train, n_bins=6, config=config)
-    with_validation = fb.fit_scores(
+    config = sq.KMeansConfig(seed=34, n_init=3)
+    without_validation = fit_test_quantizer(train, n_bins=6, config=config)
+    with_validation = fit_test_quantizer(
         train,
         n_bins=6,
         config=config,

@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted.
+Superseded in part by [ADR 0012](0012-classifier-callback-boundary.md). The pure
+posterior transformation remains; a framework-neutral ready-callback provider
+is now also public. Training remains application code.
 
 ## Context
 

@@ -1,17 +1,17 @@
-# FisherBin contributor guidance
+# ScoreQuant contributor guidance
 
 ## Project contract
 
-FisherBin compresses continuous or high-dimensional events into hard bins while preserving Fisher information. Keep the supported representations explicit:
+ScoreQuant compresses continuous or high-dimensional events into hard bins while preserving Fisher information. Keep task and representation semantics explicit:
 
 ```text
-physical variables X -> component values Phi -> score vectors -> hard bins
+Source + ScoreProvider -> score law -> partition or quantizer
 ```
 
-- `fit(X, model=...)` owns the physical-variable workflow.
-- `fit_components(Phi, coefficients=...)` owns evaluated linear components.
-- `fit_scores(scores, ...)` is the mathematical core.
-- A fitted result predicts in the same representation used for fitting.
+- `optimize_partition(scores, ...)` owns fixed-sample assignment and returns no predictor.
+- `fit_quantizer(source, score=...)` owns reusable score-space rules.
+- `scores_from_components(Phi, coefficients)` is an explicit adapter, not a fitting task.
+- Prediction is always `predict_scores`; observation-to-score conversion remains visible.
 
 Use JAX for numerical kernels and Optax for gradient optimization. Do not add PyTorch, a parallel NumPy implementation, global JAX configuration at import time, or a backend abstraction without an approved roadmap change and a concrete second backend.
 

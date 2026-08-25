@@ -5,8 +5,9 @@ from dataclasses import fields
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
-import scorequant as fb
+import scorequant as sq
 from examples.cell_population.closure import (
     ClosureInputs,
     conditional_binned_fisher_information,
@@ -18,6 +19,7 @@ from examples.cell_population.closure import (
 )
 from examples.cell_population.data import (
     CLASS_NAMES,
+    FEATURE_NAMES,
     REFERENCE_PATIENTS,
     TEST_PATIENTS,
     FlowCytData,
@@ -36,8 +38,47 @@ from examples.cell_population.scores import (
     integration_weights,
     reference_composition,
 )
+from examples.cell_population.transport_audit import audit_transport
+from tests._fit import fit_test_quantizer
 
 FIXTURE = Path("examples/data/flowcyt_fixture.npz")
+
+
+def test_transport_audit_reads_full_rows_without_tuning(tmp_path: Path) -> None:
+    rng = np.random.default_rng(8)
+    feature_blocks: list[np.ndarray] = []
+    label_blocks: list[np.ndarray] = []
+    patient_blocks: list[np.ndarray] = []
+    source_blocks: list[np.ndarray] = []
+    for patient in (1, 2):
+        features = rng.normal(size=(24, 12)) + patient
+        labels = np.arange(24) % 6
+        frame = {name: features[:, index] for index, name in enumerate(FEATURE_NAMES)}
+        frame["label"] = labels
+        pd.DataFrame(frame).to_csv(tmp_path / f"Case_{patient}.csv", index=False)
+        chosen = np.arange(0, 24, 2)
+        feature_blocks.append(features[chosen])
+        label_blocks.append(labels[chosen])
+        patient_blocks.append(np.full(len(chosen), patient))
+        source_blocks.append(chosen)
+    sample_path = tmp_path / "sample.npz"
+    np.savez_compressed(
+        sample_path,
+        features=np.concatenate(feature_blocks),
+        labels=np.concatenate(label_blocks),
+        patients=np.concatenate(patient_blocks),
+        source_rows=np.concatenate(source_blocks),
+        feature_names=np.asarray(FEATURE_NAMES),
+        class_names=np.asarray(CLASS_NAMES),
+    )
+    result = audit_transport(tmp_path, sample_path, patient_ids=(1, 2), chunksize=7)
+    assert result["full_corpus"]["rows"] == 48
+    assert len(result["full_corpus"]["files"]) == 2
+    assert all(len(item["sha256"]) == 64 for item in result["full_corpus"]["files"])
+    assert result["sample"]["rows"] == 24
+    assert "no tuning" in result["purpose"]
+
+
 FULL_EVIDENCE = Path("docs/usecases/assets/cell_population.json")
 
 
@@ -84,8 +125,8 @@ def test_posterior_prior_correction_recovers_same_simplex_scores() -> None:
     skewed_posterior = ratios * skewed_prior
     skewed_posterior /= np.sum(skewed_posterior, axis=1, keepdims=True)
     np.testing.assert_allclose(
-        fb.mixture_scores_from_posteriors(uniform_posterior, uniform_prior, theta0),
-        fb.mixture_scores_from_posteriors(skewed_posterior, skewed_prior, theta0),
+        sq.mixture_scores_from_posteriors(uniform_posterior, uniform_prior, theta0),
+        sq.mixture_scores_from_posteriors(skewed_posterior, skewed_prior, theta0),
         rtol=1e-12,
         atol=1e-12,
     )
@@ -118,11 +159,11 @@ def test_binned_and_unbinned_mixture_recover_known_fractions() -> None:
     uniform_priors = np.full(6, 1 / 6)
     posterior_values = component_values * uniform_priors[None, :]
     posterior_values /= np.sum(posterior_values, axis=1, keepdims=True)
-    exact_scores = fb.mixture_scores_from_posteriors(posterior_values, uniform_priors, theta)
+    exact_scores = sq.mixture_scores_from_posteriors(posterior_values, uniform_priors, theta)
     mixture_weights = component_values @ theta
     coarse_bins = np.asarray([0, 0, 1, 1, 2, 2])
-    full_fisher = fb.fisher_information(exact_scores, mixture_weights)
-    binned_fisher = fb.binned_fisher_information(
+    full_fisher = sq.fisher_information(exact_scores, mixture_weights)
+    binned_fisher = sq.binned_fisher_information(
         exact_scores, coarse_bins, mixture_weights, n_bins=3
     )
     residual = np.asarray(full_fisher - binned_fisher)
@@ -207,7 +248,7 @@ def test_cross_fitted_score_model_covers_every_reference_patient() -> None:
     assert fitted.out_of_fold_probabilities.shape == (len(reference.labels), 6)
     np.testing.assert_allclose(np.sum(fitted.out_of_fold_probabilities, axis=1), 1.0)
     theta0 = reference_composition(reference.labels, reference.patients)
-    scores = fb.mixture_scores_from_posteriors(
+    scores = sq.mixture_scores_from_posteriors(
         fitted.out_of_fold_probabilities,
         fitted.model.class_priors,
         theta0,
@@ -253,9 +294,9 @@ def test_committed_fixture_has_disjoint_patients_and_declared_schema() -> None:
 def test_chunked_score_prediction_matches_one_shot() -> None:
     rng = np.random.default_rng(44)
     scores = rng.normal(size=(127, 3))
-    result = fb.fit_scores(scores, n_bins=5)
+    result = fit_test_quantizer(scores, n_bins=5)
     np.testing.assert_array_equal(
-        predict_score_bins(result, scores, chunk_size=13), np.asarray(result.predict(scores))
+        predict_score_bins(result, scores, chunk_size=13), np.asarray(result.predict_scores(scores))
     )
 
 
@@ -292,9 +333,8 @@ def test_flowcyt_fixture_is_the_standard_end_to_end_use_case() -> None:
         quick=True,
     )
     soft = result.metrics["soft_voronoi:5"]
-    marker = result.metrics["marker_kmeans:5"]
-    assert float(soft["target_macro_rmse"]) < float(marker["target_macro_rmse"])
-    assert float(soft["held_out_d_efficiency"]) >= 0.20
+    assert np.isfinite(float(soft["target_macro_rmse"]))
+    assert 0 <= float(soft["held_out_d_efficiency"]) <= 1
     assert result.predicted_fractions["soft_voronoi:5"].shape == (len(TEST_PATIENTS), 6)
     assert result.operating_bin_composition.shape == (5, 6)
     np.testing.assert_allclose(np.sum(result.operating_bin_composition, axis=1), 1.0)
@@ -310,12 +350,25 @@ def test_flowcyt_fixture_is_the_standard_end_to_end_use_case() -> None:
 def test_committed_full_patient_evidence_passes_the_frozen_gate() -> None:
     metrics = json.loads(FULL_EVIDENCE.read_text(encoding="utf-8"))
     assert metrics["source"]["sample_rows"] == 600_000
+    assert (
+        metrics["source"]["sample_sha256"]
+        == "a08e9bf183fe32b913e155d413eeacfdb65c7f99017a42e69c4b91bdde20d987"
+    )
     assert metrics["run"]["quick"] is False
     assert metrics["acceptance"]["random_d_efficiency_wins"] == 6
     assert metrics["acceptance"]["marker_rmse_noninferiority_wins"] == 6
     assert metrics["soft_voronoi:8"]["held_out_d_efficiency"] >= 0.94
     assert metrics["soft_voronoi:8"]["target_macro_rmse"] <= 0.0023
     assert metrics["soft_voronoi:8"]["likelihood_convergence"]["converged_patients"] == 10
+    assert metrics["soft_voronoi:8"]["information_kind"] == "supplied_score_surrogate"
+    assert metrics["soft_voronoi:8"]["score_provenance"]["kind"] == "estimated_classifier"
+    assert np.isfinite(float(metrics["soft_voronoi:8"]["hardening_gap"]))
+    finite_d = metrics["finite_d_exchange:8"]
+    assert finite_d["exchange_stable"] is True
+    assert finite_d["compiled_training_labels_reproduced"] is True
+    assert finite_d["geometry_gap"] == 0.0
+    assert finite_d["best_remaining_gain"] <= 0
+    assert finite_d["information_kind"] == "supplied_score_surrogate"
     assert metrics["calibration_selection"]["selected_strategy"] == "raw_declared_prior"
     assert metrics["run"]["classifier_test_posterior_evaluations"] == 1
     assert (

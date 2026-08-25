@@ -6,7 +6,7 @@
 
 Real applications expose missing abstractions as well as missing examples. A
 strictly stable pre-release API would preserve accidental limitations. At the
-other extreme, moving complete application workflows into FisherBin would make
+other extreme, moving complete application workflows into ScoreQuant would make
 the library depend on dataset vocabulary, estimator choices, and evaluation
 protocols that do not belong to information-preserving binning.
 
@@ -18,7 +18,7 @@ layouts are choices of that application.
 
 ## Decision
 
-API preservation is not a design goal before a stable release. FisherBin may
+API preservation is not a design goal before a stable release. ScoreQuant may
 add, remove, or reshape public concepts when doing so produces a clearer generic
 statistical contract.
 

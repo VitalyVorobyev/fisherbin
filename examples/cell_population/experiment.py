@@ -12,7 +12,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
-import scorequant as fb
+import scorequant as sq
 
 from .closure import ClosureInputs, run_scientific_closure
 from .data import CLASS_NAMES, REFERENCE_PATIENTS, TEST_PATIENTS, FlowCytData
@@ -159,7 +159,7 @@ def _nearest(points: np.ndarray, centers: np.ndarray) -> np.ndarray:
 
 
 def predict_score_bins(
-    result: fb.FitResult,
+    result: sq.QuantizerResult,
     scores: np.ndarray,
     *,
     chunk_size: int = 50_000,
@@ -168,7 +168,7 @@ def predict_score_bins(
     if chunk_size < 1:
         raise ValueError("chunk_size must be positive")
     labels = [
-        np.asarray(result.predict(scores[start : start + chunk_size]))
+        np.asarray(result.predict_scores(scores[start : start + chunk_size]))
         for start in range(0, len(scores), chunk_size)
     ]
     return np.concatenate(labels) if labels else np.empty(0, dtype=np.int64)
@@ -244,7 +244,7 @@ def _summary_metrics(
 ) -> dict[str, object]:
     errors = predicted - true_fractions
     per_class = np.sqrt(np.mean(errors**2, axis=0))
-    report = fb.information_report(test_scores, test_labels, n_bins=n_bins)
+    report = sq.information_report(test_scores, test_labels, n_bins=n_bins)
     return {
         "target_macro_rmse": float(np.mean(per_class[:5])),
         "per_class_rmse": per_class.tolist(),
@@ -291,13 +291,13 @@ def _prepare_experiment(data: FlowCytData, *, quick: bool, seed: int) -> _Experi
     )
     theta0 = reference_composition(reference.labels, reference.patients)
     reference_scores = np.asarray(
-        fb.mixture_scores_from_posteriors(
+        sq.mixture_scores_from_posteriors(
             score_fit.out_of_fold_probabilities, score_fit.model.class_priors, theta0
         )
     )
     test_probabilities = score_fit.model.predict_proba(test.features)
     test_scores = np.asarray(
-        fb.mixture_scores_from_posteriors(test_probabilities, score_fit.model.class_priors, theta0)
+        sq.mixture_scores_from_posteriors(test_probabilities, score_fit.model.class_priors, theta0)
     )
     patients, true_fractions = _true_patient_fractions(test)
     unbinned, convergence = _fit_unbinned_patient_fractions(
@@ -372,24 +372,41 @@ def _evaluate_bin_count(
 ) -> tuple[dict[str, object], dict[str, np.ndarray], np.ndarray]:
     metrics: dict[str, object] = {}
     predicted_by_method: dict[str, np.ndarray] = {}
+    score_provenance = sq.ScoreProvenance(
+        kind="estimated_classifier",
+        description="patient-cross-fitted calibrated FlowCyt mixture score",
+        metadata={
+            "calibration_strategy": context.score_fit.calibration_selection["selected_strategy"],
+            "training_priors": context.score_fit.model.class_priors.tolist(),
+        },
+    )
     common = {
-        "weights": context.weights,
         "n_bins": n_bins,
-        "validation_scores": context.reference_scores[context.validation_mask],
-        "validation_weights": integration_weights(
-            context.reference.labels[context.validation_mask],
-            context.reference.patients[context.validation_mask],
-            context.theta0,
+        "validation": sq.ScoreSample(
+            context.reference_scores[context.validation_mask],
+            integration_weights(
+                context.reference.labels[context.validation_mask],
+                context.reference.patients[context.validation_mask],
+                context.theta0,
+            ),
+            provenance=score_provenance,
         ),
     }
-    kmeans_result = fb.fit_scores(
+    train_source = sq.ScoreSample(
         context.reference_scores[context.partition_mask],
-        config=fb.KMeansConfig(seed=seed, n_init=3 if quick else 8),
+        context.weights,
+        provenance=score_provenance,
+    )
+    kmeans_result = sq.fit_quantizer(
+        train_source,
+        criterion=sq.NormalizedTrace(),
+        config=sq.KMeansConfig(seed=seed, n_init=3 if quick else 8),
         **common,
     )
-    soft_result = fb.fit_scores(
-        context.reference_scores[context.partition_mask],
-        config=fb.SoftVoronoiConfig(
+    soft_result = sq.fit_quantizer(
+        train_source,
+        criterion=sq.DOptimality(),
+        config=sq.SoftVoronoiConfig(
             seed=seed,
             n_init=3 if quick else 4,
             max_steps=50 if quick else 160,
@@ -403,13 +420,58 @@ def _evaluate_bin_count(
             name=f"{method}:{n_bins}",
             n_bins=n_bins,
             template_labels=np.asarray(
-                result.predict(context.reference_scores[context.template_mask])
+                result.predict_scores(context.reference_scores[context.template_mask])
             ),
             test_labels=predict_score_bins(result, context.test_scores),
         )
         if result.validation_report is None:
             raise AssertionError("validation inputs must produce a validation report")
         values["validation_d_efficiency"] = result.validation_report.geometric_mean_retention
+        values["train_d_efficiency"] = result.train_report.geometric_mean_retention
+        values["hardening_gap"] = result.hardening_gap
+        values["information_kind"] = result.information_kind
+        values["score_provenance"] = result.provenance.to_dict()
+        metrics[key] = values
+        predicted_by_method[key] = predicted
+
+    if n_bins == operating_n_bins == 8:
+        finite_d = sq.optimize_partition(
+            context.reference_scores[context.partition_mask],
+            weights=context.weights,
+            n_bins=n_bins,
+            criterion=sq.DOptimality(),
+            config=sq.DExchangeConfig(
+                seed=seed,
+                n_init=3 if quick else 8,
+                max_sweeps=200 if quick else 500,
+            ),
+            provenance=score_provenance,
+        )
+        if not finite_d.exchange_stable:
+            raise RuntimeError("finite D FlowCyt assignment did not reach exchange stability")
+        compiled_d = finite_d.compile_quantizer()
+        key, values, predicted = _store_partition(
+            context,
+            name=f"finite_d_exchange:{n_bins}",
+            n_bins=n_bins,
+            template_labels=np.asarray(
+                compiled_d.predict_scores(context.reference_scores[context.template_mask])
+            ),
+            test_labels=predict_score_bins(compiled_d, context.test_scores),
+        )
+        values.update(
+            {
+                "finite_assignment_d_efficiency": finite_d.train_report.geometric_mean_retention,
+                "compiled_train_d_efficiency": compiled_d.train_report.geometric_mean_retention,
+                "accepted_moves": finite_d.accepted_moves,
+                "exchange_stable": finite_d.exchange_stable,
+                "best_remaining_gain": finite_d.best_remaining_gain,
+                "compiled_training_labels_reproduced": True,
+                "geometry_gap": 0.0,
+                "information_kind": finite_d.information_kind,
+                "score_provenance": finite_d.provenance.to_dict(),
+            }
+        )
         metrics[key] = values
         predicted_by_method[key] = predicted
 
@@ -498,7 +560,7 @@ def _evaluate_bin_count(
 
     operating_composition = np.empty((0, len(CLASS_NAMES)))
     template_labels = np.asarray(
-        soft_result.predict(context.reference_scores[context.template_mask])
+        soft_result.predict_scores(context.reference_scores[context.template_mask])
     )
     if n_bins == operating_n_bins:
         templates = estimate_bin_templates(

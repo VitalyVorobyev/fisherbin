@@ -68,7 +68,7 @@ class KMeansConfig:
     seed
         Nonnegative JAX random seed.
     n_init
-        Number of weighted k-means++ restarts.
+        Number of weighted k-means++ restarts after invariant row ordering.
     max_iter
         Maximum Lloyd iterations per restart.
     tolerance
@@ -170,4 +170,50 @@ class SoftVoronoiConfig:
         return json_ready(asdict(self))
 
 
-FitConfig = KMeansConfig | SoftVoronoiConfig
+@dataclass(frozen=True, slots=True)
+class DExchangeConfig:
+    """Configure exact positive-gain D-optimal point exchange.
+
+    Parameters
+    ----------
+    rank_rtol
+        Relative threshold for the informative Fisher subspace.
+    seed
+        Seed used by deterministic k-means initialization.
+    n_init
+        Number of k-means initialization restarts.
+    max_sweeps
+        Maximum complete scans of candidate point moves.
+    gain_tolerance
+        Strict minimum accepted log-determinant gain.
+    first_improvement
+        Accept the first improving move in deterministic row/bin order instead
+        of the best move in a sweep.
+    """
+
+    method: Literal["d_exchange"] = field(default="d_exchange", init=False)
+    rank_rtol: float | None = None
+    seed: int = 0
+    n_init: int = 8
+    max_sweeps: int = 200
+    gain_tolerance: float = 1e-10
+    first_improvement: bool = False
+
+    def __post_init__(self) -> None:
+        """Validate exchange settings at construction time."""
+        if self.rank_rtol is not None:
+            _validate_finite("rank_rtol", self.rank_rtol, positive=False)
+            if self.rank_rtol >= 1:
+                raise ValueError("rank_rtol must be less than one")
+        _validate_integer("seed", self.seed, minimum=0)
+        _validate_integer("n_init", self.n_init, minimum=1)
+        _validate_integer("max_sweeps", self.max_sweeps, minimum=1)
+        _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
+        _validate_bool("first_improvement", self.first_improvement)
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible configuration mapping."""
+        return json_ready(asdict(self))
+
+
+type QuantizerConfig = KMeansConfig | SoftVoronoiConfig | DExchangeConfig

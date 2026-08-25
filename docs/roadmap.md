@@ -1,81 +1,120 @@
-# Capability roadmap
+# ScoreQuant development roadmap
 
-This is an internal engineering document. Published user documentation contains
-only capabilities that exist in the library.
+This is the single executable planning document. User-facing reference pages describe only
+implemented interfaces.
 
-## Stable score-to-partition core
+## M1 — Canonical contracts and documentation
 
-**Outcome:** numerical invariants, deterministic fitting, and representation-
-specific prediction remain reliable while the implementation stays compact.
+**Status:** implemented in the architectural update; keep as a permanent gate.
 
-- Preserve score origin, nonnegative weights, singular-direction projection,
-  and validation-only diagnostics.
-- Keep `fit_scores` as a short orchestration layer over private preparation,
-  transform, quantizer, report, and trace stages.
-- Expand deterministic regression fixtures only for distinct failure modes.
+- Use ScoreQuant consistently.
+- Separate population design, empirical quantizer fitting, and finite assignment.
+- Separate sources from score providers and exact from surrogate information.
+- Maintain the independent book, how-to/API reference, ADRs, and research provenance.
 
-**Gate:** X64 and float32 tests, static checks, package build, and strict docs
-build pass without unexpected fixed-seed result changes.
+**Gate:** one glossary; no nonexistent APIs in published pages; documentation tests and strict
+MkDocs pass.
 
-## Credible application evidence
+## M2 — Exact finite D reference core
 
-**Outcome:** realistic studies distinguish compression information, upstream
-model bias, and downstream estimation error.
+**Status:** implemented baseline.
 
-- Keep the FlowCyt patient split and acceptance rules frozen.
-- Select posterior calibration with nested reference-patient folds.
-- Treat the previously evaluated test cohort as frozen evidence and retain
-  negative results without test-driven retuning.
-- Record candidate metrics, priors, temperature, normalization closure,
-  convergence, runtime, and source provenance.
-- Distinguish supplied-score Poisson information from fixed-total downstream
-  identifiability, including template rank and explicit null-space witnesses.
-- Validate bias, finite-sample error, seed stability, and uncertainty coverage
-  with deterministic reference-only pseudoexperiments.
+- Exact cell statistics, rank-two relocation gain, deterministic monotone exchange, terminal scan,
+  small-instance exhaustive oracle, zero-weight handling, and explicit compilation.
+- Regression gates cover direct recomputation, monotonicity, small global optima, the D separation
+  bound, invariants, and reproduction of positive-weight labels.
 
-**Gate:** machine-readable evidence reproduces every table and figure, and test
-labels are confined to the frozen final metrics. Scientific closure and tuning
-receive reference rows only.
+**Next:** profile factorization updates before optimizing performance; add branch-and-bound only
+after a concrete certificate workflow exists.
 
-## Broader default evidence
+## M3 — Breaking task-explicit API
 
-**Outcome:** optimizer defaults are supported across deficient rank, rare
-occupancy, skewed and zero weights, nonlinear score geometry, and controlled
-distribution shift.
+**Status:** implemented; compatibility break is intentional.
 
-- Compare final hardened partitions, not only soft objectives.
-- Record retention, stability, runtime, memory, and explicit failure modes.
-- Change a default only after consistent improvement across several fixtures.
+- `optimize_partition`/`PartitionResult` for fixed labels.
+- `fit_quantizer`/`QuantizerResult` for reusable score rules.
+- `DOptimality`, `NormalizedTrace`, and solver-specific configurations.
+- Old `fit`, `fit_components`, and `fit_scores` names are removed without aliases.
 
-**Gate:** held-out thresholds pass in X64 and float32 invariants remain finite.
+**Gate:** examples, notebooks, API pages, and migration table use only the new surface; ordinary
+partitions expose no prediction semantics.
 
-## Multidimensional partition visualization
+## M4 — Sources, providers, and bounded integration
 
-**Outcome:** find honest, useful summaries for informative rank above two before
-exposing another visualization API.
+**Status:** first wave implemented.
 
-- Compare bin-score profile heatmaps.
-- Compare pairwise projections with an explicit lost-dimension label.
-- Evaluate nearest/second-nearest assignment margins.
-- Prototype conditional two-dimensional slices with fixed remaining
-  coordinates, including interaction only if static evidence is insufficient.
-- Test every candidate on at least one synthetic case and the FlowCyt mixture.
+- `ScoreSample`, `ObservationSample`, and low-dimensional bounded `IntegrationSource`.
+- `ScoreFunction`, `LinearComponentScore`, ready `ClassifierScore`, central-ratio and mixture
+  transforms, and score provenance.
+- Deterministic tensor Gauss-Legendre quadrature with explicit density and capacity guard.
 
-**Gate:** a representation must reveal a decision-relevant property that the
-retained spectrum, information matrix, occupancy, and application-specific bin
-composition do not already show. Until then, no public API is added.
+**Gate:** equivalent materializations agree; invalid combinations fail clearly; analytic quadrature
+agrees with known moments and deterministic sampling; validation never affects fitting state.
 
-## Persistence and larger workloads
+**Deferred:** autodiff-model convenience, population samplers, direct score samplers, streaming,
+and moment oracles.
 
-Design a fitted-partition artifact only when a concrete second process needs
-one. Callable component models cannot be serialized generically, so the
-consumer representation must be explicit. Profile real workloads before adding
-chunked statistics, minibatches, or accelerator-specific paths.
+## M5 — Book and FlowCyt capstone
 
-## Deferred statistical extensions
+**Status:** book and task-explicit 600k workflow integrated, including the exact-D reference.
 
-Nuisance-profiled and multi-reference objectives, occupancy constraints, power
-diagrams, alternative optimality criteria, signed weights, and additional
-numerical backends require separate mathematical contracts and evidence.
-Boundary-aware profile-likelihood intervals also remain application research;
-they should not become a FisherBin inference API without a second use case.
+- Maintain theorem/proposition/numerical-evidence/open-problem labels.
+- Use analytic and rational laboratories for mathematical claims, never FlowCyt as proof.
+- Compare finite D assignment, compiled D rule, trace k-means, soft D, marker/PCA/random baselines,
+  and the unbinned classifier-ratio fit on the frozen patient split.
+- Report score provenance/calibration, mean-score closure, compression loss, rank, occupancy,
+  patient shift, hardening/geometry gaps, and downstream error.
+
+**Completed solver gate:** vectorized exact-D scanning is included in the normative workflow on the
+same 27,607-row partition sample as the learned quantizers. The compiled rule must reproduce every
+positive-weight training label. This is deliberately not described as optimization over all 600,000
+events.
+
+**Next solver gate:** profile factorization updates and chunked scans before raising the bounded
+partition-table capacity or claiming full-corpus/streaming optimization.
+
+**Next data gate:** run the full 21.25M corpus transport audit from an external manifest without
+retuning on frozen test patients. Commit hashes, aggregates, tables, and plots, never raw data.
+
+## M6 — Profiled \(D_s\)
+
+Implement finite exchange and a separate inductive solver. Add efficient scores, the finite
+geometry-gap bound, the full-information upper problem, and exact scalar dynamic programming where
+applicable.
+
+**Gate:** exact relocation tests; rational non-Voronoi counterexample; no implicit compilation from
+finite labels; clear same-data versus external-nuisance semantics.
+
+## M7 — Population, scale, and persistence
+
+In order: population samplers and moment oracles; branch-and-bound certificates; streaming and
+factorization updates; then versioned persistence. Signed weights, additional backends, and advanced
+objectives remain outside scope until their mathematical contracts and independent use cases exist.
+
+## Explicitly outside the development plan
+
+An E-optimal solver is not planned. The E-optimality chapter and deterministic counterexample stay
+as theory and boundary evidence, but there is no implementation milestone, public criterion, or
+solver API. Reconsidering this decision requires a concrete application use case and a new roadmap
+decision.
+
+## Next execution order
+
+1. Run and publish the 21.25M-row FlowCyt transport audit once the external CSV corpus is available.
+2. Profile exact-D factorization updates and chunked candidate scans before increasing the bounded
+   partition-table capacity.
+3. Design and gate finite profiled-\(D_s\) exchange before exposing any new public API.
+4. Add population samplers and moment oracles, then certificates, streaming, and persistence in
+   that order.
+
+## Full handoff gate
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run ty check src
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
+JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
+uv build
+uv run mkdocs build --strict
+```

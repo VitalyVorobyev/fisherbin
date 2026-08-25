@@ -9,6 +9,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
+from sklearn.cluster import KMeans
 
 import scorequant
 from examples.synthetic_problems import PROBLEMS, SyntheticDataset, SyntheticProblem
@@ -17,8 +18,8 @@ from examples.synthetic_problems import PROBLEMS, SyntheticDataset, SyntheticPro
 @dataclass(frozen=True, slots=True)
 class ExperimentResult:
     problem: SyntheticProblem
-    kmeans: scorequant.FitResult
-    soft: scorequant.FitResult
+    kmeans: scorequant.QuantizerResult
+    soft: scorequant.QuantizerResult
     metrics: dict[str, float | list[float]]
 
 
@@ -61,18 +62,19 @@ def run_experiment(
     """Fit both algorithms and evaluate all declared baselines on untouched test data."""
 
     common = dict(
-        weights=problem.train.weights,
         n_bins=problem.n_bins,
-        validation_scores=problem.validation.scores,
-        validation_weights=problem.validation.weights,
+        validation=scorequant.ScoreSample(problem.validation.scores, problem.validation.weights),
     )
-    kmeans = scorequant.fit_scores(
-        problem.train.scores,
+    train_source = scorequant.ScoreSample(problem.train.scores, problem.train.weights)
+    kmeans = scorequant.fit_quantizer(
+        train_source,
+        criterion=scorequant.NormalizedTrace(),
         config=scorequant.KMeansConfig(seed=42, n_init=4),
         **common,
     )
-    soft = scorequant.fit_scores(
-        problem.train.scores,
+    soft = scorequant.fit_quantizer(
+        train_source,
+        criterion=scorequant.DOptimality(),
         config=scorequant.SoftVoronoiConfig(
             seed=42,
             n_init=4,
@@ -81,16 +83,14 @@ def run_experiment(
         ),
         **common,
     )
-    kmeans_test = kmeans.evaluate(problem.test.scores, problem.test.weights)
-    soft_test = soft.evaluate(problem.test.scores, problem.test.weights)
+    kmeans_test = kmeans.evaluate_scores(problem.test.scores, problem.test.weights)
+    soft_test = soft.evaluate_scores(problem.test.scores, problem.test.weights)
 
-    observation_fit = scorequant.fit_scores(
+    observation_model = KMeans(n_clusters=problem.n_bins, n_init=4, random_state=42).fit(
         problem.train.observations,
-        weights=problem.train.weights,
-        n_bins=problem.n_bins,
-        config=scorequant.KMeansConfig(seed=42, n_init=4),
+        sample_weight=problem.train.weights,
     )
-    observation_labels = np.asarray(observation_fit.predict(problem.test.observations))
+    observation_labels = observation_model.predict(problem.test.observations)
     equal_labels = _equal_grid_labels(
         problem.train.observations, problem.test.observations, problem.n_bins
     )
@@ -119,7 +119,7 @@ def make_example_figure(experiment: ExperimentResult) -> Figure:
     """Render the original-domain result, optimization, and final diagnostics."""
 
     problem = experiment.problem
-    labels = np.asarray(experiment.soft.predict(problem.test.scores))
+    labels = np.asarray(experiment.soft.predict_scores(problem.test.scores))
     observations = problem.test.observations
     figure, axes = plt.subplots(2, 2, figsize=(11, 8), constrained_layout=True)
     if observations.shape[1] == 1:
@@ -183,7 +183,7 @@ def make_example_figure(experiment: ExperimentResult) -> Figure:
     )
     axes[1, 0].bar_label(bars, fmt="%.3f", padding=3)
 
-    report = experiment.soft.evaluate(problem.test.scores, problem.test.weights)
+    report = experiment.soft.evaluate_scores(problem.test.scores, problem.test.weights)
     matrix = np.asarray(report.retained_matrix)
     image = axes[1, 1].imshow(matrix, vmin=-1, vmax=1, cmap="coolwarm")
     for row in range(matrix.shape[0]):

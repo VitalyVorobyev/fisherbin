@@ -13,8 +13,8 @@ This study asks a deliberately hard compression question:
 The answer on the frozen FlowCyt experiment is yes. The operating point uses
 eight learned hard bins. The tables below report both local information
 retention and held-out fraction error; neither quantity substitutes for the
-other. Eight bins retain 98.2% of the supplied-score Fisher information and
-reach 0.00196 macro RMSE. The selected unbinned classifier-ratio baseline is
+other. Eight bins retain 98.5% of the supplied-score surrogate information and
+reach 0.00193 macro RMSE. The selected unbinned classifier-ratio baseline is
 slightly better at 0.00173 RMSE, as the exact-information ordering suggests it
 should be when ratio bias is sufficiently controlled.
 
@@ -27,7 +27,7 @@ events.
 
 The important boundary is visible in the figure. The classifier is not
 ScoreQuant. Neither is the downstream mixture likelihood. ScoreQuant receives
-score vectors and returns a frozen hard partition. This makes the example useful
+score vectors and returns a frozen score quantizer. This makes the example useful
 for cytometry users and for developers adapting the same API to another domain.
 
 ## Result at a glance
@@ -40,11 +40,11 @@ least four. The result was 6/6 for both tests.
 | Bins | Soft Voronoi RMSE | Score k-means RMSE | Marker k-means RMSE | Random RMSE median | Supplied-score D-efficiency | Random D-efficiency median |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 5 | 0.03000 | 0.00501 | 0.04186 | 0.02998 | 0.391 | 0.001 |
-| 8 | **0.00196** | 0.00201 | 0.02889 | 0.01870 | 0.982 | 0.016 |
-| 10 | 0.00205 | 0.00205 | 0.04758 | 0.01147 | 0.990 | 0.060 |
-| 15 | 0.00207 | 0.00217 | 0.03332 | 0.01046 | 0.995 | 0.099 |
-| 20 | 0.00231 | 0.00226 | 0.03220 | 0.00730 | 0.997 | 0.260 |
-| 30 | 0.00249 | 0.00285 | 0.04990 | 0.00697 | **0.998** | 0.324 |
+| 8 | **0.00193** | 0.00209 | 0.02889 | 0.01870 | 0.985 | 0.016 |
+| 10 | 0.00202 | 0.00206 | 0.04758 | 0.01147 | 0.990 | 0.060 |
+| 15 | 0.00204 | 0.00217 | 0.03332 | 0.01046 | 0.995 | 0.099 |
+| 20 | 0.00212 | 0.00243 | 0.03220 | 0.00730 | 0.996 | 0.260 |
+| 30 | 0.00260 | 0.00280 | 0.04990 | 0.00697 | **0.998** | 0.324 |
 
 Eight bins are the useful knee in this experiment and give the lowest learned-
 partition RMSE. Five bins are an explicit negative result, but not an optimizer
@@ -53,6 +53,17 @@ count likelihood. Thirty bins preserve more local supplied-score information
 but contain an empty held-out bin and do not improve the downstream estimate.
 More bins are not automatically better, and the hard result—not the soft
 objective—is what matters.
+
+At the eight-bin operating point, the exact finite-D exchange scan runs on the
+same 27,607-row partition subset as the quantizer fits. It starts from the
+trace-k-means labels and accepts no relocation: the best remaining log-determinant
+gain is (-7.15\times10^{-8}), so the initial partition is already exchange-stable
+at the configured tolerance. Its supplied-score D-efficiency is 0.98705 on the
+partition rows and 0.98528 after compiling and evaluating the rule on held-out
+events. Compilation reproduces every positive-weight training label, has zero
+geometry gap, and reaches 0.00209 downstream RMSE. This is evidence of agreement
+between two solver paths on this dataset, not evidence that exact exchange
+improves the initialization.
 
 ![Full FlowCyt held-out results](assets/cell_population.png)
 
@@ -207,25 +218,24 @@ cohort is not used to choose among them.
 
 ## The ScoreQuant API boundary
 
-This use case starts from externally estimated scores, so `fit_scores` is the
-right entry point:
+This use case learns a reusable rule from externally estimated scores, so it
+uses an explicit `ScoreSample` and `fit_quantizer`:
 
 ```python
-partition = fb.fit_scores(
-    reference_scores[partition_rows],
-    weights=integration_weights,
-    validation_scores=reference_scores[validation_rows],
-    validation_weights=validation_weights,
+quantizer = sq.fit_quantizer(
+    sq.ScoreSample(reference_scores[partition_rows], integration_weights),
+    validation=sq.ScoreSample(reference_scores[validation_rows], validation_weights),
     n_bins=8,
-    config=fb.SoftVoronoiConfig(
+    criterion=sq.DOptimality(),
+    config=sq.SoftVoronoiConfig(
         seed=2026,
         n_init=4,
         max_steps=160,
     ),
 )
 
-test_bins = partition.predict(test_scores)
-held_out_report = partition.evaluate(test_scores)
+test_bins = quantizer.predict_scores(test_scores)
+held_out_report = quantizer.evaluate_scores(test_scores)
 print(held_out_report.geometric_mean_retention)
 ```
 
@@ -238,15 +248,15 @@ There are five practical API rules hidden in this short block:
    \(\theta_0\) across classes.
 3. Treat validation as a diagnostic. ScoreQuant deliberately does not use it to
    choose centers.
-4. Freeze the result and call `predict` on scores in the same parameter order.
+4. Freeze the result and call `predict_scores` on scores in the same parameter order.
 5. Inspect both information and occupancy. A high D-efficiency does not prevent
    a held-out bin from becoming empty.
 
-The generic posterior-to-score algebra is available as
-`mixture_scores_from_posteriors`. Classifier training, calibration, and the
-downstream likelihood remain application code. If an application already has
-evaluated linear components, use `fit_components`; if it owns callable
-component functions on physical variables, use `fit`.
+The same algebra is available through `MixturePosteriorTransform` and
+`ClassifierScore`. Classifier training, calibration, and the downstream
+likelihood remain application code. Evaluated linear components first pass
+through `scores_from_components`; callable components use `ObservationSample`
+with `LinearComponentScore`.
 
 ## Turning hard labels into fractions
 
@@ -290,7 +300,7 @@ of 20,000 events are sampled only from reference validation rows.
 
 At six bins, all 220 pseudo-patient likelihoods converge. Soft Voronoi reaches
 0.000657 macro RMSE and score k-means reaches 0.000728. At eight bins the values
-are 0.000879 and 0.000858. The unbinned classifier-ratio fit reaches 0.000972.
+are 0.000754 and 0.000865. The unbinned classifier-ratio fit reaches 0.000972.
 The binned results can be better here because their templates are independently
 estimated from labelled reference rows; this is low-dimensional recalibration
 of an approximate ratio model, not information created by discarding events.
@@ -309,6 +319,7 @@ downstream likelihood:
 
 | Representation | Question it answers |
 | --- | --- |
+| Finite D assignment on the 27,607-row partition sample | How much can exact positive-gain relocation improve a fixed table, and does verified compilation reproduce its labels? |
 | Score k-means | How strong is weighted clustering after Fisher whitening? |
 | Soft Voronoi | Does direct differentiable D-optimal fitting help? |
 | Marker k-means | Is ordinary clustering in twelve-marker space sufficient? |
@@ -316,6 +327,13 @@ downstream likelihood:
 | Two marker-PCA coordinates on a grid | How does naive axis-aligned gating behave? |
 | Random score Voronoi, 20 repeats | Is score space alone enough without learning centers? |
 | Unbinned classifier-ratio likelihood | What happens when the selected approximate density ratios are trusted directly? |
+
+The exact finite-D solver is now part of the normative 600k workflow, but its
+optimization table contains the same bounded 27,607 partition rows used by the
+other learned rules—not all 600,000 events. Its candidate scan is vectorized
+over rows and bins, while accepted moves still trigger a fresh exact scan. The
+result is therefore a full-workflow finite-assignment reference, not a claim of
+an all-corpus optimizer or a streaming implementation.
 
 The near equality of score k-means and soft Voronoi is a useful result. The
 Fisher transform already supplies a strong geometry, and weighted k-means is a
@@ -330,13 +348,13 @@ bound and the matrix ordering is verified in the synthetic oracle test. Here
 the unbinned fit trusts estimated classifier ratios directly, while the binned
 pipeline re-estimates \(P(B_j\mid k)\) from independent labelled reference rows.
 Hard bins can therefore act as a low-dimensional recalibration and regularizer
-for an imperfect ratio model. Fisher retention measures local compression loss
-for the supplied scores; estimator bias and downstream RMSE are different
+for an imperfect ratio model. Supplied-score retention measures local compression loss
+for the estimated scores; estimator bias and downstream RMSE are different
 quantities.
 
 After the reference-only calibration audit, the frozen test result now follows
 the expected direction: the unbinned classifier-ratio macro RMSE is 0.00173,
-compared with 0.00196 for eight hard bins. The earlier reversal was caused by
+compared with 0.00193 for eight hard bins. The earlier reversal was caused by
 the chosen temperature-scaled ratio model, not by a failure of the information
 inequality.
 
@@ -346,12 +364,12 @@ At the eight-bin operating point, the held-out RMSE values are:
 
 | Population | RMSE |
 | --- | ---: |
-| T cells | 0.00477 |
-| B cells | 0.00111 |
-| Monocytes | 0.00154 |
-| Mast cells | 0.00014 |
-| HSPCs | 0.00222 |
-| Other | 0.00666 |
+| T cells | 0.00429 |
+| B cells | 0.00112 |
+| Monocytes | 0.00160 |
+| Mast cells | 0.00028 |
+| HSPCs | 0.00235 |
+| Other | 0.00640 |
 
 The small absolute mast-cell RMSE needs care. The true mast fraction is usually
 only a few events in a 20,000-cell patient sample, and some patients have none
@@ -438,6 +456,23 @@ JAX_ENABLE_X64=1 MPLBACKEND=Agg \
   --bins 5 8 10 15 20 30 \
   --output-dir docs/usecases/assets
 ```
+
+When the unpacked 21.25M-row CSV corpus is available, run the separate
+chunked transport audit. It reads every upstream row, compares per-patient
+class fractions and marker moments with the frozen 600k sample, and makes no
+fit or tuning decision:
+
+```bash
+uv run python -m examples.cell_population \
+  --data-dir /path/to/data_original \
+  --transport-audit-sample flowcyt-results/flowcyt_sample_20000.npz \
+  --transport-audit-output flowcyt-results/full_transport_audit.json
+```
+
+The command writes JSON evidence, a per-patient CSV table, and a two-panel PNG
+beside it. The JSON contains the SHA-256 and row count of every full-corpus CSV
+as well as the bounded-sample digest. Only these derived artifacts belong in
+the repository; the full corpus and bounded sample remain external.
 
 The generated sample SHA-256 is
 `a08e9bf183fe32b913e155d413eeacfdb65c7f99017a42e69c4b91bdde20d987`.

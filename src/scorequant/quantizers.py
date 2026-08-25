@@ -1,4 +1,4 @@
-"""Private JAX implementations of FisherBin's two quantizers."""
+"""Private JAX implementations of ScoreQuant geometric quantizers."""
 
 from __future__ import annotations
 
@@ -139,8 +139,12 @@ def weighted_kmeans(
     config: KMeansConfig,
 ) -> QuantizerRun:
     """Run seeded weighted k-means restarts and return the lowest-SSE run."""
+    norms = np.asarray(jnp.sum(points**2, axis=1))
+    order = np.lexsort((np.asarray(weights), norms))
+    ordered_points = points[jnp.asarray(order)]
+    ordered_weights = weights[jnp.asarray(order)]
     keys = jax.random.split(jax.random.PRNGKey(config.seed), config.n_init)
-    runs = [_single_kmeans(points, weights, n_bins, config, key) for key in keys]
+    runs = [_single_kmeans(ordered_points, ordered_weights, n_bins, config, key) for key in keys]
     return min(runs, key=lambda run: run.objective_history[-1])
 
 

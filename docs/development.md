@@ -1,6 +1,6 @@
 # Development
 
-FisherBin uses [uv](https://docs.astral.sh/uv/) for environments, dependencies, command execution, locking, and package builds. Do not maintain a parallel pip or Conda workflow.
+ScoreQuant uses [uv](https://docs.astral.sh/uv/) for environments, dependencies, command execution, locking, and package builds. Do not maintain a parallel pip or Conda workflow.
 
 ## Set up the repository
 

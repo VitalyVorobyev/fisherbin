@@ -1,15 +1,23 @@
-# Fitting
+# Tasks, sources, and providers
 
-Choose the entry point matching the representation already available to the caller. Every result predicts in that same representation.
+::: scorequant.optimize_partition
 
-## Physical variables
+::: scorequant.fit_quantizer
 
-::: scorequant.fit
+::: scorequant.ScoreSample
 
-## Evaluated components
+::: scorequant.ObservationSample
 
-::: scorequant.fit_components
+::: scorequant.IntegrationSource
 
-## Scores
+::: scorequant.GaussLegendreConfig
 
-::: scorequant.fit_scores
+::: scorequant.ScoreFunction
+
+::: scorequant.LinearComponentScore
+
+::: scorequant.ClassifierScore
+
+::: scorequant.CentralLogRatioTransform
+
+::: scorequant.MixturePosteriorTransform

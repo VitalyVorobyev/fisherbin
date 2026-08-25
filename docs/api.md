@@ -1,112 +1,63 @@
-# Python API
+# API guide
 
-## Representation-specific fitting
+## Top-level tasks
 
-### `fit`
-
-```python
-fit(
-    X,
-    *,
-    model: LinearComponents,
-    weights=None,
-    n_bins: int,
-    config=None,
-    validation_X=None,
-    validation_weights=None,
-) -> ModelFitResult
-```
-
-This is the physical-variable API. `X` has shape `[N, K]`. The model is evaluated once for fitting and stored in the result for later `predict(X_new)` calls.
-
-### `fit_components`
+### `optimize_partition`
 
 ```python
-fit_components(
-    components_or_problem,
-    *,
-    coefficients=None,
-    weights=None,
-    component_names=None,
-    n_bins: int,
-    config=None,
-    validation_components=None,
-    validation_weights=None,
-) -> ComponentFitResult
-```
-
-A matrix input has shape `[N, M]` and requires coefficients with shape `[M]`. Passing `LinearProblem` instead uses its coefficients, weights, and names; conflicting keyword values are rejected.
-
-### `fit_scores`
-
-```python
-fit_scores(
+optimize_partition(
     scores,
     *,
     weights=None,
-    n_bins: int,
+    n_bins,
+    criterion=None,
     config=None,
-    validation_scores=None,
-    validation_weights=None,
-) -> FitResult
+    provenance=None,
+) -> PartitionResult
 ```
 
-This is the score-space mathematical core. It contains all optimizer implementation; the other fitting functions evaluate their upstream representation and delegate here.
+This is fixed-sample assignment. The current implementation accepts only `DOptimality` with
+`DExchangeConfig`.
 
-Validation inputs are diagnostic only for every entry point. They cannot affect gradients, stopping, checkpoint selection, or final centers.
+### `fit_quantizer`
 
-The optimizer is selected by constructing `KMeansConfig` or `SoftVoronoiConfig`. The read-only `method` field is derived from the config class and included by `to_dict()`; it is not a constructor argument. All config values are validated immediately.
+```python
+fit_quantizer(
+    source,
+    *,
+    score=None,
+    validation=None,
+    n_bins,
+    criterion=None,
+    config=None,
+) -> QuantizerResult
+```
 
-## Linear models
+Supported pairs are D exchange, soft D, and normalized-trace k-means. `ScoreSample` forbids a
+provider; observation and integration sources require one. Validation must use the same score
+dimension and remains diagnostic.
 
-`LinearComponents(components, coefficients, variables=None)` accepts either:
+## Result semantics
 
-- an insertion-ordered mapping of names to vectorized callables plus an exactly matching coefficient mapping; or
-- a sequence of callables and an equally sized coefficient sequence.
+`PartitionResult` has labels, cell statistics, information matrices, `rank`, accepted moves,
+`exchange_stable`, and `best_remaining_gain`, but no prediction method. Its
+`compile_quantizer()` rejects an unstable or geometrically degenerate result.
 
-Each callable receives a NumPy array `[N, K]` and returns one finite value per row. `variables` is optional string metadata whose length validates `K`.
+`QuantizerResult.predict_scores(scores)` is the only prediction method. `evaluate_scores` assigns
+new scores with the frozen rule and computes supplied-score information. The stored transform,
+centers, and optional common metric define its score-space geometry; `rank`, train/validation
+reports, hardening gap, solver contract, source kind, and score provenance remain inspectable.
+Both result types expose `information_kind`: it is `exact_fisher` only for exact/autodiff
+provenance and `supplied_score_surrogate` otherwise.
 
-`model.evaluate(X, weights=None)` returns an immutable `LinearProblem` containing component values, reference coefficients, optional integration weights, names, density, and scores. Callables are intentionally absent from its JSON representation.
+## Shape and measure contracts
 
-`LinearProblem(components, coefficients, weights=None, component_names=None, variables=None)` is also directly constructible when component values have already been evaluated.
+- Scores: finite `[N, P]`, `N > 0`, `P > 0`.
+- Observations: finite `[N, D]`.
+- Weights: finite nonnegative `[N]` with at least one positive value.
+- Classifier central probabilities: positive `[N, P, 2]`, normalized on the final axis.
+- Multiclass posteriors: nonnegative `[N, K]`, row-normalized, with positive normalized priors.
+- Integration bounds: finite `[D, 2]` with strictly ordered endpoints and an explicit density.
 
-Components and coefficients may be signed and need not be normalized. Their reference intensity must be finite and strictly positive on all supplied rows.
-
-## Classifier posteriors for mixture scores
-
-`mixture_scores_from_posteriors(posteriors, class_priors, reference_fractions,
-reference_component=-1)` converts already evaluated classifier posteriors into
-the free score coordinates of a finite mixture. It does not train or calibrate
-the classifier.
-
-The helper requires normalized posterior rows, strictly positive normalized
-class priors, and an interior normalized reference composition. It performs no
-clipping and no hidden renormalization. See the
-[classifier-mixture tutorial](tutorials/classifier-mixtures.md) for the formula,
-calibration boundary, and a complete example.
-
-## Result behavior
-
-`FitResult`, `ComponentFitResult`, and `ModelFitResult` share:
-
-- `labels` — final labels for all fitting rows, including predictable zero-weight rows;
-- `predict(values)` — values must use the same representation as the fitting entry point;
-- `evaluate(values, weights=None)` — held-out `InformationReport`;
-- `report()` — final fitting-sample report;
-- `n_bins`, `centers`, `transform`, `config`, `trace`, `train_report`, and optional `validation_report`;
-- `to_dict()` — JSON-ready arrays and metadata;
-- `plot_summary(values, weights=None)` — optional Matplotlib view.
-
-`ModelFitResult` stores its `LinearComponents` object. Its JSON form records names, variables, and coefficients but omits unserializable callables. Durable save/load remains deferred.
-
-## Information and visualization
-
-- `fisher_information(scores, weights=None)` computes unbinned information.
-- `binned_fisher_information(scores, assignments, weights=None, n_bins=None)` computes hard-bin information.
-- `fractional_fisher_information(scores, responsibilities, weights=None)` computes soft-bin information.
-- `information_report(...)` returns normalized retention and occupancy diagnostics.
-- `scores_from_components(components, coefficients)` performs the explicit `Phi -> scores` transformation.
-- `mixture_scores_from_posteriors(...)` converts calibrated class posteriors into finite-mixture scores.
-- `plot_optimization`, `plot_partition`, `plot_information`, and `plot_summary` consume score-level structured results.
-
-See the generated [API reference](reference/index.md) for current signatures and field documentation.
+Numerical null directions are projected out. Scores are never centered. `to_dict()` returns
+JSON-ready diagnostic state but is not a durable artifact format.

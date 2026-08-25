@@ -24,7 +24,7 @@ def make_workflow_figure() -> Figure:
         ("Marker events", "12 measured\nchannels", "#e8f1f8"),
         ("Score model", "cross-fitted and\ncalibrated", "#e8f1f8"),
         ("Mixture scores", "five simplex\ndirections", "#f8eddc"),
-        ("FisherBin", "learn a frozen\nhard partition", "#f8eddc"),
+        ("ScoreQuant", "learn a frozen\nscore quantizer", "#f8eddc"),
         ("Bin counts", "discard labels and\ncontinuous markers", "#e4f1e7"),
         ("Fractions", "fit the six-class\ncount likelihood", "#e4f1e7"),
     )
@@ -49,7 +49,7 @@ def make_workflow_figure() -> Figure:
     axis.text(
         2.5,
         -0.7,
-        "application model                    generic FisherBin API                    "
+        "application model                    generic ScoreQuant API                    "
         "downstream model",
         ha="center",
         va="center",
@@ -175,6 +175,27 @@ def make_figure(result: ExperimentResult) -> Figure:
         marker="o",
         label="random score Voronoi",
     )
+    finite_key = f"finite_d_exchange:{result.operating_n_bins}"
+    if finite_key in result.metrics:
+        finite = cast(dict[str, object], result.metrics[finite_key])
+        axes[0, 0].scatter(
+            [result.operating_n_bins],
+            [float(cast(float, finite["target_macro_rmse"]))],
+            marker="*",
+            s=120,
+            color="#e69f00",
+            label="finite D exchange + compiled rule",
+            zorder=5,
+        )
+        axes[0, 1].scatter(
+            [result.operating_n_bins],
+            [float(cast(float, finite["held_out_d_efficiency"]))],
+            marker="*",
+            s=120,
+            color="#e69f00",
+            label="finite D exchange + compiled rule",
+            zorder=5,
+        )
     unbinned_rmse = float(result.metrics["unbinned_classifier_ratio"]["target_macro_rmse"])
     axes[0, 0].axhline(
         unbinned_rmse,
@@ -190,11 +211,12 @@ def make_figure(result: ExperimentResult) -> Figure:
     axes[0, 0].set_yscale("log")
     axes[0, 0].legend(fontsize=8)
     axes[0, 1].set(
-        title="Held-out Fisher information",
+        title="Held-out supplied-score information",
         xlabel="number of hard bins",
         ylabel="D-efficiency",
         ylim=(0, 1.02),
     )
+    axes[0, 1].legend(fontsize=8)
 
     final_key = f"soft_voronoi:{result.operating_n_bins}"
     predicted = result.predicted_fractions[final_key]

@@ -17,9 +17,9 @@ def test_readme_quickstart_is_executable_and_deterministic() -> None:
     assert match is not None
     namespace: dict[str, object] = {}
     exec(compile(match.group(1), "README.md", "exec"), namespace)
-    np.testing.assert_array_equal(namespace["counts"], [768, 200, 547, 485])
-    partition = namespace["partition"]
-    assert np.isclose(partition.train_report.geometric_mean_retention, 0.8824679259859257)
+    np.testing.assert_array_equal(np.sort(namespace["counts"]), [200, 485, 547, 768])
+    quantizer = namespace["quantizer"]
+    assert np.isclose(quantizer.train_report.geometric_mean_retention, 0.8824679259859257)
 
 
 def test_readme_contains_only_current_user_facing_language() -> None:
