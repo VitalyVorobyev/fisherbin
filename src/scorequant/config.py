@@ -174,28 +174,56 @@ class SoftVoronoiConfig:
 class DExchangeConfig:
     """Configure exact positive-gain D-optimal point exchange.
 
+    One *scan* is one complete evaluation of every admissible single-row
+    relocation. A scan accepts either one move or, under ``batch_moves``, many
+    relocations at once, so ``accepted_moves`` and ``scans`` are different
+    quantities.
+
     Parameters
     ----------
     rank_rtol
         Relative threshold for the informative Fisher subspace.
     seed
-        Seed used by deterministic k-means initialization.
+        Base seed of deterministic initialization. Exchange restart ``r`` uses
+        ``seed + r``.
     n_init
-        Number of k-means initialization restarts.
-    max_sweeps
-        Maximum complete scans of candidate point moves.
+        Number of k-means seeding restarts inside one exchange restart.
+    max_scans
+        Maximum number of complete candidate scans. ``None`` runs until the
+        exchange is stable, which strict positive-gain acceptance guarantees;
+        a generous internal safety bound still stops a numerically pathological
+        run and records ``best_remaining_gain``.
+    batch_moves
+        Relocate many positive-gain rows per scan. The batch is ranked by gain,
+        truncated before it would displace too much of any cell's weight, and
+        accepted only when the exactly recomputed objective strictly improves;
+        a rejected batch is halved and retried, finally falling back to the
+        single best move. Small improving sets always use that single exact
+        move, so results match ``batch_moves=False`` on small samples. Ignored
+        when ``first_improvement`` is set.
+    n_restarts
+        Number of independent exchange restarts. The restart with the best
+        exact final objective wins, ties resolving to the earliest restart, and
+        every reported diagnostic describes that winning restart.
+    init
+        Initial labeling of each restart: weighted k-means++ seeding or a
+        balanced random labeling.
     gain_tolerance
         Strict minimum accepted log-determinant gain.
     first_improvement
         Accept the first improving move in deterministic row/bin order instead
-        of the best move in a sweep.
+        of the best move in a scan. This stops each scan early, so it forces
+        single-move acceptance and disables ``batch_moves``.
     """
 
     method: Literal["d_exchange"] = field(default="d_exchange", init=False)
     rank_rtol: float | None = None
     seed: int = 0
     n_init: int = 8
-    max_sweeps: int = 200
+    max_scans: int | None = None
+    batch_moves: bool = True
+    n_restarts: int = 1
+    init: Literal["kmeans++", "random"] = "kmeans++"
     gain_tolerance: float = 1e-10
     first_improvement: bool = False
 
@@ -207,7 +235,12 @@ class DExchangeConfig:
                 raise ValueError("rank_rtol must be less than one")
         _validate_integer("seed", self.seed, minimum=0)
         _validate_integer("n_init", self.n_init, minimum=1)
-        _validate_integer("max_sweeps", self.max_sweeps, minimum=1)
+        if self.max_scans is not None:
+            _validate_integer("max_scans", self.max_scans, minimum=1)
+        _validate_bool("batch_moves", self.batch_moves)
+        _validate_integer("n_restarts", self.n_restarts, minimum=1)
+        if self.init not in ("kmeans++", "random"):
+            raise ValueError("init must be 'kmeans++' or 'random'")
         _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
         _validate_bool("first_improvement", self.first_improvement)
 

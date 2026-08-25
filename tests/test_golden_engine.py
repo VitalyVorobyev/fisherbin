@@ -25,12 +25,21 @@ def _require_x64() -> None:
         pytest.skip("golden fixtures were frozen under JAX_ENABLE_X64=1")
 
 
+def _legacy_config() -> sq.DExchangeConfig:
+    """Pin the single-move, single-restart, uncapped behavior these values froze.
+
+    Every frozen case converged in far fewer than the historical 200-sweep cap,
+    so an uncapped scan budget reproduces the same terminal labels bit for bit.
+    """
+    return sq.DExchangeConfig(batch_moves=False, n_restarts=1, max_scans=None)
+
+
 def test_golden_d_case_a_unit_weight_small() -> None:
     """N=60, P=2, n_bins=3, unit weights."""
     _require_x64()
     rng = np.random.default_rng(101)
     scores = rng.normal(size=(60, 2))
-    result = sq.optimize_partition(scores, n_bins=3, config=sq.DExchangeConfig())
+    result = sq.optimize_partition(scores, n_bins=3, config=_legacy_config())
 
     expected_labels = [
         2,
@@ -107,7 +116,7 @@ def test_golden_d_case_b_weighted_medium() -> None:
     rng = np.random.default_rng(102)
     scores = rng.normal(size=(200, 3))
     weights = rng.uniform(0.5, 2.0, size=200)
-    result = sq.optimize_partition(scores, weights=weights, n_bins=5, config=sq.DExchangeConfig())
+    result = sq.optimize_partition(scores, weights=weights, n_bins=5, config=_legacy_config())
 
     expected_labels = [
         2,
@@ -327,7 +336,7 @@ def test_golden_profiled_d_case_c_unit_weight() -> None:
         scores,
         n_bins=4,
         criterion=sq.ProfiledDOptimality((0,)),
-        config=sq.DExchangeConfig(),
+        config=_legacy_config(),
     )
 
     expected_labels = [
@@ -429,7 +438,7 @@ def test_golden_profiled_d_case_d_weighted_larger() -> None:
         weights=weights,
         n_bins=5,
         criterion=sq.ProfiledDOptimality((0, 1)),
-        config=sq.DExchangeConfig(),
+        config=_legacy_config(),
     )
 
     expected_labels = [

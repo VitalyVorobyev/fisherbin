@@ -39,16 +39,19 @@ The generated API reference is collected from NumPy-style docstrings with mkdocs
 `benchmarks/exact_d.py` is a deterministic engineering benchmark, not a runtime promise:
 
 ```bash
-uv run python benchmarks/exact_d.py --rows 200000 --max-sweeps 10
-uv run python benchmarks/exact_d.py --rows 1000000 --max-sweeps 1
+uv run python benchmarks/exact_d.py --rows 200000 --max-scans 10
+uv run python benchmarks/exact_d.py --rows 1000000 --max-scans 1
 ```
 
 On the 2026-08-25 development machine (Apple Silicon, JAX CPU, float32), the first command took
-2.53 seconds with 569 MiB peak RSS and accepted ten moves. The one-million-row scan took 3.71
-seconds with 1.29 GiB peak RSS and accepted one move. Candidate gains are scanned in deterministic
-memory-bounded chunks; accepted moves update cell moments, information, and its inverse in
-\(O(P^2)\), with a residual-checked full inverse fallback. Initialization and stored input arrays
-still scale with \(N\), so these measurements do not claim full-corpus or one-pass fitting.
+2.37 seconds with 564 MiB peak RSS, spending eleven scans on 34,440 verified relocations. The
+one-million-row command took 3.65 seconds with 1.29 GiB peak RSS over two scans and 58,519
+relocations. Candidate gains are scanned in deterministic memory-bounded chunks; a scan accepts
+either one rank-two relocation, updating cell moments, information, and its inverse in \(O(P^2)\)
+with a residual-checked full inverse fallback, or a guarded batch verified against the exactly
+rebuilt objective. Both commands cap the scan budget, so neither reaches exchange stability.
+Initialization and stored input arrays still scale with \(N\), so these measurements do not claim
+full-corpus or one-pass fitting.
 
 ## Repository guidance
 

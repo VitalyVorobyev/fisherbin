@@ -18,7 +18,7 @@ def main() -> None:
     parser.add_argument("--rows", type=int, default=200_000)
     parser.add_argument("--dimensions", type=int, default=5)
     parser.add_argument("--bins", type=int, default=8)
-    parser.add_argument("--max-sweeps", type=int, default=1)
+    parser.add_argument("--max-scans", type=int, default=1)
     args = parser.parse_args()
     rng = np.random.default_rng(2026)
     scores = rng.normal(size=(args.rows, args.dimensions))
@@ -28,7 +28,7 @@ def main() -> None:
         scores,
         weights=weights,
         n_bins=args.bins,
-        config=sq.DExchangeConfig(seed=2026, n_init=1, max_sweeps=args.max_sweeps),
+        config=sq.DExchangeConfig(seed=2026, n_init=1, max_scans=args.max_scans),
     )
     jax.block_until_ready(result.labels)
     elapsed = perf_counter() - started
@@ -41,6 +41,7 @@ def main() -> None:
             "elapsed_seconds": elapsed,
             "peak_rss_megabytes": peak_rss,
             "accepted_moves": result.accepted_moves,
+            "scans": result.scans,
             "exchange_stable": result.exchange_stable,
             "best_remaining_gain": result.best_remaining_gain,
         }

@@ -233,7 +233,7 @@ class PartitionResult:
     train_report: InformationReport
     provenance: ScoreProvenance
     accepted_moves: int
-    sweeps: int
+    scans: int
     exchange_stable: bool
     best_remaining_gain: float
     objective_history: jnp.ndarray
@@ -268,7 +268,11 @@ class PartitionResult:
                 "fit an explicit quantizer instead"
             )
         if not self.exchange_stable:
-            raise ValueError("only an exchange-stable D partition can be compiled")
+            raise ValueError(
+                "only an exchange-stable D partition can be compiled; inspect "
+                "best_remaining_gain and raise max_scans, or leave it unset to run "
+                "until stability"
+            )
         if self.transformed_centers is None or self.metric is None:
             raise ValueError("D compilation geometry is unavailable")
         coordinates = self.transform.apply(self.training_scores)
@@ -328,7 +332,7 @@ class PartitionResult:
                 "provenance": self.provenance.to_dict(),
                 "information_kind": self.information_kind,
                 "accepted_moves": self.accepted_moves,
-                "sweeps": self.sweeps,
+                "scans": self.scans,
                 "exchange_stable": self.exchange_stable,
                 "best_remaining_gain": self.best_remaining_gain,
                 "objective_history": self.objective_history,

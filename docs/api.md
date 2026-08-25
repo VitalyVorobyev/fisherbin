@@ -39,9 +39,11 @@ dimension and remains diagnostic.
 
 ## Result semantics
 
-`PartitionResult` has labels, cell statistics, information matrices, `rank`, accepted moves,
-`exchange_stable`, and `best_remaining_gain`, but no prediction method. Its
-`compile_quantizer()` rejects an unstable or geometrically degenerate result.
+`PartitionResult` has labels, cell statistics, information matrices, `rank`, `accepted_moves`,
+`scans`, `exchange_stable`, and `best_remaining_gain`, but no prediction method. One scan is one
+complete evaluation of every admissible relocation; with the default `batch_moves` a single scan
+may relocate many rows, so `accepted_moves` normally exceeds `scans`. Its `compile_quantizer()`
+rejects an unstable or geometrically degenerate result.
 
 `QuantizerResult.predict_scores(scores)` is the only prediction method. `evaluate_scores` assigns
 new scores with the frozen rule and computes supplied-score information. The stored transform,

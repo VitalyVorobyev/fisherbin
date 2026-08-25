@@ -16,7 +16,7 @@ import numpy as np
 
 from scorequant._typing import ArrayLike
 from scorequant._validation import collapse_duplicate_scores, validate_n_bins, validate_sample
-from scorequant.partition import _cell_state
+from scorequant.partition import _cell_statistics, _DObjective
 from scorequant.transforms import fisher_transform
 
 
@@ -151,7 +151,11 @@ def _exhaustive_d_oracle(
     for candidate in _restricted_growth_partitions(effective_scores.shape[0], n_bins):
         labels = jnp.asarray(candidate)
         try:
-            objective = _cell_state(coordinates, effective_weights, labels, n_bins).objective
+            objective = (
+                _DObjective()
+                .init_state(_cell_statistics(coordinates, effective_weights, labels, n_bins))
+                .objective
+            )
         except ValueError:
             objective = None
         if objective is not None and objective > best_objective:

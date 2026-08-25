@@ -4,7 +4,13 @@ import numpy as np
 import pytest
 
 import scorequant as sq
-from scorequant.partition import _apply_move, _best_move, _cell_state
+from scorequant.partition import (
+    _cell_statistics,
+    _DObjective,
+    _ExchangeState,
+    _relocation,
+    _scan,
+)
 
 from ._oracles import _exact_d_move_gain
 
@@ -13,6 +19,12 @@ def _scores(seed: int = 11, n_rows: int = 72) -> np.ndarray:
     rng = np.random.default_rng(seed)
     scores = rng.normal(size=(n_rows, 2))
     return scores - scores.mean(axis=0)
+
+
+def _d_state(
+    scores: np.ndarray, weights: np.ndarray, labels: np.ndarray, n_bins: int
+) -> _ExchangeState:
+    return _DObjective().init_state(_cell_statistics(scores, weights, labels, n_bins))
 
 
 def test_exact_move_gain_matches_direct_recomputation() -> None:
@@ -48,18 +60,19 @@ def test_chunked_scan_and_rank_two_state_update_match_full_recomputation() -> No
     scores = _scores(seed=19, n_rows=48)
     weights = np.linspace(0.5, 1.5, len(scores))
     labels = np.tile(np.arange(3), 16)
-    state = _cell_state(scores, weights, labels, 3)
-    config = sq.DExchangeConfig(max_sweeps=10)
+    state = _d_state(scores, weights, labels, 3)
+    objective = _DObjective()
+    config = sq.DExchangeConfig(max_scans=10)
     with patch("scorequant.partition._CANDIDATE_WORKING_SET_BYTES", 256):
-        chunked = _best_move(scores, weights, labels, state, config)
+        chunked = _scan(scores, weights, labels, state, objective, config, rows=True).best
     with patch("scorequant.partition._CANDIDATE_WORKING_SET_BYTES", 1 << 40):
-        unchunked = _best_move(scores, weights, labels, state, config)
+        unchunked = _scan(scores, weights, labels, state, objective, config, rows=True).best
     assert chunked == unchunked
     assert chunked is not None
-    updated = _apply_move(scores, weights, labels, state, chunked)
+    updated = objective.apply_move(state, _relocation(scores, weights, labels, state, chunked))
     moved_labels = labels.copy()
     moved_labels[chunked.row] = chunked.destination
-    recomputed = _cell_state(scores, weights, moved_labels, 3)
+    recomputed = _d_state(scores, weights, moved_labels, 3)
     np.testing.assert_allclose(updated.weights, recomputed.weights, rtol=1e-12, atol=1e-12)
     np.testing.assert_allclose(updated.means, recomputed.means, rtol=1e-12, atol=1e-12)
     np.testing.assert_allclose(updated.information, recomputed.information, rtol=1e-12, atol=1e-12)
@@ -71,14 +84,15 @@ def test_repeated_rank_two_updates_do_not_accumulate_material_drift() -> None:
     scores = _scores(seed=191, n_rows=96)
     weights = np.linspace(0.25, 2.0, len(scores))
     labels = np.tile(np.arange(4), 24)
-    state = _cell_state(scores, weights, labels, 4)
-    config = sq.DExchangeConfig(max_sweeps=20)
+    state = _d_state(scores, weights, labels, 4)
+    objective = _DObjective()
+    config = sq.DExchangeConfig(max_scans=20)
     for _ in range(12):
-        move = _best_move(scores, weights, labels, state, config)
+        move = _scan(scores, weights, labels, state, objective, config, rows=False).best
         assert move is not None and move.gain > 0
-        state = _apply_move(scores, weights, labels, state, move)
+        state = objective.apply_move(state, _relocation(scores, weights, labels, state, move))
         labels[move.row] = move.destination
-        recomputed = _cell_state(scores, weights, labels, 4)
+        recomputed = _d_state(scores, weights, labels, 4)
         np.testing.assert_allclose(
             state.information, recomputed.information, rtol=1e-11, atol=1e-11
         )
@@ -91,7 +105,7 @@ def test_partition_is_transductive_and_d_compilation_is_explicit() -> None:
     partition = sq.optimize_partition(
         scores,
         n_bins=3,
-        config=sq.DExchangeConfig(seed=4, n_init=3, max_sweeps=200),
+        config=sq.DExchangeConfig(seed=4, n_init=3, max_scans=200),
     )
     assert partition.exchange_stable
     assert partition.rank == 2
@@ -108,7 +122,7 @@ def test_partition_is_transductive_and_d_compilation_is_explicit() -> None:
 def test_zero_weight_rows_are_predictable_but_do_not_change_objective() -> None:
     scores = _scores(n_rows=40)
     extra = np.array([[100.0, -100.0], [-80.0, 120.0]])
-    config = sq.DExchangeConfig(seed=9, n_init=3, max_sweeps=200)
+    config = sq.DExchangeConfig(seed=9, n_init=3, max_scans=200)
     reference = sq.optimize_partition(scores, n_bins=3, config=config)
     extended = sq.optimize_partition(
         np.vstack([scores, extra]),
@@ -137,7 +151,7 @@ def test_solver_criterion_pairs_are_explicit() -> None:
 def test_exact_partition_preserves_core_invariances_without_centering() -> None:
     scores = _scores(seed=31, n_rows=36) + np.array([2.0, -0.7])
     weights = np.linspace(0.4, 1.8, len(scores))
-    config = sq.DExchangeConfig(seed=14, n_init=8, max_sweeps=300)
+    config = sq.DExchangeConfig(seed=14, n_init=8, max_scans=300)
     original = sq.optimize_partition(scores, weights=weights, n_bins=3, config=config)
     np.testing.assert_allclose(original.training_scores, scores)
 

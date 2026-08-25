@@ -1,9 +1,18 @@
-"""Exact finite-sample D-optimal partition optimization."""
+"""Exact finite-sample D-optimal partition optimization.
+
+One unified exchange engine drives both supported finite criteria. A *scan* is
+one complete evaluation of every admissible single-row relocation; a scan
+either accepts work or certifies exchange stability. With ``batch_moves`` a
+single scan may relocate many rows at once, so accepted moves and scans are
+different quantities.
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -16,44 +25,257 @@ from ._validation import (
 )
 from .config import DExchangeConfig, KMeansConfig
 from .criteria import DOptimality, ProfiledDOptimality
-from .information import information_report, profiled_information_report
+from .information import _profiled_blocks, information_report, profiled_information_report
 from .quantizers import hard_assign, weighted_kmeans
-from .result import PartitionResult, ProfiledGeometryReport
+from .result import PartitionResult, ProfiledGeometryReport, ProfiledInformationReport
 from .sources import ScoreProvenance
-from .transforms import fisher_transform
+from .transforms import FisherTransform, fisher_transform
+
+_CANDIDATE_WORKING_SET_BYTES = 64 * 1024 * 1024
+
+# Strict positive-gain acceptance cannot revisit a labeling, so the exchange
+# terminates without any scan cap. This bound only stops a run that a numerical
+# pathology would otherwise keep alive; it is never reached by a healthy fit.
+_SAFETY_SCAN_LIMIT = 100_000
+
+# A guarded batch halves its size on rejection, so this bounds the retries of a
+# single scan for any sample that fits in memory.
+_MAX_BATCH_SHRINKS = 32
+
+# Smallest improving set worth a guarded batch, and the largest share of a
+# cell's weight that one batch may move in or out of it.
+_MIN_BATCH_ROWS = 8
+_BATCH_MASS_FRACTION = 0.25
 
 
 @dataclass(frozen=True, slots=True)
-class _CellState:
+class _CellStatistics:
+    """Weighted occupancy, score sums, and score means of every requested cell."""
+
     weights: jnp.ndarray
     sums: jnp.ndarray
     means: jnp.ndarray
-    information: jnp.ndarray
-    inverse: jnp.ndarray
-    objective: float
 
 
 @dataclass(frozen=True, slots=True)
-class _ProfiledCellState:
-    weights: jnp.ndarray
-    sums: jnp.ndarray
-    means: jnp.ndarray
+class _ExchangeState:
+    """Cell statistics and criterion matrices of one labeling."""
+
+    cells: _CellStatistics
     information: jnp.ndarray
     inverse: jnp.ndarray
-    nuisance_information: jnp.ndarray
-    nuisance_inverse: jnp.ndarray
-    nuisance: tuple[int, ...]
     objective: float
+    nuisance_information: jnp.ndarray | None = None
+    nuisance_inverse: jnp.ndarray | None = None
+
+    @property
+    def weights(self) -> jnp.ndarray:
+        """Return the weighted occupancy of every cell."""
+        return self.cells.weights
+
+    @property
+    def means(self) -> jnp.ndarray:
+        """Return the weighted score mean of every cell."""
+        return self.cells.means
 
 
 @dataclass(frozen=True, slots=True)
 class _Move:
+    """One candidate relocation of a row into another cell."""
+
     row: int
     destination: int
     gain: float
 
 
-_CANDIDATE_WORKING_SET_BYTES = 64 * 1024 * 1024
+@dataclass(frozen=True, slots=True)
+class _Relocation:
+    """Exact rank-two relocation data of one accepted move."""
+
+    source: int
+    destination: int
+    point: jnp.ndarray
+    point_weight: jnp.ndarray
+    source_residual: jnp.ndarray
+    destination_residual: jnp.ndarray
+    alpha: jnp.ndarray
+    beta: jnp.ndarray
+
+
+@dataclass(frozen=True, slots=True)
+class _Candidates:
+    """Vectorized relocation geometry of one memory-bounded row chunk."""
+
+    source_residuals: jnp.ndarray
+    destination_residuals: jnp.ndarray
+    alpha: jnp.ndarray
+    beta: jnp.ndarray
+    admissible: jnp.ndarray
+
+
+@dataclass(frozen=True, slots=True)
+class _UpdatedBlock:
+    """One symmetric information block after an exact rank-two relocation."""
+
+    information: jnp.ndarray
+    inverse: jnp.ndarray
+    sign: float
+    logdet: float
+
+
+@dataclass(frozen=True, slots=True)
+class _ScanOutcome:
+    """Result of one complete candidate scan."""
+
+    best: _Move | None
+    row_gains: np.ndarray | None
+    row_destinations: np.ndarray | None
+
+
+@dataclass(frozen=True, slots=True)
+class _ExchangeRun:
+    """Terminal state and diagnostics of one exchange restart."""
+
+    labels: jnp.ndarray
+    state: _ExchangeState
+    objective_history: tuple[float, ...]
+    accepted_moves: int
+    scans: int
+    exchange_stable: bool
+    best_remaining_gain: float
+
+
+class _ExchangeObjective(Protocol):
+    """Criterion-specific algebra shared by every exchange run."""
+
+    def init_state(self, cells: _CellStatistics) -> _ExchangeState:
+        """Build criterion matrices and the exact objective of one labeling."""
+        ...
+
+    def chunk_gains(self, state: _ExchangeState, chunk: _Candidates) -> jnp.ndarray:
+        """Return exact objective gains of every candidate in one row chunk."""
+        ...
+
+    def apply_move(self, state: _ExchangeState, relocation: _Relocation) -> _ExchangeState:
+        """Return the exactly refreshed state after one accepted relocation."""
+        ...
+
+
+@dataclass(frozen=True, slots=True)
+class _DObjective:
+    """Log-determinant algebra of Fisher-whitened D-optimal exchange."""
+
+    def init_state(self, cells: _CellStatistics) -> _ExchangeState:
+        """Build the cell information matrix, its inverse, and its log determinant."""
+        information = _cell_information(cells)
+        sign, logdet = jnp.linalg.slogdet(information)
+        if float(np.asarray(sign)) <= 0:
+            raise ValueError(
+                "initial D partition is singular; increase n_bins or use a different "
+                "reference sample"
+            )
+        return _ExchangeState(
+            cells=cells,
+            information=information,
+            inverse=jnp.linalg.inv(information),
+            objective=float(np.asarray(logdet)),
+        )
+
+    def chunk_gains(self, state: _ExchangeState, chunk: _Candidates) -> jnp.ndarray:
+        """Return the exact rank-two log-determinant gain of every candidate."""
+        ratios = _determinant_ratios(
+            chunk, chunk.source_residuals, chunk.destination_residuals, state.inverse
+        )
+        return jnp.where(chunk.admissible & (ratios > 0), jnp.log(ratios), -jnp.inf)
+
+    def apply_move(self, state: _ExchangeState, relocation: _Relocation) -> _ExchangeState:
+        """Apply the exact rank-two information and inverse update of one move."""
+        block = _rank_two_block(state.information, state.inverse, relocation)
+        if block.sign <= 0:
+            raise FloatingPointError("an accepted D move produced singular information")
+        return _ExchangeState(
+            cells=_relocate_cells(state.cells, relocation),
+            information=block.information,
+            inverse=block.inverse,
+            objective=block.logdet,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class _ProfiledDObjective:
+    r"""Same-label profiled-\(D_s\) algebra: full determinant minus its nuisance block.
+
+    Parameters
+    ----------
+    interest
+        Score-column indices of the parameters of interest.
+    nuisance
+        Complementary score-column indices profiled out of the same labels.
+    """
+
+    interest: tuple[int, ...]
+    nuisance: tuple[int, ...]
+
+    def init_state(self, cells: _CellStatistics) -> _ExchangeState:
+        """Build full and nuisance information with the guarded block algebra."""
+        information = _cell_information(cells)
+        # information._profiled_blocks owns the nonsingular-nuisance guard and the
+        # index bookkeeping; the Schur block itself is not needed because the
+        # exchange gains telescope with the difference of the two log determinants.
+        _, nuisance_information, _ = _profiled_blocks(information, self.interest)
+        full_sign, full_logdet = jnp.linalg.slogdet(information)
+        nuisance_sign, nuisance_logdet = jnp.linalg.slogdet(nuisance_information)
+        if float(np.asarray(full_sign)) <= 0 or float(np.asarray(nuisance_sign)) <= 0:
+            raise ValueError(
+                "initial profiled-D partition is singular; increase n_bins or use a "
+                "different sample"
+            )
+        return _ExchangeState(
+            cells=cells,
+            information=information,
+            inverse=jnp.linalg.inv(information),
+            objective=float(np.asarray(full_logdet - nuisance_logdet)),
+            nuisance_information=nuisance_information,
+            nuisance_inverse=jnp.linalg.inv(nuisance_information),
+        )
+
+    def chunk_gains(self, state: _ExchangeState, chunk: _Candidates) -> jnp.ndarray:
+        """Return the difference of the full and nuisance determinant-lemma gains."""
+        indices = jnp.asarray(self.nuisance)
+        full_ratios = _determinant_ratios(
+            chunk, chunk.source_residuals, chunk.destination_residuals, state.inverse
+        )
+        nuisance_ratios = _determinant_ratios(
+            chunk,
+            chunk.source_residuals[:, indices],
+            chunk.destination_residuals[:, :, indices],
+            _require_nuisance(state.nuisance_inverse),
+        )
+        return jnp.where(
+            chunk.admissible & (full_ratios > 0) & (nuisance_ratios > 0),
+            jnp.log(full_ratios) - jnp.log(nuisance_ratios),
+            -jnp.inf,
+        )
+
+    def apply_move(self, state: _ExchangeState, relocation: _Relocation) -> _ExchangeState:
+        """Apply exact rank-two updates to the full and the nuisance block."""
+        full = _rank_two_block(state.information, state.inverse, relocation)
+        nuisance = _rank_two_block(
+            _require_nuisance(state.nuisance_information),
+            _require_nuisance(state.nuisance_inverse),
+            relocation,
+            block=jnp.asarray(self.nuisance),
+        )
+        if full.sign <= 0 or nuisance.sign <= 0:
+            raise FloatingPointError("an accepted profiled-D move produced singular information")
+        return _ExchangeState(
+            cells=_relocate_cells(state.cells, relocation),
+            information=full.information,
+            inverse=full.inverse,
+            objective=full.logdet - nuisance.logdet,
+            nuisance_information=nuisance.information,
+            nuisance_inverse=nuisance.inverse,
+        )
 
 
 def optimize_d_partition(
@@ -65,118 +287,47 @@ def optimize_d_partition(
     provenance: ScoreProvenance,
 ) -> PartitionResult:
     """Optimize arbitrary labels of one fixed weighted score table."""
-    sample = validate_sample(scores, weights)
-    validate_n_bins(n_bins, sample.n_effective)
-    effective_scores, effective_weights, inverse_rows = collapse_duplicate_scores(
-        sample.effective_scores, sample.effective_weights
-    )
-    if n_bins > effective_scores.shape[0]:
-        raise ValueError("n_bins exceeds distinct positive-weight score rows")
-    full_information = jnp.einsum(
-        "n,np,nq->pq", effective_weights, effective_scores, effective_scores
-    )
-    transform = fisher_transform(full_information, whiten=True, rank_rtol=config.rank_rtol)
-    coordinates = transform.apply(effective_scores)
-    if n_bins < transform.rank:
+    prepared = _prepare_partition(scores, weights, n_bins=n_bins, config=config)
+    if n_bins < prepared.transform.rank:
         raise ValueError(
             "D-optimality requires at least as many bins as informative directions; "
             "a normalized mean-zero score law generally requires one additional bin"
         )
-    initializer = weighted_kmeans(
-        coordinates,
-        effective_weights,
-        n_bins,
-        KMeansConfig(
-            whiten=False,
-            rank_rtol=config.rank_rtol,
-            seed=config.seed,
-            n_init=config.n_init,
-            max_iter=100,
-            tolerance=1e-8,
-            record_every=100,
-        ),
+    run = _optimize_exchange(
+        points=prepared.coordinates,
+        coordinates=prepared.coordinates,
+        weights=prepared.weights,
+        n_bins=n_bins,
+        objective=_DObjective(),
+        config=config,
     )
-    labels = hard_assign(coordinates, initializer.centers)
-    state = _cell_state(coordinates, effective_weights, labels, n_bins)
-    objective_history = [state.objective]
-    accepted_moves = 0
-    scans = 0
-    exchange_stable = False
-    best_remaining_gain = float("-inf")
-
-    for _ in range(config.max_sweeps):
-        scans += 1
-        move = _best_move(
-            coordinates,
-            effective_weights,
-            labels,
-            state,
-            config,
-        )
-        best_remaining_gain = move.gain if move is not None else float("-inf")
-        if move is None or move.gain <= config.gain_tolerance:
-            exchange_stable = True
-            break
-        state = _apply_move(coordinates, effective_weights, labels, state, move)
-        labels = labels.at[move.row].set(move.destination)
-        objective_history.append(state.objective)
-        accepted_moves += 1
-
-    if not exchange_stable:
-        final_move = _best_move(
-            coordinates,
-            effective_weights,
-            labels,
-            state,
-            config,
-        )
-        best_remaining_gain = final_move.gain if final_move is not None else float("-inf")
-        exchange_stable = final_move is None or final_move.gain <= config.gain_tolerance
+    state = run.state
+    sample = prepared.sample
 
     # The D theorem supplies the only canonical labels for zero-measure rows.
-    all_coordinates = transform.apply(sample.scores)
+    all_coordinates = prepared.transform.apply(sample.scores)
     compiled_labels = _metric_assign(all_coordinates, state.means, state.inverse)
-    effective_labels = labels[inverse_rows]
+    effective_labels = run.labels[prepared.inverse_rows]
     compiled_labels = compiled_labels.at[sample.positive_weight_mask].set(effective_labels)
-    if exchange_stable:
-        geometric = _metric_assign(coordinates, state.means, state.inverse)
-        if not np.array_equal(np.asarray(geometric), np.asarray(labels)):
+    if run.exchange_stable:
+        geometric = _metric_assign(prepared.coordinates, state.means, state.inverse)
+        if not np.array_equal(np.asarray(geometric), np.asarray(run.labels)):
             raise ValueError(
                 "terminal D state is geometrically degenerate; duplicate/tied score atoms "
                 "must be merged or assigned consistently"
             )
 
-    raw_weights, raw_sums, raw_means = _raw_cell_statistics(sample, effective_labels, n_bins)
-    raw_information = jnp.einsum("b,bp,bq->pq", raw_weights, raw_means, raw_means)
-    report = information_report(
-        sample.scores,
-        compiled_labels,
-        sample.weights,
+    return _partition_result(
+        prepared,
+        run,
+        compiled_labels=compiled_labels,
+        effective_labels=effective_labels,
         n_bins=n_bins,
-        rank_rtol=config.rank_rtol,
-    )
-    return PartitionResult(
-        labels=compiled_labels,
-        training_scores=sample.scores,
-        cell_weights=raw_weights,
-        cell_score_sums=raw_sums,
-        cell_score_means=raw_means,
-        information_full=full_information,
-        information_partitioned=raw_information,
-        objective=state.objective,
-        transform=transform,
-        transformed_centers=state.means,
-        metric=state.inverse,
         criterion=DOptimality(),
         config=config,
-        train_report=report,
         provenance=provenance,
-        accepted_moves=accepted_moves,
-        sweeps=scans,
-        exchange_stable=exchange_stable,
-        best_remaining_gain=best_remaining_gain,
-        objective_history=jnp.asarray(objective_history),
-        positive_weight_mask=sample.positive_weight_mask,
+        transformed_centers=state.means,
+        metric=state.inverse,
     )
 
 
@@ -190,6 +341,135 @@ def optimize_profiled_d_partition(
     provenance: ScoreProvenance,
 ) -> PartitionResult:
     """Optimize same-label profiled-D labels of one fixed score table."""
+    prepared = _prepare_partition(scores, weights, n_bins=n_bins, config=config)
+    dimension = prepared.scores.shape[1]
+    if any(index >= dimension for index in criterion.interest):
+        raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
+    interest_set = set(criterion.interest)
+    nuisance = tuple(index for index in range(dimension) if index not in interest_set)
+    if not nuisance:
+        raise ValueError("profiled D requires a nuisance block; use DOptimality")
+    if prepared.transform.rank != dimension:
+        raise ValueError(
+            "profiled D requires full-rank supplied-score information in the declared "
+            "interest/nuisance parameterization"
+        )
+    if n_bins < dimension:
+        raise ValueError("profiled D requires at least as many bins as score dimensions")
+    objective = _ProfiledDObjective(interest=criterion.interest, nuisance=nuisance)
+    run = _optimize_exchange(
+        points=prepared.scores,
+        coordinates=prepared.coordinates,
+        weights=prepared.weights,
+        n_bins=n_bins,
+        objective=objective,
+        config=config,
+    )
+    state = run.state
+    sample = prepared.sample
+
+    all_coordinates = prepared.transform.apply(sample.scores)
+    extension_labels = hard_assign(all_coordinates, prepared.transform.apply(state.means))
+    effective_labels = run.labels[prepared.inverse_rows]
+    compiled_labels = extension_labels.at[sample.positive_weight_mask].set(effective_labels)
+    return _partition_result(
+        prepared,
+        run,
+        compiled_labels=compiled_labels,
+        effective_labels=effective_labels,
+        n_bins=n_bins,
+        criterion=criterion,
+        config=config,
+        provenance=provenance,
+        profiled_report=profiled_information_report(
+            sample.scores,
+            compiled_labels,
+            interest=criterion.interest,
+            weights=sample.weights,
+            n_bins=n_bins,
+        ),
+        profiled_geometry=_profiled_geometry_report(
+            prepared.scores,
+            prepared.weights,
+            run.labels,
+            state,
+            nuisance=nuisance,
+            exchange_stable=run.exchange_stable,
+        ),
+    )
+
+
+def _partition_result(
+    prepared: _PreparedPartition,
+    run: _ExchangeRun,
+    *,
+    compiled_labels: jnp.ndarray,
+    effective_labels: jnp.ndarray,
+    n_bins: int,
+    criterion: DOptimality | ProfiledDOptimality,
+    config: DExchangeConfig,
+    provenance: ScoreProvenance,
+    transformed_centers: jnp.ndarray | None = None,
+    metric: jnp.ndarray | None = None,
+    profiled_report: ProfiledInformationReport | None = None,
+    profiled_geometry: ProfiledGeometryReport | None = None,
+) -> PartitionResult:
+    """Assemble the criterion-independent part of one finite partition result."""
+    sample = prepared.sample
+    raw_weights, raw_sums, raw_means = _raw_cell_statistics(sample, effective_labels, n_bins)
+    return PartitionResult(
+        labels=compiled_labels,
+        training_scores=sample.scores,
+        cell_weights=raw_weights,
+        cell_score_sums=raw_sums,
+        cell_score_means=raw_means,
+        information_full=prepared.full_information,
+        information_partitioned=jnp.einsum("b,bp,bq->pq", raw_weights, raw_means, raw_means),
+        objective=run.state.objective,
+        transform=prepared.transform,
+        transformed_centers=transformed_centers,
+        metric=metric,
+        criterion=criterion,
+        config=config,
+        train_report=information_report(
+            sample.scores,
+            compiled_labels,
+            sample.weights,
+            n_bins=n_bins,
+            rank_rtol=config.rank_rtol,
+        ),
+        provenance=provenance,
+        accepted_moves=run.accepted_moves,
+        scans=run.scans,
+        exchange_stable=run.exchange_stable,
+        best_remaining_gain=run.best_remaining_gain,
+        objective_history=jnp.asarray(run.objective_history),
+        positive_weight_mask=sample.positive_weight_mask,
+        profiled_report=profiled_report,
+        profiled_geometry=profiled_geometry,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class _PreparedPartition:
+    """Validated, duplicate-collapsed inputs shared by both finite criteria."""
+
+    sample: _ValidatedSample
+    scores: jnp.ndarray
+    weights: jnp.ndarray
+    inverse_rows: jnp.ndarray
+    full_information: jnp.ndarray
+    transform: FisherTransform
+    coordinates: jnp.ndarray
+
+
+def _prepare_partition(
+    scores: ArrayLike,
+    weights: ArrayLike | None,
+    *,
+    n_bins: int,
+    config: DExchangeConfig,
+) -> _PreparedPartition:
     sample = validate_sample(scores, weights)
     validate_n_bins(n_bins, sample.n_effective)
     effective_scores, effective_weights, inverse_rows = collapse_duplicate_scores(
@@ -197,178 +477,454 @@ def optimize_profiled_d_partition(
     )
     if n_bins > effective_scores.shape[0]:
         raise ValueError("n_bins exceeds distinct positive-weight score rows")
-    dimension = effective_scores.shape[1]
-    if any(index >= dimension for index in criterion.interest):
-        raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
-    interest_set = set(criterion.interest)
-    nuisance = tuple(index for index in range(dimension) if index not in interest_set)
-    if not nuisance:
-        raise ValueError("profiled D requires a nuisance block; use DOptimality")
     full_information = jnp.einsum(
         "n,np,nq->pq", effective_weights, effective_scores, effective_scores
     )
     transform = fisher_transform(full_information, whiten=True, rank_rtol=config.rank_rtol)
-    if transform.rank != dimension:
-        raise ValueError(
-            "profiled D requires full-rank supplied-score information in the declared "
-            "interest/nuisance parameterization"
-        )
-    coordinates = transform.apply(effective_scores)
-    if n_bins < dimension:
-        raise ValueError("profiled D requires at least as many bins as score dimensions")
+    return _PreparedPartition(
+        sample=sample,
+        scores=effective_scores,
+        weights=effective_weights,
+        inverse_rows=inverse_rows,
+        full_information=full_information,
+        transform=transform,
+        coordinates=transform.apply(effective_scores),
+    )
+
+
+def _optimize_exchange(
+    *,
+    points: jnp.ndarray,
+    coordinates: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    objective: _ExchangeObjective,
+    config: DExchangeConfig,
+) -> _ExchangeRun:
+    """Run every seeded exchange restart and keep the best exact objective."""
+    best: _ExchangeRun | None = None
+    for restart in range(config.n_restarts):
+        labels = _initial_labels(coordinates, weights, n_bins, config, restart)
+        run = _run_exchange(points, weights, labels, n_bins, objective, config)
+        # Strict comparison makes the earliest restart win exact ties.
+        if best is None or run.state.objective > best.state.objective:
+            best = run
+    if best is None:
+        raise ValueError("n_restarts must be at least one")
+    return best
+
+
+def _initial_labels(
+    coordinates: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    config: DExchangeConfig,
+    restart: int,
+) -> jnp.ndarray:
+    seed = config.seed + restart
+    if config.init == "random":
+        # A permuted balanced labeling keeps every requested cell nonempty.
+        permutation = jax.random.permutation(jax.random.PRNGKey(seed), coordinates.shape[0])
+        return (jnp.arange(coordinates.shape[0]) % n_bins).astype(jnp.int32)[permutation]
     initializer = weighted_kmeans(
         coordinates,
-        effective_weights,
+        weights,
         n_bins,
         KMeansConfig(
             whiten=False,
             rank_rtol=config.rank_rtol,
-            seed=config.seed,
+            seed=seed,
             n_init=config.n_init,
             max_iter=100,
             tolerance=1e-8,
             record_every=100,
         ),
     )
-    labels = hard_assign(coordinates, initializer.centers)
-    state = _profiled_cell_state(
-        effective_scores, effective_weights, labels, n_bins, nuisance=nuisance
-    )
-    objective_history = [state.objective]
+    return hard_assign(coordinates, initializer.centers)
+
+
+def _run_exchange(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: jnp.ndarray,
+    n_bins: int,
+    objective: _ExchangeObjective,
+    config: DExchangeConfig,
+) -> _ExchangeRun:
+    """Scan, accept exact positive-gain work, and stop at exchange stability."""
+    label_array = np.asarray(labels, dtype=np.int32).copy()
+    state = objective.init_state(_cell_statistics(points, weights, labels, n_bins))
+    history = [state.objective]
     accepted_moves = 0
     scans = 0
     exchange_stable = False
     best_remaining_gain = float("-inf")
-    for _ in range(config.max_sweeps):
+    # first_improvement deliberately stops each scan early, so it never produces
+    # the complete per-row table a guarded batch needs.
+    batched = config.batch_moves and not config.first_improvement
+    batch_size = label_array.shape[0]
+    limit = _SAFETY_SCAN_LIMIT if config.max_scans is None else config.max_scans
+
+    while scans < limit:
         scans += 1
-        move = _best_profiled_move(effective_scores, effective_weights, labels, state, config)
-        best_remaining_gain = move.gain if move is not None else float("-inf")
-        if move is None or move.gain <= config.gain_tolerance:
+        outcome = _scan(points, weights, label_array, state, objective, config, rows=batched)
+        best_remaining_gain = float("-inf") if outcome.best is None else outcome.best.gain
+        if outcome.best is None or outcome.best.gain <= config.gain_tolerance:
             exchange_stable = True
             break
-        state = _apply_profiled_move(effective_scores, effective_weights, labels, state, move)
-        labels = labels.at[move.row].set(move.destination)
-        objective_history.append(state.objective)
-        accepted_moves += 1
-    if not exchange_stable:
-        final_move = _best_profiled_move(effective_scores, effective_weights, labels, state, config)
-        best_remaining_gain = final_move.gain if final_move is not None else float("-inf")
-        exchange_stable = final_move is None or final_move.gain <= config.gain_tolerance
+        accepted = (
+            _accept_batch(
+                points,
+                weights,
+                label_array,
+                n_bins,
+                state,
+                objective,
+                config,
+                outcome=outcome,
+                batch_size=batch_size,
+            )
+            if batched
+            else None
+        )
+        if accepted is None:
+            relocation = _relocation(points, weights, label_array, state, outcome.best)
+            state = objective.apply_move(state, relocation)
+            label_array[outcome.best.row] = outcome.best.destination
+            accepted_moves += 1
+        else:
+            state, label_array, moved = accepted
+            accepted_moves += moved
+            batch_size = min(2 * moved, label_array.shape[0])
+        history.append(state.objective)
 
-    all_coordinates = transform.apply(sample.scores)
-    extension_labels = hard_assign(all_coordinates, transform.apply(state.means))
-    effective_labels = labels[inverse_rows]
-    compiled_labels = extension_labels.at[sample.positive_weight_mask].set(effective_labels)
-    raw_weights, raw_sums, raw_means = _raw_cell_statistics(sample, effective_labels, n_bins)
-    raw_information = jnp.einsum("b,bp,bq->pq", raw_weights, raw_means, raw_means)
-    report = information_report(
-        sample.scores,
-        compiled_labels,
-        sample.weights,
-        n_bins=n_bins,
-        rank_rtol=config.rank_rtol,
-    )
-    profiled_report = profiled_information_report(
-        sample.scores,
-        compiled_labels,
-        interest=criterion.interest,
-        weights=sample.weights,
-        n_bins=n_bins,
-    )
-    profiled_geometry = _profiled_geometry_report(
-        effective_scores,
-        effective_weights,
-        labels,
-        state,
-        exchange_stable=exchange_stable,
-    )
-    return PartitionResult(
-        labels=compiled_labels,
-        training_scores=sample.scores,
-        cell_weights=raw_weights,
-        cell_score_sums=raw_sums,
-        cell_score_means=raw_means,
-        information_full=full_information,
-        information_partitioned=raw_information,
-        objective=state.objective,
-        transform=transform,
-        transformed_centers=None,
-        metric=None,
-        criterion=criterion,
-        config=config,
-        train_report=report,
-        provenance=provenance,
+    if not exchange_stable:
+        scans += 1
+        outcome = _scan(points, weights, label_array, state, objective, config, rows=False)
+        best_remaining_gain = float("-inf") if outcome.best is None else outcome.best.gain
+        exchange_stable = outcome.best is None or outcome.best.gain <= config.gain_tolerance
+
+    return _ExchangeRun(
+        labels=jnp.asarray(label_array),
+        state=state,
+        objective_history=tuple(history),
         accepted_moves=accepted_moves,
-        sweeps=scans,
+        scans=scans,
         exchange_stable=exchange_stable,
         best_remaining_gain=best_remaining_gain,
-        objective_history=jnp.asarray(objective_history),
-        positive_weight_mask=sample.positive_weight_mask,
-        profiled_report=profiled_report,
-        profiled_geometry=profiled_geometry,
     )
 
 
-def _cell_state(
-    scores: jnp.ndarray, weights: jnp.ndarray, labels: jnp.ndarray, n_bins: int
-) -> _CellState:
-    cell_weights = jnp.zeros(n_bins, dtype=weights.dtype).at[labels].add(weights)
-    sums = jnp.zeros((n_bins, scores.shape[1]), dtype=scores.dtype)
-    sums = sums.at[labels].add(weights[:, None] * scores)
-    if bool(np.asarray(jnp.any(cell_weights <= 0))):
-        raise ValueError("D exchange requires exactly n_bins nonempty cells")
-    means = sums / cell_weights[:, None]
-    information = jnp.einsum("b,bp,bq->pq", cell_weights, means, means)
-    information = 0.5 * (information + information.T)
-    sign, logdet = jnp.linalg.slogdet(information)
-    if float(np.asarray(sign)) <= 0:
-        raise ValueError(
-            "initial D partition is singular; increase n_bins or use a different reference sample"
-        )
-    return _CellState(
-        weights=cell_weights,
-        sums=sums,
-        means=means,
-        information=information,
-        inverse=jnp.linalg.inv(information),
-        objective=float(np.asarray(logdet)),
-    )
-
-
-def _profiled_cell_state(
-    scores: jnp.ndarray,
+def _scan(
+    points: jnp.ndarray,
     weights: jnp.ndarray,
-    labels: jnp.ndarray,
-    n_bins: int,
+    labels: np.ndarray,
+    state: _ExchangeState,
+    objective: _ExchangeObjective,
+    config: DExchangeConfig,
     *,
-    nuisance: tuple[int, ...],
-) -> _ProfiledCellState:
-    cell_weights = jnp.zeros(n_bins, dtype=weights.dtype).at[labels].add(weights)
-    sums = jnp.zeros((n_bins, scores.shape[1]), dtype=scores.dtype)
-    sums = sums.at[labels].add(weights[:, None] * scores)
-    if bool(np.asarray(jnp.any(cell_weights <= 0))):
-        raise ValueError("profiled-D exchange requires exactly n_bins nonempty cells")
-    means = sums / cell_weights[:, None]
-    information = jnp.einsum("b,bp,bq->pq", cell_weights, means, means)
-    information = 0.5 * (information + information.T)
-    nuisance_indices = jnp.asarray(nuisance)
-    nuisance_information = information[jnp.ix_(nuisance_indices, nuisance_indices)]
-    full_sign, full_logdet = jnp.linalg.slogdet(information)
-    nuisance_sign, nuisance_logdet = jnp.linalg.slogdet(nuisance_information)
-    if float(np.asarray(full_sign)) <= 0 or float(np.asarray(nuisance_sign)) <= 0:
-        raise ValueError(
-            "initial profiled-D partition is singular; increase n_bins or use a different sample"
+    rows: bool,
+) -> _ScanOutcome:
+    """Evaluate every admissible relocation in memory-bounded row chunks."""
+    n_rows = points.shape[0]
+    chunk_rows = _candidate_chunk_rows(points, state.weights.shape[0])
+    label_array = jnp.asarray(labels)
+    row_gains = np.full(n_rows, -np.inf) if rows else None
+    row_destinations = np.zeros(n_rows, dtype=np.int64) if rows else None
+    best: _Move | None = None
+    for start in range(0, n_rows, chunk_rows):
+        stop = min(start + chunk_rows, n_rows)
+        gains = np.asarray(
+            objective.chunk_gains(
+                state,
+                _candidates(
+                    points[start:stop], weights[start:stop], label_array[start:stop], state
+                ),
+            )
         )
-    return _ProfiledCellState(
-        weights=cell_weights,
-        sums=sums,
-        means=means,
-        information=information,
-        inverse=jnp.linalg.inv(information),
-        nuisance_information=nuisance_information,
-        nuisance_inverse=jnp.linalg.inv(nuisance_information),
-        nuisance=nuisance,
-        objective=float(np.asarray(full_logdet - nuisance_logdet)),
+        if config.first_improvement:
+            improving = gains > config.gain_tolerance
+            improving_rows = np.flatnonzero(improving.any(axis=1))
+            if improving_rows.size:
+                row = int(improving_rows[0])
+                destination = int(np.argmax(improving[row]))
+                return _ScanOutcome(
+                    _Move(start + row, destination, float(gains[row, destination])), None, None
+                )
+        destinations = np.argmax(gains, axis=1)
+        best_gains = gains[np.arange(stop - start), destinations]
+        if row_gains is not None and row_destinations is not None:
+            row_gains[start:stop] = best_gains
+            row_destinations[start:stop] = destinations
+        row = int(np.argmax(best_gains))
+        gain = float(best_gains[row])
+        if np.isfinite(gain) and (best is None or gain > best.gain):
+            best = _Move(start + row, int(destinations[row]), gain)
+    return _ScanOutcome(best, row_gains, row_destinations)
+
+
+def _accept_batch(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: np.ndarray,
+    n_bins: int,
+    state: _ExchangeState,
+    objective: _ExchangeObjective,
+    config: DExchangeConfig,
+    *,
+    outcome: _ScanOutcome,
+    batch_size: int,
+) -> tuple[_ExchangeState, np.ndarray, int] | None:
+    """Relocate many rows at once, accepting only a verified exact improvement.
+
+    Every candidate batch is scored by rebuilding the criterion state exactly
+    from the proposed labels, so acceptance never relies on accumulated
+    increments and the exchange stays strictly monotone. A rejected batch is
+    halved by gain rank and retried; when nothing survives, the caller applies
+    the exact single best relocation instead.
+    """
+    if outcome.row_gains is None or outcome.row_destinations is None:
+        return None
+    improving = np.flatnonzero(outcome.row_gains > config.gain_tolerance)
+    # Below this floor a batch cannot amortize its exact rebuild, and the few
+    # surviving rows are strongly interacting boundary atoms whose certified
+    # greedy relocation is both cheaper and better conditioned.
+    if improving.size <= _MIN_BATCH_ROWS:
+        return None
+    order = improving[np.argsort(-outcome.row_gains[improving], kind="stable")]
+    destinations = outcome.row_destinations[order]
+    size = min(
+        batch_size,
+        _mass_budget_cut(
+            np.asarray(weights)[order],
+            labels[order],
+            destinations,
+            np.asarray(state.weights),
+        ),
+    )
+    for _ in range(_MAX_BATCH_SHRINKS):
+        if size <= 1:
+            # The single best relocation has an exact positive gain; the caller
+            # applies it through the cheaper rank-two path.
+            return None
+        trial_labels = labels.copy()
+        trial_labels[order[:size]] = destinations[:size]
+        trial = _trial_state(points, weights, trial_labels, n_bins, objective)
+        if trial is not None and trial.objective > state.objective + config.gain_tolerance:
+            return trial, trial_labels, size
+        size //= 2
+    return None
+
+
+def _mass_budget_cut(
+    row_weights: np.ndarray,
+    sources: np.ndarray,
+    destinations: np.ndarray,
+    cell_weights: np.ndarray,
+) -> int:
+    """Return how many gain-ranked rows a batch may relocate at once.
+
+    The determinant lemma is exact for one relocation. A simultaneous batch
+    displaces every touched cell mean in proportion to the mass it moves, so
+    the batch is cut before any cell would gain or lose more than a fixed
+    fraction of its weight. Without this cut the guarded batch still stays
+    monotone, but it repeatedly overshoots into worse exchange-stable states.
+    """
+    cut = int(row_weights.shape[0])
+    for cell in range(int(cell_weights.shape[0])):
+        budget = _BATCH_MASS_FRACTION * float(cell_weights[cell])
+        for touching in (sources == cell, destinations == cell):
+            index = np.flatnonzero(touching)
+            if index.size == 0:
+                continue
+            over = np.flatnonzero(np.cumsum(row_weights[index]) > budget)
+            if over.size:
+                cut = min(cut, int(index[over[0]]))
+    return cut
+
+
+def _trial_state(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: np.ndarray,
+    n_bins: int,
+    objective: _ExchangeObjective,
+) -> _ExchangeState | None:
+    """Rebuild the exact state of a proposed labeling, or reject an infeasible one."""
+    try:
+        return objective.init_state(_cell_statistics(points, weights, jnp.asarray(labels), n_bins))
+    except ValueError:
+        # An emptied cell or a singular proposal is an ordinary batch rejection.
+        return None
+
+
+def _cell_statistics(
+    points: jnp.ndarray, weights: jnp.ndarray, labels: jnp.ndarray, n_bins: int
+) -> _CellStatistics:
+    """Accumulate exact weighted cell occupancy, score sums, and score means."""
+    cell_weights = jnp.zeros(n_bins, dtype=weights.dtype).at[labels].add(weights)
+    sums = jnp.zeros((n_bins, points.shape[1]), dtype=points.dtype)
+    sums = sums.at[labels].add(weights[:, None] * points)
+    if bool(np.asarray(jnp.any(cell_weights <= 0))):
+        raise ValueError("exact exchange requires exactly n_bins nonempty cells")
+    return _CellStatistics(weights=cell_weights, sums=sums, means=sums / cell_weights[:, None])
+
+
+def _cell_information(cells: _CellStatistics) -> jnp.ndarray:
+    information = jnp.einsum("b,bp,bq->pq", cells.weights, cells.means, cells.means)
+    return 0.5 * (information + information.T)
+
+
+def _candidates(
+    points: jnp.ndarray, weights: jnp.ndarray, labels: jnp.ndarray, state: _ExchangeState
+) -> _Candidates:
+    """Build the exact rank-two geometry of every relocation in one chunk."""
+    source_weights = state.weights[labels]
+    source_denominator = jnp.where(source_weights > weights, source_weights - weights, 1)
+    destinations = jnp.arange(state.weights.shape[0])[None, :]
+    return _Candidates(
+        source_residuals=points - state.means[labels],
+        destination_residuals=points[:, None, :] - state.means[None, :, :],
+        alpha=weights * source_weights / source_denominator,
+        beta=weights[:, None]
+        * state.weights[None, :]
+        / (state.weights[None, :] + weights[:, None]),
+        admissible=(source_weights > weights)[:, None] & (destinations != labels[:, None]),
+    )
+
+
+def _determinant_ratios(
+    chunk: _Candidates,
+    source: jnp.ndarray,
+    destination: jnp.ndarray,
+    inverse: jnp.ndarray,
+) -> jnp.ndarray:
+    """Return the exact rank-two determinant ratio of every candidate relocation."""
+    q_source = jnp.einsum("nr,rs,ns->n", source, inverse, source)
+    q_destination = jnp.einsum("nbr,rs,nbs->nb", destination, inverse, destination)
+    q_cross = jnp.einsum("nr,rs,nbs->nb", source, inverse, destination)
+    return (1 + chunk.alpha[:, None] * q_source[:, None]) * (
+        1 - chunk.beta * q_destination
+    ) + chunk.alpha[:, None] * chunk.beta * q_cross**2
+
+
+def _relocation(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: np.ndarray,
+    state: _ExchangeState,
+    move: _Move,
+) -> _Relocation:
+    """Build the exact rank-two update data of one accepted relocation."""
+    source = int(labels[move.row])
+    point_weight = weights[move.row]
+    point = points[move.row]
+    source_weight = state.weights[source]
+    destination_weight = state.weights[move.destination]
+    return _Relocation(
+        source=source,
+        destination=move.destination,
+        point=point,
+        point_weight=point_weight,
+        source_residual=point - state.means[source],
+        destination_residual=point - state.means[move.destination],
+        alpha=point_weight * source_weight / (source_weight - point_weight),
+        beta=point_weight * destination_weight / (destination_weight + point_weight),
+    )
+
+
+def _relocate_cells(cells: _CellStatistics, relocation: _Relocation) -> _CellStatistics:
+    weight = relocation.point_weight
+    cell_weights = (
+        cells.weights.at[relocation.source].add(-weight).at[relocation.destination].add(weight)
+    )
+    sums = (
+        cells.sums.at[relocation.source]
+        .add(-weight * relocation.point)
+        .at[relocation.destination]
+        .add(weight * relocation.point)
+    )
+    return _CellStatistics(weights=cell_weights, sums=sums, means=sums / cell_weights[:, None])
+
+
+def _rank_two_block(
+    information: jnp.ndarray,
+    inverse: jnp.ndarray,
+    relocation: _Relocation,
+    *,
+    block: jnp.ndarray | None = None,
+) -> _UpdatedBlock:
+    """Update one symmetric information block and its inverse by an exact relocation.
+
+    ``block`` selects a score-column sub-block, which is how the profiled
+    criterion maintains its nuisance information alongside the full matrix.
+    """
+    source = relocation.source_residual if block is None else relocation.source_residual[block]
+    destination = (
+        relocation.destination_residual if block is None else relocation.destination_residual[block]
+    )
+    updated = (
+        information
+        + relocation.alpha * jnp.outer(source, source)
+        - relocation.beta * jnp.outer(destination, destination)
+    )
+    updated = 0.5 * (updated + updated.T)
+    refreshed = _rank_two_inverse_update(
+        inverse, source, destination, relocation.alpha, relocation.beta, updated
+    )
+    sign, logdet = jnp.linalg.slogdet(updated)
+    return _UpdatedBlock(
+        information=updated,
+        inverse=refreshed,
+        sign=float(np.asarray(sign)),
+        logdet=float(np.asarray(logdet)),
+    )
+
+
+def _rank_two_inverse_update(
+    inverse: jnp.ndarray,
+    source_residual: jnp.ndarray,
+    destination_residual: jnp.ndarray,
+    alpha: jnp.ndarray,
+    beta: jnp.ndarray,
+    information: jnp.ndarray,
+) -> jnp.ndarray:
+    """Apply two Sherman-Morrison updates, refreshing exactly when they drift."""
+    source_projection = inverse @ source_residual
+    source_denominator = 1 + alpha * (source_residual @ source_projection)
+    first = inverse - alpha * jnp.outer(source_projection, source_projection) / source_denominator
+    destination_projection = first @ destination_residual
+    destination_denominator = 1 - beta * (destination_residual @ destination_projection)
+    updated = (
+        first
+        + beta * jnp.outer(destination_projection, destination_projection) / destination_denominator
+    )
+    updated = 0.5 * (updated + updated.T)
+    identity = jnp.eye(information.shape[0], dtype=information.dtype)
+    residual = jnp.max(jnp.abs(information @ updated - identity))
+    tolerance = 1e-8 if information.dtype == jnp.float64 else 2e-3
+    if (
+        not bool(np.asarray(jnp.isfinite(destination_denominator)))
+        or float(np.asarray(destination_denominator)) <= 0
+        or not bool(np.asarray(jnp.isfinite(residual)))
+        or float(np.asarray(residual)) > tolerance
+    ):
+        return jnp.linalg.inv(information)
+    return updated
+
+
+def _require_nuisance(matrix: jnp.ndarray | None) -> jnp.ndarray:
+    if matrix is None:
+        raise ValueError("profiled-D exchange state is missing its nuisance block")
+    return matrix
+
+
+def _candidate_chunk_rows(scores: jnp.ndarray, n_bins: int) -> int:
+    item_size = np.dtype(scores.dtype).itemsize
+    rank = scores.shape[1]
+    values_per_row = n_bins * (rank + 4) + 4 * rank
+    return max(
+        1, min(scores.shape[0], _CANDIDATE_WORKING_SET_BYTES // (item_size * values_per_row))
     )
 
 
@@ -376,13 +932,15 @@ def _profiled_geometry_report(
     scores: jnp.ndarray,
     weights: jnp.ndarray,
     labels: jnp.ndarray,
-    state: _ProfiledCellState,
+    state: _ExchangeState,
     *,
+    nuisance: tuple[int, ...],
     exchange_stable: bool,
 ) -> ProfiledGeometryReport:
-    nuisance_indices = jnp.asarray(state.nuisance)
+    """Diagnose the finite efficient-semimetric gap of a terminal profiled state."""
+    nuisance_indices = jnp.asarray(nuisance)
     metric = state.inverse.at[jnp.ix_(nuisance_indices, nuisance_indices)].add(
-        -state.nuisance_inverse
+        -_require_nuisance(state.nuisance_inverse)
     )
     metric = 0.5 * (metric + metric.T)
     source_residuals = scores - state.means[labels]
@@ -413,293 +971,6 @@ def _profiled_geometry_report(
         evaluated_moves=int(np.asarray(jnp.sum(admissible))),
         bound_certified=exchange_stable,
     )
-
-
-def _best_move(
-    scores: jnp.ndarray,
-    weights: jnp.ndarray,
-    labels: jnp.ndarray,
-    state: _CellState,
-    config: DExchangeConfig,
-) -> _Move | None:
-    chunk_rows = _candidate_chunk_rows(scores, state.weights.shape[0])
-    best: _Move | None = None
-    for start in range(0, scores.shape[0], chunk_rows):
-        stop = min(start + chunk_rows, scores.shape[0])
-        gain_array = _move_gains(
-            scores[start:stop],
-            weights[start:stop],
-            labels[start:stop],
-            state,
-        )
-        if config.first_improvement:
-            improving = np.argwhere(gain_array > config.gain_tolerance)
-            if improving.size:
-                row, destination = improving[0]
-                return _Move(
-                    start + int(row),
-                    int(destination),
-                    float(gain_array[row, destination]),
-                )
-        flat_index = int(np.argmax(gain_array))
-        row, destination = np.unravel_index(flat_index, gain_array.shape)
-        gain = float(gain_array[row, destination])
-        if np.isfinite(gain) and (best is None or gain > best.gain):
-            best = _Move(start + int(row), int(destination), gain)
-    return best
-
-
-def _best_profiled_move(
-    scores: jnp.ndarray,
-    weights: jnp.ndarray,
-    labels: jnp.ndarray,
-    state: _ProfiledCellState,
-    config: DExchangeConfig,
-) -> _Move | None:
-    chunk_rows = _candidate_chunk_rows(scores, state.weights.shape[0])
-    best: _Move | None = None
-    for start in range(0, scores.shape[0], chunk_rows):
-        stop = min(start + chunk_rows, scores.shape[0])
-        gain_array = _profiled_move_gains(
-            scores[start:stop], weights[start:stop], labels[start:stop], state
-        )
-        if config.first_improvement:
-            improving = np.argwhere(gain_array > config.gain_tolerance)
-            if improving.size:
-                row, destination = improving[0]
-                return _Move(
-                    start + int(row), int(destination), float(gain_array[row, destination])
-                )
-        flat_index = int(np.argmax(gain_array))
-        row, destination = np.unravel_index(flat_index, gain_array.shape)
-        gain = float(gain_array[row, destination])
-        if np.isfinite(gain) and (best is None or gain > best.gain):
-            best = _Move(start + int(row), int(destination), gain)
-    return best
-
-
-def _candidate_chunk_rows(scores: jnp.ndarray, n_bins: int) -> int:
-    item_size = np.dtype(scores.dtype).itemsize
-    rank = scores.shape[1]
-    values_per_row = n_bins * (rank + 4) + 4 * rank
-    return max(
-        1, min(scores.shape[0], _CANDIDATE_WORKING_SET_BYTES // (item_size * values_per_row))
-    )
-
-
-def _move_gains(
-    scores: jnp.ndarray,
-    weights: jnp.ndarray,
-    labels: jnp.ndarray,
-    state: _CellState,
-) -> np.ndarray:
-    source_weights = state.weights[labels]
-    source_residuals = scores - state.means[labels]
-    destination_residuals = scores[:, None, :] - state.means[None, :, :]
-    source_denominator = jnp.where(source_weights > weights, source_weights - weights, 1)
-    alpha = weights * source_weights / source_denominator
-    beta = weights[:, None] * state.weights[None, :] / (state.weights[None, :] + weights[:, None])
-    q_source = jnp.einsum("nr,rs,ns->n", source_residuals, state.inverse, source_residuals)
-    q_destination = jnp.einsum(
-        "nbr,rs,nbs->nb", destination_residuals, state.inverse, destination_residuals
-    )
-    q_cross = jnp.einsum("nr,rs,nbs->nb", source_residuals, state.inverse, destination_residuals)
-    determinant_ratio = (1 + alpha[:, None] * q_source[:, None]) * (
-        1 - beta * q_destination
-    ) + alpha[:, None] * beta * q_cross**2
-    destinations = jnp.arange(state.weights.shape[0])[None, :]
-    admissible = (source_weights > weights)[:, None] & (destinations != labels[:, None])
-    gains = jnp.where(admissible & (determinant_ratio > 0), jnp.log(determinant_ratio), -jnp.inf)
-    return np.asarray(gains)
-
-
-def _profiled_move_gains(
-    scores: jnp.ndarray,
-    weights: jnp.ndarray,
-    labels: jnp.ndarray,
-    state: _ProfiledCellState,
-) -> np.ndarray:
-    source_weights = state.weights[labels]
-    source_residuals = scores - state.means[labels]
-    destination_residuals = scores[:, None, :] - state.means[None, :, :]
-    source_denominator = jnp.where(source_weights > weights, source_weights - weights, 1)
-    alpha = weights * source_weights / source_denominator
-    beta = weights[:, None] * state.weights[None, :] / (state.weights[None, :] + weights[:, None])
-
-    def ratios(source: jnp.ndarray, destination: jnp.ndarray, inverse: jnp.ndarray) -> jnp.ndarray:
-        q_source = jnp.einsum("nr,rs,ns->n", source, inverse, source)
-        q_destination = jnp.einsum("nbr,rs,nbs->nb", destination, inverse, destination)
-        q_cross = jnp.einsum("nr,rs,nbs->nb", source, inverse, destination)
-        return (1 + alpha[:, None] * q_source[:, None]) * (1 - beta * q_destination) + alpha[
-            :, None
-        ] * beta * q_cross**2
-
-    full_ratios = ratios(source_residuals, destination_residuals, state.inverse)
-    nuisance_indices = jnp.asarray(state.nuisance)
-    nuisance_ratios = ratios(
-        source_residuals[:, nuisance_indices],
-        destination_residuals[:, :, nuisance_indices],
-        state.nuisance_inverse,
-    )
-    destinations = jnp.arange(state.weights.shape[0])[None, :]
-    admissible = (source_weights > weights)[:, None] & (destinations != labels[:, None])
-    gains = jnp.where(
-        admissible & (full_ratios > 0) & (nuisance_ratios > 0),
-        jnp.log(full_ratios) - jnp.log(nuisance_ratios),
-        -jnp.inf,
-    )
-    return np.asarray(gains)
-
-
-def _apply_move(
-    scores: jnp.ndarray,
-    weights: jnp.ndarray,
-    labels: jnp.ndarray,
-    state: _CellState,
-    move: _Move,
-) -> _CellState:
-    source = int(labels[move.row])
-    destination = move.destination
-    point_weight = weights[move.row]
-    point = scores[move.row]
-    source_weight = state.weights[source]
-    destination_weight = state.weights[destination]
-    source_residual = point - state.means[source]
-    destination_residual = point - state.means[destination]
-    alpha = point_weight * source_weight / (source_weight - point_weight)
-    beta = point_weight * destination_weight / (destination_weight + point_weight)
-
-    information = (
-        state.information
-        + alpha * jnp.outer(source_residual, source_residual)
-        - beta * jnp.outer(destination_residual, destination_residual)
-    )
-    information = 0.5 * (information + information.T)
-    inverse = _rank_two_inverse_update(
-        state.inverse,
-        source_residual,
-        destination_residual,
-        alpha,
-        beta,
-        information,
-    )
-    cell_weights = state.weights.at[source].add(-point_weight).at[destination].add(point_weight)
-    sums = (
-        state.sums.at[source].add(-point_weight * point).at[destination].add(point_weight * point)
-    )
-    means = sums / cell_weights[:, None]
-    sign, logdet = jnp.linalg.slogdet(information)
-    if float(np.asarray(sign)) <= 0:
-        raise FloatingPointError("an accepted D move produced singular information")
-    return _CellState(
-        weights=cell_weights,
-        sums=sums,
-        means=means,
-        information=information,
-        inverse=inverse,
-        objective=float(np.asarray(logdet)),
-    )
-
-
-def _apply_profiled_move(
-    scores: jnp.ndarray,
-    weights: jnp.ndarray,
-    labels: jnp.ndarray,
-    state: _ProfiledCellState,
-    move: _Move,
-) -> _ProfiledCellState:
-    source = int(labels[move.row])
-    destination = move.destination
-    point_weight = weights[move.row]
-    point = scores[move.row]
-    source_weight = state.weights[source]
-    destination_weight = state.weights[destination]
-    source_residual = point - state.means[source]
-    destination_residual = point - state.means[destination]
-    alpha = point_weight * source_weight / (source_weight - point_weight)
-    beta = point_weight * destination_weight / (destination_weight + point_weight)
-    information = (
-        state.information
-        + alpha * jnp.outer(source_residual, source_residual)
-        - beta * jnp.outer(destination_residual, destination_residual)
-    )
-    information = 0.5 * (information + information.T)
-    inverse = _rank_two_inverse_update(
-        state.inverse,
-        source_residual,
-        destination_residual,
-        alpha,
-        beta,
-        information,
-    )
-    nuisance_indices = jnp.asarray(state.nuisance)
-    nuisance_source = source_residual[nuisance_indices]
-    nuisance_destination = destination_residual[nuisance_indices]
-    nuisance_information = (
-        state.nuisance_information
-        + alpha * jnp.outer(nuisance_source, nuisance_source)
-        - beta * jnp.outer(nuisance_destination, nuisance_destination)
-    )
-    nuisance_information = 0.5 * (nuisance_information + nuisance_information.T)
-    nuisance_inverse = _rank_two_inverse_update(
-        state.nuisance_inverse,
-        nuisance_source,
-        nuisance_destination,
-        alpha,
-        beta,
-        nuisance_information,
-    )
-    cell_weights = state.weights.at[source].add(-point_weight).at[destination].add(point_weight)
-    sums = (
-        state.sums.at[source].add(-point_weight * point).at[destination].add(point_weight * point)
-    )
-    means = sums / cell_weights[:, None]
-    full_sign, full_logdet = jnp.linalg.slogdet(information)
-    nuisance_sign, nuisance_logdet = jnp.linalg.slogdet(nuisance_information)
-    if float(np.asarray(full_sign)) <= 0 or float(np.asarray(nuisance_sign)) <= 0:
-        raise FloatingPointError("an accepted profiled-D move produced singular information")
-    return _ProfiledCellState(
-        weights=cell_weights,
-        sums=sums,
-        means=means,
-        information=information,
-        inverse=inverse,
-        nuisance_information=nuisance_information,
-        nuisance_inverse=nuisance_inverse,
-        nuisance=state.nuisance,
-        objective=float(np.asarray(full_logdet - nuisance_logdet)),
-    )
-
-
-def _rank_two_inverse_update(
-    inverse: jnp.ndarray,
-    source_residual: jnp.ndarray,
-    destination_residual: jnp.ndarray,
-    alpha: jnp.ndarray,
-    beta: jnp.ndarray,
-    information: jnp.ndarray,
-) -> jnp.ndarray:
-    source_projection = inverse @ source_residual
-    source_denominator = 1 + alpha * (source_residual @ source_projection)
-    first = inverse - alpha * jnp.outer(source_projection, source_projection) / source_denominator
-    destination_projection = first @ destination_residual
-    destination_denominator = 1 - beta * (destination_residual @ destination_projection)
-    updated = (
-        first
-        + beta * jnp.outer(destination_projection, destination_projection) / destination_denominator
-    )
-    updated = 0.5 * (updated + updated.T)
-    identity = jnp.eye(information.shape[0], dtype=information.dtype)
-    residual = jnp.max(jnp.abs(information @ updated - identity))
-    tolerance = 1e-8 if information.dtype == jnp.float64 else 2e-3
-    if (
-        not bool(np.asarray(jnp.isfinite(destination_denominator)))
-        or float(np.asarray(destination_denominator)) <= 0
-        or not bool(np.asarray(jnp.isfinite(residual)))
-        or float(np.asarray(residual)) > tolerance
-    ):
-        return jnp.linalg.inv(information)
-    return updated
 
 
 def _metric_assign(scores: jnp.ndarray, means: jnp.ndarray, inverse: jnp.ndarray) -> jnp.ndarray:

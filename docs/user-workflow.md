@@ -15,8 +15,12 @@ partition = sq.optimize_partition(
 labels = partition.labels
 ```
 
-Inspect `exchange_stable`, `best_remaining_gain`, `accepted_moves`, cell statistics, information
-matrices, and `train_report`. Do not invent future labels from an ordinary partition.
+Inspect `exchange_stable`, `best_remaining_gain`, `accepted_moves`, `scans`, cell statistics,
+information matrices, and `train_report`. Do not invent future labels from an ordinary partition.
+
+By default the exchange runs until no relocation improves the objective, accepting many verified
+relocations per scan. Set `max_scans` to bound the work, `batch_moves=False` for one relocation per
+scan, and `n_restarts`/`init` to search several seeded starting labelings.
 
 ## Ready scores: learn a reusable rule
 
