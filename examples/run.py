@@ -10,15 +10,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 
-import fisherbin
+import scorequant
 from examples.synthetic_problems import PROBLEMS, SyntheticDataset, SyntheticProblem
 
 
 @dataclass(frozen=True, slots=True)
 class ExperimentResult:
     problem: SyntheticProblem
-    kmeans: fisherbin.FitResult
-    soft: fisherbin.FitResult
+    kmeans: scorequant.FitResult
+    soft: scorequant.FitResult
     metrics: dict[str, float | list[float]]
 
 
@@ -47,7 +47,7 @@ def _equal_grid_labels(
 
 
 def _report_retention(dataset: SyntheticDataset, labels: np.ndarray, n_bins: int) -> float:
-    return fisherbin.information_report(
+    return scorequant.information_report(
         dataset.scores, labels, dataset.weights, n_bins=n_bins
     ).geometric_mean_retention
 
@@ -66,14 +66,14 @@ def run_experiment(
         validation_scores=problem.validation.scores,
         validation_weights=problem.validation.weights,
     )
-    kmeans = fisherbin.fit_scores(
+    kmeans = scorequant.fit_scores(
         problem.train.scores,
-        config=fisherbin.KMeansConfig(seed=42, n_init=4),
+        config=scorequant.KMeansConfig(seed=42, n_init=4),
         **common,
     )
-    soft = fisherbin.fit_scores(
+    soft = scorequant.fit_scores(
         problem.train.scores,
-        config=fisherbin.SoftVoronoiConfig(
+        config=scorequant.SoftVoronoiConfig(
             seed=42,
             n_init=4,
             max_steps=soft_steps,
@@ -84,11 +84,11 @@ def run_experiment(
     kmeans_test = kmeans.evaluate(problem.test.scores, problem.test.weights)
     soft_test = soft.evaluate(problem.test.scores, problem.test.weights)
 
-    observation_fit = fisherbin.fit_scores(
+    observation_fit = scorequant.fit_scores(
         problem.train.observations,
         weights=problem.train.weights,
         n_bins=problem.n_bins,
-        config=fisherbin.KMeansConfig(seed=42, n_init=4),
+        config=scorequant.KMeansConfig(seed=42, n_init=4),
     )
     observation_labels = np.asarray(observation_fit.predict(problem.test.observations))
     equal_labels = _equal_grid_labels(

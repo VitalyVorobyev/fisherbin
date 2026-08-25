@@ -1,9 +1,9 @@
 # Linear models
 
-::: fisherbin.LinearComponents
+::: scorequant.LinearComponents
 
-::: fisherbin.LinearProblem
+::: scorequant.LinearProblem
 
-::: fisherbin.scores_from_components
+::: scorequant.scores_from_components
 
-::: fisherbin.mixture_scores_from_posteriors
+::: scorequant.mixture_scores_from_posteriors

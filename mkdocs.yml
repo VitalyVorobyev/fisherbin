@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_name: FisherBin
 site_description: Information-preserving binning for statistical inference
-site_url: https://vitalyvorobyev.github.io/fisherbin/
-repo_url: https://github.com/VitalyVorobyev/fisherbin
-repo_name: VitalyVorobyev/fisherbin
+site_url: https://vitalyvorobyev.github.io/scorequant/
+repo_url: https://github.com/VitalyVorobyev/scorequant
+repo_name: VitalyVorobyev/scorequant
 edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2026 Vitaly Vorobyev
 

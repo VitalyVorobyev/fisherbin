@@ -5,19 +5,19 @@ from __future__ import annotations
 import jax
 import jax.numpy as jnp
 
-import fisherbin
-from fisherbin.quantizers import soft_responsibilities
+import scorequant
+from scorequant.quantizers import soft_responsibilities
 
 
 def main() -> None:
     key = jax.random.PRNGKey(2026)
     scores = jax.random.normal(key, (100_000, 16))
     weights = jnp.ones(scores.shape[0])
-    result = fisherbin.fit_scores(
+    result = scorequant.fit_scores(
         scores,
         weights=weights,
         n_bins=64,
-        config=fisherbin.KMeansConfig(n_init=1, max_iter=2),
+        config=scorequant.KMeansConfig(n_init=1, max_iter=2),
     )
     labels = result.predict(scores)
     report = result.evaluate(scores, weights)

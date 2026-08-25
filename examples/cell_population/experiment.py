@@ -12,7 +12,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
-import fisherbin as fb
+import scorequant as fb
 
 from .closure import ClosureInputs, run_scientific_closure
 from .data import CLASS_NAMES, REFERENCE_PATIENTS, TEST_PATIENTS, FlowCytData

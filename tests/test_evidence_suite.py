@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-import fisherbin as fb
+import scorequant as fb
 
 
 def test_rank_deficient_fixture_projects_duplicate_direction() -> None:

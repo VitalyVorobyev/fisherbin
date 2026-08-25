@@ -29,7 +29,7 @@ Classifier training and calibration are deliberately not library concerns.
 ## 3. Convert posteriors to scores
 
 ```python
-import fisherbin as fb
+import scorequant as fb
 
 scores = fb.mixture_scores_from_posteriors(
     posteriors,

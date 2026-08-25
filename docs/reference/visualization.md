@@ -7,10 +7,10 @@ one or two. For higher rank, `plot_summary` uses a projection-free retained-
 eigenvalue spectrum, and `plot_optimization` summarizes center displacement
 norms across every informative coordinate.
 
-::: fisherbin.plot_optimization
+::: scorequant.plot_optimization
 
-::: fisherbin.plot_partition
+::: scorequant.plot_partition
 
-::: fisherbin.plot_information
+::: scorequant.plot_information
 
-::: fisherbin.plot_summary
+::: scorequant.plot_summary

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-import fisherbin as fb
+import scorequant as fb
 
 from .data import CLASS_NAMES, FlowCytData
 from .likelihood import estimate_bin_templates, fit_binned_mixture, fit_unbinned_mixture

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from fisherbin import scores_from_components
+from scorequant import scores_from_components
 
 
 @dataclass(frozen=True, slots=True)

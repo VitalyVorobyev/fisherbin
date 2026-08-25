@@ -3,7 +3,7 @@
 This package demonstrates how an application can estimate scores, learn a hard
 partition, and consume the frozen labels in a downstream likelihood.  Its
 FlowCyt-specific data loading, classifier calibration, likelihood, and reporting
-stay outside :mod:`fisherbin`; reusable domain-independent abstractions may be
+stay outside :mod:`scorequant`; reusable domain-independent abstractions may be
 promoted to the library as they become clear.
 """
 

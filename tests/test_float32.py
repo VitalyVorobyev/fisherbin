@@ -4,15 +4,15 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-import fisherbin
+import scorequant
 
 
 def test_float32_fit_and_soft_step() -> None:
     scores = jax.random.normal(jax.random.PRNGKey(5), (256, 3), dtype=jnp.float32)
-    result = fisherbin.fit_scores(
+    result = scorequant.fit_scores(
         scores,
         n_bins=5,
-        config=fisherbin.SoftVoronoiConfig(
+        config=scorequant.SoftVoronoiConfig(
             n_init=1,
             kmeans_max_iter=20,
             max_steps=5,

@@ -15,7 +15,7 @@ Each callable receives the complete `[N, K]` variable matrix and returns one
 value per row:
 
 ```python
-import fisherbin as fb
+import scorequant as fb
 
 model = fb.LinearComponents(
     components={

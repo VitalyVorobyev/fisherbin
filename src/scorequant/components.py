@@ -1,4 +1,4 @@
-"""Linear-intensity models and adapters to FisherBin's score representation."""
+"""Linear-intensity models and adapters to ScoreQuant's score representation."""
 
 from __future__ import annotations
 

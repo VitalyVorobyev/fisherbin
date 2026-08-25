@@ -26,7 +26,7 @@ events.
 ![Complete cell-population workflow](assets/cell_population_workflow.png)
 
 The important boundary is visible in the figure. The classifier is not
-FisherBin. Neither is the downstream mixture likelihood. FisherBin receives
+ScoreQuant. Neither is the downstream mixture likelihood. ScoreQuant receives
 score vectors and returns a frozen hard partition. This makes the example useful
 for cytometry users and for developers adapting the same API to another domain.
 
@@ -205,7 +205,7 @@ No ratio is silently renormalized after selection. The evidence records all
 three residuals, reference-fold errors, and patient-level dispersion. The test
 cohort is not used to choose among them.
 
-## The FisherBin API boundary
+## The ScoreQuant API boundary
 
 This use case starts from externally estimated scores, so `fit_scores` is the
 right entry point:
@@ -236,7 +236,7 @@ There are five practical API rules hidden in this short block:
 2. Use nonnegative measure weights to define the reference integration measure.
    Here they give every patient equal influence within a class and reproduce
    \(\theta_0\) across classes.
-3. Treat validation as a diagnostic. FisherBin deliberately does not use it to
+3. Treat validation as a diagnostic. ScoreQuant deliberately does not use it to
    choose centers.
 4. Freeze the result and call `predict` on scores in the same parameter order.
 5. Inspect both information and occupancy. A high D-efficiency does not prevent
@@ -279,7 +279,7 @@ allowed to invent information. Every reported patient likelihood converged; the
 slowest learned-partition fit required 1,198 iterations at five bins.
 
 This likelihood is application code under `examples/cell_population/`. It
-consumes the generic hard labels but is not part of FisherBin's public API.
+consumes the generic hard labels but is not part of ScoreQuant's public API.
 
 ### Reference-only pseudo-patients
 
@@ -447,7 +447,7 @@ timings for the exact run that generated the figures.
 The [FlowCyt paper](https://proceedings.mlr.press/v248/bini24a.html) describes
 the benchmark and expert populations. The data and derived samples are licensed
 under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/),
-separately from FisherBin's MIT-licensed code. The generated manifest records
+separately from ScoreQuant's MIT-licensed code. The generated manifest records
 the source URLs, file totals, sampling settings, and digest.
 
 ## What this study establishes
@@ -460,6 +460,6 @@ separately from an intensity-information objective, high information retention
 does not prevent empty transported bins, and local Fisher errors fail for
 fractions on the simplex boundary.
 
-That combination is the useful result. FisherBin is not a classifier and not a
+That combination is the useful result. ScoreQuant is not a classifier and not a
 mixture fitter. It is the compression layer between them, and this case shows
 how to build, test, diagnose, and reproduce that layer on real data.
