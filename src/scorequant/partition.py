@@ -5,6 +5,13 @@ one complete evaluation of every admissible single-row relocation; a scan
 either accepts work or certifies exchange stability. With ``batch_moves`` a
 single scan may relocate many rows at once, so accepted moves and scans are
 different quantities.
+
+The same engine also drives the guarded Mahalanobis-Lloyd solver. A batch
+iteration that freezes the criterion metric, relabels every row to its nearest
+centroid in that metric, and recomputes the binned information is *not*
+monotone: the tangent of the concave log determinant is an upper bound, not a
+minorizer. Every batch proposal is therefore accepted only against the exactly
+rebuilt objective, exactly as guarded batch exchange acceptance already is.
 """
 
 from __future__ import annotations
@@ -23,7 +30,7 @@ from ._validation import (
     validate_n_bins,
     validate_sample,
 )
-from .config import DExchangeConfig, KMeansConfig
+from .config import DExchangeConfig, KMeansConfig, MahalanobisLloydConfig, PartitionConfig
 from .criteria import DOptimality, ProfiledDOptimality
 from .information import _profiled_blocks, information_report, profiled_information_report
 from .quantizers import hard_assign, weighted_kmeans
@@ -134,7 +141,7 @@ class _ScanOutcome:
 
 @dataclass(frozen=True, slots=True)
 class _ExchangeRun:
-    """Terminal state and diagnostics of one exchange restart."""
+    """Terminal state and diagnostics of one exchange or guarded-batch restart."""
 
     labels: jnp.ndarray
     state: _ExchangeState
@@ -143,6 +150,8 @@ class _ExchangeRun:
     scans: int
     exchange_stable: bool
     best_remaining_gain: float
+    lloyd_iterations: int = 0
+    accepted_lloyd_steps: int = 0
 
 
 class _ExchangeObjective(Protocol):
@@ -158,6 +167,10 @@ class _ExchangeObjective(Protocol):
 
     def apply_move(self, state: _ExchangeState, relocation: _Relocation) -> _ExchangeState:
         """Return the exactly refreshed state after one accepted relocation."""
+        ...
+
+    def assignment_metric(self, state: _ExchangeState) -> jnp.ndarray:
+        """Return the quadratic form whose nearest-centroid rule a batch proposes."""
         ...
 
 
@@ -199,6 +212,10 @@ class _DObjective:
             inverse=block.inverse,
             objective=block.logdet,
         )
+
+    def assignment_metric(self, state: _ExchangeState) -> jnp.ndarray:
+        r"""Return \(I^{-1}\), the metric of the D nearest-centroid rule."""
+        return state.inverse
 
 
 @dataclass(frozen=True, slots=True)
@@ -277,13 +294,24 @@ class _ProfiledDObjective:
             nuisance_inverse=nuisance.inverse,
         )
 
+    def assignment_metric(self, state: _ExchangeState) -> jnp.ndarray:
+        r"""Return the efficient semimetric \(G_s=L^\top S^{-1}L\) of the current state.
+
+        Subtracting the nuisance inverse from the nuisance block of the full
+        inverse yields exactly the profiled gradient metric, so the batch
+        proposal ranks destinations by the same quadratic forms the exchange
+        gains difference. The form is singular by construction: it measures
+        only the efficient-score directions.
+        """
+        return _profiled_semimetric(state, self.nuisance)
+
 
 def optimize_d_partition(
     scores: ArrayLike,
     *,
     weights: ArrayLike | None,
     n_bins: int,
-    config: DExchangeConfig,
+    config: PartitionConfig,
     provenance: ScoreProvenance,
 ) -> PartitionResult:
     """Optimize arbitrary labels of one fixed weighted score table."""
@@ -293,7 +321,7 @@ def optimize_d_partition(
             "D-optimality requires at least as many bins as informative directions; "
             "a normalized mean-zero score law generally requires one additional bin"
         )
-    run = _optimize_exchange(
+    run = _optimize_labels(
         points=prepared.coordinates,
         coordinates=prepared.coordinates,
         weights=prepared.weights,
@@ -337,7 +365,7 @@ def optimize_profiled_d_partition(
     weights: ArrayLike | None,
     n_bins: int,
     criterion: ProfiledDOptimality,
-    config: DExchangeConfig,
+    config: PartitionConfig,
     provenance: ScoreProvenance,
 ) -> PartitionResult:
     """Optimize same-label profiled-D labels of one fixed score table."""
@@ -357,7 +385,7 @@ def optimize_profiled_d_partition(
     if n_bins < dimension:
         raise ValueError("profiled D requires at least as many bins as score dimensions")
     objective = _ProfiledDObjective(interest=criterion.interest, nuisance=nuisance)
-    run = _optimize_exchange(
+    run = _optimize_labels(
         points=prepared.scores,
         coordinates=prepared.coordinates,
         weights=prepared.weights,
@@ -407,7 +435,7 @@ def _partition_result(
     effective_labels: jnp.ndarray,
     n_bins: int,
     criterion: DOptimality | ProfiledDOptimality,
-    config: DExchangeConfig,
+    config: PartitionConfig,
     provenance: ScoreProvenance,
     transformed_centers: jnp.ndarray | None = None,
     metric: jnp.ndarray | None = None,
@@ -441,6 +469,8 @@ def _partition_result(
         provenance=provenance,
         accepted_moves=run.accepted_moves,
         scans=run.scans,
+        lloyd_iterations=run.lloyd_iterations,
+        accepted_lloyd_steps=run.accepted_lloyd_steps,
         exchange_stable=run.exchange_stable,
         best_remaining_gain=run.best_remaining_gain,
         objective_history=jnp.asarray(run.objective_history),
@@ -468,7 +498,7 @@ def _prepare_partition(
     weights: ArrayLike | None,
     *,
     n_bins: int,
-    config: DExchangeConfig,
+    config: PartitionConfig,
 ) -> _PreparedPartition:
     sample = validate_sample(scores, weights)
     validate_n_bins(n_bins, sample.n_effective)
@@ -489,6 +519,35 @@ def _prepare_partition(
         full_information=full_information,
         transform=transform,
         coordinates=transform.apply(effective_scores),
+    )
+
+
+def _optimize_labels(
+    *,
+    points: jnp.ndarray,
+    coordinates: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    objective: _ExchangeObjective,
+    config: PartitionConfig,
+) -> _ExchangeRun:
+    """Route one prepared finite problem to its configured solver."""
+    if isinstance(config, MahalanobisLloydConfig):
+        return _optimize_lloyd(
+            points=points,
+            coordinates=coordinates,
+            weights=weights,
+            n_bins=n_bins,
+            objective=objective,
+            config=config,
+        )
+    return _optimize_exchange(
+        points=points,
+        coordinates=coordinates,
+        weights=weights,
+        n_bins=n_bins,
+        objective=objective,
+        config=config,
     )
 
 
@@ -526,21 +585,217 @@ def _initial_labels(
         # A permuted balanced labeling keeps every requested cell nonempty.
         permutation = jax.random.permutation(jax.random.PRNGKey(seed), coordinates.shape[0])
         return (jnp.arange(coordinates.shape[0]) % n_bins).astype(jnp.int32)[permutation]
+    return _kmeans_labels(
+        coordinates,
+        weights,
+        n_bins,
+        rank_rtol=config.rank_rtol,
+        seed=seed,
+        n_init=config.n_init,
+    )
+
+
+def _kmeans_labels(
+    coordinates: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    *,
+    rank_rtol: float | None,
+    seed: int,
+    n_init: int,
+) -> jnp.ndarray:
+    """Seed one solver with deterministic weighted k-means++ labels."""
     initializer = weighted_kmeans(
         coordinates,
         weights,
         n_bins,
         KMeansConfig(
             whiten=False,
-            rank_rtol=config.rank_rtol,
+            rank_rtol=rank_rtol,
             seed=seed,
-            n_init=config.n_init,
+            n_init=n_init,
             max_iter=100,
             tolerance=1e-8,
             record_every=100,
         ),
     )
     return hard_assign(coordinates, initializer.centers)
+
+
+def _optimize_lloyd(
+    *,
+    points: jnp.ndarray,
+    coordinates: jnp.ndarray,
+    weights: jnp.ndarray,
+    n_bins: int,
+    objective: _ExchangeObjective,
+    config: MahalanobisLloydConfig,
+) -> _ExchangeRun:
+    """Iterate guarded nearest-centroid batches, then settle the exchange guard.
+
+    Each iteration freezes the current criterion metric, relabels every row to
+    its nearest centroid in that metric, and repairs any cell the proposal would
+    empty. The proposal is adopted only when the objective of its exactly
+    rebuilt state strictly improves, because the frozen-metric batch step is not
+    monotone on its own. Iteration stops at the first non-improving or unchanged
+    proposal, or at ``max_iter``; ``guard`` then decides whether the labels are
+    handed to the exchange engine or merely certified by one final scan.
+    """
+    labels = np.asarray(
+        _kmeans_labels(
+            coordinates,
+            weights,
+            n_bins,
+            rank_rtol=config.rank_rtol,
+            seed=config.seed,
+            n_init=config.n_init,
+        ),
+        dtype=np.int32,
+    ).copy()
+    state = objective.init_state(_cell_statistics(points, weights, jnp.asarray(labels), n_bins))
+    history = [state.objective]
+    iterations = 0
+    accepted = 0
+
+    while iterations < config.max_iter:
+        iterations += 1
+        proposal = _lloyd_proposal(points, labels, state, objective, n_bins)
+        if np.array_equal(proposal, labels):
+            break
+        trial = _trial_state(points, weights, proposal, n_bins, objective)
+        if trial is None or trial.objective <= state.objective + config.gain_tolerance:
+            break
+        state, labels = trial, proposal
+        accepted += 1
+        history.append(state.objective)
+
+    return _settle_lloyd(
+        points,
+        weights,
+        labels,
+        n_bins,
+        state,
+        objective,
+        config,
+        history=history,
+        iterations=iterations,
+        accepted=accepted,
+    )
+
+
+def _settle_lloyd(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: np.ndarray,
+    n_bins: int,
+    state: _ExchangeState,
+    objective: _ExchangeObjective,
+    config: MahalanobisLloydConfig,
+    *,
+    history: list[float],
+    iterations: int,
+    accepted: int,
+) -> _ExchangeRun:
+    """Hand the guarded batch result to the exchange engine or certify it once.
+
+    A Lloyd fixed point need not be exchange-stable, so ``"exchange"``
+    continues with exact positive-gain relocations from the same labels. The
+    exchange rebuilds its own initial state from those labels, which reproduces
+    the terminal batch objective exactly, so its first history entry is dropped
+    rather than repeated.
+    """
+    exchange_config = DExchangeConfig(
+        rank_rtol=config.rank_rtol,
+        seed=config.seed,
+        n_init=config.n_init,
+        batch_moves=True,
+        gain_tolerance=config.gain_tolerance,
+    )
+    if config.guard == "exchange":
+        handoff = _run_exchange(
+            points, weights, jnp.asarray(labels), n_bins, objective, exchange_config
+        )
+        history.extend(handoff.objective_history[1:])
+        return _ExchangeRun(
+            labels=handoff.labels,
+            state=handoff.state,
+            objective_history=tuple(history),
+            accepted_moves=handoff.accepted_moves,
+            scans=handoff.scans,
+            exchange_stable=handoff.exchange_stable,
+            best_remaining_gain=handoff.best_remaining_gain,
+            lloyd_iterations=iterations,
+            accepted_lloyd_steps=accepted,
+        )
+    outcome = _scan(points, weights, labels, state, objective, exchange_config, rows=False)
+    best_remaining_gain = float("-inf") if outcome.best is None else outcome.best.gain
+    return _ExchangeRun(
+        labels=jnp.asarray(labels),
+        state=state,
+        objective_history=tuple(history),
+        accepted_moves=0,
+        scans=1,
+        exchange_stable=best_remaining_gain <= config.gain_tolerance,
+        best_remaining_gain=best_remaining_gain,
+        lloyd_iterations=iterations,
+        accepted_lloyd_steps=accepted,
+    )
+
+
+def _lloyd_proposal(
+    points: jnp.ndarray,
+    labels: np.ndarray,
+    state: _ExchangeState,
+    objective: _ExchangeObjective,
+    n_bins: int,
+) -> np.ndarray:
+    """Propose the complete nearest-centroid relabeling of the current metric."""
+    metric = objective.assignment_metric(state)
+    proposal = _assign_nearest(points, state.means, metric)
+    return _repair_empty_cells(proposal, labels, points, state.means, metric, n_bins)
+
+
+def _assign_nearest(points: jnp.ndarray, means: jnp.ndarray, metric: jnp.ndarray) -> np.ndarray:
+    """Assign every row to its nearest centroid in memory-bounded chunks."""
+    n_rows = int(points.shape[0])
+    chunk_rows = _candidate_chunk_rows(points, int(means.shape[0]))
+    labels = np.empty(n_rows, dtype=np.int32)
+    for start in range(0, n_rows, chunk_rows):
+        stop = min(start + chunk_rows, n_rows)
+        labels[start:stop] = np.asarray(_metric_assign(points[start:stop], means, metric))
+    return labels
+
+
+def _repair_empty_cells(
+    proposal: np.ndarray,
+    labels: np.ndarray,
+    points: jnp.ndarray,
+    means: jnp.ndarray,
+    metric: jnp.ndarray,
+    n_bins: int,
+) -> np.ndarray:
+    """Keep the most representative current member of every emptied cell.
+
+    A frozen-metric batch can vacate a cell entirely, which the exact criterion
+    state cannot represent. The repair retains, for each emptied cell, the row
+    it already holds that is closest to its own centroid, so the recovered cell
+    is the one the criterion currently supports best. The retained rows are
+    distinct because the current labels partition the sample; a repair that
+    empties some other cell as collateral is rejected by the guard like any
+    other infeasible proposal.
+    """
+    empty = np.flatnonzero(np.bincount(proposal, minlength=n_bins)[:n_bins] == 0)
+    if empty.size == 0:
+        return proposal
+    repaired = proposal.copy()
+    for cell in empty:
+        members = np.flatnonzero(labels == cell)
+        if members.size == 0:
+            continue
+        residuals = points[members] - means[cell]
+        distances = np.asarray(jnp.einsum("nr,rs,ns->n", residuals, metric, residuals))
+        repaired[members[int(np.argmin(distances))]] = int(cell)
+    return repaired
 
 
 def _run_exchange(
@@ -913,6 +1168,15 @@ def _rank_two_inverse_update(
     return updated
 
 
+def _profiled_semimetric(state: _ExchangeState, nuisance: tuple[int, ...]) -> jnp.ndarray:
+    r"""Return \(G_s=L^\top S^{-1}L\) of one profiled state, with \(L=[I,-BC^{-1}]\)."""
+    indices = jnp.asarray(nuisance)
+    metric = state.inverse.at[jnp.ix_(indices, indices)].add(
+        -_require_nuisance(state.nuisance_inverse)
+    )
+    return 0.5 * (metric + metric.T)
+
+
 def _require_nuisance(matrix: jnp.ndarray | None) -> jnp.ndarray:
     if matrix is None:
         raise ValueError("profiled-D exchange state is missing its nuisance block")
@@ -938,11 +1202,7 @@ def _profiled_geometry_report(
     exchange_stable: bool,
 ) -> ProfiledGeometryReport:
     """Diagnose the finite efficient-semimetric gap of a terminal profiled state."""
-    nuisance_indices = jnp.asarray(nuisance)
-    metric = state.inverse.at[jnp.ix_(nuisance_indices, nuisance_indices)].add(
-        -_require_nuisance(state.nuisance_inverse)
-    )
-    metric = 0.5 * (metric + metric.T)
+    metric = _profiled_semimetric(state, nuisance)
     source_residuals = scores - state.means[labels]
     destination_residuals = scores[:, None, :] - state.means[None, :, :]
     source_distances = jnp.einsum("nr,rs,ns->n", source_residuals, metric, source_residuals)

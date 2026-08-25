@@ -250,6 +250,65 @@ class DExchangeConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class MahalanobisLloydConfig:
+    """Configure guarded batch Mahalanobis-Lloyd iteration.
+
+    One *iteration* freezes the current criterion metric, proposes the complete
+    nearest-centroid relabeling of every row in that metric, and accepts the
+    proposal only when the exactly rebuilt objective strictly improves. The
+    unguarded batch step is not monotone: the tangent of the concave log
+    determinant is an upper bound, not a minorizer, and a committed eight-row
+    fixture loses 0.136521 nat in one such step. The guard is therefore part of
+    the solver contract, not an optional safeguard.
+
+    Parameters
+    ----------
+    rank_rtol
+        Relative threshold for the informative Fisher subspace.
+    seed
+        Nonnegative seed of the deterministic k-means seeding.
+    n_init
+        Number of weighted k-means++ restarts used to seed the labels.
+    max_iter
+        Maximum number of guarded batch iterations.
+    guard
+        Behavior once a proposal stops improving. ``"exchange"`` hands the
+        labels to the exact positive-gain exchange engine, so the reported
+        state is exchange-stable and a nonsingular D result stays compilable.
+        ``"reject"`` stops at the last accepted labeling and only certifies
+        exchange stability with one final scan, which may report ``False``.
+    gain_tolerance
+        Strict minimum accepted objective gain, shared by the guarded batch and
+        the exchange phase.
+    """
+
+    method: Literal["mahalanobis_lloyd"] = field(default="mahalanobis_lloyd", init=False)
+    rank_rtol: float | None = None
+    seed: int = 0
+    n_init: int = 8
+    max_iter: int = 100
+    guard: Literal["exchange", "reject"] = "exchange"
+    gain_tolerance: float = 1e-10
+
+    def __post_init__(self) -> None:
+        """Validate the guarded batch settings at construction time."""
+        if self.rank_rtol is not None:
+            _validate_finite("rank_rtol", self.rank_rtol, positive=False)
+            if self.rank_rtol >= 1:
+                raise ValueError("rank_rtol must be less than one")
+        _validate_integer("seed", self.seed, minimum=0)
+        _validate_integer("n_init", self.n_init, minimum=1)
+        _validate_integer("max_iter", self.max_iter, minimum=1)
+        if self.guard not in ("exchange", "reject"):
+            raise ValueError("guard must be 'exchange' or 'reject'")
+        _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible configuration mapping."""
+        return json_ready(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
 class ScalarDPConfig:
     """Configure exact interval dynamic programming for one score coordinate.
 
@@ -279,4 +338,7 @@ class ScalarDPConfig:
         return json_ready(asdict(self))
 
 
-type QuantizerConfig = KMeansConfig | SoftVoronoiConfig | DExchangeConfig | ScalarDPConfig
+type PartitionConfig = DExchangeConfig | MahalanobisLloydConfig
+type QuantizerConfig = (
+    KMeansConfig | SoftVoronoiConfig | DExchangeConfig | MahalanobisLloydConfig | ScalarDPConfig
+)

@@ -16,6 +16,8 @@ from ._validation import (
 from .config import (
     DExchangeConfig,
     KMeansConfig,
+    MahalanobisLloydConfig,
+    PartitionConfig,
     QuantizerConfig,
     ScalarDPConfig,
     SoftVoronoiConfig,
@@ -70,14 +72,19 @@ def optimize_partition(
     weights: ArrayLike | None = None,
     n_bins: int,
     criterion: DOptimality | ProfiledDOptimality | None = None,
-    config: DExchangeConfig | None = None,
+    config: PartitionConfig | None = None,
     provenance: ScoreProvenance | None = None,
 ) -> PartitionResult:
-    """Optimize labels of one fixed score table without prediction semantics."""
+    """Optimize labels of one fixed score table without prediction semantics.
+
+    Both finite criteria accept either the exact positive-gain exchange or the
+    guarded Mahalanobis-Lloyd solver; the guarded batch never accepts a step
+    that the exactly rebuilt objective does not certify.
+    """
     resolved_criterion = DOptimality() if criterion is None else criterion
     resolved_config = DExchangeConfig() if config is None else config
-    if not isinstance(resolved_config, DExchangeConfig):
-        raise TypeError("optimize_partition requires DExchangeConfig")
+    if not isinstance(resolved_config, (DExchangeConfig, MahalanobisLloydConfig)):
+        raise TypeError("optimize_partition requires DExchangeConfig or MahalanobisLloydConfig")
     if isinstance(resolved_criterion, DOptimality):
         return optimize_d_partition(
             scores,
@@ -123,7 +130,7 @@ def fit_quantizer(
     resolved_criterion: Criterion = DOptimality() if criterion is None else criterion
     _validate_solver_pair(resolved_criterion, resolved_config)
 
-    if isinstance(resolved_config, DExchangeConfig):
+    if isinstance(resolved_config, (DExchangeConfig, MahalanobisLloydConfig)):
         if not isinstance(resolved_criterion, DOptimality):
             raise ValueError(
                 "finite profiled-D exchange has no implicit inductive rule; "
@@ -231,7 +238,9 @@ def _materialize_source(source: Source, provider: ScoreProvider | None) -> tuple
 def _validate_solver_pair(criterion: Criterion, config: QuantizerConfig) -> None:
     if isinstance(config, KMeansConfig) and not isinstance(criterion, NormalizedTrace):
         raise ValueError("KMeansConfig implements only NormalizedTrace")
-    if isinstance(config, DExchangeConfig) and not isinstance(criterion, DOptimality):
+    if isinstance(config, (DExchangeConfig, MahalanobisLloydConfig)) and not isinstance(
+        criterion, DOptimality
+    ):
         raise ValueError(f"{type(config).__name__} implements only DOptimality")
     if isinstance(config, ScalarDPConfig) and not isinstance(criterion, DOptimality):
         raise ValueError("ScalarDPConfig implements only DOptimality")

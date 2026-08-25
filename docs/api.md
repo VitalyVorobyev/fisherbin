@@ -16,8 +16,12 @@ optimize_partition(
 ) -> PartitionResult
 ```
 
-This is fixed-sample assignment. The current implementation accepts only `DOptimality` with
-`DExchangeConfig`.
+This is fixed-sample assignment. It accepts `DOptimality` or `ProfiledDOptimality` with either
+`DExchangeConfig` (exact positive-gain relocation) or `MahalanobisLloydConfig` (guarded
+nearest-centroid batches). A batch is adopted only when the exactly rebuilt objective strictly
+improves, because the frozen-metric batch step is not monotone on its own; with the default
+`guard="exchange"` the labels are then finished by the exchange engine, so the terminal state is
+exchange-stable.
 
 ### `fit_quantizer`
 
@@ -33,16 +37,19 @@ fit_quantizer(
 ) -> QuantizerResult
 ```
 
-Supported pairs are D exchange, soft D, and normalized-trace k-means. `ScoreSample` forbids a
-provider; observation and integration sources require one. Validation must use the same score
-dimension and remains diagnostic.
+Supported pairs are D exchange, guarded Mahalanobis-Lloyd, soft D, and normalized-trace k-means.
+The two finite D solvers take the same route: optimize the labels, then compile the verified rule.
+`ScoreSample` forbids a provider; observation and integration sources require one. Validation must
+use the same score dimension and remains diagnostic.
 
 ## Result semantics
 
 `PartitionResult` has labels, cell statistics, information matrices, `rank`, `accepted_moves`,
-`scans`, `exchange_stable`, and `best_remaining_gain`, but no prediction method. One scan is one
-complete evaluation of every admissible relocation; with the default `batch_moves` a single scan
-may relocate many rows, so `accepted_moves` normally exceeds `scans`. Its `compile_quantizer()`
+`scans`, `lloyd_iterations`, `accepted_lloyd_steps`, `exchange_stable`, and `best_remaining_gain`,
+but no prediction method. One scan is one complete evaluation of every admissible relocation; with
+the default `batch_moves` a single scan may relocate many rows, so `accepted_moves` normally
+exceeds `scans`. The two Lloyd counters stay zero unless the guarded batch solver ran, and
+`objective_history` records every accepted step of every phase in order. Its `compile_quantizer()`
 rejects an unstable or geometrically degenerate result.
 
 `QuantizerResult.predict_scores(scores)` is the only prediction method. `evaluate_scores` assigns

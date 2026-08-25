@@ -6,6 +6,8 @@
 
 ::: scorequant.DExchangeConfig
 
+::: scorequant.MahalanobisLloydConfig
+
 ::: scorequant.KMeansConfig
 
 ::: scorequant.SoftVoronoiConfig

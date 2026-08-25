@@ -7,7 +7,13 @@ from .components import (
     mixture_scores_from_posteriors,
     scores_from_components,
 )
-from .config import DExchangeConfig, KMeansConfig, ScalarDPConfig, SoftVoronoiConfig
+from .config import (
+    DExchangeConfig,
+    KMeansConfig,
+    MahalanobisLloydConfig,
+    ScalarDPConfig,
+    SoftVoronoiConfig,
+)
 from .criteria import DOptimality, NormalizedTrace, ProfiledDOptimality
 from .information import (
     binned_fisher_information,
@@ -55,6 +61,7 @@ __all__ = [
     "LinearComponentScore",
     "LinearComponents",
     "LinearProblem",
+    "MahalanobisLloydConfig",
     "MixturePosteriorTransform",
     "NormalizedTrace",
     "ObservationSample",

@@ -10,7 +10,7 @@ import numpy as np
 
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
-from .config import DExchangeConfig, QuantizerConfig
+from .config import MahalanobisLloydConfig, PartitionConfig, QuantizerConfig
 from .criteria import Criterion, DOptimality, ProfiledDOptimality
 from .sources import ScoreProvenance
 from .transforms import FisherTransform
@@ -215,7 +215,14 @@ class QuantizerResult:
 
 @dataclass(frozen=True, slots=True)
 class PartitionResult:
-    """Represent optimized labels of one fixed weighted score table."""
+    """Represent optimized labels of one fixed weighted score table.
+
+    The solver counters are reported separately and never merged: ``scans`` and
+    ``accepted_moves`` describe exchange work, while ``lloyd_iterations`` and
+    ``accepted_lloyd_steps`` describe guarded batch relabelings. Both stay zero
+    for a solver that performs neither. ``objective_history`` records every
+    accepted step of every phase in order and is strictly increasing.
+    """
 
     labels: jnp.ndarray
     training_scores: jnp.ndarray
@@ -229,7 +236,7 @@ class PartitionResult:
     transformed_centers: jnp.ndarray | None
     metric: jnp.ndarray | None
     criterion: DOptimality | ProfiledDOptimality
-    config: DExchangeConfig
+    config: PartitionConfig
     train_report: InformationReport
     provenance: ScoreProvenance
     accepted_moves: int
@@ -238,6 +245,8 @@ class PartitionResult:
     best_remaining_gain: float
     objective_history: jnp.ndarray
     positive_weight_mask: jnp.ndarray
+    lloyd_iterations: int = 0
+    accepted_lloyd_steps: int = 0
     profiled_report: ProfiledInformationReport | None = None
     profiled_geometry: ProfiledGeometryReport | None = None
 
@@ -268,10 +277,14 @@ class PartitionResult:
                 "fit an explicit quantizer instead"
             )
         if not self.exchange_stable:
+            remedy = (
+                "set guard='exchange'"
+                if isinstance(self.config, MahalanobisLloydConfig)
+                else "raise max_scans, or leave it unset to run until stability"
+            )
             raise ValueError(
                 "only an exchange-stable D partition can be compiled; inspect "
-                "best_remaining_gain and raise max_scans, or leave it unset to run "
-                "until stability"
+                f"best_remaining_gain and {remedy}"
             )
         if self.transformed_centers is None or self.metric is None:
             raise ValueError("D compilation geometry is unavailable")
@@ -333,6 +346,8 @@ class PartitionResult:
                 "information_kind": self.information_kind,
                 "accepted_moves": self.accepted_moves,
                 "scans": self.scans,
+                "lloyd_iterations": self.lloyd_iterations,
+                "accepted_lloyd_steps": self.accepted_lloyd_steps,
                 "exchange_stable": self.exchange_stable,
                 "best_remaining_gain": self.best_remaining_gain,
                 "objective_history": self.objective_history,
