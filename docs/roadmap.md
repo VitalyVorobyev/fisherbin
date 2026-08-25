@@ -24,8 +24,8 @@ MkDocs pass.
 - Regression gates cover direct recomputation, monotonicity, small global optima, the D separation
   bound, invariants, and reproduction of positive-weight labels.
 
-**Next:** profile factorization updates before optimizing performance; add branch-and-bound only
-after a concrete certificate workflow exists.
+**Next:** profile factorization updates before optimizing performance further. The branch-and-bound
+certificate workflow this milestone deferred is implemented; see the M7 certificate gate.
 
 ## M3 — Breaking task-explicit API
 
@@ -105,9 +105,9 @@ labels and objective bit for bit, and attains the exhaustive small-instance opti
 
 ## M7 — Population, scale, and persistence
 
-In order: population samplers and moment oracles; branch-and-bound certificates; streaming and
-factorization updates; then versioned persistence. Signed weights, additional backends, and advanced
-objectives remain outside scope until their mathematical contracts and independent use cases exist.
+In order: population samplers and moment oracles; streaming and factorization updates; then
+versioned persistence. Signed weights, additional backends, and advanced objectives remain outside
+scope until their mathematical contracts and independent use cases exist.
 
 **Certificate gate completed:** `exchange_stability_report` certifies any supplied labeling with one
 exact scan and reproduces the engine's own `best_remaining_gain`; `PartitionResult.geometry` reports
@@ -115,7 +115,7 @@ the Voronoi violation, the Theorem-3 guaranteed gain, and the cell-separation re
 partition; and `certify_partition` proves global optimality by branch and bound with the
 singleton-completion bound, agreeing with the exhaustive oracle on seeded weighted and unweighted
 instances and downgrading to `status="budget_exhausted"` with a genuine outstanding bound when its
-node budget runs out. Certification is D-only and never runs implicitly, per ADR 0013.
+node budget runs out. Certification is D-only and never runs implicitly, per ADR 0014.
 
 ## Explicitly outside the development plan
 
@@ -126,11 +126,9 @@ decision.
 
 ## Next execution order
 
-1. Profile exact-D factorization updates and chunked candidate scans before increasing the bounded
-   partition-table capacity.
-2. Design and gate finite profiled-\(D_s\) exchange before exposing any new public API.
-3. Add population samplers and moment oracles, then certificates, streaming, and persistence in
-   that order.
+1. Add population samplers and moment oracles.
+2. Add streaming diagnostic aggregation and profile further exact-D factorization updates.
+3. Add versioned, non-pickle quantizer persistence (`save_quantizer`/`load_quantizer`).
 
 ## Full handoff gate
 
