@@ -43,6 +43,7 @@ fit_quantizer(
     n_bins,
     criterion=None,
     config=None,
+    diagnostics="endpoints",
 ) -> QuantizerResult
 ```
 
@@ -51,6 +52,13 @@ exact scalar interval dynamic programming. The two finite D solvers take the sam
 the labels, then compile the verified rule. `ScoreSample` forbids a provider; observation and
 integration sources require one. Validation must use the same score dimension and remains
 diagnostic.
+
+`diagnostics` controls how many recorded center snapshots are re-scored into
+`trace.train_hard_retention` and `trace.validation_hard_retention`: `"final"` scores only the
+terminal snapshot, `"endpoints"` (the default) scores the first and terminal snapshots, and
+`"full"` scores every snapshot, matching the historical behavior. Unscored snapshots hold `nan` so
+the returned history stays aligned with `trace.steps`; `centers`, `labels`, and both reports are
+unaffected.
 
 `ScalarDPConfig` pairs with `DOptimality` only and requires the effective score space to be rank
 one after `rank_rtol` projection; a higher rank is rejected by name. On that rank the D-optimal

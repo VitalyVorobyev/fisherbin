@@ -18,6 +18,7 @@ def test_all_visualizations_construct_figures() -> None:
         scores,
         n_bins=4,
         config=scorequant.KMeansConfig(n_init=2),
+        diagnostics="full",
     )
     figures = [
         scorequant.plot_optimization(result.trace),
@@ -56,7 +57,7 @@ def test_partition_rejects_implicit_high_dimensional_projection() -> None:
 def test_high_dimensional_summary_uses_information_spectrum() -> None:
     rng = np.random.default_rng(16)
     scores = jnp.asarray(rng.normal(size=(120, 3)))
-    result = fit_test_quantizer(scores, n_bins=5)
+    result = fit_test_quantizer(scores, n_bins=5, diagnostics="full")
     figure = scorequant.plot_summary(result, scores)
     first_axis = figure.axes[0]
     assert first_axis.get_title() == "Retained-information spectrum"
@@ -72,6 +73,7 @@ def test_high_dimensional_center_motion_uses_all_coordinates() -> None:
         scores,
         n_bins=5,
         config=scorequant.SoftVoronoiConfig(max_steps=8, record_every=1),
+        diagnostics="full",
     )
     figure = scorequant.plot_optimization(result.trace)
     motion_axis = figure.axes[3]

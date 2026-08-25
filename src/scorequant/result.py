@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 import jax.numpy as jnp
 import numpy as np
 
+from ._chunking import assignment_chunk_rows
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
 from .config import MahalanobisLloydConfig, PartitionConfig, QuantizerConfig
@@ -114,15 +115,16 @@ class QuantizerResult:
         return "exact_fisher" if self.provenance.exact_fisher else "supplied_score_surrogate"
 
     def predict_scores(self, scores: ArrayLike) -> jnp.ndarray:
-        """Assign raw score rows with the frozen score-space rule."""
+        """Assign raw score rows with the frozen score-space rule.
+
+        Rows are assigned in memory-bounded chunks so that predicting on a
+        large sample never materializes the full ``[n_rows, n_bins, rank]``
+        distance tensor at once; each row's distance and nearest-center
+        argmin are independent of every other row, so chunking is
+        bit-identical to the unchunked computation.
+        """
         coordinates = self.transform.apply(scores)
-        differences = coordinates[:, None, :] - self.centers[None, :, :]
-        distances = (
-            jnp.sum(differences**2, axis=2)
-            if self.metric is None
-            else jnp.einsum("nbr,rs,nbs->nb", differences, self.metric, differences)
-        )
-        return jnp.argmin(distances, axis=1)
+        return _chunked_predict_labels(coordinates, self.centers, self.metric)
 
     def evaluate_scores(
         self, scores: ArrayLike, weights: ArrayLike | None = None
@@ -264,7 +266,7 @@ class PartitionResult:
         if self.transformed_centers is None or self.metric is None:
             raise ValueError("D compilation geometry is unavailable")
         coordinates = self.transform.apply(self.training_scores)
-        predicted = _predict_transformed(coordinates, self.transformed_centers, self.metric)
+        predicted = _chunked_predict_labels(coordinates, self.transformed_centers, self.metric)
         positive = np.asarray(self.positive_weight_mask)
         if not np.array_equal(np.asarray(predicted)[positive], np.asarray(self.labels)[positive]):
             raise ValueError(
@@ -338,9 +340,41 @@ class PartitionResult:
         )
 
 
-def _predict_transformed(
-    coordinates: jnp.ndarray, centers: jnp.ndarray, metric: jnp.ndarray
+def _predict_distances(
+    coordinates: jnp.ndarray, centers: jnp.ndarray, metric: jnp.ndarray | None
 ) -> jnp.ndarray:
+    """Return the dense ``[chunk_rows, n_bins]`` assignment-distance table."""
     differences = coordinates[:, None, :] - centers[None, :, :]
-    distances = jnp.einsum("nbr,rs,nbs->nb", differences, metric, differences)
-    return jnp.argmin(distances, axis=1)
+    if metric is None:
+        return jnp.sum(differences**2, axis=2)
+    return jnp.einsum("nbr,rs,nbs->nb", differences, metric, differences)
+
+
+def _predict_labels(
+    coordinates: jnp.ndarray, centers: jnp.ndarray, metric: jnp.ndarray | None
+) -> jnp.ndarray:
+    """Assign one chunk of rows to its nearest center."""
+    return jnp.argmin(_predict_distances(coordinates, centers, metric), axis=1)
+
+
+def _chunked_predict_labels(
+    coordinates: jnp.ndarray, centers: jnp.ndarray, metric: jnp.ndarray | None
+) -> jnp.ndarray:
+    """Assign every row to its nearest center in memory-bounded chunks.
+
+    Bit-identical to the unchunked assignment: each row's distance and
+    argmin are independent of every other row, so partitioning rows into
+    chunks never materializes the full ``[n_rows, n_bins, rank]`` tensor and
+    changes nothing about the arithmetic.
+    """
+    n_rows = int(coordinates.shape[0])
+    chunk_rows = assignment_chunk_rows(
+        coordinates.dtype, n_rows, int(centers.shape[0]), coordinates.shape[1]
+    )
+    if chunk_rows >= n_rows:
+        return _predict_labels(coordinates, centers, metric)
+    chunks = [
+        _predict_labels(coordinates[start : start + chunk_rows], centers, metric)
+        for start in range(0, n_rows, chunk_rows)
+    ]
+    return jnp.concatenate(chunks)

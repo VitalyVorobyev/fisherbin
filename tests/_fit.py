@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from scorequant import (
     DOptimality,
     KMeansConfig,
@@ -22,6 +24,7 @@ def fit_test_quantizer(
     config: KMeansConfig | SoftVoronoiConfig | None = None,
     validation_scores: ArrayLike | None = None,
     validation_weights: ArrayLike | None = None,
+    diagnostics: Literal["final", "endpoints", "full"] = "endpoints",
 ) -> QuantizerResult:
     """Fit a reusable score quantizer for tests focused below orchestration."""
     resolved = KMeansConfig() if config is None else config
@@ -35,4 +38,5 @@ def fit_test_quantizer(
         n_bins=n_bins,
         criterion=criterion,
         config=resolved,
+        diagnostics=diagnostics,
     )

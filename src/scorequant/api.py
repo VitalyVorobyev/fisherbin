@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from typing import Literal
 
 import jax.numpy as jnp
 
@@ -28,7 +29,7 @@ from .partition import optimize_d_partition, optimize_profiled_d_partition
 from .providers import ScoreProvider
 from .quantizers import (
     QuantizerRun,
-    hard_assign,
+    chunked_hard_assign,
     scalar_weighted_kmeans_dp,
     soft_voronoi,
     weighted_kmeans,
@@ -55,6 +56,15 @@ class _PreparedFit:
     train_objective_scores: jnp.ndarray
     all_train_coordinates: jnp.ndarray
     validation_coordinates: jnp.ndarray | None
+
+
+# How many recorded center snapshots ``fit_quantizer`` re-scores with a full
+# information report while building ``train_hard_retention`` /
+# ``validation_hard_retention``: every snapshot ("full"), only the first and
+# terminal snapshots ("endpoints"), or only the terminal snapshot ("final").
+# Unscored snapshots hold ``nan`` so the history stays aligned with
+# ``OptimizationTrace.steps`` regardless of the mode.
+DiagnosticsMode = Literal["final", "endpoints", "full"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -218,11 +228,25 @@ def fit_quantizer(
     n_bins: int,
     criterion: Criterion | None = None,
     config: QuantizerConfig | None = None,
+    diagnostics: DiagnosticsMode = "endpoints",
 ) -> QuantizerResult:
     """Fit a reusable hard rule from an empirical or bounded score law.
 
     A score callback alone is deliberately insufficient: observations must be
     paired with an empirical or integration source that defines their measure.
+
+    Parameters
+    ----------
+    diagnostics
+        How much of the recorded center history to re-score into
+        ``trace.train_hard_retention`` and ``trace.validation_hard_retention``.
+        ``"final"`` scores only the terminal centers (one full-dataset pass),
+        ``"endpoints"`` (the default) scores the first and terminal centers
+        (two passes), and ``"full"`` scores every recorded snapshot, matching
+        the historical behavior. Snapshots that are not scored hold ``nan``,
+        so the returned history always stays aligned with ``trace.steps``.
+        This only affects diagnostic reporting; it never changes ``centers``,
+        ``labels``, or either report.
     """
     train, source_kind = _materialize_source(source, score)
     validation_sample = None
@@ -266,14 +290,16 @@ def fit_quantizer(
         config=resolved_config,
     )
     run = _run_geometric_quantizer(prepared, n_bins, resolved_criterion)
-    diagnostics = _build_fit_diagnostics(prepared, run, n_bins, resolved_criterion)
+    fit_diagnostics = _build_fit_diagnostics(
+        prepared, run, n_bins, resolved_criterion, diagnostics=diagnostics
+    )
     train_profiled_report = None
     validation_profiled_report = None
-    hard_retention = diagnostics.train_report.geometric_mean_retention
+    hard_retention = fit_diagnostics.train_report.geometric_mean_retention
     if isinstance(resolved_criterion, ProfiledDOptimality):
         train_profiled_report = profiled_information_report(
             prepared.train_sample.scores,
-            diagnostics.labels,
+            fit_diagnostics.labels,
             interest=resolved_criterion.interest,
             weights=prepared.train_sample.weights,
             n_bins=n_bins,
@@ -282,7 +308,7 @@ def fit_quantizer(
         if prepared.validation_sample is not None and prepared.validation_coordinates is not None:
             validation_profiled_report = profiled_information_report(
                 prepared.validation_sample.scores,
-                hard_assign(prepared.validation_coordinates, run.centers),
+                chunked_hard_assign(prepared.validation_coordinates, run.centers),
                 interest=resolved_criterion.interest,
                 weights=prepared.validation_sample.weights,
                 n_bins=n_bins,
@@ -296,10 +322,10 @@ def fit_quantizer(
         transform=prepared.transform,
         criterion=resolved_criterion,
         config=resolved_config,
-        trace=_build_optimization_trace(run, diagnostics),
-        labels=diagnostics.labels,
-        train_report=diagnostics.train_report,
-        validation_report=diagnostics.validation_report,
+        trace=_build_optimization_trace(run, fit_diagnostics),
+        labels=fit_diagnostics.labels,
+        train_report=fit_diagnostics.train_report,
+        validation_report=fit_diagnostics.validation_report,
         provenance=train.provenance,
         hardening_gap=hardening_gap,
         source_kind=source_kind,
@@ -418,6 +444,23 @@ def _run_geometric_quantizer(
     )
 
 
+def _diagnostics_snapshot_indices(n_snapshots: int, diagnostics: DiagnosticsMode) -> set[int]:
+    """Return which recorded center snapshots ``diagnostics`` re-scores.
+
+    ``"final"`` selects only the terminal snapshot, ``"endpoints"`` the first
+    and terminal snapshots (deduplicated when there is only one snapshot),
+    and ``"full"`` every snapshot.
+    """
+    if n_snapshots == 0:
+        return set()
+    last = n_snapshots - 1
+    if diagnostics == "full":
+        return set(range(n_snapshots))
+    if diagnostics == "endpoints":
+        return {0, last}
+    return {last}
+
+
 def _hard_retention_history(
     scores: jnp.ndarray,
     weights: jnp.ndarray,
@@ -426,10 +469,21 @@ def _hard_retention_history(
     *,
     rank_rtol: float | None,
     criterion: Criterion,
+    diagnostics: DiagnosticsMode,
 ) -> list[float]:
-    values: list[float] = []
-    for centers in run.center_history:
-        labels = hard_assign(transformed_scores, centers)
+    """Re-score a subset of recorded center snapshots into a retention history.
+
+    A full-dataset information report costs an ``O(N)`` pass, so scoring every
+    recorded snapshot is expensive for long soft-Voronoi schedules. Unscored
+    snapshots hold ``nan`` rather than being omitted, so the returned list
+    always has the same length as ``run.center_history`` and stays aligned
+    with ``OptimizationTrace.steps``.
+    """
+    selected = _diagnostics_snapshot_indices(len(run.center_history), diagnostics)
+    values: list[float] = [float("nan")] * len(run.center_history)
+    for index in selected:
+        centers = run.center_history[index]
+        labels = chunked_hard_assign(transformed_scores, centers)
         if isinstance(criterion, ProfiledDOptimality):
             retention = profiled_information_report(
                 scores,
@@ -446,14 +500,19 @@ def _hard_retention_history(
                 n_bins=centers.shape[0],
                 rank_rtol=rank_rtol,
             ).geometric_mean_retention
-        values.append(retention)
+        values[index] = retention
     return values
 
 
 def _build_fit_diagnostics(
-    prepared: _PreparedFit, run: QuantizerRun, n_bins: int, criterion: Criterion
+    prepared: _PreparedFit,
+    run: QuantizerRun,
+    n_bins: int,
+    criterion: Criterion,
+    *,
+    diagnostics: DiagnosticsMode,
 ) -> _FitDiagnostics:
-    labels = hard_assign(prepared.all_train_coordinates, run.centers)
+    labels = chunked_hard_assign(prepared.all_train_coordinates, run.centers)
     train_hard = _hard_retention_history(
         prepared.train_sample.scores,
         prepared.train_sample.weights,
@@ -461,6 +520,7 @@ def _build_fit_diagnostics(
         run,
         rank_rtol=prepared.config.rank_rtol,
         criterion=criterion,
+        diagnostics=diagnostics,
     )
     train_report = information_report(
         prepared.train_sample.scores,
@@ -478,10 +538,11 @@ def _build_fit_diagnostics(
         run,
         rank_rtol=prepared.config.rank_rtol,
         criterion=criterion,
+        diagnostics=diagnostics,
     )
     validation_report = information_report(
         prepared.validation_sample.scores,
-        hard_assign(prepared.validation_coordinates, run.centers),
+        chunked_hard_assign(prepared.validation_coordinates, run.centers),
         prepared.validation_sample.weights,
         n_bins=n_bins,
         rank_rtol=prepared.config.rank_rtol,

@@ -28,6 +28,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from ._binstats import scatter_bin_statistics
+from ._chunking import assignment_chunk_rows
 from ._typing import ArrayLike
 from ._validation import (
     _ValidatedSample,
@@ -49,8 +50,6 @@ from .reports import (
 from .result import PartitionResult
 from .sources import ScoreProvenance
 from .transforms import FisherTransform, fisher_transform
-
-_CANDIDATE_WORKING_SET_BYTES = 64 * 1024 * 1024
 
 # Relative slack allowed when certifying the leverage bound q_delta <= 1/W_a +
 # 1/W_b. The bound is exact mathematics, so this only absorbs the rounding of
@@ -357,11 +356,11 @@ def optimize_d_partition(
 
     # The D theorem supplies the only canonical labels for zero-measure rows.
     all_coordinates = prepared.transform.apply(sample.scores)
-    compiled_labels = _metric_assign(all_coordinates, state.means, state.inverse)
+    compiled_labels = jnp.asarray(_assign_nearest(all_coordinates, state.means, state.inverse))
     effective_labels = run.labels[prepared.inverse_rows]
     compiled_labels = compiled_labels.at[sample.positive_weight_mask].set(effective_labels)
     if run.exchange_stable:
-        geometric = _metric_assign(prepared.coordinates, state.means, state.inverse)
+        geometric = _assign_nearest(prepared.coordinates, state.means, state.inverse)
         if not np.array_equal(np.asarray(geometric), np.asarray(run.labels)):
             raise ValueError(
                 "terminal D state is geometrically degenerate; duplicate/tied score atoms "
@@ -432,7 +431,9 @@ def optimize_profiled_d_partition(
     sample = prepared.sample
 
     all_coordinates = prepared.transform.apply(sample.scores)
-    extension_labels = hard_assign(all_coordinates, prepared.transform.apply(state.means))
+    extension_labels = jnp.asarray(
+        _assign_nearest(all_coordinates, prepared.transform.apply(state.means), None)
+    )
     effective_labels = run.labels[prepared.inverse_rows]
     compiled_labels = extension_labels.at[sample.positive_weight_mask].set(effective_labels)
     return _partition_result(
@@ -853,7 +854,7 @@ def _kmeans_labels(
             record_every=100,
         ),
     )
-    return hard_assign(coordinates, initializer.centers)
+    return jnp.asarray(_assign_nearest(coordinates, initializer.centers, None))
 
 
 def _optimize_lloyd(
@@ -994,14 +995,28 @@ def _lloyd_proposal(
     return _repair_empty_cells(proposal, labels, points, state.means, metric, n_bins)
 
 
-def _assign_nearest(points: jnp.ndarray, means: jnp.ndarray, metric: jnp.ndarray) -> np.ndarray:
-    """Assign every row to its nearest centroid in memory-bounded chunks."""
+def _assign_nearest(
+    points: jnp.ndarray, means: jnp.ndarray, metric: jnp.ndarray | None
+) -> np.ndarray:
+    """Assign every row to its nearest centroid in memory-bounded chunks.
+
+    ``metric=None`` selects the Euclidean assignment (used to extend a
+    profiled-D partition, whose objective has no criterion metric to reuse)
+    instead of the Mahalanobis one; chunking rows changes nothing about the
+    per-row arithmetic, so both are bit-identical to their unchunked form.
+    """
     n_rows = int(points.shape[0])
     chunk_rows = _candidate_chunk_rows(points, int(means.shape[0]))
     labels = np.empty(n_rows, dtype=np.int32)
     for start in range(0, n_rows, chunk_rows):
         stop = min(start + chunk_rows, n_rows)
-        labels[start:stop] = np.asarray(_metric_assign(points[start:stop], means, metric))
+        chunk_points = points[start:stop]
+        chunk_labels = (
+            hard_assign(chunk_points, means)
+            if metric is None
+            else _metric_assign(chunk_points, means, metric)
+        )
+        labels[start:stop] = np.asarray(chunk_labels)
     return labels
 
 
@@ -1425,12 +1440,7 @@ def _require_nuisance(matrix: jnp.ndarray | None) -> jnp.ndarray:
 
 
 def _candidate_chunk_rows(scores: jnp.ndarray, n_bins: int) -> int:
-    item_size = np.dtype(scores.dtype).itemsize
-    rank = scores.shape[1]
-    values_per_row = n_bins * (rank + 4) + 4 * rank
-    return max(
-        1, min(scores.shape[0], _CANDIDATE_WORKING_SET_BYTES // (item_size * values_per_row))
-    )
+    return assignment_chunk_rows(scores.dtype, scores.shape[0], n_bins, scores.shape[1])
 
 
 def _geometry_report(

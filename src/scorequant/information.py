@@ -16,7 +16,7 @@ from ._validation import (
     validate_sample,
 )
 from .config import ScalarDPConfig
-from .quantizers import hard_assign, scalar_interval_dp
+from .quantizers import chunked_hard_assign, scalar_interval_dp
 from .reports import EfficientScoreBound, InformationReport, ProfiledInformationReport
 from .transforms import fisher_transform
 
@@ -517,7 +517,7 @@ def efficient_score_bound(
 
     # Zero-weight rows carry no measure; the interval rule still labels them.
     centers = scatter_bin_statistics(label_array, atom_weights, coordinates, n_bins).means
-    labels = hard_assign(transform.apply(efficient), centers)
+    labels = chunked_hard_assign(transform.apply(efficient), centers)
     labels = labels.at[sample.positive_weight_mask].set(label_array[inverse_rows])
     return EfficientScoreBound(
         upper_bound=float(np.log(between)),

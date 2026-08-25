@@ -63,9 +63,9 @@ def test_chunked_scan_and_rank_two_state_update_match_full_recomputation() -> No
     state = _d_state(scores, weights, labels, 3)
     objective = _DObjective()
     config = sq.DExchangeConfig(max_scans=10)
-    with patch("scorequant.partition._CANDIDATE_WORKING_SET_BYTES", 256):
+    with patch("scorequant._chunking.WORKING_SET_BYTES", 256):
         chunked = _scan(scores, weights, labels, state, objective, config, rows=True).best
-    with patch("scorequant.partition._CANDIDATE_WORKING_SET_BYTES", 1 << 40):
+    with patch("scorequant._chunking.WORKING_SET_BYTES", 1 << 40):
         unchunked = _scan(scores, weights, labels, state, objective, config, rows=True).best
     assert chunked == unchunked
     assert chunked is not None
