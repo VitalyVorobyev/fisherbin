@@ -16,8 +16,10 @@
 
 ::: scorequant.LinearComponentScore
 
-::: scorequant.ClassifierScore
+::: scorequant.DensityRatioScore
 
-::: scorequant.CentralLogRatioTransform
+::: scorequant.CentralLogRatioScore
 
-::: scorequant.MixturePosteriorTransform
+::: scorequant.ScoreProvenance
+
+::: scorequant.RatioProvenance

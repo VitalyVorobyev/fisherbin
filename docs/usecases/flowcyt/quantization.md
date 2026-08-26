@@ -44,10 +44,11 @@ There are five practical API rules hidden in this short block:
 5. Inspect both information and occupancy. A high D-efficiency does not prevent
    a held-out bin from becoming empty.
 
-The same algebra is available through `MixturePosteriorTransform` and
-`ClassifierScore`. Evaluated linear components first pass through
-`scores_from_components`; callable components use `ObservationSample` with
-`LinearComponentScore`.
+The same algebra is available through `ratios_from_posteriors` and
+`mixture_scores_from_ratios`, or as a provider through
+`DensityRatioScore.from_classifier`. Evaluated linear components first pass
+through `scores_from_components`; callable components use `ObservationSample`
+with `LinearComponentScore`.
 
 ## What it costs on 600,000 cells
 

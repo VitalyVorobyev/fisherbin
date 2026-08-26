@@ -67,23 +67,22 @@ def imbalanced_probabilities(observations: np.ndarray) -> np.ndarray:
     return np.stack([1.0 - plus, plus], axis=1)
 
 
-def door_scores() -> tuple[sq.ClassifierScore, sq.ClassifierScore]:
+def door_scores() -> tuple[sq.CentralLogRatioScore, sq.CentralLogRatioScore]:
     """Return the correctly declared and the misdeclared classifier providers.
 
     Returns
     -------
-    tuple of scorequant.ClassifierScore
+    tuple of scorequant.CentralLogRatioScore
         The provider that recovers the score and the one that does not.
     """
-    declared = sq.CentralLogRatioTransform([DELTA], [0.5, 0.5])
     return (
-        sq.ClassifierScore(calibrated_probabilities, declared),
-        sq.ClassifierScore(imbalanced_probabilities, declared),
+        sq.CentralLogRatioScore(calibrated_probabilities, [DELTA], [0.5, 0.5]),
+        sq.CentralLogRatioScore(imbalanced_probabilities, [DELTA], [0.5, 0.5]),
     )
 
 
 def retention_pair(
-    observations: np.ndarray, provider: sq.ClassifierScore, n_bins: int
+    observations: np.ndarray, provider: sq.CentralLogRatioScore, n_bins: int
 ) -> tuple[float, float]:
     """Return reported and true retention for one classifier provider.
 

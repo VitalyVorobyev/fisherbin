@@ -8,6 +8,8 @@ from typing import Literal
 import numpy as np
 from sklearn.ensemble import HistGradientBoostingClassifier
 
+import scorequant as sq
+
 from .data import (
     CLASS_NAMES,
     REFERENCE_FOLDS,
@@ -386,16 +388,15 @@ def fit_score_model(
         reference.patients,
         np.full(len(CLASS_NAMES), 1.0 / len(CLASS_NAMES)),
     )
-    ratio_normalizers = np.sum(
-        reference_weights[:, None] * calibrated / calibration.class_priors[None, :],
-        axis=0,
+    closure = sq.ratio_closure_report(
+        sq.ratios_from_posteriors(calibrated, calibration.class_priors), reference_weights
     )
     selection["final_calibration"] = {
         "strategy": calibration.strategy,
         "temperature": calibration.temperature,
         "class_priors": calibration.class_priors.tolist(),
-        "ratio_normalizers": ratio_normalizers.tolist(),
-        "maximum_normalization_residual": float(np.max(np.abs(ratio_normalizers - 1.0))),
+        "ratio_normalizers": np.asarray(closure.normalizers).tolist(),
+        "maximum_normalization_residual": closure.max_residual,
     }
     return ScoreFit(
         model=ScoreModel(transform, final_classifier, calibration),

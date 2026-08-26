@@ -253,6 +253,13 @@ def information_report(
     InformationReport
         Unregularized Fisher matrices, normalized retention, spectrum, and
         per-bin occupancy diagnostics.
+
+    Notes
+    -----
+    The between-cell algebra is exact for the supplied vectors. When the
+    scores are estimates ``s_hat`` rather than the model score ``s``, the
+    report measures ``Var(E[s_hat | q])``, not ``Var(E[s | q])``, and is a
+    surrogate for the model's own Fisher information.
     """
     sample = validate_sample(scores, weights)
     labels, resolved_n_bins = _validate_hard_assignments(sample, assignments, n_bins)

@@ -68,7 +68,7 @@ application and never serves as proof of a theorem.
 12. [Soft rules, purification, and consistency](ch12-soft-rules.md) — making the finite
     objective differentiable, and the asymptotic guarantee that hardening a good soft rule
     does not throw information away.
-13. [Estimated scores: classifiers and calibration](ch13-estimated-scores.md) — what changes
+13. [Estimated density ratios and scores](ch13-estimated-scores.md) — what changes
     when the score vectors themselves come from a trained classifier rather than a known law.
 14. [Diagnostics and choosing a method](ch14-choosing-a-method.md) — a decision guide from
     problem shape to criterion, solver, and the checks that should accompany the answer.

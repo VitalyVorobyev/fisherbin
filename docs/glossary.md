@@ -5,6 +5,14 @@
 One category of a hard partition. After binning, events are represented only by integer
 labels or aggregate counts.
 
+### Calibration
+
+The property of a probability estimate that its numerical values are quantitatively
+meaningful, not merely correctly ordered. Score construction from a classifier requires
+calibrated posteriors (or a ratio-estimation loss), because a ranking score or an arbitrary
+monotone transform of a likelihood ratio does not determine the
+[density ratios](#density-ratio) the score is built from.
+
 ### Compile bridge
 
 The one theorem that turns a sample partitioning result into a reusable quantizer without
@@ -24,6 +32,14 @@ Geometric mean of retained-information eigenvalues, also called the geometric-me
 [retention](#retention). It summarizes balanced local information retention across
 informative parameter directions and equals a single retained/unbinned ratio when there is
 only one informative direction.
+
+### Density ratio
+
+A model density divided by another model density: \(p(x\mid\theta)/p(x\mid\theta_0)\), or a
+component ratio \(\phi_k/\phi_{\rm ref}\). The score is the gradient of a log density
+ratio, so ratios are the minimal statistical representation a score provider needs —
+absolute normalization cancels, and any common event-wise factor is a free gauge. Distinct
+from an [importance ratio](#importance-ratio).
 
 ### Efficient score
 
@@ -58,6 +74,13 @@ bias.
 A deterministic score-space mapping that assigns every score to exactly one bin. Contrast
 with a randomized quantizer, which assigns a probability distribution over bins.
 
+### Importance ratio
+
+The factor \(p_{\theta_0}(x)/g(x)\) that reweights a sample drawn from a proposal
+distribution \(g\) so that weighted averages estimate expectations under the reference law.
+It is a property of the measure and enters ScoreQuant as source weights — never through a
+score provider, which is where [density ratios](#density-ratio) live.
+
 ### Intensity
 
 An unnormalized event-rate model. Unlike a probability density, its integral may encode
@@ -70,8 +93,10 @@ parameters.
 
 ### Likelihood ratio
 
-Ratio of two likelihoods or component densities. A classifier posterior divided by its
-class prior can estimate component ratios up to a common event-wise factor.
+Ratio of two likelihoods or component densities; see [density ratio](#density-ratio). A
+classifier posterior divided by its class prior can estimate component ratios up to a
+common event-wise factor, and direct estimators (KLIEP, uLSIF, neural ratio estimation)
+target the same object without a classifier.
 
 ### Oracle
 
@@ -84,6 +109,13 @@ Optimization of a measurable rule under a specified score law itself, rather tha
 finite realization. It is the inductive half of [space quantization](#space-quantization);
 `fit_quantizer` performs it exactly when given an `IntegrationSource` and approximately, as
 empirical inductive fitting, when given a finite sample.
+
+### Ratio closure
+
+The identity that exact [density ratios](#density-ratio) relative to a reference measure
+integrate to one under it. `ratio_closure_report` measures the residual; a large value
+flags estimator bias, a misdeclared training prior, or a measure mismatch. The check is
+necessary but not sufficient, so closure never upgrades estimated provenance to exact.
 
 ### Reference point
 
@@ -150,13 +182,14 @@ Conditional bin probabilities \(P(B_j\mid k)\) for a model component \(k\).
 
 ### Three doors
 
-The three ways a weighted table of score rows can arise, differing in what you already
-possess rather than in what the optimizer does with the result: door 1, precomputed
-`(event, score)` rows supplied directly as a `ScoreSample`; door 2, component densities or
-an analytic score model, reached through an `ObservationSample` or `IntegrationSource`
-together with `LinearComponentScore` or `ScoreFunction`; door 3, a trained classifier's
-calibrated probabilities, reached through an `ObservationSample` with `ClassifierScore` and
-a posterior transform. All three doors open onto the same object — a weighted score
+The three ways a weighted table of score rows can arise, differing in which statistical
+representation you already possess rather than in what the optimizer does with the result:
+door 1, precomputed `(event, score)` rows supplied directly as a `ScoreSample`; door 2,
+component densities or an analytic score model, reached through an `ObservationSample` or
+`IntegrationSource` together with `LinearComponentScore` or `ScoreFunction`; door 3,
+[density ratios](#density-ratio) — analytic, classifier-derived, or from a direct ratio
+estimator — reached through an `ObservationSample` with `DensityRatioScore` or
+`CentralLogRatioScore`. All three doors open onto the same object — a weighted score
 table — and are validated together with a source, never supplied alone.
 
 ### Whitening

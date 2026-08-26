@@ -7,6 +7,7 @@ The generated reference mirrors the task-explicit public surface.
 - [Results](results.md)
 - [Certificates](certification.md)
 - [Linear models](models.md)
+- [Density ratios](ratios.md)
 - [Information](information.md)
 - [Transforms](transforms.md)
 - [Visualization](visualization.md)

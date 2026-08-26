@@ -68,7 +68,9 @@ def main() -> None:
     training_index = np.clip(np.digitize(training, EDGES) - 1, 0, len(EDGES) - 2)
     observations, _ = draw(4_000, 0)
     exact = np.asarray(
-        sq.mixture_scores_from_posteriors(exact_posteriors(observations), FRACTIONS, FRACTIONS)
+        sq.mixture_scores_from_ratios(
+            sq.ratios_from_posteriors(exact_posteriors(observations), FRACTIONS), FRACTIONS
+        )
     )
     reference = sq.optimize_partition(exact, n_bins=N_BINS, config=sq.DExchangeConfig(seed=0))
     best = float(reference.train_report.geometric_mean_retention)
@@ -77,7 +79,11 @@ def main() -> None:
     for n_train in TRAINING_SIZES:
         table = histogram_table(training_index, components, n_train)
         posteriors = table[np.clip(np.digitize(observations, EDGES) - 1, 0, len(EDGES) - 2)]
-        estimated = np.asarray(sq.mixture_scores_from_posteriors(posteriors, FRACTIONS, FRACTIONS))
+        estimated = np.asarray(
+            sq.mixture_scores_from_ratios(
+                sq.ratios_from_posteriors(posteriors, FRACTIONS), FRACTIONS
+            )
+        )
         fitted = sq.optimize_partition(estimated, n_bins=N_BINS, config=sq.DExchangeConfig(seed=0))
         estimates[n_train] = estimated
         errors.append(float(np.sqrt(np.mean((estimated - exact) ** 2))))

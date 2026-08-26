@@ -38,6 +38,7 @@ IntegrationSource + ScoreProvider ------+
 - `optimize_partition(scores, ...)` owns a fixed-sample assignment; `PartitionResult` deliberately has **no** predict method. The one exception: an exchange-stable, nonsingular D-optimal result can `compile_quantizer()` into a theorem-backed Mahalanobis rule.
 - `fit_quantizer(source, score=...)` owns reusable score-space rules; prediction is always the explicit `predict_scores` — observation-to-score conversion is never hidden inside prediction.
 - Sources (the reference measure) and score providers (observation-to-score map) are separate contracts and are validated together: a `ScoreSample` rejects a provider; observation/integration sources require one.
+- Providers consume one of three statistical representations: exact densities (`LinearComponentScore`), model density ratios (`DensityRatioScore`, `CentralLogRatioScore`), or scores directly (`ScoreFunction`). Importance ratios are source weights, never provider inputs; estimated ratios never claim exact Fisher semantics.
 
 Module ownership (keep code in its owning module):
 
@@ -45,9 +46,10 @@ Module ownership (keep code in its owning module):
 - `transforms.py` — informative subspace and whitening
 - `partition.py` — exact D finite relocation
 - `quantizers.py` — private weighted k-means and soft-D numerical kernels
-- `sources.py` — empirical/quadrature measures plus `ScoreProvenance`
-- `providers.py` — framework-neutral observation-to-score adapters (`ClassifierScore`, etc.)
-- `components.py` — linear models and posterior-to-score algebra
+- `sources.py` — empirical/quadrature measures plus `ScoreProvenance`/`RatioProvenance`
+- `providers.py` — framework-neutral observation-to-score adapters (`DensityRatioScore`, etc.)
+- `ratios.py` — density-ratio algebra: prior correction, ratio-to-score maps, closure diagnostic
+- `components.py` — linear models and the intensity score adapter
 - `criteria.py`, `config.py`, `result.py`, `api.py` — public contracts and orchestration
 - `examples/`, `tests/`, `benchmarks/`, `research/` — datasets, tuning, exploration (research is excluded from the Ruff gate; anything relied upon gets copied into a deterministic regression test)
 

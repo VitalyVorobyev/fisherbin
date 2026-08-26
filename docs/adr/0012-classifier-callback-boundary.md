@@ -1,6 +1,9 @@
 # ADR 0012: keep classifier training outside the core
 
-**Status:** Accepted; partially supersedes ADR 0008.
+**Status:** Accepted; partially supersedes ADR 0008. Partially superseded by
+[ADR 0017](0017-density-ratio-representation.md): the score-level classifier adapter
+(`ClassifierScore` and its transforms) is replaced by a ratio-level decomposition; the boundary
+that training, calibration, and cross-fitting stay outside the core stands.
 
 ## Context
 

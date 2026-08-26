@@ -111,7 +111,13 @@ class QuantizerResult:
 
     @property
     def information_kind(self) -> str:
-        """Describe whether supplied-score matrices justify exact Fisher language."""
+        """Describe whether supplied-score matrices justify exact Fisher language.
+
+        ``"supplied_score_surrogate"`` means the reported matrices measure
+        ``Var(E[s_hat | q])`` for the supplied vectors ``s_hat``, which is
+        the model's Fisher information only when ``s_hat`` equals the model
+        score.
+        """
         return "exact_fisher" if self.provenance.exact_fisher else "supplied_score_surrogate"
 
     def predict_scores(self, scores: ArrayLike) -> jnp.ndarray:
@@ -244,7 +250,13 @@ class PartitionResult:
 
     @property
     def information_kind(self) -> str:
-        """Describe whether supplied-score matrices justify exact Fisher language."""
+        """Describe whether supplied-score matrices justify exact Fisher language.
+
+        ``"supplied_score_surrogate"`` means the reported matrices measure
+        ``Var(E[s_hat | q])`` for the supplied vectors ``s_hat``, which is
+        the model's Fisher information only when ``s_hat`` equals the model
+        score.
+        """
         return "exact_fisher" if self.provenance.exact_fisher else "supplied_score_surrogate"
 
     def report(self) -> InformationReport:
