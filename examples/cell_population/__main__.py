@@ -25,6 +25,16 @@ from .fixture import (
     write_remote_full_csvs,
     write_remote_sample,
 )
+from .profiled import (
+    BUDGETS,
+    INTEREST_INDEX,
+    OPERATING_BINS,
+    load_profiled_inputs,
+    profiled_inputs_from_data,
+    run_profiled_study,
+    save_profiled_inputs,
+    write_profiled_metrics,
+)
 from .transport_audit import write_transport_audit
 
 
@@ -82,6 +92,40 @@ def _parser() -> argparse.ArgumentParser:
         help="JSON path for the full-corpus transport audit",
     )
     parser.add_argument("--transport-audit-chunksize", type=int, default=200_000)
+    parser.add_argument(
+        "--profiled",
+        action="store_true",
+        help="run the profiled-D_s extension instead of the main experiment",
+    )
+    parser.add_argument(
+        "--profiled-output",
+        type=Path,
+        default=Path("docs/usecases/assets/flowcyt_profiled_ds.json"),
+        help="multi-scale JSON evidence file for the profiled-D_s study",
+    )
+    parser.add_argument(
+        "--profiled-cache",
+        type=Path,
+        help="cache the prepared profiled inputs so a long run can resume",
+    )
+    parser.add_argument(
+        "--profiled-interest",
+        type=int,
+        default=INTEREST_INDEX,
+        help="score column of the headline parameter of interest",
+    )
+    parser.add_argument(
+        "--profiled-bins",
+        type=int,
+        nargs="+",
+        default=list(BUDGETS),
+        help="bin budgets swept against the certified ceiling",
+    )
+    parser.add_argument(
+        "--profiled-prepare-only",
+        action="store_true",
+        help="build and cache the profiled inputs, then stop",
+    )
     return parser
 
 
@@ -108,6 +152,52 @@ def _load_data(args: argparse.Namespace) -> FlowCytData:
         )
     default_fixture = Path("examples/data/flowcyt_fixture.npz")
     return load_fixture(default_fixture)
+
+
+def _source_description(args: argparse.Namespace) -> str:
+    if args.fixture is not None:
+        return str(args.fixture)
+    if args.data_dir is not None:
+        return str(args.data_dir)
+    return "examples/data/flowcyt_fixture.npz"
+
+
+def _run_profiled(args: argparse.Namespace, *, quick: bool, data_source: str) -> None:
+    """Run or resume the profiled-D_s extension and update its JSON evidence."""
+    cache = args.profiled_cache
+    resumed = cache is not None and cache.is_file()
+    if resumed:
+        inputs = load_profiled_inputs(cache)
+    else:
+        inputs = profiled_inputs_from_data(_load_data(args), quick=quick)
+        if cache is not None:
+            save_profiled_inputs(inputs, cache)
+    if args.profiled_prepare_only:
+        print({"cached": str(cache), "rows": inputs.rows})
+        return
+    provenance: dict[str, object] = {
+        "data_source": data_source,
+        "scale": "frozen CI fixture" if quick else "600,000-cell bounded sample",
+        "rows": inputs.rows["total"],
+        "score_model_settings": "quick" if quick else "frozen research settings",
+        "resumed_from_cache": resumed,
+    }
+    manifest_path = args.fixture.with_suffix(".json") if args.fixture is not None else None
+    if manifest_path is not None and manifest_path.is_file():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for key in ("sample_rows", "sample_sha256", "source_url", "source_license"):
+            if key in manifest:
+                provenance[key] = manifest[key]
+    study = run_profiled_study(
+        inputs,
+        quick=quick,
+        interest_index=args.profiled_interest,
+        n_bins=args.operating_bins if args.operating_bins in args.profiled_bins else OPERATING_BINS,
+        budgets=tuple(args.profiled_bins),
+        provenance=provenance,
+    )
+    write_profiled_metrics(study.metrics, args.profiled_output)
+    print(study.metrics["run"])
 
 
 def main() -> None:
@@ -148,7 +238,7 @@ def main() -> None:
             chunksize=args.transport_audit_chunksize,
         )
         return
-    data = _load_data(args)
+    data_source = _source_description(args)
     if args.quick:
         quick = True
     elif args.full:
@@ -157,6 +247,10 @@ def main() -> None:
         # No explicit --quick/--full: honor SCOREQUANT_EXAMPLE_FAST, falling back to
         # the original heuristic (fixture or unspecified data defaults to quick).
         quick = is_fast_mode() or args.fixture is not None or args.data_dir is None
+    if args.profiled or args.profiled_prepare_only:
+        _run_profiled(args, quick=quick, data_source=data_source)
+        return
+    data = _load_data(args)
     result = run_experiment(
         data,
         bin_counts=tuple(args.bins),

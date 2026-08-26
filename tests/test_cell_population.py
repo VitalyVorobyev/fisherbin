@@ -39,6 +39,14 @@ from examples.cell_population.likelihood import (
     fit_binned_mixture,
     fit_unbinned_mixture,
 )
+from examples.cell_population.profiled import (
+    BUDGETS,
+    INTEREST_INDEX,
+    profiled_inputs_from_data,
+    profiled_scalar,
+    run_profiled_study,
+    score_labeling,
+)
 from examples.cell_population.scores import (
     fit_score_model,
     integration_weights,
@@ -116,6 +124,7 @@ def test_transport_audit_reads_full_rows_without_tuning(tmp_path: Path) -> None:
 
 
 FULL_EVIDENCE = Path("docs/usecases/assets/cell_population.json")
+PROFILED_EVIDENCE = Path("docs/usecases/assets/flowcyt_profiled_ds.json")
 
 
 def _synthetic_flowcyt(seed: int = 10, per_class: int = 10) -> FlowCytData:
@@ -460,3 +469,179 @@ def test_committed_full_patient_evidence_passes_the_frozen_gate() -> None:
     enriched_mast = uncertainty["scenarios"]["mast_enriched"]["classes"]["mast cells"]
     assert enriched_mast["status"] == "interior"
     assert 0.9 <= enriched_mast["interior_standard_error_ratio"] <= 1.1
+
+
+def test_profiled_scalar_matches_the_explicit_schur_complement() -> None:
+    rng = np.random.default_rng(210)
+    root = rng.normal(size=(9, 5))
+    information = root.T @ root
+    inverse = np.linalg.inv(information)
+    for index in range(5):
+        np.testing.assert_allclose(
+            profiled_scalar(information, index), 1.0 / inverse[index, index], rtol=1e-9
+        )
+
+
+def test_profiled_score_labeling_separates_the_two_information_conventions() -> None:
+    """Five cells can look informative uncentered and identify nothing fixed-total."""
+    rng = np.random.default_rng(211)
+    scores = rng.normal(size=(1_500, 5)) + 0.4
+    weights = rng.uniform(0.2, 1.5, size=len(scores))
+    labels = np.argmax(scores, axis=1)
+    scored = score_labeling(scores, labels, weights, interest_index=2, n_bins=5)
+    assert scored.occupied_bins == 5
+    # Five cells give five uncentered moments but only four independent bin
+    # frequencies, so the interest fraction is not estimable once the other four
+    # float -- exactly the wall the five-bin FlowCyt partitions hit.
+    assert scored.fixed_total_rank == 4
+    assert scored.fixed_total_profiled_retention == 0.0
+    assert 0.0 < scored.profiled_retention <= 1.0
+
+
+def test_profiled_fixture_study_reproduces_its_qualitative_claims() -> None:
+    """Run the whole profiled path on the frozen fixture, never on the 600k sample."""
+    inputs = profiled_inputs_from_data(
+        load_fixture(FIXTURE),
+        quick=True,
+        score_max_per_patient_class=48,
+        score_max_iter=6,
+    )
+    assert inputs.partition_scores.shape[1] == 5
+    assert inputs.true_fractions.shape == (len(TEST_PATIENTS), 6)
+    assert inputs.preparation_seconds > 0
+
+    study = run_profiled_study(
+        inputs,
+        quick=True,
+        n_bins=8,
+        budgets=(8,),
+        sweep_interest=False,
+    )
+    metrics = study.metrics
+    assert metrics["interest_index"] == INTEREST_INDEX
+    assert metrics["interest_population"] == "HSPCs"
+    assert metrics["nuisance_populations"] == ["T cells", "B cells", "monocytes", "mast cells"]
+    assert metrics["reference_component"] == "other"
+
+    partitions = {row["key"]: row for row in metrics["partitions"]}
+    plain = partitions["d_partition"]
+    profiled = [partitions["ds_partition_seeded"], partitions["ds_partition_initialized"]]
+    ceiling = float(metrics["bound"]["ceiling_retention"])
+
+    # Each criterion wins on its own objective: plain D on the whole matrix,
+    # profiled D_s on the interest fraction, and neither may pass the ceiling.
+    assert max(row["profiled_retention"] for row in profiled) > plain["profiled_retention"]
+    assert all(row["full_retention"] < plain["full_retention"] for row in profiled)
+    assert plain["profiled_retention"] <= ceiling + 1e-9
+    for row in profiled:
+        assert row["profiled_retention"] <= ceiling + 1e-9
+        assert row["exchange_stable"] is True
+    assert metrics["bound"]["seeded_gap"] >= -1e-9
+    assert metrics["bound"]["initialized_gap"] >= -1e-9
+    # The ceiling's labels are a cheaper starting point, not a better theorem.
+    assert (
+        partitions["ds_partition_initialized"]["accepted_moves"]
+        < partitions["ds_partition_seeded"]["accepted_moves"]
+    )
+
+    rules = {row["key"]: row for row in metrics["rules"]}
+    assert set(rules) == {"d_rule", "ds_rule"}
+    assert rules["d_rule"]["solver"] == "DExchangeConfig"
+    assert rules["ds_rule"]["solver"] == "SoftVoronoiConfig"
+    for row in rules.values():
+        downstream = row["downstream"]
+        assert downstream["converged_patients"] == downstream["total_patients"] == 10
+        assert downstream["mean_half_width"] > 0
+        assert 0.0 < row["test_profiled_retention"] <= 1.0
+        assert row["test_occupied_bins"] <= 8
+
+    sweep = metrics["budget_sweep"]
+    assert [row["n_bins"] for row in sweep] == [8]
+    assert sweep[0]["fixed_total_rank_d"] == 5
+    assert metrics["interest_sweep"] == []
+    assert metrics["run"]["rows"]["total"] == 34_554
+
+
+def test_committed_profiled_evidence_carries_both_declared_scales() -> None:
+    evidence = json.loads(PROFILED_EVIDENCE.read_text(encoding="utf-8"))
+    assert set(evidence) == {"fixture_scale", "sample_scale"}
+
+    fixture = evidence["fixture_scale"]
+    sample = evidence["sample_scale"]
+    assert fixture["run"]["quick"] is True
+    assert fixture["run"]["provenance"]["scale"] == "frozen CI fixture"
+    assert fixture["run"]["rows"]["total"] == 34_554
+    assert sample["run"]["quick"] is False
+    assert sample["run"]["provenance"]["scale"] == "600,000-cell bounded sample"
+    assert sample["run"]["rows"]["total"] == 600_000
+    assert (
+        sample["run"]["provenance"]["sample_sha256"]
+        == "a08e9bf183fe32b913e155d413eeacfdb65c7f99017a42e69c4b91bdde20d987"
+    )
+    # The profiled study partitions exactly the rows the main study does.
+    main_rows = json.loads(FULL_EVIDENCE.read_text(encoding="utf-8"))["run"]["rows"]
+    assert {key: sample["run"]["rows"][key] for key in main_rows} == main_rows
+
+    for scale in (fixture, sample):
+        assert scale["study"] == "flowcyt_profiled_ds"
+        assert scale["interest_index"] == INTEREST_INDEX
+        assert scale["interest_population"] == "HSPCs"
+        assert scale["reference_component"] == "other"
+        assert scale["n_bins"] == 8
+        assert scale["budgets"] == list(BUDGETS)
+        assert scale["unbinned_profiled_information"] > 0
+
+        partitions = {row["key"]: row for row in scale["partitions"]}
+        assert set(partitions) == {
+            "d_partition",
+            "ds_partition_seeded",
+            "ds_partition_initialized",
+        }
+        ceiling = float(scale["bound"]["ceiling_retention"])
+        plain = partitions["d_partition"]
+        for key in ("ds_partition_seeded", "ds_partition_initialized"):
+            row = partitions[key]
+            assert row["criterion"] == "ProfiledDOptimality"
+            assert row["profiled_retention"] > plain["profiled_retention"]
+            assert row["profiled_retention"] <= ceiling + 1e-9
+            # Profiling buys interest information by discarding the rest.
+            assert row["full_retention"] < 0.15 * plain["full_retention"]
+        assert scale["bound"]["seeded_gap"] >= -1e-9
+        assert scale["bound"]["initialized_gap"] >= -1e-9
+
+        budgets = {row["n_bins"]: row for row in scale["budget_sweep"]}
+        assert sorted(budgets) == sorted(BUDGETS)
+        for row in budgets.values():
+            assert row["d_profiled_retention"] <= row["ceiling_retention"] + 1e-9
+            assert row["ds_seeded_retention"] <= row["ceiling_retention"] + 1e-9
+            assert row["ds_initialized_retention"] <= row["ceiling_retention"] + 1e-9
+            assert row["seeded_gap"] >= -1e-9 and row["initialized_gap"] >= -1e-9
+        # Five bins cannot identify five free fractions in either convention,
+        # however healthy the intensity-convention number looks.
+        assert budgets[5]["fixed_total_rank_d"] == 4
+        assert budgets[5]["fixed_total_rank_ds"] == 4
+        assert budgets[5]["d_fixed_total_retention"] == 0.0
+        assert budgets[5]["ds_initialized_fixed_total_retention"] == 0.0
+        assert budgets[5]["ds_initialized_retention"] > 0.9
+        for n_bins in (6, 8, 10, 15, 30):
+            assert budgets[n_bins]["fixed_total_rank_d"] == 5
+            assert budgets[n_bins]["fixed_total_rank_ds"] == 5
+
+        rules = {row["key"]: row for row in scale["rules"]}
+        assert set(rules) == {"d_rule", "ds_rule"}
+        assert rules["d_rule"]["hardening_gap"] == 0.0
+        assert abs(rules["ds_rule"]["hardening_gap"]) < 1e-4
+        # The deployable profiled rule does not narrow the reported interval.
+        assert (
+            rules["ds_rule"]["downstream"]["mean_half_width"]
+            > rules["d_rule"]["downstream"]["mean_half_width"]
+        )
+        for row in rules.values():
+            assert row["downstream"]["converged_patients"] == 10
+            assert row["downstream"]["total_patients"] == 10
+
+        sweep = {row["population"]: row for row in scale["interest_sweep"]}
+        assert list(sweep) == list(CLASS_NAMES[:-1])
+        for row in sweep.values():
+            assert row["ds_initialized_retention"] <= row["ceiling_retention"] + 1e-9
+            assert row["ds_full_retention"] < 0.05

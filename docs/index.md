@@ -104,7 +104,7 @@ same for each door, and [Choosing your workflow](user-workflow.md) walks through
   three baselines, theory demonstrations (profiled \(D_s\), soft rules, two counterexamples,
   global certification), and a teaser into the real-data study below.
 - Evidence — the [synthetic gallery](gallery/index.md) and the reproducible
-  [FlowCyt study](usecases/cellpopulation.md).
+  [FlowCyt study](usecases/flowcyt/index.md).
 - [API guide](api.md) and [reference](reference/index.md) — released contracts and errors.
 - [Related work](related-work.md) — the four research traditions this sits in, an honest
   known-versus-new table, and a software comparison.
