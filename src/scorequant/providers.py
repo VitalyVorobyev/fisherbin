@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import jax.numpy as jnp
 import numpy as np
 
-from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
-from .components import LinearComponents, mixture_scores_from_posteriors, scores_from_components
-from .sources import ScoreProvenance
+from .components import LinearComponents, scores_from_components
+from .ratios import (
+    IntensityParameterization,
+    MixtureParameterization,
+    RatioParameterization,
+    _validate_simplex_vector,
+    ratios_from_posteriors,
+)
+from .sources import RatioProvenance, ScoreProvenance
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,47 +62,226 @@ class LinearComponentScore:
         return scores_from_components(components, self.model.coefficients)
 
 
-@dataclass(frozen=True, slots=True, init=False)
-class MixturePosteriorTransform:
-    """Convert ready multiclass posteriors into finite-mixture scores."""
+def _parameterization_facts(parameterization: RatioParameterization) -> RatioProvenance:
+    if isinstance(parameterization, IntensityParameterization):
+        return RatioProvenance(
+            parameterization="intensity",
+            coefficients=tuple(float(value) for value in parameterization.coefficients),
+        )
+    return RatioProvenance(
+        parameterization="mixture",
+        reference_fractions=tuple(float(value) for value in parameterization.reference_fractions),
+        reference_component=parameterization.reference_component % parameterization.n_components,
+    )
 
-    class_priors: jnp.ndarray
-    reference_fractions: jnp.ndarray
-    reference_component: int
+
+def _merge_ratio_provenance(
+    supplied: RatioProvenance | None, facts: RatioProvenance
+) -> RatioProvenance:
+    if supplied is None:
+        return facts
+    for field_name in (
+        "parameterization",
+        "coefficients",
+        "reference_fractions",
+        "reference_component",
+    ):
+        supplied_value = getattr(supplied, field_name)
+        derived_value = getattr(facts, field_name)
+        if supplied_value is not None and supplied_value != derived_value:
+            raise ValueError(
+                f"provenance.ratio.{field_name}={supplied_value!r} conflicts with the "
+                f"declared parameterization value {derived_value!r}"
+            )
+    return RatioProvenance(
+        estimator=supplied.estimator,
+        parameterization=facts.parameterization,
+        coefficients=facts.coefficients,
+        reference_fractions=facts.reference_fractions,
+        reference_component=facts.reference_component,
+        training_priors=supplied.training_priors,
+        calibration=supplied.calibration,
+        deltas=supplied.deltas,
+    )
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class DensityRatioScore:
+    """Map observations to model density ratios and evaluate declared scores.
+
+    The ratio callback is the statistical representation: any oracle for the
+    component density ratios — an analytic formula, a calibrated classifier,
+    a direct ratio estimator such as KLIEP or uLSIF, or an external ratio
+    model — determines the score once a parameterization declares how the
+    components combine. Ratio estimation, calibration, and cross-fitting stay
+    outside the library.
+
+    Parameters
+    ----------
+    ratio
+        Callable ``[N, D] -> [N, K]`` returning finite nonnegative model
+        density ratios, defined up to one common event-wise factor.
+    parameterization
+        ``IntensityParameterization`` or ``MixtureParameterization`` declaring
+        the ratio-to-score map and the reference point.
+    provenance
+        Optional score provenance. Estimated ratios are the default
+        (``kind="estimated_ratio"``); an analytic ratio may declare
+        ``kind="exact"`` under the same caller responsibility as
+        ``ScoreFunction``. Parameterization facts are always recorded in
+        ``provenance.ratio`` and a conflicting supplied record is rejected.
+    """
+
+    ratio: Callable[[ArrayLike], ArrayLike]
+    parameterization: RatioParameterization
+    provenance: ScoreProvenance
 
     def __init__(
         self,
-        class_priors: ArrayLike,
-        reference_fractions: ArrayLike,
+        ratio: Callable[[ArrayLike], ArrayLike],
+        parameterization: RatioParameterization,
         *,
-        reference_component: int = -1,
+        provenance: ScoreProvenance | None = None,
     ) -> None:
-        object.__setattr__(self, "class_priors", jnp.asarray(class_priors))
-        object.__setattr__(self, "reference_fractions", jnp.asarray(reference_fractions))
-        object.__setattr__(self, "reference_component", reference_component)
+        if not callable(ratio):
+            raise TypeError("ratio must be callable")
+        if not isinstance(parameterization, (IntensityParameterization, MixtureParameterization)):
+            raise TypeError(
+                "parameterization must be IntensityParameterization or MixtureParameterization"
+            )
+        facts = _parameterization_facts(parameterization)
+        if provenance is None:
+            resolved = ScoreProvenance(kind="estimated_ratio", ratio=facts)
+        else:
+            resolved = ScoreProvenance(
+                kind=provenance.kind,
+                description=provenance.description,
+                reference_point=provenance.reference_point,
+                metadata=provenance.metadata,
+                ratio=_merge_ratio_provenance(provenance.ratio, facts),
+            )
+        object.__setattr__(self, "ratio", ratio)
+        object.__setattr__(self, "parameterization", parameterization)
+        object.__setattr__(self, "provenance", resolved)
 
-    def transform(self, posteriors: ArrayLike) -> jnp.ndarray:
-        """Apply the explicit prior-corrected mixture-score algebra."""
-        return mixture_scores_from_posteriors(
-            posteriors,
-            self.class_priors,
-            self.reference_fractions,
-            reference_component=self.reference_component,
+    @classmethod
+    def from_classifier(
+        cls,
+        predict: Callable[[ArrayLike], ArrayLike],
+        class_priors: ArrayLike,
+        parameterization: RatioParameterization,
+        *,
+        calibration: str | None = None,
+        description: str | None = None,
+        metadata: Mapping[str, JsonValue] | None = None,
+    ) -> DensityRatioScore:
+        """Build a ratio provider from a calibrated multiclass classifier.
+
+        The classifier is one estimator of density ratios: calibrated
+        posteriors ``eta_k`` under training priors ``pi_k`` give
+        ``r_k = eta_k / pi_k`` up to a common event-wise factor, so the
+        scores are ``(eta_k / pi_k) / sum_j theta_j eta_j / pi_j`` under the
+        intensity parameterization. When ``pi`` is proportional to
+        ``theta_0`` the denominator is identically one. The provider always
+        records estimated provenance — a classifier-derived ratio can never
+        claim exact Fisher semantics.
+
+        Parameters
+        ----------
+        predict
+            Callable ``[N, D] -> [N, K]`` returning calibrated posterior
+            rows summing to one.
+        class_priors
+            Strictly positive training priors with shape ``[K]`` and unit
+            sum.
+        parameterization
+            Ratio-to-score map; ``K`` must match its component count.
+        calibration
+            Optional name of the upstream calibration method, recorded in
+            provenance.
+        description, metadata
+            Optional free-form provenance carried on the score record.
+        """
+        if not callable(predict):
+            raise TypeError("predict must be callable")
+        priors = jnp.asarray(class_priors)
+        if not isinstance(parameterization, (IntensityParameterization, MixtureParameterization)):
+            raise TypeError(
+                "parameterization must be IntensityParameterization or MixtureParameterization"
+            )
+        _validate_simplex_vector(priors, "class_priors", parameterization.n_components)
+
+        def ratio(observations: ArrayLike) -> jnp.ndarray:
+            return ratios_from_posteriors(predict(observations), priors)
+
+        provenance = ScoreProvenance(
+            kind="estimated_ratio",
+            description=description,
+            metadata={} if metadata is None else metadata,
+            ratio=RatioProvenance(
+                estimator="calibrated_classifier",
+                training_priors=tuple(float(value) for value in priors),
+                calibration=calibration,
+            ),
         )
+        return cls(ratio, parameterization, provenance=provenance)
+
+    def score(self, observations: ArrayLike) -> jnp.ndarray:
+        """Evaluate the ratio callback and apply the declared score map."""
+        values = jnp.asarray(self.ratio(observations))
+        if values.ndim != 2 or values.shape[0] != jnp.asarray(observations).shape[0]:
+            raise ValueError("ratio callback must return shape [N, K]")
+        expected = self.parameterization.n_components
+        if values.shape[1] != expected:
+            raise ValueError(
+                f"ratio callback must return {expected} components, got {values.shape[1]}"
+            )
+        return self.parameterization.scores(values)
 
 
 @dataclass(frozen=True, slots=True, init=False)
-class CentralLogRatioTransform:
-    """Convert calibrated minus/plus class probabilities into central scores.
+class CentralLogRatioScore:
+    """Estimate central finite-difference scores from paired density ratios.
 
-    Input has shape ``[N, P, 2]`` with class order ``(minus, plus)``. A
-    two-dimensional ``[N, 2]`` input is accepted for a single score direction.
+    A calibrated classifier trained to separate samples generated at
+    ``theta_0 - delta e_p`` from ``theta_0 + delta e_p`` estimates the
+    directional log density ratio, and
+    ``(log(p_plus / p_minus) - log(pi_plus / pi_minus)) / (2 delta)`` is a
+    central finite-difference estimate of the score component ``s_p``. The
+    prediction callback must return shape ``[N, P, 2]`` with class order
+    ``(minus, plus)``; a two-dimensional ``[N, 2]`` input is accepted for a
+    single score direction. Provenance is always estimated.
+
+    Parameters
+    ----------
+    predict
+        Callable returning calibrated minus/plus probability pairs.
+    deltas
+        Strictly positive finite-difference offsets with shape ``[P]``.
+    class_priors
+        Training priors per direction with shape ``[2]`` or ``[P, 2]``;
+        rows are normalized to sum to one.
+    description, metadata
+        Optional free-form provenance carried on the score record.
     """
 
+    predict: Callable[[ArrayLike], ArrayLike]
     deltas: jnp.ndarray
     class_priors: jnp.ndarray
+    description: str | None
+    metadata: Mapping[str, JsonValue]
 
-    def __init__(self, deltas: ArrayLike, class_priors: ArrayLike) -> None:
+    def __init__(
+        self,
+        predict: Callable[[ArrayLike], ArrayLike],
+        deltas: ArrayLike,
+        class_priors: ArrayLike,
+        *,
+        description: str | None = None,
+        metadata: Mapping[str, JsonValue] | None = None,
+    ) -> None:
+        if not callable(predict):
+            raise TypeError("predict must be callable")
         delta_array = jnp.asarray(deltas)
         if delta_array.ndim != 1 or delta_array.shape[0] == 0:
             raise ValueError("deltas must have shape [P]")
@@ -114,12 +299,32 @@ class CentralLogRatioTransform:
         ):
             raise ValueError("class_priors must be finite and positive")
         priors = priors / jnp.sum(priors, axis=1, keepdims=True)
+        object.__setattr__(self, "predict", predict)
         object.__setattr__(self, "deltas", delta_array)
         object.__setattr__(self, "class_priors", priors)
+        object.__setattr__(self, "description", description)
+        object.__setattr__(self, "metadata", {} if metadata is None else metadata)
 
-    def transform(self, probabilities: ArrayLike) -> jnp.ndarray:
+    @property
+    def provenance(self) -> ScoreProvenance:
+        """Return estimated-ratio provenance with the central-difference facts."""
+        return ScoreProvenance(
+            kind="estimated_ratio",
+            description=self.description,
+            metadata=self.metadata,
+            ratio=RatioProvenance(
+                estimator="calibrated_classifier",
+                parameterization="central_log_ratio",
+                training_priors=tuple(
+                    (float(row[0]), float(row[1])) for row in np.asarray(self.class_priors)
+                ),
+                deltas=tuple(float(value) for value in self.deltas),
+            ),
+        )
+
+    def score(self, observations: ArrayLike) -> jnp.ndarray:
         """Apply prior correction and divide central logits by ``2 * delta``."""
-        values = jnp.asarray(probabilities, dtype=self.deltas.dtype)
+        values = jnp.asarray(self.predict(observations), dtype=self.deltas.dtype)
         if values.ndim == 2 and values.shape[1] == 2 and self.deltas.shape[0] == 1:
             values = values[:, None, :]
         if values.ndim != 3 or values.shape[1:] != self.class_priors.shape:
@@ -135,54 +340,4 @@ class CentralLogRatioTransform:
         return (log_ratio - prior_log_ratio[None, :]) / (2 * self.deltas[None, :])
 
 
-type ClassifierTransform = MixturePosteriorTransform | CentralLogRatioTransform
-
-
-@dataclass(frozen=True, slots=True)
-class ClassifierScore:
-    """Wrap a ready classifier callback and a pure score transformation.
-
-    Training, calibration, splitting, and model persistence remain outside the
-    library. This provider always records estimated-classifier provenance.
-    """
-
-    predict: Callable[[ArrayLike], ArrayLike]
-    transform: ClassifierTransform
-    description: str | None = None
-    metadata: Mapping[str, JsonValue] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        """Validate the ready-predictor contract."""
-        if not callable(self.predict):
-            raise TypeError("predict must be callable")
-        if not isinstance(self.transform, (MixturePosteriorTransform, CentralLogRatioTransform)):
-            raise TypeError("transform must be a supported classifier-score transform")
-
-    @property
-    def provenance(self) -> ScoreProvenance:
-        """Return non-exact classifier provenance."""
-        if isinstance(self.transform, CentralLogRatioTransform):
-            transform_metadata: dict[str, JsonValue] = {
-                "transform": "central_log_ratio",
-                "deltas": json_ready(self.transform.deltas),
-                "class_priors": json_ready(self.transform.class_priors),
-            }
-        else:
-            transform_metadata = {
-                "transform": "mixture_posterior",
-                "class_priors": json_ready(self.transform.class_priors),
-                "reference_fractions": json_ready(self.transform.reference_fractions),
-                "reference_component": self.transform.reference_component,
-            }
-        return ScoreProvenance(
-            kind="estimated_classifier",
-            description=self.description,
-            metadata={**dict(self.metadata), **transform_metadata},
-        )
-
-    def score(self, observations: ArrayLike) -> jnp.ndarray:
-        """Evaluate ready classifier outputs and convert them to scores."""
-        return self.transform.transform(self.predict(observations))
-
-
-type ScoreProvider = ScoreFunction | LinearComponentScore | ClassifierScore
+type ScoreProvider = ScoreFunction | LinearComponentScore | DensityRatioScore | CentralLogRatioScore

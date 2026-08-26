@@ -24,7 +24,8 @@ corpus.
 `ScoreSample` — so it is space quantization through the `ScoreSample` boundary. The
 scores themselves are not observations: they come from [Door
 3](door3-classifier.md), a patient-cross-fitted classifier's posteriors converted to
-mixture-fraction score coordinates through `MixturePosteriorTransform`. Classifier
+density ratios and then to mixture-fraction score coordinates through
+`ratios_from_posteriors` and `mixture_scores_from_ratios`. Classifier
 training, calibration, and the downstream mixture likelihood are all application code
 outside ScoreQuant's public surface; the library receives score vectors and returns a
 frozen quantizer, exactly the boundary [Chapter 4](../book/ch04-scores-and-doors.md)

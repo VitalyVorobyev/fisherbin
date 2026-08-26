@@ -44,9 +44,10 @@ class posterior learned with training prior \(\pi_k\), then
 
 The common event density cancels in the score formula. This is the key bridge:
 we can build the five statistical score coordinates without fitting a general
-twelve-dimensional density model. The algebra itself is a public adapter —
-`mixture_scores_from_posteriors`, with `MixturePosteriorTransform` and
-`ClassifierScore` as the provider-side entry points.
+twelve-dimensional density model. The classifier is one estimator of density
+ratios, and the algebra is public — `ratios_from_posteriors` recovers the
+ratios, `mixture_scores_from_ratios` turns them into scores, and
+`DensityRatioScore.from_classifier` is the provider-side entry point.
 
 ## The nested calibration audit
 
@@ -87,9 +88,10 @@ assert metrics["run"]["classifier_test_posterior_evaluations"] == 1
 ## What the normalization residual means
 
 For exact density ratios, every component ratio integrates to one under the
-declared training mixture. The selected raw-declared strategy misses that
-closure by as much as 0.217, and its weighted mean-score norm at \(\theta_0\) is
-0.178. This is model bias, not compression loss.
+declared training mixture — the identity `ratio_closure_report` measures. The
+selected raw-declared strategy misses that closure by as much as 0.217, and its
+weighted mean-score norm at \(\theta_0\) is 0.178. This is model bias, not
+compression loss.
 
 The OOF-prior strategies force the six component integrals to one on the same
 reference sample, to numerical precision. That does not make their ratios
@@ -116,17 +118,19 @@ assert round(strategies["temperature_oof_prior"]["mean_score_norm"], 3) == 1.225
 Everything ScoreQuant reports about these columns is retention of the
 *supplied* score law, and the library says so: the result's `information_kind`
 is `supplied_score_surrogate`, and its `provenance.kind` is
-`estimated_classifier`. That flag is not decoration. It means a retention of
-0.985 is a statement about how much of the estimated score matrix's Fisher
-information survives binning, and says nothing about how far that estimated
-matrix is from the true one.
+`estimated_ratio` with a structured ratio record naming the estimator and
+calibration. That flag is not decoration. It means a retention of 0.985 is a
+statement about how much of the estimated score matrix's Fisher information
+survives binning, and says nothing about how far that estimated matrix is from
+the true one.
 
 ```python
 eight = metrics["soft_voronoi:8"]
 
 assert eight["information_kind"] == "supplied_score_surrogate"
-assert eight["score_provenance"]["kind"] == "estimated_classifier"
-assert eight["score_provenance"]["metadata"]["calibration_strategy"] == "raw_declared_prior"
+assert eight["score_provenance"]["kind"] == "estimated_ratio"
+assert eight["score_provenance"]["ratio"]["estimator"] == "calibrated_classifier"
+assert eight["score_provenance"]["ratio"]["calibration"] == "raw_declared_prior"
 ```
 
 This is why the study never argues from retention alone. Held-out population

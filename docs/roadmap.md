@@ -111,8 +111,8 @@ partitions expose no prediction semantics.
 **Status:** first wave implemented.
 
 - `ScoreSample`, `ObservationSample`, and low-dimensional bounded `IntegrationSource`.
-- `ScoreFunction`, `LinearComponentScore`, ready `ClassifierScore`, central-ratio and mixture
-  transforms, and score provenance.
+- `ScoreFunction`, `LinearComponentScore`, ready classifier-derived providers, central-ratio and
+  mixture constructions, and score provenance (reshaped around density ratios in M8).
 - Deterministic tensor Gauss-Legendre quadrature with explicit density and capacity guard.
 
 **Gate:** equivalent materializations agree; invalid combinations fail clearly; analytic quadrature
@@ -189,6 +189,30 @@ geometry verification judges the exact relocation gain against that same toleran
 against zero. A converged 1 000 000-row D-exchange or Mahalanobis-Lloyd fit therefore returns,
 certifies, and compiles, where a zero-tolerance comparison previously rejected it over 13 boundary
 rows in a million, per ADR 0016.
+
+## M8 — Density ratios as a first-class representation
+
+**Status:** implemented.
+
+Per [ADR 0017](adr/0017-density-ratio-representation.md): the statistical representation layer is
+named — exact densities, model density ratios, and scores — with the classifier decomposed into
+one estimator of ratios. `ratios.py` owns `ratios_from_posteriors`, `mixture_scores_from_ratios`,
+the two declared parameterizations, and `ratio_closure_report`; `DensityRatioScore` (with
+`from_classifier`) and `CentralLogRatioScore` replace `ClassifierScore` and its transforms;
+`ScoreProvenance` carries a structured `RatioProvenance`; model ratios and importance ratios keep
+disjoint API homes (providers versus source weights).
+
+**Gate:**
+
+- The decomposition is equivalence-tested: `DensityRatioScore` over \(\Phi/\phi_{\rm ref}\)
+  reproduces `LinearComponentScore` exactly, the two-step posterior chain reproduces the former
+  composed transform, and gauge invariance holds for both parameterizations.
+- Closure is exercised by an analytic laboratory (exact ratios close to numerical precision, a
+  misdeclared prior does not) and two applications (door-3 example, FlowCyt calibration audit).
+- Invalid combinations fail by name; ratio provenance round-trips through `to_dict()`.
+- No repository reference to the removed names (`ClassifierScore`, `MixturePosteriorTransform`,
+  `CentralLogRatioTransform`, `mixture_scores_from_posteriors`) outside ADR history and this gate.
+- Reference pages and navigation cover the new surface; the full handoff gate passes.
 
 ## Explicitly outside the development plan
 

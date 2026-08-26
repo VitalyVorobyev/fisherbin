@@ -59,6 +59,34 @@ class InformationReport:
 
 
 @dataclass(frozen=True, slots=True)
+class RatioClosureReport:
+    """Report how far model density ratios are from unit normalization.
+
+    Exact component ratios relative to a reference measure integrate to one
+    under that measure: ``sum_i w_i r_ik / sum_i w_i == 1`` for every
+    component ``k`` when the weights carry the measure the ratio denominator
+    defines. A large residual signals estimator bias, a misdeclared training
+    prior, or a measure mismatch. The check is necessary but not sufficient:
+    a ratio can close marginally while still being wrong pointwise, so a
+    small residual never upgrades estimated provenance.
+
+    Attributes
+    ----------
+    normalizers
+        Weighted mean of each ratio column, shape ``[K]``.
+    max_residual
+        Largest absolute deviation of ``normalizers`` from one.
+    """
+
+    normalizers: jnp.ndarray
+    max_residual: float
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible closure representation."""
+        return json_ready(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
 class ProfiledInformationReport:
     """Report same-label profiled information for interest and nuisance blocks."""
 

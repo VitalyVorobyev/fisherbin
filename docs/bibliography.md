@@ -104,6 +104,13 @@ instead of a local copy.
 - <a id="cranmer2015"></a>Cranmer, K., Pavez, J., & Louppe, G. (2015). Approximating
   likelihood ratios with calibrated discriminative classifiers.
   [arXiv:1506.02169](https://arxiv.org/abs/1506.02169).
+- <a id="sugiyama2008"></a>Sugiyama, M., Suzuki, T., Nakajima, S., Kashima, H.,
+  von Bünau, P., & Kawanabe, M. (2008). Direct importance estimation for covariate shift
+  adaptation. *Annals of the Institute of Statistical Mathematics*, 60(4), 699–746.
+  [doi:10.1007/s10463-008-0197-x](https://doi.org/10.1007/s10463-008-0197-x).
+- <a id="kanamori2009"></a>Kanamori, T., Hido, S., & Sugiyama, M. (2009). A least-squares
+  approach to direct importance estimation. *Journal of Machine Learning Research*, 10,
+  1391–1445. [jmlr.org/papers/v10/kanamori09a](https://jmlr.org/papers/v10/kanamori09a.html).
 - <a id="brehmer2020"></a>Brehmer, J., Louppe, G., Pavez, J., & Cranmer, K. (2020).
   Mining gold from implicit models to improve likelihood-free inference. *Proceedings of
   the National Academy of Sciences*, 117(10), 5242–5249.

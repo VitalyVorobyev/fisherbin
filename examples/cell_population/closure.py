@@ -227,17 +227,16 @@ def ratio_model_audit(
             strategy, raw, reference.labels, reference.patients
         )
         probabilities = calibration.apply(raw)
-        ratios = probabilities / calibration.class_priors[None, :]
-        normalizers = np.sum(uniform_weights[:, None] * ratios, axis=0)
-        denominator = ratios @ theta0
-        scores = (ratios[:, :-1] - ratios[:, [-1]]) / denominator[:, None]
+        ratios = np.asarray(sq.ratios_from_posteriors(probabilities, calibration.class_priors))
+        closure = sq.ratio_closure_report(ratios, uniform_weights)
+        scores = np.asarray(sq.mixture_scores_from_ratios(ratios, theta0))
         mean_score = np.sum(theta_weights[:, None] * scores, axis=0)
         patient_residuals = _patient_residuals(ratios, reference.labels, reference.patients)
         rows[strategy] = {
             "class_priors": calibration.class_priors.tolist(),
             "temperature": calibration.temperature,
-            "component_ratio_normalizers": normalizers.tolist(),
-            "maximum_normalization_residual": float(np.max(np.abs(normalizers - 1.0))),
+            "component_ratio_normalizers": np.asarray(closure.normalizers).tolist(),
+            "maximum_normalization_residual": closure.max_residual,
             "mean_score": mean_score.tolist(),
             "mean_score_norm": float(np.linalg.norm(mean_score)),
             "patient_residual_count": len(patient_residuals),

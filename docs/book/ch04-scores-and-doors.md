@@ -78,7 +78,7 @@ ScoreQuant separates the two:
 | Contract | Supplies | Examples |
 | --- | --- | --- |
 | **Source** | the reference measure — which events exist, with what weight | `ScoreSample`, `ObservationSample`, `IntegrationSource` |
-| **Score provider** | the observation-to-score map | `ScoreFunction`, `LinearComponentScore`, `ClassifierScore` |
+| **Score provider** | the observation-to-score map | `ScoreFunction`, `LinearComponentScore`, `DensityRatioScore`, `CentralLogRatioScore` |
 
 The pairing is validated rather than guessed. A `ScoreSample` is already in score space,
 so it *rejects* a provider; an `ObservationSample` or `IntegrationSource` is in
@@ -211,11 +211,11 @@ def calibrated(X):
     return np.stack([1.0 - plus, plus], axis=1)
 
 
-door3 = sq.ClassifierScore(calibrated, sq.CentralLogRatioTransform([delta], [0.5, 0.5]))
+door3 = sq.CentralLogRatioScore(calibrated, [delta], [0.5, 0.5])
 recovered = np.asarray(door3.score(observations))[:, 0]
 
 assert np.max(np.abs(recovered - observations[:, 0])) < 1e-5
-assert door3.provenance.kind == "estimated_classifier"
+assert door3.provenance.kind == "estimated_ratio"
 ```
 
 Here the classifier is the exact Bayes rule and the Gaussian location model is
@@ -224,12 +224,15 @@ working precision of the arithmetic, for any \(\delta\). Running that check agai
 own callback, on a model where you know the answer, is the cheapest calibration
 diagnostic there is.
 
-For a finite mixture whose parameters are the component fractions there is a second
-transform. A calibrated multiclass classifier estimates posteriors
+For a finite mixture whose parameters are the component fractions the ratio is the
+representation itself. A calibrated multiclass classifier estimates posteriors
 \(\eta_\alpha(x)\propto \pi_\alpha \phi_\alpha(x)\); dividing by the known training
-priors recovers the component density ratios, and `MixturePosteriorTransform` applies
-the simplex-constrained algebra that turns them into scores. The [three-doors
-guide](../three-doors.md) works through both transforms with the exact shape and
+priors (`ratios_from_posteriors`) recovers the component density ratios, and
+`mixture_scores_from_ratios` applies the simplex-constrained algebra that turns them into
+scores — `DensityRatioScore.from_classifier` packages the chain as a provider. The same
+provider accepts a ratio callback from any other backend: an analytic formula, a direct
+density-ratio estimator, a calibrated neural likelihood-ratio model. The [three-doors
+guide](../three-doors.md) works through the constructions with the exact shape and
 normalization requirements.
 
 ## Estimated scores are not Fisher information
@@ -255,7 +258,7 @@ def imbalanced(X):
     return np.stack([1.0 - plus, plus], axis=1)
 
 
-misdeclared = sq.ClassifierScore(imbalanced, sq.CentralLogRatioTransform([delta], [0.5, 0.5]))
+misdeclared = sq.CentralLogRatioScore(imbalanced, [delta], [0.5, 0.5])
 offset = np.asarray(misdeclared.score(observations))[:, 0] - observations[:, 0]
 assert abs(float(offset.mean()) - math.log(1.5) / (2 * delta)) < 1e-5
 
@@ -296,13 +299,13 @@ classifier lies exactly on top of the exact score; the misdeclared one is offset
 declared classifier reports (which is also the truth) against the inflated number the
 misdeclared one reports and the information it actually retains.*
 
-This is why `ScoreProvenance` is not decoration. `ClassifierScore` always records
-`kind="estimated_classifier"`, `information_kind` reads `"supplied_score_surrogate"`,
+This is why `ScoreProvenance` is not decoration. A classifier-derived provider always
+records `kind="estimated_ratio"`, `information_kind` reads `"supplied_score_surrogate"`,
 and no combination of arguments will make the library call an estimated quantity Fisher
 information. To measure what the labels truly retain, do what the snippet above does:
 label with the estimated score, then evaluate an exact score under those labels.
-[Chapter 13](ch13-estimated-scores.md) takes the estimated-score path seriously — how
-classifier quality maps to retention, what calibration diagnostics are worth running,
+[Chapter 13](ch13-estimated-scores.md) takes the estimated-ratio path seriously — how
+estimator quality maps to retention, what calibration diagnostics are worth running,
 and which parts of the question are genuinely open.
 
 ## Choosing a door

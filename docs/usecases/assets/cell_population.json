@@ -409,11 +409,24 @@
     "hardening_gap": null,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -421,9 +434,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "soft_voronoi:5": {
@@ -448,11 +462,24 @@
     "hardening_gap": -6.535957533249093e-07,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -460,9 +487,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "marker_kmeans:5": {
@@ -546,11 +574,24 @@
     "hardening_gap": null,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -558,9 +599,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "soft_voronoi:8": {
@@ -585,11 +627,24 @@
     "hardening_gap": -4.580480934990305e-06,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -597,9 +652,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "finite_d_exchange:8": {
@@ -628,11 +684,24 @@
     "geometry_gap": 0.0,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -640,9 +709,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "marker_kmeans:8": {
@@ -726,11 +796,24 @@
     "hardening_gap": null,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -738,9 +821,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "soft_voronoi:10": {
@@ -765,11 +849,24 @@
     "hardening_gap": 2.4158087160719433e-06,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -777,9 +874,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "marker_kmeans:10": {
@@ -863,11 +961,24 @@
     "hardening_gap": null,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -875,9 +986,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "soft_voronoi:15": {
@@ -902,11 +1014,24 @@
     "hardening_gap": 3.902283806311857e-06,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -914,9 +1039,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "marker_kmeans:15": {
@@ -1000,11 +1126,24 @@
     "hardening_gap": null,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -1012,9 +1151,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "soft_voronoi:20": {
@@ -1039,11 +1179,24 @@
     "hardening_gap": -3.8223803644488186e-06,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -1051,9 +1204,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "marker_kmeans:20": {
@@ -1137,11 +1291,24 @@
     "hardening_gap": null,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -1149,9 +1316,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "soft_voronoi:30": {
@@ -1176,11 +1344,24 @@
     "hardening_gap": -1.5730998550456121e-06,
     "information_kind": "supplied_score_surrogate",
     "score_provenance": {
-      "kind": "estimated_classifier",
+      "kind": "estimated_ratio",
       "description": "patient-cross-fitted calibrated FlowCyt mixture score",
       "reference_point": null,
-      "metadata": {
-        "calibration_strategy": "raw_declared_prior",
+      "metadata": {},
+      "exact_fisher": false,
+      "ratio": {
+        "estimator": "calibrated_classifier",
+        "parameterization": "mixture",
+        "coefficients": null,
+        "reference_fractions": [
+          0.07112750000000002,
+          0.019594999999999998,
+          0.0149825,
+          0.00019,
+          0.0081175,
+          0.8859874999999999
+        ],
+        "reference_component": 5,
         "training_priors": [
           0.16666666666666666,
           0.16666666666666666,
@@ -1188,9 +1369,10 @@
           0.16666666666666666,
           0.16666666666666666,
           0.16666666666666666
-        ]
-      },
-      "exact_fisher": false
+        ],
+        "calibration": "raw_declared_prior",
+        "deltas": null
+      }
     }
   },
   "marker_kmeans:30": {

@@ -1,12 +1,13 @@
 """Shared logic and committed figure for the door3-classifier documentation page.
 
 A two-component Gaussian mixture (`signal_pdf`, `background_pdf`) is separated
-by a small `sklearn.linear_model.LogisticRegression` classifier, wrapped as a
-`scorequant.ClassifierScore`. `exact_provider` builds the analytic Bayes-optimal
-score for the same mixture, which is what makes the retention ladder in
-`run_ladder` an honest comparison instead of a guess. This module backs both
-the notebook (`examples/notebooks/door3_classifier.ipynb`) and the committed
-figure `docs/examples/assets/door3-classifier.png`.
+by a small `sklearn.linear_model.LogisticRegression` classifier whose
+calibrated posteriors become component density ratios and then scores through
+`scorequant.DensityRatioScore.from_classifier`. `exact_provider` builds the
+analytic Bayes-optimal score for the same mixture, which is what makes the
+retention ladder in `run_ladder` an honest comparison instead of a guess. This
+module backs both the notebook (`examples/notebooks/door3_classifier.ipynb`)
+and the committed figure `docs/examples/assets/door3-classifier.png`.
 """
 
 from __future__ import annotations
@@ -58,10 +59,9 @@ def exact_provider() -> sq.ScoreFunction:
         data grows.
     """
     return sq.ScoreFunction(
-        lambda x: sq.mixture_scores_from_posteriors(
-            exact_posteriors(x),
-            class_priors=[0.5, 0.5],
-            reference_fractions=list(REFERENCE_FRACTIONS),
+        lambda x: sq.mixture_scores_from_ratios(
+            sq.ratios_from_posteriors(exact_posteriors(x), [0.5, 0.5]),
+            list(REFERENCE_FRACTIONS),
         ),
         provenance=sq.ScoreProvenance(kind="exact", description="analytic Bayes posterior"),
     )
@@ -120,8 +120,8 @@ def train_classifier(seed: int, n_per_class: int) -> LogisticRegression:
     return LogisticRegression(max_iter=1000).fit(make_features(x), y)
 
 
-def classifier_provider(model: LogisticRegression, *, description: str) -> sq.ClassifierScore:
-    """Wrap a fitted classifier as a `ClassifierScore` for this mixture.
+def classifier_provider(model: LogisticRegression, *, description: str) -> sq.DensityRatioScore:
+    """Wrap a fitted classifier as a classifier-derived ratio provider.
 
     Parameters
     ----------
@@ -132,18 +132,18 @@ def classifier_provider(model: LogisticRegression, *, description: str) -> sq.Cl
 
     Returns
     -------
-    scorequant.ClassifierScore
-        Always carries `kind="estimated_classifier"` provenance.
+    scorequant.DensityRatioScore
+        Always carries `kind="estimated_ratio"` provenance with the training
+        priors and mixture parameterization recorded.
     """
 
     def predict(x: np.ndarray) -> np.ndarray:
         return model.predict_proba(make_features(np.asarray(x)[:, 0]))
 
-    return sq.ClassifierScore(
+    return sq.DensityRatioScore.from_classifier(
         predict,
-        sq.MixturePosteriorTransform(
-            class_priors=[0.5, 0.5], reference_fractions=list(REFERENCE_FRACTIONS)
-        ),
+        [0.5, 0.5],
+        sq.MixtureParameterization(list(REFERENCE_FRACTIONS)),
         description=description,
     )
 
@@ -164,11 +164,16 @@ class LadderStep:
         D-efficiency of the *exact* score, evaluated at the labels the
         estimated-score quantizer actually produced. This is what the
         surrogate number is a proxy for, and the two can disagree sharply.
+    closure_residual
+        `ratio_closure_report(...).max_residual` of the classifier-derived
+        ratios on the training measure: exact ratios integrate to one, so a
+        large residual flags estimator bias before any quantizer is fitted.
     """
 
     n_per_class: int
     surrogate_retention: float
     true_retention: float
+    closure_residual: float
 
 
 def run_ladder(
@@ -221,7 +226,10 @@ def run_ladder(
                 oracle_test_scores, labels, n_bins=result.n_bins
             ).geometric_mean_retention
         )
-        steps.append(LadderStep(n_per_class, surrogate, true_retention))
+        closure = sq.ratio_closure_report(
+            provider.ratio(train_observations), np.ones(train_observations.shape[0])
+        )
+        steps.append(LadderStep(n_per_class, surrogate, true_retention, closure.max_residual))
     return steps
 
 

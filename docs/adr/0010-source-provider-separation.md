@@ -1,6 +1,7 @@
 # ADR 0010: separate sources from score providers
 
-**Status:** Accepted.
+**Status:** Accepted. The provider set named below was revised by
+[ADR 0017](0017-density-ratio-representation.md); the measure/map separation is unchanged.
 
 ## Context
 

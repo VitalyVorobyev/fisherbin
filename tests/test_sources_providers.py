@@ -96,34 +96,36 @@ def test_quadrature_rejects_implicit_measure_and_capacity_explosion() -> None:
         source.materialize()
 
 
-def test_central_classifier_transform_corrects_training_priors() -> None:
+def test_central_log_ratio_score_corrects_training_priors() -> None:
     deltas = [0.2]
     priors = [0.25, 0.75]
     target_score = np.array([[-1.5], [0.4]])
     prior_odds = priors[1] / priors[0]
     odds = prior_odds * np.exp(2 * deltas[0] * target_score[:, 0])
     probabilities = np.column_stack([1 / (1 + odds), odds / (1 + odds)])
-    transform = sq.CentralLogRatioTransform(deltas, priors)
-    assert np.allclose(np.asarray(transform.transform(probabilities)), target_score)
+    provider = sq.CentralLogRatioScore(lambda values: probabilities, deltas, priors)
+    assert np.allclose(np.asarray(provider.score(target_score)), target_score)
 
 
-def test_classifier_provider_is_always_estimated() -> None:
-    transform = sq.CentralLogRatioTransform([0.1], [0.5, 0.5])
-
+def test_central_log_ratio_score_is_always_estimated() -> None:
     def predict(values: object) -> np.ndarray:
         observations = np.asarray(values)[:, 0]
         plus = 1 / (1 + np.exp(-0.2 * observations))
         return np.column_stack([1 - plus, plus])
 
-    provider = sq.ClassifierScore(
+    provider = sq.CentralLogRatioScore(
         predict,
-        transform,
+        [0.1],
+        [0.5, 0.5],
         description="ready calibrated model",
     )
-    assert provider.provenance.kind == "estimated_classifier"
+    assert provider.provenance.kind == "estimated_ratio"
     assert not provider.provenance.exact_fisher
-    assert provider.provenance.metadata["transform"] == "central_log_ratio"
-    assert provider.provenance.metadata["deltas"] == [0.1]
+    assert provider.provenance.ratio is not None
+    assert provider.provenance.ratio.parameterization == "central_log_ratio"
+    assert provider.provenance.ratio.estimator == "calibrated_classifier"
+    assert provider.provenance.ratio.deltas == (0.1,)
+    assert provider.provenance.ratio.training_priors == ((0.5, 0.5),)
     result = sq.fit_quantizer(
         sq.ObservationSample(np.arange(12, dtype=float)[:, None]),
         score=provider,
@@ -132,6 +134,132 @@ def test_classifier_provider_is_always_estimated() -> None:
         config=sq.KMeansConfig(n_init=2),
     )
     assert result.information_kind == "supplied_score_surrogate"
+    assert result.provenance.to_dict()["ratio"]["deltas"] == [0.1]
+
+
+def _mixture_predict(values: object) -> np.ndarray:
+    observations = np.asarray(values)[:, 0]
+    logits = np.column_stack([0.3 * observations, -0.1 * observations, 0.0 * observations])
+    exp = np.exp(logits)
+    return exp / np.sum(exp, axis=1, keepdims=True)
+
+
+def test_classifier_derived_ratio_provider_records_full_provenance() -> None:
+    provider = sq.DensityRatioScore.from_classifier(
+        _mixture_predict,
+        [0.4, 0.35, 0.25],
+        sq.MixtureParameterization([0.2, 0.3, 0.5]),
+        calibration="temperature_oof",
+        description="ready calibrated model",
+    )
+    assert provider.provenance.kind == "estimated_ratio"
+    assert not provider.provenance.exact_fisher
+    ratio_record = provider.provenance.ratio
+    assert ratio_record is not None
+    assert ratio_record.estimator == "calibrated_classifier"
+    assert ratio_record.parameterization == "mixture"
+    assert ratio_record.training_priors == (0.4, 0.35, 0.25)
+    assert ratio_record.reference_fractions == (0.2, 0.3, 0.5)
+    assert ratio_record.reference_component == 2
+    assert ratio_record.calibration == "temperature_oof"
+    result = sq.fit_quantizer(
+        sq.ObservationSample(np.linspace(-2, 2, 40)[:, None]),
+        score=provider,
+        n_bins=3,
+        criterion=sq.NormalizedTrace(),
+        config=sq.KMeansConfig(seed=5, n_init=2),
+    )
+    assert result.information_kind == "supplied_score_surrogate"
+    assert result.provenance.to_dict()["ratio"]["calibration"] == "temperature_oof"
+
+
+def test_density_ratio_provider_matches_the_explicit_composition() -> None:
+    priors = np.asarray([0.4, 0.35, 0.25])
+    fractions = np.asarray([0.2, 0.3, 0.5])
+    observations = np.linspace(-2, 2, 40)[:, None]
+    provider = sq.DensityRatioScore.from_classifier(
+        _mixture_predict, priors, sq.MixtureParameterization(fractions)
+    )
+    expected = sq.mixture_scores_from_ratios(
+        sq.ratios_from_posteriors(_mixture_predict(observations), priors), fractions
+    )
+    np.testing.assert_allclose(np.asarray(provider.score(observations)), np.asarray(expected))
+
+
+def test_analytic_component_ratios_reproduce_the_component_score() -> None:
+    coefficients = np.asarray([0.7, 1.8])
+    observations = np.linspace(0.1, 3.0, 50)[:, None]
+
+    def signal(values: np.ndarray) -> np.ndarray:
+        return np.exp(-np.asarray(values)[:, 0])
+
+    def background(values: np.ndarray) -> np.ndarray:
+        return np.full(np.asarray(values).shape[0], 0.5)
+
+    def component_ratios(values: object) -> np.ndarray:
+        array = np.asarray(values)
+        return np.column_stack([signal(array) / background(array), np.ones(array.shape[0])])
+
+    model = sq.LinearComponents(components=[signal, background], coefficients=list(coefficients))
+    exact = sq.LinearComponentScore(model).score(observations)
+    via_ratios = sq.DensityRatioScore(
+        component_ratios,
+        sq.IntensityParameterization(coefficients),
+        provenance=sq.ScoreProvenance(kind="exact"),
+    )
+    np.testing.assert_allclose(
+        np.asarray(via_ratios.score(observations)), np.asarray(exact), rtol=1e-6
+    )
+    assert via_ratios.provenance.exact_fisher
+    assert via_ratios.provenance.ratio is not None
+    assert via_ratios.provenance.ratio.parameterization == "intensity"
+
+
+def test_density_ratio_provider_rejects_invalid_constructions() -> None:
+    parameterization = sq.MixtureParameterization([0.5, 0.5])
+    with pytest.raises(TypeError, match="callable"):
+        sq.DensityRatioScore("not callable", parameterization)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="parameterization"):
+        sq.DensityRatioScore(lambda values: values, "mixture")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="conflicts"):
+        sq.DensityRatioScore(
+            lambda values: values,
+            parameterization,
+            provenance=sq.ScoreProvenance(ratio=sq.RatioProvenance(reference_fractions=(0.4, 0.6))),
+        )
+    with pytest.raises(ValueError, match="class_priors"):
+        sq.DensityRatioScore.from_classifier(
+            lambda values: values, [0.5, 0.4, 0.1], parameterization
+        )
+
+    provider = sq.DensityRatioScore(
+        lambda values: -np.ones((np.asarray(values).shape[0], 2)), parameterization
+    )
+    with pytest.raises(ValueError, match="nonnegative"):
+        provider.score(np.zeros((4, 1)))
+    wrong_width = sq.DensityRatioScore(
+        lambda values: np.ones((np.asarray(values).shape[0], 3)), parameterization
+    )
+    with pytest.raises(ValueError, match="2 components"):
+        wrong_width.score(np.zeros((4, 1)))
+
+
+def test_central_log_ratio_score_rejects_invalid_constructions() -> None:
+    with pytest.raises(TypeError, match="callable"):
+        sq.CentralLogRatioScore("not callable", [0.1], [0.5, 0.5])  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="deltas"):
+        sq.CentralLogRatioScore(lambda values: values, [-0.1], [0.5, 0.5])
+    with pytest.raises(ValueError, match="class_priors"):
+        sq.CentralLogRatioScore(lambda values: values, [0.1], [0.5, 0.5, 0.5])
+    provider = sq.CentralLogRatioScore(
+        lambda values: np.column_stack(
+            [np.full(np.asarray(values).shape[0], 0.7), np.full(np.asarray(values).shape[0], 0.7)]
+        ),
+        [0.1],
+        [0.5, 0.5],
+    )
+    with pytest.raises(ValueError, match="sum to one"):
+        provider.score(np.zeros((3, 1)))
 
 
 def test_integration_source_end_to_end_with_two_score_columns() -> None:

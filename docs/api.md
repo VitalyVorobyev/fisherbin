@@ -67,6 +67,36 @@ one after `rank_rtol` projection; a higher rank is rejected by name. On that ran
 partition has ordered interval cells, so the weighted interval dynamic program returns the global
 optimum rather than a local one, and `max_rows` bounds its exact quadratic work.
 
+## Sources, providers, and density ratios
+
+Sources carry the measure (`ScoreSample`, `ObservationSample`, `IntegrationSource`); providers
+carry the observation-to-score map (`ScoreFunction`, `LinearComponentScore`, `DensityRatioScore`,
+`CentralLogRatioScore`). Importance ratios for a sample drawn from a proposal distribution belong
+in the source weights, never in a provider.
+
+`DensityRatioScore(ratio, parameterization, *, provenance=None)` pairs a model density-ratio
+callback `[N, D] -> [N, K]` with a declared ratio-to-score map: `MixtureParameterization` for a
+normalized mixture with one simplex-dependent component (`K - 1` score columns) or
+`IntensityParameterization` for an extended linear-intensity model (all `K` columns).
+`DensityRatioScore.from_classifier(predict, class_priors, parameterization, ...)` builds the ratio
+callback from calibrated posteriors as `ratios_from_posteriors(predict(X), class_priors)` and
+always records estimated provenance. `CentralLogRatioScore(predict, deltas, class_priors)` turns
+paired minus/plus probabilities from classifiers trained at \(\theta_0\pm\delta\) into central
+finite-difference scores.
+
+The underlying array algebra is public: `ratios_from_posteriors(posteriors, class_priors)`,
+`mixture_scores_from_ratios(ratios, reference_fractions, reference_component=-1)`, and
+`scores_from_components(components, coefficients)` — the latter doubles as the intensity
+ratio-to-score map because it is invariant under a common event-wise rescaling of a row.
+`ratio_closure_report(ratios, weights)` checks that each ratio column integrates to one under the
+declared measure and returns the per-component normalizers with their largest absolute residual.
+
+`ScoreProvenance(kind, ...)` accepts `"unknown"`, `"exact"`, `"autodiff"`, `"estimated_ratio"`,
+and `"custom_estimated"`; `exact_fisher` is derived from `kind` and cannot be set independently.
+Ratio-derived scores carry a structured `ScoreProvenance.ratio` record (`RatioProvenance`) naming
+the estimator, parameterization, reference fractions or coefficients, reference component,
+training priors, calibration method, and finite-difference offsets.
+
 ## The efficient-score upper bound
 
 <!-- snippet: skip -->
@@ -185,6 +215,7 @@ provenance and `supplied_score_surrogate` otherwise.
 - Weights: finite nonnegative `[N]` with at least one positive value.
 - Classifier central probabilities: positive `[N, P, 2]`, normalized on the final axis.
 - Multiclass posteriors: nonnegative `[N, K]`, row-normalized, with positive normalized priors.
+- Model density ratios: finite nonnegative `[N, K]`, defined up to a common event-wise factor.
 - Integration bounds: finite `[D, 2]` with strictly ordered endpoints and an explicit density.
 
 Numerical null directions are projected out. Scores are never centered. `to_dict()` returns

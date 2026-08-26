@@ -1,4 +1,4 @@
-"""Linear-intensity models and adapters to ScoreQuant's score representation."""
+"""Linear-intensity models and the intensity score adapter."""
 
 from __future__ import annotations
 
@@ -13,8 +13,6 @@ from ._typing import ArrayLike, JsonValue
 from ._validation import promote_low_precision
 
 ComponentFunction = Callable[[np.ndarray], ArrayLike]
-_SIMPLEX_RTOL = 1e-5
-_SIMPLEX_ATOL = 1e-7
 
 
 def _names(
@@ -62,6 +60,12 @@ def scores_from_components(components: ArrayLike, coefficients: ArrayLike) -> jn
     Components and coefficients may be signed and need not be normalized.
     They must be finite, and their resulting reference intensity must be
     strictly positive at every supplied integration point.
+
+    The map is invariant under a common event-wise rescaling of a row: for
+    any positive ``c(x)``, replacing ``components[i, :]`` by
+    ``c(x_i) * components[i, :]`` leaves the scores unchanged. Component
+    densities and component density *ratios* in any gauge therefore produce
+    identical scores; absolute normalization is never required.
     """
     component_array = jnp.asarray(components)
     if component_array.ndim != 2 or min(component_array.shape) == 0:
@@ -83,114 +87,6 @@ def scores_from_components(components: ArrayLike, coefficients: ArrayLike) -> jn
     ):
         raise ValueError("reference intensity must be finite and strictly positive at every row")
     return component_array / intensity[:, None]
-
-
-def mixture_scores_from_posteriors(
-    posteriors: ArrayLike,
-    class_priors: ArrayLike,
-    reference_fractions: ArrayLike,
-    *,
-    reference_component: int = -1,
-) -> jnp.ndarray:
-    """Construct independent mixture-fraction scores from class posteriors.
-
-    Parameters
-    ----------
-    posteriors
-        Calibrated class-posterior matrix with shape ``[N, K]``. Rows must be
-        finite, nonnegative, and sum to one.
-    class_priors
-        Strictly positive class priors under which ``posteriors`` were
-        estimated, with shape ``[K]`` and unit sum.
-    reference_fractions
-        Strictly positive mixture fractions at the score reference point, with
-        shape ``[K]`` and unit sum.
-    reference_component
-        Component treated as dependent under the simplex constraint. Negative
-        indices follow ordinary Python indexing. The last component is used by
-        default.
-
-    Returns
-    -------
-    jax.Array
-        Score matrix with shape ``[N, K - 1]``. Columns follow the original
-        component order with ``reference_component`` omitted.
-
-    Raises
-    ------
-    TypeError
-        If ``reference_component`` is not an integer.
-    ValueError
-        If shapes, finiteness, positivity, normalization, or the reference
-        component violate the mixture-score contract.
-
-    Notes
-    -----
-    Posterior probabilities are converted to component density ratios through
-    ``r_k(x) = q_k(x) / pi_k``. With component ``r`` dependent on the other
-    fractions, the returned coordinates are
-
-    ``(r_k - r_r) / sum_j reference_fractions[j] * r_j``.
-
-    The function does not calibrate, clip, or renormalize classifier output.
-    Those operations change the implied density ratios and belong to the
-    upstream score-estimation workflow.
-    """
-    values = jnp.asarray(posteriors)
-    if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] < 2:
-        raise ValueError("posteriors must have non-empty shape [N, K] with K >= 2")
-    values = promote_low_precision(values)
-    if not bool(np.asarray(jnp.all(jnp.isfinite(values)))):
-        raise ValueError("posteriors must be finite")
-    if bool(np.asarray(jnp.any(values < 0))):
-        raise ValueError("posteriors must be nonnegative")
-    if not bool(
-        np.asarray(
-            jnp.allclose(
-                jnp.sum(values, axis=1),
-                1.0,
-                rtol=_SIMPLEX_RTOL,
-                atol=_SIMPLEX_ATOL,
-            )
-        )
-    ):
-        raise ValueError("posterior rows must sum to one")
-
-    n_components = values.shape[1]
-    priors = jnp.asarray(class_priors, dtype=values.dtype)
-    fractions = jnp.asarray(reference_fractions, dtype=values.dtype)
-    for name, vector in (("class_priors", priors), ("reference_fractions", fractions)):
-        if vector.shape != (n_components,):
-            raise ValueError(f"{name} must have shape [{n_components}], got {vector.shape}")
-        if not bool(np.asarray(jnp.all(jnp.isfinite(vector)))):
-            raise ValueError(f"{name} must be finite")
-        if bool(np.asarray(jnp.any(vector <= 0))):
-            raise ValueError(f"{name} must be strictly positive")
-        if not bool(
-            np.asarray(
-                jnp.allclose(
-                    jnp.sum(vector),
-                    1.0,
-                    rtol=_SIMPLEX_RTOL,
-                    atol=_SIMPLEX_ATOL,
-                )
-            )
-        ):
-            raise ValueError(f"{name} must sum to one")
-
-    if isinstance(reference_component, bool) or not isinstance(reference_component, int):
-        raise TypeError("reference_component must be an integer")
-    if not -n_components <= reference_component < n_components:
-        raise ValueError("reference_component is outside the component range")
-    resolved_reference = reference_component % n_components
-
-    ratios = values / priors[None, :]
-    density = ratios @ fractions
-    kept_components = [index for index in range(n_components) if index != resolved_reference]
-    scores = (ratios[:, kept_components] - ratios[:, resolved_reference, None]) / density[:, None]
-    if not bool(np.asarray(jnp.all(jnp.isfinite(scores)))):
-        raise ValueError("mixture score construction produced non-finite values")
-    return scores
 
 
 @dataclass(frozen=True, slots=True, init=False)

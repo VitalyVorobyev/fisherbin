@@ -305,13 +305,18 @@ def _prepare_experiment(
     )
     theta0 = reference_composition(reference.labels, reference.patients)
     reference_scores = np.asarray(
-        sq.mixture_scores_from_posteriors(
-            score_fit.out_of_fold_probabilities, score_fit.model.class_priors, theta0
+        sq.mixture_scores_from_ratios(
+            sq.ratios_from_posteriors(
+                score_fit.out_of_fold_probabilities, score_fit.model.class_priors
+            ),
+            theta0,
         )
     )
     test_probabilities = score_fit.model.predict_proba(test.features)
     test_scores = np.asarray(
-        sq.mixture_scores_from_posteriors(test_probabilities, score_fit.model.class_priors, theta0)
+        sq.mixture_scores_from_ratios(
+            sq.ratios_from_posteriors(test_probabilities, score_fit.model.class_priors), theta0
+        )
     )
     patients, true_fractions = _true_patient_fractions(test)
     unbinned, convergence = _fit_unbinned_patient_fractions(
@@ -387,12 +392,16 @@ def _evaluate_bin_count(
     metrics: dict[str, object] = {}
     predicted_by_method: dict[str, np.ndarray] = {}
     score_provenance = sq.ScoreProvenance(
-        kind="estimated_classifier",
+        kind="estimated_ratio",
         description="patient-cross-fitted calibrated FlowCyt mixture score",
-        metadata={
-            "calibration_strategy": context.score_fit.calibration_selection["selected_strategy"],
-            "training_priors": context.score_fit.model.class_priors.tolist(),
-        },
+        ratio=sq.RatioProvenance(
+            estimator="calibrated_classifier",
+            parameterization="mixture",
+            reference_fractions=tuple(float(value) for value in context.theta0),
+            reference_component=len(context.theta0) - 1,
+            training_priors=tuple(float(value) for value in context.score_fit.model.class_priors),
+            calibration=str(context.score_fit.calibration_selection["selected_strategy"]),
+        ),
     )
     common = {
         "n_bins": n_bins,

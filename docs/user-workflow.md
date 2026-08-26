@@ -38,8 +38,9 @@ The door is fixed by what you already have, not by preference:
   `optimize_partition`.
 - A component or analytic model \(\rightarrow\) `LinearComponentScore` or `ScoreFunction`, paired
   with `ObservationSample` or `IntegrationSource`.
-- A trained classifier \(\rightarrow\) `ClassifierScore` with `MixturePosteriorTransform` or
-  `CentralLogRatioTransform`, paired with `ObservationSample`.
+- Density ratios — analytic, classifier-derived, or from a direct ratio estimator
+  \(\rightarrow\) `DensityRatioScore` (or `CentralLogRatioScore` for paired central classifiers),
+  paired with `ObservationSample`.
 
 [Three doors](three-doors.md) works each one through in full, including the source-versus-provider
 contract and the shape rules.

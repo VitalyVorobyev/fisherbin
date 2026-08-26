@@ -1,4 +1,4 @@
-# 13. Estimated scores: classifiers and calibration
+# 13. Estimated density ratios and scores
 
 Every guarantee in Chapters 5 to 12 is a guarantee about the score vectors you hand the
 optimizer. The exact relocation identity, Theorem 3, the certificates, the efficient-score
@@ -7,22 +7,27 @@ are silent about where those numbers came from.
 
 That silence is the point of [Chapter 4](ch04-scores-and-doors.md)'s third door. When the
 likelihood cannot be evaluated — the model is a simulator, the detector response is
-learned, the background is data — the score can still be *estimated* by training a
-classifier. The framework then works exactly as before, on \(\hat s\) instead of \(s\).
-What changes is what the resulting numbers mean.
+learned, the background is data — the score can still be built, because the score is the
+gradient of a log density *ratio* and the ratio can be *estimated*. The framework then
+works exactly as before, on \(\hat s\) instead of \(s\). What changes is what the
+resulting numbers mean.
 
-This chapter takes that seriously: where estimated scores come from, which parts of the
-estimation error actually cost you information (fewer than you would guess), which cost you
-nothing at all, how retention degrades as the classifier gets worse, and what is honestly
-still unknown.
+This chapter takes that seriously: where estimated ratios and scores come from, which
+parts of the estimation error actually cost you information (fewer than you would guess),
+which cost you nothing at all, how retention degrades as the estimator gets worse, and
+what is honestly still unknown.
 
-## Two transforms, one contract
+## The estimand is the ratio
 
 ScoreQuant begins at a *trained* model. Training, splitting, cross-fitting and calibration
-belong to your application; the library takes a probability callback and applies a pure,
-declared transform to its output. Two transforms cover the standard constructions.
+belong to your application; the library takes a ready callback and applies pure, declared
+algebra to its output. The object every construction estimates is a model density ratio,
+and one warning applies to all of them: a ranking score, or any undeclared monotone
+transform of the likelihood ratio, is not enough. The numbers must be quantitatively
+meaningful — calibrated posteriors or a ratio-estimation loss — because the score algebra
+consumes ratio *values*, not orderings.
 
-The **central log-ratio transform** is for the general case. Generate samples at
+The **central log-ratio construction** is for the general case. Generate samples at
 \(\theta_0\pm\delta_je_j\), train a calibrated binary classifier \(D_j\) to tell them apart,
 and use the fact that with equal training priors the Bayes-optimal logit is the log
 likelihood ratio:
@@ -30,22 +35,33 @@ likelihood ratio:
 $$\hat s_j(x) \;=\; \frac{1}{2\delta_j}\Big(\operatorname{logit}D_j(x)
 - \log\tfrac{\pi_j^+}{\pi_j^-}\Big) .$$
 
-The prior log-odds subtraction is not optional; [Chapter
-4](ch04-scores-and-doors.md) shows what an undeclared 40/60 split does to the reported
-number. The estimator is a central finite difference, so it carries a deterministic
-\(O(\delta_j^2)\) bias on top of whatever the classifier's own error is, and \(\delta_j\)
-trades that bias against the variance of separating two samples that are close together.
+`CentralLogRatioScore` applies it. The prior log-odds subtraction is not optional;
+[Chapter 4](ch04-scores-and-doors.md) shows what an undeclared 40/60 split does to the
+reported number. The estimator is a central finite difference, so it carries a
+deterministic \(O(\delta_j^2)\) bias on top of whatever the classifier's own error is, and
+\(\delta_j\) trades that bias against the variance of separating two samples that are
+close together.
 
-The **mixture posterior transform** is for the case that motivated the library. For a
+The **mixture ratio construction** is for the case that motivated the library. For a
 component or template model \(\lambda(x;\theta)=\sum_\alpha\theta_\alpha\phi_\alpha(x)\),
 the score is \(s_\alpha=\phi_\alpha/\lambda\), which is a ratio of component densities — and
 a calibrated multiclass classifier that names which component an event came from estimates
 \(\eta_\alpha(x)\propto\pi_\alpha\phi_\alpha(x)\). Dividing by the known training priors
-recovers the ratios \(r_\alpha=\eta_\alpha/\pi_\alpha\), and
-`mixture_scores_from_posteriors` applies the simplex-constrained algebra that turns them
-into scores of the mixture fractions.
+(`ratios_from_posteriors`) recovers the ratios \(r_\alpha=\eta_\alpha/\pi_\alpha\) up to a
+common event-wise factor that cancels, and `mixture_scores_from_ratios` applies the
+simplex-constrained algebra that turns them into scores of the mixture fractions.
+`DensityRatioScore` packages a ratio callback with either parameterization as a provider.
 
-Both are exactly the constructions of [Cranmer, Pavez and Louppe
+The classifier is one ratio estimator among several. Direct density-ratio estimation
+fits the ratio without an intermediate classification problem — KLIEP
+([Sugiyama et al. 2008](../bibliography.md#sugiyama2008)) matches it by minimizing a
+Kullback-Leibler objective, uLSIF ([Kanamori, Hido and Sugiyama
+2009](../bibliography.md#kanamori2009)) by least squares — and calibrated neural
+likelihood-ratio estimators extend the classifier trick to simulator-driven models. Any of
+them enters ScoreQuant through the same `DensityRatioScore` callback; the library couples
+to the estimand, never to the estimation algorithm.
+
+The classifier constructions are exactly those of [Cranmer, Pavez and Louppe
 (2015)](../bibliography.md#cranmer2015) and the local-score summaries of [Brehmer, Louppe,
 Pavez and Cranmer (2020)](../bibliography.md#brehmer2020), used as prior art rather than
 re-derived. The same instinct — differentiate through an inference objective rather than
@@ -88,7 +104,9 @@ def exact_posteriors(values):
 
 observations, _ = draw(4_000, 0)
 exact = np.asarray(
-    sq.mixture_scores_from_posteriors(exact_posteriors(observations), FRACTIONS, FRACTIONS)
+    sq.mixture_scores_from_ratios(
+        sq.ratios_from_posteriors(exact_posteriors(observations), FRACTIONS), FRACTIONS
+    )
 )
 
 assert exact.shape == (4_000, 2)  # three fractions, two free after the simplex constraint
@@ -102,17 +120,19 @@ assert truth.information_kind == "exact_fisher"
 assert abs(float(truth.train_report.geometric_mean_retention) - 0.938921) < 1e-5
 ```
 
-An exact posterior wrapped in `ClassifierScore` still reports estimated provenance, because
-the provider describes *how* the numbers were produced, not how good they happen to be:
+An exact posterior wrapped through `DensityRatioScore.from_classifier` still reports
+estimated provenance, because the provider describes *how* the numbers were produced, not
+how good they happen to be:
 
 ```python
-oracle = sq.ClassifierScore(
+oracle = sq.DensityRatioScore.from_classifier(
     lambda values: exact_posteriors(np.asarray(values)[:, 0]),
-    sq.MixturePosteriorTransform(FRACTIONS, FRACTIONS),
+    FRACTIONS,
+    sq.MixtureParameterization(FRACTIONS),
 )
 
 assert np.max(np.abs(np.asarray(oracle.score(observations[:, None])) - exact)) < 1e-12
-assert oracle.provenance.kind == "estimated_classifier"
+assert oracle.provenance.kind == "estimated_ratio"
 assert oracle.provenance.exact_fisher is False
 ```
 
@@ -181,14 +201,16 @@ arbitrarily wrong about the origin, which is why nothing in this book ever cente
 table and why the reported retention of an estimated score is not, on its own, evidence of
 anything.
 
-**A misdeclared prior is the realistic version of both.** For the mixture transform the
+**A misdeclared prior is the realistic version of both.** For the mixture construction the
 class priors under which the classifier was trained are an input, and getting them wrong
 rescales the density ratios non-linearly. The damage is real and the reported number does
 not show it — but a cheap diagnostic does.
 
 ```python
 misdeclared = np.asarray(
-    sq.mixture_scores_from_posteriors(exact_posteriors(observations), [0.2, 0.3, 0.5], FRACTIONS)
+    sq.mixture_scores_from_ratios(
+        sq.ratios_from_posteriors(exact_posteriors(observations), [0.2, 0.3, 0.5]), FRACTIONS
+    )
 )
 biased = sq.optimize_partition(misdeclared, n_bins=4, config=sq.DExchangeConfig(seed=0))
 
@@ -209,7 +231,9 @@ error. Here the exact score closes to 0.004 and the misdeclared one sits at 0.30
 of eighty, visible without knowing the truth. Two caveats keep it honest: the check needs
 the reference sample to be drawn from \(P_{\theta_0}\) (or correctly weighted to it), and it
 does not apply to an unnormalized intensity model, whose score legitimately has a nonzero
-mean along the total-rate direction.
+mean along the total-rate direction. The same idea one level up is the **ratio closure**
+check: exact ratios relative to the training measure integrate to one under it, and
+`ratio_closure_report` measures the residual on the ratios before any score is built.
 
 ## Retention against classifier quality
 
@@ -234,7 +258,9 @@ for n_train in (200, 800, 3_200, 12_800, 51_200):
     table = counts / counts.sum(axis=1, keepdims=True)
 
     estimated = np.asarray(
-        sq.mixture_scores_from_posteriors(table[observation_index], FRACTIONS, FRACTIONS)
+        sq.mixture_scores_from_ratios(
+            sq.ratios_from_posteriors(table[observation_index], FRACTIONS), FRACTIONS
+        )
     )
     fitted = sq.optimize_partition(estimated, n_bins=4, config=sq.DExchangeConfig(seed=0))
 

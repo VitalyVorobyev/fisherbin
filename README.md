@@ -41,7 +41,7 @@ Three doors, one per input regime:
 | --- | --- | --- |
 | **Door 1** — you already have `(event, score)` rows | `optimize_partition(scores, weights=w, n_bins=k)` | `fit_quantizer(ScoreSample(scores, w), n_bins=k)` |
 | **Door 2** — you have component densities or an analytic score model | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w) \| IntegrationSource(...), score=provider, n_bins=k)` |
-| **Door 3** — you have a trained classifier on measurement space | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w), score=provider, n_bins=k)` |
+| **Door 3** — you can estimate density ratios (calibrated classifier, direct ratio estimator) or write them analytically | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w), score=provider, n_bins=k)` |
 
 `optimize_partition` always takes score rows, so doors 2 and 3 reach it through an explicit
 `provider.score(X)`. The observation-to-score step never hides inside a fitting call or a
@@ -161,10 +161,12 @@ data_bins = quantizer.predict_scores(provider.score(np.linspace(-2.0, 3.0, 200)[
 `order ** D`. With Monte Carlo events instead, swap in `ObservationSample(X, weights)` and keep the
 same provider.
 
-## Fast start — Door 3: you have a trained classifier
+## Fast start — Door 3: you have density ratios
 
-Training, calibration, and cross-fitting stay in your code. ScoreQuant starts from a ready
-probability callback and reconstructs the relative densities the score needs.
+The score is the gradient of a log density *ratio*, so absolute densities are never required — a
+ratio oracle is enough. A calibrated classifier is the most common one: posteriors over training
+priors are component density ratios up to a factor that cancels. Training, calibration, and
+cross-fitting stay in your code; ScoreQuant starts at the ready callback.
 
 ```python
 import numpy as np
@@ -179,15 +181,18 @@ def predict_proba(X):
     return joint / joint.sum(axis=1, keepdims=True)
 
 
-classifier_score = sq.ClassifierScore(
+classifier_score = sq.DensityRatioScore.from_classifier(
     predict_proba,
-    sq.MixturePosteriorTransform(class_priors=[0.5, 0.5], reference_fractions=[0.3, 0.7]),
+    [0.5, 0.5],  # training priors
+    sq.MixtureParameterization([0.3, 0.7]),  # reference mixture fractions
     description="calibrated two-component classifier",
 )
 
 rng = np.random.default_rng(5)
 is_signal = rng.random(4_000) < 0.3
 events = np.where(is_signal, rng.normal(1.0, 0.5, 4_000), rng.normal(0.0, 1.5, 4_000))[:, None]
+
+closure = sq.ratio_closure_report(classifier_score.ratio(events), np.ones(events.shape[0]))
 
 quantizer = sq.fit_quantizer(
     sq.ObservationSample(events),
@@ -198,9 +203,12 @@ quantizer = sq.fit_quantizer(
 assert quantizer.information_kind == "supplied_score_surrogate"
 ```
 
-A classifier-derived score is an estimate, so its between-cell matrix is exact for the vectors you
-supplied and only a surrogate for the model's own Fisher information. Provenance records that, and
-`information_kind` refuses to say otherwise.
+Any other ratio backend — a direct density-ratio estimator, a calibrated neural likelihood-ratio
+model, an analytic formula — enters through the same `DensityRatioScore` with its own callback. An
+estimated ratio is still an estimate: its between-cell matrix is exact for the vectors you supplied
+and only a surrogate for the model's own Fisher information. Provenance records how the ratios were
+obtained, `ratio_closure_report` bounds visible estimator bias before any fitting, and
+`information_kind` refuses to claim exact Fisher semantics.
 
 ## What the results carry
 

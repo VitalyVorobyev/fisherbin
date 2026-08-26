@@ -58,16 +58,17 @@ written entirely in it. Three practical consequences:
 - **It is the right dimension.** Score space has one coordinate per parameter, however many
   measurement variables the events have. A 40-channel measurement feeding a two-parameter fit
   becomes a two-dimensional quantization problem.
-- **It is comparable across sources.** An analytic likelihood, a linear component model, and a
-  calibrated classifier all produce score vectors, so one optimizer serves all of them.
+- **It is comparable across sources.** An analytic likelihood, a linear component model, and an
+  estimated density ratio all produce score vectors, so one optimizer serves all of them.
 - **Its origin means something.** \(I_q\) is a second moment about zero, not a variance about the
   sample mean, because \(s=0\) is the direction of no sensitivity. ScoreQuant therefore never
   centers scores. It projects out numerically singular directions rather than repairing them with
   a ridge, because a ridge would invent information that the sample does not contain.
 
 Score space also draws the honesty boundary. When the supplied vectors really are the model score,
-their second moment is Fisher information. When they come from a trained classifier, the same
-algebra is exact *for the vectors you supplied* and only a surrogate for the original model:
+their second moment is Fisher information. When they are estimates — most often built from
+estimated density ratios — the same algebra is exact *for the vectors you supplied* and only a
+surrogate for the original model:
 
 $$
 \widehat I_q=\operatorname{Var}\!\big(E[\hat s\mid q(\hat s)]\big),
@@ -75,9 +76,28 @@ $$
 I_q^{\mathrm{true}}=\operatorname{Var}\!\big(E[s\mid q(\hat s)]\big).
 $$
 
-Every result therefore carries score provenance, and `information_kind` reads `exact_fisher` only
-when the provenance permits it. Classifier training, calibration, and cross-fitting belong to the
-application; their error must never be reported as quantization loss.
+Every result therefore carries score provenance — including how any density ratios were obtained —
+and `information_kind` reads `exact_fisher` only when the provenance permits it. Ratio estimation,
+calibration, and cross-fitting belong to the application; their error must never be reported as
+quantization loss.
+
+## Two kinds of ratios
+
+The word "ratio" appears in two roles with different semantics, and ScoreQuant keeps them in
+different places.
+
+**Model density ratios** are a statistical representation. The score is the gradient of a log
+density ratio, \(s(x)=\nabla_\theta\log\big(p(x\mid\theta)/p(x\mid\theta_0)\big)\big|_{\theta_0}\),
+and for component models the relative densities \(\phi_k/\phi_{\rm ref}\) determine it completely —
+absolute normalization cancels. They enter through a score provider, and ScoreQuant names the
+estimand: it ships the exact ratio-to-score algebra and a closure diagnostic
+(`ratio_closure_report`) that bounds visible estimator bias, while estimating and certifying the
+ratios themselves stays with the application.
+
+**Importance ratios** reweight expectations. When a sample is drawn from a proposal \(g\) instead
+of the reference law, \(E_{p_{\theta_0}}[f]=E_g[(p_{\theta_0}/g)\,f]\), and the factor
+\(p_{\theta_0}(x_i)/g(x_i)\) belongs in the source *weights*. It is a property of the measure, not
+of the score map, and it never passes through a provider.
 
 ## Why two tasks and not one
 
@@ -112,7 +132,9 @@ ScoreQuant is worth reaching for when downstream inference needs hard gates, cat
 template counts, when several parameters matter at once, and when local parameter sensitivity
 matters more than proximity in measurement space.
 
-It is not a general-purpose compressor, a classifier trainer, or a complete likelihood framework,
-and it cannot certify that an upstream simulator or a learned likelihood ratio is unbiased. It
-optimizes what the supplied scores say; the quality of the scores is your responsibility, and the
-[book chapter on estimated scores](book/ch13-estimated-scores.md) explains how to check it.
+It is not a general-purpose compressor, a ratio estimator, or a complete likelihood framework, and
+it cannot certify that an upstream simulator or a learned density ratio is unbiased — the closure
+check bounds visible bias from below, never from above. It optimizes what the supplied scores say;
+the quality of the representation behind them is your responsibility, and the
+[book chapter on estimated ratios and scores](book/ch13-estimated-scores.md) explains how to
+check it.

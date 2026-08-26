@@ -5,13 +5,16 @@
 ScoreQuant compresses continuous or high-dimensional events into hard bins while preserving Fisher information. Keep task and representation semantics explicit:
 
 ```text
-Source + ScoreProvider -> score law -> partition or quantizer
+Source + (densities | density ratios | scores) -> ScoreProvider -> score law -> partition or quantizer
 ```
 
 - `optimize_partition(scores, ...)` owns fixed-sample assignment and returns no predictor.
 - `fit_quantizer(source, score=...)` owns reusable score-space rules.
-- `scores_from_components(Phi, coefficients)` is an explicit adapter, not a fitting task.
+- `scores_from_components(Phi, coefficients)` and the ratio algebra in `ratios.py` are explicit
+  adapters, not fitting tasks.
 - Prediction is always `predict_scores`; observation-to-score conversion remains visible.
+- Model density ratios enter through providers; importance ratios are source weights. The two
+  never share an argument, and estimated ratios never claim exact Fisher semantics.
 
 Use JAX for numerical kernels and Optax for gradient optimization. Do not add PyTorch, a parallel NumPy implementation, global JAX configuration at import time, or a backend abstraction without an approved roadmap change and a concrete second backend.
 
@@ -27,7 +30,7 @@ Use JAX for numerical kernels and Optax for gradient optimization. Do not add Py
 
 ## Code placement and API discipline
 
-- Keep Fisher statistics in `information.py`, transforms in `transforms.py`, private optimizers in `quantizers.py`, linear-model adapters in `components.py`, and public orchestration/results/configuration in their existing modules.
+- Keep Fisher statistics in `information.py`, transforms in `transforms.py`, private optimizers in `quantizers.py`, linear-model adapters in `components.py`, density-ratio algebra in `ratios.py`, and public orchestration/results/configuration in their existing modules.
 - Keep dataset generators, comparisons, tuning, custom figure layouts, and exploratory logic in `examples/`, tests, or benchmarks.
 - Add public concepts only when they are reusable, stable, documented, and non-duplicative. Prefer private helpers over provisional public APIs.
 - Avoid aliases and overlapping entry points. Document intentional compatibility breaks and update the API guide, examples, and an ADR when the decision is durable.

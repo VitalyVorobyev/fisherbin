@@ -9,13 +9,38 @@ score  ->  informative subspace  ->  criterion  ->  solver  ->  certificate
 This page walks that pipeline once. The [book](book/index.md) develops the same material as theory,
 independently of the package API; the [API guide](api.md) states the contracts and errors.
 
+The pipeline sits inside a larger conceptual stack:
+
+```text
+observation/source layer      samples or an integration measure (weights carry the measure,
+                              including any importance ratios)
+statistical representation    exact densities | density ratios | exact or estimated scores
+optimization layer            finite-sample partitioning and score-space quantizer fitting
+deployment layer              x -> score(x) -> q(score)
+```
+
+Score vectors are the interface the optimizers consume; density ratios are often the more natural
+interface the statistical model exposes, and converting one into the other is an explicit,
+provenance-tracked step, never a hidden one.
+
 ## 1. Score
 
 The input to every optimizer is a weighted table of score rows \((s_i, w_i)\) with
 \(s_i\in\mathbb R^P\), one coordinate per parameter, evaluated at a reference point \(\theta_0\).
 Weights are finite and nonnegative with at least one positive value; a zero-weight row remains
-predictable but contributes no measure. Where those rows come from — precomputed, an analytic
-component model, or a calibrated classifier — is the subject of [Three doors](three-doors.md).
+predictable but contributes no measure.
+
+Absolute densities are never required to build the rows. The score is the gradient of a log
+density ratio,
+
+$$
+s(x)=\nabla_\theta\log\frac{p(x\mid\theta)}{p(x\mid\theta_0)}\bigg|_{\theta=\theta_0},
+$$
+
+so any oracle for model density ratios determines it, and for component models the relative
+densities \(\phi_k/\phi_{\rm ref}\) suffice. Where the rows come from — precomputed, an analytic
+component model, or estimated density ratios — is the subject of
+[Three doors](three-doors.md).
 
 For labels \(b(i)\) the relevant quantities are the unbinned information, the cell masses and score
 sums, and the between-cell information:

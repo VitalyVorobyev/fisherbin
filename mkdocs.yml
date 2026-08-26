@@ -59,7 +59,7 @@ nav:
       - Nuisance parameters and profiled Ds: book/ch10-profiled-ds.md
       - "E-optimality: why not": book/ch11-e-optimality.md
       - Soft rules, purification, and consistency: book/ch12-soft-rules.md
-      - "Estimated scores: classifiers and calibration": book/ch13-estimated-scores.md
+      - "Estimated density ratios and scores": book/ch13-estimated-scores.md
       - Diagnostics and choosing a method: book/ch14-choosing-a-method.md
   - Examples:
       - Overview: examples/index.md
@@ -88,6 +88,7 @@ nav:
           - Overview: reference/index.md
           - Fitting: reference/fitting.md
           - Linear models: reference/models.md
+          - Density ratios: reference/ratios.md
           - Configuration: reference/configuration.md
           - Results: reference/results.md
           - Certificates: reference/certification.md

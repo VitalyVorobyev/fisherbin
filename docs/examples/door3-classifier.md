@@ -1,10 +1,11 @@
 # Door 3: a trained classifier, and what it honestly buys you
 
 This page solves **space quantization** (`fit_quantizer`) through [Door 3](../three-doors.md):
-a trained scikit-learn classifier standing in for a likelihood ScoreQuant cannot evaluate. It
-absorbs and replaces the old "classifier posteriors for mixtures" tutorial, and adds the piece
-that tutorial only described: an actual retention-versus-classifier-quality ladder, and an
-honest demonstration of the surrogate-information caveat from [Chapter
+density ratios estimated by a trained scikit-learn classifier, standing in for a likelihood
+ScoreQuant cannot evaluate. The classifier is one ratio backend among several — its calibrated
+posteriors over the training priors *are* the component density ratios, up to a factor that
+cancels. The page adds an actual retention-versus-classifier-quality ladder and an honest
+demonstration of the surrogate-information caveat from [Chapter
 13](../book/ch13-estimated-scores.md).
 
 ## Problem
@@ -60,9 +61,10 @@ train_observations.shape, test_observations.shape
 
 ### Train, wrap, and fit
 
-Training and calibration stay application code; ScoreQuant starts at `predict_proba` and a
-declared transform. `MixturePosteriorTransform` converts calibrated posteriors into the
-mixture-fraction score.
+Training and calibration stay application code; ScoreQuant starts at `predict_proba`, the
+declared training priors, and a declared parameterization.
+`DensityRatioScore.from_classifier` converts calibrated posteriors into density ratios and
+then into the mixture-fraction score.
 
 ```python
 def train_classifier(seed, n_per_class):
@@ -78,11 +80,10 @@ def classifier_provider(model, description):
     def predict(x):
         return model.predict_proba(make_features(np.asarray(x)[:, 0]))
 
-    return sq.ClassifierScore(
+    return sq.DensityRatioScore.from_classifier(
         predict,
-        sq.MixturePosteriorTransform(
-            class_priors=[0.5, 0.5], reference_fractions=list(reference_fractions)
-        ),
+        [0.5, 0.5],
+        sq.MixtureParameterization(list(reference_fractions)),
         description=description,
     )
 
@@ -97,11 +98,19 @@ small_result = sq.fit_quantizer(
     config=sq.DExchangeConfig(seed=7),
 )
 assert small_result.information_kind == "supplied_score_surrogate"
+
+closure = sq.ratio_closure_report(
+    small_provider.ratio(train_observations), np.ones(train_observations.shape[0])
+)
+assert round(closure.max_residual, 3) == 0.154  # visible estimator bias, before any fitting
 ```
 
-`information_kind` is `"supplied_score_surrogate"` for every `ClassifierScore` result, no
-matter how good the classifier is — declaring `kind="estimated_classifier"` is not optional,
-so the library never lets an estimate be reported as exact Fisher information.
+`information_kind` is `"supplied_score_surrogate"` for every classifier-derived result, no
+matter how good the classifier is — `kind="estimated_ratio"` is recorded unconditionally, so
+the library never lets an estimate be reported as exact Fisher information. The
+`ratio_closure_report` line is the ratio-level diagnostic: exact ratios integrate to one
+under the training measure, so its residual bounds visible estimator bias from below before
+any quantizer is fitted.
 
 ### The retention ladder
 
@@ -120,8 +129,8 @@ def exact_posteriors(x):
 
 
 exact_provider = sq.ScoreFunction(
-    lambda x: sq.mixture_scores_from_posteriors(
-        exact_posteriors(x), class_priors=[0.5, 0.5], reference_fractions=list(reference_fractions)
+    lambda x: sq.mixture_scores_from_ratios(
+        sq.ratios_from_posteriors(exact_posteriors(x), [0.5, 0.5]), list(reference_fractions)
     ),
     provenance=sq.ScoreProvenance(kind="exact"),
 )
@@ -194,9 +203,10 @@ reaches (~0.972 on this sample).
 
 ## Discussion
 
-**Task:** space quantization (`fit_quantizer`). **Door:** 3, a trained classifier via
-`ClassifierScore` and `MixturePosteriorTransform`. **Criterion / solver:** `DOptimality` with
-exact exchange, held fixed across the ladder so only classifier quality varies.
+**Task:** space quantization (`fit_quantizer`). **Door:** 3, classifier-derived density
+ratios via `DensityRatioScore.from_classifier` with a `MixtureParameterization`.
+**Criterion / solver:** `DOptimality` with exact exchange, held fixed across the ladder so
+only classifier quality varies.
 
 The caveat is not a defect to work around; it is what `information_kind ==
 "supplied_score_surrogate"` is warning about on every classifier-backed result. Trust the

@@ -5,7 +5,6 @@ from .certify import CertificationConfig, certify_partition
 from .components import (
     LinearComponents,
     LinearProblem,
-    mixture_scores_from_posteriors,
     scores_from_components,
 )
 from .config import (
@@ -27,12 +26,19 @@ from .information import (
 )
 from .partition import exchange_stability_report
 from .providers import (
-    CentralLogRatioTransform,
-    ClassifierScore,
+    CentralLogRatioScore,
+    DensityRatioScore,
     LinearComponentScore,
-    MixturePosteriorTransform,
     ScoreFunction,
 )
+from .ratios import (
+    IntensityParameterization,
+    MixtureParameterization,
+    mixture_scores_from_ratios,
+    ratio_closure_report,
+    ratios_from_posteriors,
+)
+from .reports import RatioClosureReport
 from .result import (
     EfficientScoreBound,
     GeometryReport,
@@ -49,6 +55,7 @@ from .sources import (
     GaussLegendreConfig,
     IntegrationSource,
     ObservationSample,
+    RatioProvenance,
     ScoreProvenance,
     ScoreSample,
 )
@@ -56,23 +63,24 @@ from .transforms import FisherTransform
 from .visualization import plot_information, plot_optimization, plot_partition, plot_summary
 
 __all__ = [
-    "CentralLogRatioTransform",
+    "CentralLogRatioScore",
     "CertificationConfig",
-    "ClassifierScore",
     "DExchangeConfig",
     "DOptimality",
+    "DensityRatioScore",
     "EfficientScoreBound",
     "FisherTransform",
     "GaussLegendreConfig",
     "GeometryReport",
     "InformationReport",
     "IntegrationSource",
+    "IntensityParameterization",
     "KMeansConfig",
     "LinearComponentScore",
     "LinearComponents",
     "LinearProblem",
     "MahalanobisLloydConfig",
-    "MixturePosteriorTransform",
+    "MixtureParameterization",
     "NormalizedTrace",
     "ObservationSample",
     "OptimizationTrace",
@@ -82,6 +90,8 @@ __all__ = [
     "ProfiledGeometryReport",
     "ProfiledInformationReport",
     "QuantizerResult",
+    "RatioClosureReport",
+    "RatioProvenance",
     "ScalarDPConfig",
     "ScoreFunction",
     "ScoreProvenance",
@@ -97,12 +107,14 @@ __all__ = [
     "fit_quantizer",
     "fractional_fisher_information",
     "information_report",
-    "mixture_scores_from_posteriors",
+    "mixture_scores_from_ratios",
     "optimize_partition",
     "plot_information",
     "plot_optimization",
     "plot_partition",
     "plot_summary",
     "profiled_information_report",
+    "ratio_closure_report",
+    "ratios_from_posteriors",
     "scores_from_components",
 ]

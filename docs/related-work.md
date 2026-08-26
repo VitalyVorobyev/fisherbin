@@ -66,7 +66,14 @@ Kasaraguppe and Mausolf, 2026](https://arxiv.org/abs/2601.07756)). The neighbori
 simulation-based-inference literature supplies the scores themselves: the local score as a learned
 summary is SALLY/SALLINO ([Brehmer, Louppe, Pavez and Cranmer,
 2020](https://arxiv.org/abs/1805.12244)), building on calibrated classifier likelihood ratios
-([Cranmer, Pavez and Louppe, 2015](https://arxiv.org/abs/1506.02169)).
+([Cranmer, Pavez and Louppe, 2015](https://arxiv.org/abs/1506.02169)). The classifier is not the
+only route to the ratios: direct density-ratio estimation fits them without an intermediate
+classification problem — KLIEP by Kullback-Leibler importance estimation ([Sugiyama et al.,
+2008](https://doi.org/10.1007/s10463-008-0197-x)), uLSIF by unconstrained least squares
+([Kanamori, Hido and Sugiyama, 2009](https://jmlr.org/papers/v10/kanamori09a.html)) — and
+calibrated neural ratio estimators extend the same estimand to simulator-driven models. ScoreQuant
+couples to the estimand, a ratio callback with declared provenance, never to a particular
+estimation algorithm.
 
 ## Known versus new
 

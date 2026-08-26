@@ -10,6 +10,14 @@ ObservationSample + ScoreProvider ------+-> fit_quantizer() ----> QuantizerResul
 IntegrationSource + ScoreProvider ------+
 ```
 
+The provider side is layered: a score provider consumes one of three statistical
+representations — exact densities (`LinearComponentScore`), model density ratios
+(`DensityRatioScore`, `CentralLogRatioScore`), or scores directly (`ScoreFunction`). Density
+ratios are the minimal sufficient representation when absolute densities are unavailable; the
+optimizers themselves consume only score rows ([ADR 0001](adr/0001-score-contract.md),
+[ADR 0017](adr/0017-density-ratio-representation.md)). Importance ratios for reweighted samples
+are source weights, never provider inputs.
+
 `PartitionResult` owns one fixed assignment: labels, cell weights/moments/means, full and retained
 information, objective, rank diagnostics, accepted moves, exchange stability, remaining gain, and
 provenance. It has no prediction method. `compile_quantizer()` is available only for a stable,
@@ -58,9 +66,13 @@ profiled rule is canonical away from the training rows. See
   search is sequential NumPy in float64: per-node JAX dispatch would dominate a search whose nodes
   are one small log determinant each.
 - `quantizers.py`: private weighted k-means and soft-D numerical kernels.
-- `sources.py`: empirical and quadrature measures plus provenance.
-- `providers.py`: framework-neutral observation-to-score adapters.
-- `components.py`: linear models and pure posterior-to-score algebra.
+- `sources.py`: empirical and quadrature measures plus provenance (`ScoreProvenance` and the
+  nested `RatioProvenance`).
+- `providers.py`: framework-neutral observation-to-score adapters, including the ratio-backed
+  `DensityRatioScore` and `CentralLogRatioScore`.
+- `ratios.py`: density-ratio algebra — posterior-to-ratio prior correction, ratio-to-score maps
+  for the mixture and intensity parameterizations, and the ratio-closure diagnostic.
+- `components.py`: linear models and the intensity score adapter.
 - `reports.py`: diagnostic and certificate dataclasses (`InformationReport`,
   `ProfiledInformationReport`, `GeometryReport`, `ProfiledGeometryReport`, `StabilityReport`,
   `PartitionCertificate`, `EfficientScoreBound`). It depends on nothing that depends back on it,
@@ -88,10 +100,12 @@ scores, so supplying a provider with it is also rejected. Observation and integr
 require a provider. Equivalent source/provider constructions must materialize the same core
 result.
 
-`ScoreProvenance.exact_fisher` is derived from provenance kind; an estimated classifier cannot set
-it independently. The classifier boundary stores only a ready callback, an explicit pure transform,
-and metadata. Training frameworks remain outside dependencies and application splits remain
-visible.
+`ScoreProvenance.exact_fisher` is derived from provenance kind; an estimated ratio cannot set it
+independently. The ratio boundary stores only a ready callback, an explicit declared
+parameterization, and structured ratio provenance (estimator, training priors, calibration,
+reference component, finite-difference offsets). Estimation frameworks remain outside
+dependencies and application splits remain visible. Model density ratios and importance ratios
+never share an argument: the former enter through providers, the latter through source weights.
 
 ## Complexity and durability
 
@@ -112,6 +126,7 @@ not a need for a generic facade:
 | certified profiled ceiling | trust profiled exchange with no upper bound | `efficient_score_bound`/`EfficientScoreBound`, an exact scalar-DP ceiling on the profiled objective | implemented |
 | global guarantee | imply exchange stability is global | explicit bounded branch-and-bound certificate | implemented as `certify_partition`/`PartitionCertificate` (D-only) |
 | local stability of any labeling | trust a solver's own termination claim | one exact scan via `exchange_stability_report`/`StabilityReport` | implemented |
+| estimated density ratios | treat the classifier as the abstraction | named ratio representation: `ratios_from_posteriors`/`mixture_scores_from_ratios`, decomposed providers, `ratio_closure_report`, structured `RatioProvenance` | implemented |
 | Voronoi self-consistency of a D result | assume exchange stability implies Voronoi geometry | measured `GeometryReport`/`ProfiledGeometryReport`, judged at the solver's own `gain_tolerance` | implemented |
 | Monte Carlo population law | pass an unrecorded callback as a score table | deterministic score/observation sampler source | not yet implemented |
 | analytic cell integrals | pretend an oracle contains rows | moment-oracle evaluation of an existing rule | not yet implemented |

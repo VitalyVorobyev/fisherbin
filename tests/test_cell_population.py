@@ -173,8 +173,12 @@ def test_posterior_prior_correction_recovers_same_simplex_scores() -> None:
     skewed_posterior = ratios * skewed_prior
     skewed_posterior /= np.sum(skewed_posterior, axis=1, keepdims=True)
     np.testing.assert_allclose(
-        sq.mixture_scores_from_posteriors(uniform_posterior, uniform_prior, theta0),
-        sq.mixture_scores_from_posteriors(skewed_posterior, skewed_prior, theta0),
+        sq.mixture_scores_from_ratios(
+            sq.ratios_from_posteriors(uniform_posterior, uniform_prior), theta0
+        ),
+        sq.mixture_scores_from_ratios(
+            sq.ratios_from_posteriors(skewed_posterior, skewed_prior), theta0
+        ),
         rtol=1e-12,
         atol=1e-12,
     )
@@ -207,7 +211,9 @@ def test_binned_and_unbinned_mixture_recover_known_fractions() -> None:
     uniform_priors = np.full(6, 1 / 6)
     posterior_values = component_values * uniform_priors[None, :]
     posterior_values /= np.sum(posterior_values, axis=1, keepdims=True)
-    exact_scores = sq.mixture_scores_from_posteriors(posterior_values, uniform_priors, theta)
+    exact_scores = sq.mixture_scores_from_ratios(
+        sq.ratios_from_posteriors(posterior_values, uniform_priors), theta
+    )
     mixture_weights = component_values @ theta
     coarse_bins = np.asarray([0, 0, 1, 1, 2, 2])
     full_fisher = sq.fisher_information(exact_scores, mixture_weights)
@@ -296,9 +302,8 @@ def test_cross_fitted_score_model_covers_every_reference_patient() -> None:
     assert fitted.out_of_fold_probabilities.shape == (len(reference.labels), 6)
     np.testing.assert_allclose(np.sum(fitted.out_of_fold_probabilities, axis=1), 1.0)
     theta0 = reference_composition(reference.labels, reference.patients)
-    scores = sq.mixture_scores_from_posteriors(
-        fitted.out_of_fold_probabilities,
-        fitted.model.class_priors,
+    scores = sq.mixture_scores_from_ratios(
+        sq.ratios_from_posteriors(fitted.out_of_fold_probabilities, fitted.model.class_priors),
         theta0,
     )
     assert scores.shape == (len(reference.labels), 5)
@@ -409,7 +414,10 @@ def test_committed_full_patient_evidence_passes_the_frozen_gate() -> None:
     assert metrics["soft_voronoi:8"]["target_macro_rmse"] <= 0.0023
     assert metrics["soft_voronoi:8"]["likelihood_convergence"]["converged_patients"] == 10
     assert metrics["soft_voronoi:8"]["information_kind"] == "supplied_score_surrogate"
-    assert metrics["soft_voronoi:8"]["score_provenance"]["kind"] == "estimated_classifier"
+    assert metrics["soft_voronoi:8"]["score_provenance"]["kind"] == "estimated_ratio"
+    provenance_ratio = metrics["soft_voronoi:8"]["score_provenance"]["ratio"]
+    assert provenance_ratio["estimator"] == "calibrated_classifier"
+    assert provenance_ratio["calibration"] == "raw_declared_prior"
     assert np.isfinite(float(metrics["soft_voronoi:8"]["hardening_gap"]))
     finite_d = metrics["finite_d_exchange:8"]
     assert finite_d["exchange_stable"] is True

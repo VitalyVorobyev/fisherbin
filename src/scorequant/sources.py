@@ -17,9 +17,47 @@ type ScoreKind = Literal[
     "unknown",
     "exact",
     "autodiff",
-    "estimated_classifier",
+    "estimated_ratio",
     "custom_estimated",
 ]
+
+type RatioParameterizationKind = Literal["intensity", "mixture", "central_log_ratio"]
+
+
+@dataclass(frozen=True, slots=True)
+class RatioProvenance:
+    """Describe how a model density-ratio representation was obtained.
+
+    Together with ``ScoreProvenance.kind`` and ``reference_point``, these
+    fields reconstruct the statistical representation behind a ratio-derived
+    score: which estimator produced the ratios, under which training priors
+    and calibration, and through which parameterization they became scores.
+    Fields that do not apply to a given construction stay ``None``.
+    """
+
+    estimator: str | None = None
+    parameterization: RatioParameterizationKind | None = None
+    coefficients: tuple[float, ...] | None = None
+    reference_fractions: tuple[float, ...] | None = None
+    reference_component: int | None = None
+    training_priors: tuple[float, ...] | tuple[tuple[float, float], ...] | None = None
+    calibration: str | None = None
+    deltas: tuple[float, ...] | None = None
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible ratio-provenance mapping."""
+        return json_ready(
+            {
+                "estimator": self.estimator,
+                "parameterization": self.parameterization,
+                "coefficients": self.coefficients,
+                "reference_fractions": self.reference_fractions,
+                "reference_component": self.reference_component,
+                "training_priors": self.training_priors,
+                "calibration": self.calibration,
+                "deltas": self.deltas,
+            }
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,13 +66,15 @@ class ScoreProvenance:
 
     ``exact_fisher`` is derived from ``kind`` rather than accepted as an
     independent flag, so estimated scores cannot accidentally claim exact
-    Fisher semantics.
+    Fisher semantics. Scores built from model density ratios additionally
+    carry a ``ratio`` record describing how the ratios were obtained.
     """
 
     kind: ScoreKind = "unknown"
     description: str | None = None
     reference_point: tuple[float, ...] | None = None
     metadata: Mapping[str, JsonValue] = field(default_factory=dict)
+    ratio: RatioProvenance | None = None
 
     @property
     def exact_fisher(self) -> bool:
@@ -49,6 +89,7 @@ class ScoreProvenance:
                 "description": self.description,
                 "reference_point": self.reference_point,
                 "metadata": dict(self.metadata),
+                "ratio": None if self.ratio is None else self.ratio.to_dict(),
                 "exact_fisher": self.exact_fisher,
             }
         )
