@@ -278,15 +278,29 @@ def _evaluate_partition(
     return name, metrics, predicted
 
 
-def _prepare_experiment(data: FlowCytData, *, quick: bool, seed: int) -> _ExperimentContext:
+def _prepare_experiment(
+    data: FlowCytData,
+    *,
+    quick: bool,
+    seed: int,
+    score_max_per_patient_class: int | None = None,
+    score_max_iter: int | None = None,
+) -> _ExperimentContext:
+    # The two score-model overrides exist so a regression test can exercise the
+    # whole context on the frozen fixture in seconds. run_experiment never sets
+    # them, so the published settings block stays the description of the run.
     reference = data.patients_in(REFERENCE_PATIENTS)
     test = data.patients_in(TEST_PATIENTS)
     if len(reference.labels) == 0 or len(test.labels) == 0:
         raise ValueError("data must contain both declared reference and test patients")
     score_fit = fit_score_model(
         reference,
-        max_per_patient_class=256 if quick else 2_000,
-        max_iter=35 if quick else 120,
+        max_per_patient_class=(
+            (256 if quick else 2_000)
+            if score_max_per_patient_class is None
+            else score_max_per_patient_class
+        ),
+        max_iter=(35 if quick else 120) if score_max_iter is None else score_max_iter,
         seed=seed,
     )
     theta0 = reference_composition(reference.labels, reference.patients)

@@ -38,7 +38,7 @@ Every substantive statement is tagged as one of:
 - **Open problem** — a question for which this project does not claim a result.
 
 Small analytic or rational laboratories illustrate exact claims throughout. The FlowCyt
-cytometry study in the [evidence section](../usecases/cellpopulation.md) is a capstone
+cytometry study in the [evidence section](../usecases/flowcyt/index.md) is a capstone
 application and never serves as proof of a theorem.
 
 ## Chapters

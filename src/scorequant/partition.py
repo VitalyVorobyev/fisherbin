@@ -21,6 +21,7 @@ any origin can be checked before it is trusted.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 from typing import Protocol
 
 import jax
@@ -39,7 +40,11 @@ from ._validation import (
 )
 from .config import DExchangeConfig, KMeansConfig, MahalanobisLloydConfig, PartitionConfig
 from .criteria import DOptimality, ProfiledDOptimality
-from .information import _profiled_blocks, information_report, profiled_information_report
+from .information import (
+    _nuisance_information,
+    information_report,
+    profiled_information_report,
+)
 from .quantizers import hard_assign, weighted_kmeans
 from .reports import (
     GeometryReport,
@@ -185,7 +190,13 @@ class _ExchangeObjective(Protocol):
         """Build criterion matrices and the exact objective of one labeling."""
         ...
 
-    def chunk_gains(self, state: _ExchangeState, chunk: _Candidates) -> jnp.ndarray:
+    def chunk_gains(
+        self,
+        state: _ExchangeState,
+        points: jnp.ndarray,
+        weights: jnp.ndarray,
+        labels: jnp.ndarray,
+    ) -> jnp.ndarray:
         """Return exact objective gains of every candidate in one row chunk."""
         ...
 
@@ -204,8 +215,7 @@ class _DObjective:
 
     def init_state(self, cells: _CellStatistics) -> _ExchangeState:
         """Build the cell information matrix, its inverse, and its log determinant."""
-        information = _cell_information(cells)
-        sign, logdet = jnp.linalg.slogdet(information)
+        information, inverse, sign, logdet = _cell_information_matrices(cells.weights, cells.means)
         if float(np.asarray(sign)) <= 0:
             raise ValueError(
                 "initial D partition is singular; increase n_bins or use a different "
@@ -214,16 +224,19 @@ class _DObjective:
         return _ExchangeState(
             cells=cells,
             information=information,
-            inverse=jnp.linalg.inv(information),
+            inverse=inverse,
             objective=float(np.asarray(logdet)),
         )
 
-    def chunk_gains(self, state: _ExchangeState, chunk: _Candidates) -> jnp.ndarray:
+    def chunk_gains(
+        self,
+        state: _ExchangeState,
+        points: jnp.ndarray,
+        weights: jnp.ndarray,
+        labels: jnp.ndarray,
+    ) -> jnp.ndarray:
         """Return the exact rank-two log-determinant gain of every candidate."""
-        ratios = _determinant_ratios(
-            chunk, chunk.source_residuals, chunk.destination_residuals, state.inverse
-        )
-        return jnp.where(chunk.admissible & (ratios > 0), jnp.log(ratios), -jnp.inf)
+        return _d_chunk_gains(points, weights, labels, state.weights, state.means, state.inverse)
 
     def apply_move(self, state: _ExchangeState, relocation: _Relocation) -> _ExchangeState:
         """Apply the exact rank-two information and inverse update of one move."""
@@ -259,14 +272,15 @@ class _ProfiledDObjective:
 
     def init_state(self, cells: _CellStatistics) -> _ExchangeState:
         """Build full and nuisance information with the guarded block algebra."""
-        information = _cell_information(cells)
-        # information._profiled_blocks owns the nonsingular-nuisance guard and the
-        # index bookkeeping; the Schur block itself is not needed because the
-        # exchange gains telescope with the difference of the two log determinants.
-        _, nuisance_information, _ = _profiled_blocks(information, self.interest)
-        full_sign, full_logdet = jnp.linalg.slogdet(information)
-        nuisance_sign, nuisance_logdet = jnp.linalg.slogdet(nuisance_information)
-        if float(np.asarray(full_sign)) <= 0 or float(np.asarray(nuisance_sign)) <= 0:
+        information, inverse, full_sign, full_logdet = _cell_information_matrices(
+            cells.weights, cells.means
+        )
+        # information._nuisance_information owns the nonsingular-nuisance guard
+        # and the index bookkeeping. The Schur block is deliberately not built:
+        # the exchange gains telescope with the difference of the two log
+        # determinants, so a rebuild on this hot path never needs it.
+        nuisance_information, nuisance_logdet, _ = _nuisance_information(information, self.interest)
+        if float(np.asarray(full_sign)) <= 0:
             raise ValueError(
                 "initial profiled-D partition is singular; increase n_bins or use a "
                 "different sample"
@@ -274,28 +288,29 @@ class _ProfiledDObjective:
         return _ExchangeState(
             cells=cells,
             information=information,
-            inverse=jnp.linalg.inv(information),
+            inverse=inverse,
             objective=float(np.asarray(full_logdet - nuisance_logdet)),
             nuisance_information=nuisance_information,
             nuisance_inverse=jnp.linalg.inv(nuisance_information),
         )
 
-    def chunk_gains(self, state: _ExchangeState, chunk: _Candidates) -> jnp.ndarray:
+    def chunk_gains(
+        self,
+        state: _ExchangeState,
+        points: jnp.ndarray,
+        weights: jnp.ndarray,
+        labels: jnp.ndarray,
+    ) -> jnp.ndarray:
         """Return the difference of the full and nuisance determinant-lemma gains."""
-        indices = jnp.asarray(self.nuisance)
-        full_ratios = _determinant_ratios(
-            chunk, chunk.source_residuals, chunk.destination_residuals, state.inverse
-        )
-        nuisance_ratios = _determinant_ratios(
-            chunk,
-            chunk.source_residuals[:, indices],
-            chunk.destination_residuals[:, :, indices],
+        return _profiled_chunk_gains(
+            points,
+            weights,
+            labels,
+            state.weights,
+            state.means,
+            state.inverse,
             _require_nuisance(state.nuisance_inverse),
-        )
-        return jnp.where(
-            chunk.admissible & (full_ratios > 0) & (nuisance_ratios > 0),
-            jnp.log(full_ratios) - jnp.log(nuisance_ratios),
-            -jnp.inf,
+            self.nuisance,
         )
 
     def apply_move(self, state: _ExchangeState, relocation: _Relocation) -> _ExchangeState:
@@ -361,9 +376,19 @@ def optimize_d_partition(
     compiled_labels = compiled_labels.at[sample.positive_weight_mask].set(effective_labels)
     if run.exchange_stable:
         geometric = _assign_nearest(prepared.coordinates, state.means, state.inverse)
-        if not np.array_equal(np.asarray(geometric), np.asarray(run.labels)):
+        disagreement = _voronoi_disagreement_gain(
+            prepared.coordinates,
+            prepared.weights,
+            run.labels,
+            geometric,
+            state,
+            _DObjective(),
+        )
+        if disagreement > config.gain_tolerance:
             raise ValueError(
-                "terminal D state is geometrically degenerate; duplicate/tied score atoms "
+                "terminal D state is geometrically degenerate: relabeling a row by the "
+                f"terminal Mahalanobis rule gains {disagreement:.6g}, above "
+                f"gain_tolerance={config.gain_tolerance:g}; duplicate/tied score atoms "
                 "must be merged or assigned consistently"
             )
 
@@ -378,7 +403,13 @@ def optimize_d_partition(
         provenance=provenance,
         transformed_centers=state.means,
         metric=state.inverse,
-        geometry=_geometry_report(prepared.coordinates, prepared.weights, run.labels, state),
+        geometry=_geometry_report(
+            prepared.coordinates,
+            prepared.weights,
+            run.labels,
+            state,
+            gain_tolerance=config.gain_tolerance,
+        ),
     )
 
 
@@ -389,6 +420,40 @@ def _require_d_bin_budget(prepared: _PreparedPartition, n_bins: int) -> None:
             "D-optimality requires at least as many bins as informative directions; "
             "a normalized mean-zero score law generally requires one additional bin"
         )
+
+
+def _voronoi_disagreement_gain(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: jnp.ndarray,
+    geometric: np.ndarray,
+    state: _ExchangeState,
+    objective: _ExchangeObjective,
+) -> float:
+    """Return the largest exact gain over rows the terminal Voronoi rule relabels.
+
+    This is the compile bridge measured in the units the solver optimizes. A
+    terminal labeling and the nearest-centroid rule of its own metric may
+    disagree on rows within the solver's stopping tolerance of a cell boundary;
+    the disagreement is immaterial exactly when relocating those rows is worth
+    no more than that tolerance. Comparing the two labelings for equality
+    instead verifies at tolerance zero and rejects such a state, which is what
+    made a converged 10^6-row fit unusable.
+
+    A row whose cell holds no other weight admits no relocation at all, so no
+    tolerance can excuse a rule that sends it elsewhere; that case returns
+    ``inf`` and is always rejected.
+    """
+    rows = np.flatnonzero(np.asarray(geometric) != np.asarray(labels))
+    if rows.size == 0:
+        return float("-inf")
+    index = jnp.asarray(rows)
+    row_weights = weights[index]
+    sources = jnp.asarray(np.asarray(labels)[rows])
+    if bool(np.asarray(jnp.any(state.weights[sources] <= row_weights))):
+        return float("inf")
+    gains = np.asarray(objective.chunk_gains(state, points[index], row_weights, sources))
+    return float(np.max(gains[np.arange(rows.size), np.asarray(geometric)[rows]]))
 
 
 def optimize_profiled_d_partition(
@@ -502,14 +567,16 @@ def exchange_stability_report(
         Relative threshold of the informative Fisher subspace, matching the
         solver configuration that produced the labels.
     gain_tolerance
-        Strict minimum gain that counts as an improvement, matching the
-        ``gain_tolerance`` of the solver configuration.
+        Strict minimum gain that counts as an improvement. Match it to the
+        ``gain_tolerance`` of the solver configuration that produced the
+        labels: a labeling optimized at one tolerance is not certified at a
+        smaller one, and the returned report records the tolerance it holds at.
 
     Returns
     -------
     StabilityReport
-        Stability verdict, exact objective, best remaining gain, and the
-        improving move in original row indexing when one exists.
+        Stability verdict at ``gain_tolerance``, exact objective, best remaining
+        gain, and the improving move in original row indexing when one exists.
     """
     resolved = DOptimality() if criterion is None else criterion
     if not isinstance(resolved, (DOptimality, ProfiledDOptimality)):
@@ -543,6 +610,7 @@ def exchange_stability_report(
         objective=state.objective,
         n_bins=n_bins,
         criterion=resolved,
+        gain_tolerance=gain_tolerance,
     )
 
 
@@ -1145,10 +1213,7 @@ def _scan(
         stop = min(start + chunk_rows, n_rows)
         gains = np.asarray(
             objective.chunk_gains(
-                state,
-                _candidates(
-                    points[start:stop], weights[start:stop], label_array[start:stop], state
-                ),
+                state, points[start:stop], weights[start:stop], label_array[start:stop]
             )
         )
         if config.first_improvement:
@@ -1277,25 +1342,42 @@ def _cell_statistics(
     return _CellStatistics(weights=statistics.weights, sums=statistics.sums, means=statistics.means)
 
 
-def _cell_information(cells: _CellStatistics) -> jnp.ndarray:
-    information = jnp.einsum("b,bp,bq->pq", cells.weights, cells.means, cells.means)
-    return 0.5 * (information + information.T)
+@jax.jit
+def _cell_information_matrices(
+    cell_weights: jnp.ndarray, cell_means: jnp.ndarray
+) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
+    """Return the cell information, its inverse, and its determinant sign and log.
+
+    Every guarded batch acceptance rebuilds this from scratch to keep the
+    exchange exactly monotone, so the rebuild runs far more often than a move
+    does. On a rank-sized matrix each of these primitives costs more to
+    dispatch eagerly than to execute, which is why they are compiled as one
+    kernel; the inverse is returned unconditionally because a singular matrix
+    yields non-finite entries rather than an error, and the caller's sign check
+    still rejects it.
+    """
+    information = jnp.einsum("b,bp,bq->pq", cell_weights, cell_means, cell_means)
+    information = 0.5 * (information + information.T)
+    sign, logdet = jnp.linalg.slogdet(information)
+    return information, jnp.linalg.inv(information), sign, logdet
 
 
 def _candidates(
-    points: jnp.ndarray, weights: jnp.ndarray, labels: jnp.ndarray, state: _ExchangeState
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: jnp.ndarray,
+    cell_weights: jnp.ndarray,
+    cell_means: jnp.ndarray,
 ) -> _Candidates:
     """Build the exact rank-two geometry of every relocation in one chunk."""
-    source_weights = state.weights[labels]
+    source_weights = cell_weights[labels]
     source_denominator = jnp.where(source_weights > weights, source_weights - weights, 1)
-    destinations = jnp.arange(state.weights.shape[0])[None, :]
+    destinations = jnp.arange(cell_weights.shape[0])[None, :]
     return _Candidates(
-        source_residuals=points - state.means[labels],
-        destination_residuals=points[:, None, :] - state.means[None, :, :],
+        source_residuals=points - cell_means[labels],
+        destination_residuals=points[:, None, :] - cell_means[None, :, :],
         alpha=weights * source_weights / source_denominator,
-        beta=weights[:, None]
-        * state.weights[None, :]
-        / (state.weights[None, :] + weights[:, None]),
+        beta=weights[:, None] * cell_weights[None, :] / (cell_weights[None, :] + weights[:, None]),
         admissible=(source_weights > weights)[:, None] & (destinations != labels[:, None]),
     )
 
@@ -1313,6 +1395,64 @@ def _determinant_ratios(
     return (1 + chunk.alpha[:, None] * q_source[:, None]) * (
         1 - chunk.beta * q_destination
     ) + chunk.alpha[:, None] * chunk.beta * q_cross**2
+
+
+@jax.jit
+def _d_chunk_gains(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: jnp.ndarray,
+    cell_weights: jnp.ndarray,
+    cell_means: jnp.ndarray,
+    inverse: jnp.ndarray,
+) -> jnp.ndarray:
+    """Return one chunk of exact D gains as a single compiled kernel.
+
+    A scan evaluates this for every row of the sample, so it is the innermost
+    hot loop of the whole engine. Compiling it lets XLA fuse the
+    ``[chunk, n_bins, rank]`` destination residual into the contractions that
+    consume it instead of materializing it, which is where the win comes from;
+    the arithmetic is exactly the eager expression it replaces.
+    """
+    chunk = _candidates(points, weights, labels, cell_weights, cell_means)
+    ratios = _determinant_ratios(
+        chunk, chunk.source_residuals, chunk.destination_residuals, inverse
+    )
+    return jnp.where(chunk.admissible & (ratios > 0), jnp.log(ratios), -jnp.inf)
+
+
+@partial(jax.jit, static_argnames=("nuisance",))
+def _profiled_chunk_gains(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: jnp.ndarray,
+    cell_weights: jnp.ndarray,
+    cell_means: jnp.ndarray,
+    inverse: jnp.ndarray,
+    nuisance_inverse: jnp.ndarray,
+    nuisance: tuple[int, ...],
+) -> jnp.ndarray:
+    """Return one chunk of exact profiled-``D_s`` gains as a single compiled kernel.
+
+    ``nuisance`` is static so the score-column slice is a compile-time constant
+    and the two determinant ratios fuse into one kernel.
+    """
+    chunk = _candidates(points, weights, labels, cell_weights, cell_means)
+    indices = jnp.asarray(nuisance)
+    full_ratios = _determinant_ratios(
+        chunk, chunk.source_residuals, chunk.destination_residuals, inverse
+    )
+    nuisance_ratios = _determinant_ratios(
+        chunk,
+        chunk.source_residuals[:, indices],
+        chunk.destination_residuals[:, :, indices],
+        nuisance_inverse,
+    )
+    return jnp.where(
+        chunk.admissible & (full_ratios > 0) & (nuisance_ratios > 0),
+        jnp.log(full_ratios) - jnp.log(nuisance_ratios),
+        -jnp.inf,
+    )
 
 
 def _relocation(
@@ -1448,6 +1588,8 @@ def _geometry_report(
     weights: jnp.ndarray,
     labels: jnp.ndarray,
     state: _ExchangeState,
+    *,
+    gain_tolerance: float,
 ) -> GeometryReport:
     """Measure the self-consistent Voronoi geometry of a terminal D state.
 
@@ -1455,6 +1597,12 @@ def _geometry_report(
     ``[chunk, B]`` table supplies the own-cell distance, the nearest competing
     distance, and the Voronoi-violating move set. The cell-separation lemma
     needs only the ``[B, B]`` table of centroid distances.
+
+    The verdict is taken on the exact gain of the violating moves rather than on
+    the sign of a distance gap: a distance gap is not the quantity the solver
+    stops on, and comparing it to zero verifies at a tolerance no finite
+    optimizer claims. ``gain_tolerance`` is the solver's own threshold, and the
+    same per-row gain kernel the scan uses supplies the gains.
     """
     n_bins = int(state.weights.shape[0])
     n_rows = int(coordinates.shape[0])
@@ -1472,6 +1620,7 @@ def _geometry_report(
 
     worst_violation = -np.inf
     guaranteed_gain = 0.0
+    violation_gain = 0.0
     violating = 0
     evaluated = 0
     chunk_rows = _candidate_chunk_rows(coordinates, n_bins)
@@ -1502,17 +1651,34 @@ def _geometry_report(
         )
         bounds = np.log1p(alpha[:, None] * beta * separations[sources] ** 2 / 4)
         guaranteed_gain = max(guaranteed_gain, float(np.max(np.where(violates, bounds, 0.0))))
+        if violates.any():
+            # A clean chunk contributes 0.0 either way, so the gain kernel runs
+            # only where there is actually a violation to price.
+            exact = np.asarray(
+                _d_chunk_gains(
+                    coordinates[start:stop],
+                    weights[start:stop],
+                    label_array[start:stop],
+                    state.weights,
+                    state.means,
+                    state.inverse,
+                ),
+                dtype=np.float64,
+            )
+            violation_gain = max(violation_gain, float(np.max(np.where(violates, exact, 0.0))))
         violating += int(np.count_nonzero(violates))
         evaluated += int(np.count_nonzero(admissible))
 
     return GeometryReport(
         maximum_voronoi_violation=worst_violation,
         guaranteed_violation_gain=guaranteed_gain,
+        maximum_violation_gain=violation_gain,
         maximum_separation_residual=separation_residual,
         violating_moves=violating,
         evaluated_moves=evaluated,
-        voronoi_consistent=worst_violation <= 0.0,
+        voronoi_consistent=violation_gain <= gain_tolerance,
         separation_certified=separation_residual <= _SEPARATION_RTOL * separation_scale,
+        gain_tolerance=gain_tolerance,
     )
 
 

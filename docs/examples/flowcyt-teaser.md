@@ -4,7 +4,7 @@ Every other page in this section solves **space quantization** or **sample parti
 on a synthetic model, so the true answer is available for comparison. This page is a
 pointer to the one case study that runs the same library on real, messy, real-instrument
 data with no synthetic ground truth: the
-[complete FlowCyt cell-population study](../usecases/cellpopulation.md). There is no
+[complete FlowCyt cell-population study](../usecases/flowcyt/index.md). There is no
 notebook here — the study page is already the full story, with its own committed figures,
 committed JSON evidence, and its own regression tests.
 
@@ -80,6 +80,14 @@ estimated-score caveat this study takes seriously throughout, and [Chapter
 14](../book/ch14-choosing-a-method.md) is the diagnostic checklist — rank, occupancy,
 train/validation gap, score provenance — the study runs in full on real data.
 
-Read the [complete study](../usecases/cellpopulation.md) for the classifier calibration
-audit, the five-bin non-identifiability proof, the uncertainty-coverage check at the
-simplex boundary, and the full-corpus transport audit.
+Read the complete study for the [classifier calibration
+audit](../usecases/flowcyt/scores.md), the [five-bin non-identifiability
+proof](../usecases/flowcyt/quantization.md#why-five-bins-fail), the
+uncertainty-coverage check at the simplex boundary, and the [full-corpus transport
+audit](../usecases/flowcyt/data.md#the-full-corpus-transport-audit). The
+[profiled-\(D_s\) extension](../usecases/flowcyt/profiled.md) then asks what changes when
+the measurement is a single population fraction with the rest of the composition
+floating — and answers, with a certificate, that on this dataset the answer is
+"almost nothing". The [solver comparison](../usecases/flowcyt/solvers.md) runs every
+applicable solver and the three canonical baselines on the same rows this study uses, and
+shows where the synthetic shootout's near-ties do and do not survive real data.

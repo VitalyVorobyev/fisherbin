@@ -121,7 +121,10 @@ certify_partition(
 nothing else, so labels from any source — a `guard="reject"` batch result, an external tool, a
 hand edit — can be checked before they are trusted. It reports the exact objective, the best
 remaining gain, and the improving `(row, destination)` move when one exists. The cell count comes
-from the labels, and every declared cell must hold positive weight.
+from the labels, and every declared cell must hold positive weight. Stability is always a verdict
+at a tolerance: match `gain_tolerance` to the configuration that produced the labels, and read it
+back from `StabilityReport.gain_tolerance`. Pass `gain_tolerance=0.0` to ask the strict question
+instead.
 
 `certify_partition` decides global optimality by branch and bound with the singleton-completion
 upper bound: unassigned atoms are left as singleton cells, so refinement monotonicity of the log
@@ -146,12 +149,23 @@ rejects an unstable or geometrically degenerate result.
 
 Geometry diagnostics are criterion-specific and never shared. A `DOptimality` result carries
 `geometry`, a `GeometryReport` measuring the largest Mahalanobis-Voronoi violation of the terminal
-metric, the guaranteed log-determinant gain such a violation would leave on the table, and the
-cell-separation residual against the leverage bound; a `ProfiledDOptimality` result carries
-`profiled_geometry` instead and leaves `geometry` as `None`. The two describe different objects —
-a strict Voronoi rule that exchange stability forces, and an efficient semimetric whose Voronoi
-rule a stable profiled partition may violate — so one shared name would claim an implication that
-does not hold.
+metric, the guaranteed log-determinant gain such a violation would leave on the table, the largest
+exact gain it actually leaves, and the cell-separation residual against the leverage bound; a
+`ProfiledDOptimality` result carries `profiled_geometry` instead and leaves `geometry` as `None`.
+The two describe different objects — a strict Voronoi rule that exchange stability forces, and an
+efficient semimetric whose Voronoi rule a stable profiled partition may violate — so one shared
+name would claim an implication that does not hold.
+
+`GeometryReport` is a certificate at a tolerance, recorded as `gain_tolerance` and taken from the
+configuration that produced the labels. `voronoi_consistent` means `maximum_violation_gain <=
+gain_tolerance`: no Voronoi violation is worth more than the threshold the solver stopped at. It is
+not a claim at tolerance zero, and on a large sample it must not be — the Theorem-3 guaranteed gain
+falls like \(1/N^2\), so past roughly a million rows a few rows legitimately sit a hair past a cell
+boundary inside the default \(10^{-10}\). `compile_quantizer()` reads that certificate rather than
+demanding bit-exact label reproduction, so on such a partition `predict_scores` on the training
+scores differs from `PartitionResult.labels` on those boundary rows and nowhere else; the
+partition's labels stay authoritative for the fixed sample. Assignment itself is unchanged —
+`argmin` decides, resolving a tie toward the lowest cell index.
 
 `QuantizerResult.predict_scores(scores)` is the only prediction method. `evaluate_scores` assigns
 new scores with the frozen rule and computes supplied-score information. The stored transform,

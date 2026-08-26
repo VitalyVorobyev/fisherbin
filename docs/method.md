@@ -156,16 +156,27 @@ carries the same verdict as `exchange_stable` and `best_remaining_gain`.
 
 **Geometry.** A `DOptimality` result carries a `GeometryReport` measuring the largest
 Mahalanobis-Voronoi violation of the terminal metric, the log-determinant gain such a violation
-guarantees is being left on the table, and the cell-separation residual against the leverage bound.
-A `ProfiledDOptimality` result carries a `ProfiledGeometryReport` instead. The two are never merged
-under one name, because they describe different objects: a strict Voronoi rule that exchange
-stability forces, and an efficient semimetric whose Voronoi rule a stable profiled partition may
-legitimately violate.
+guarantees is being left on the table, the largest exact gain it actually leaves, and the
+cell-separation residual against the leverage bound. A `ProfiledDOptimality` result carries a
+`ProfiledGeometryReport` instead. The two are never merged under one name, because they describe
+different objects: a strict Voronoi rule that exchange stability forces, and an efficient
+semimetric whose Voronoi rule a stable profiled partition may legitimately violate.
+
+Both stability and geometry are certified *at a tolerance*, and both reports record it as
+`gain_tolerance`. A finite solver stops when no relocation gains more than that threshold, so
+`voronoi_consistent` means no Voronoi violation is worth more than it — never a claim at tolerance
+zero. The distinction only bites at scale: the Theorem-3 guaranteed gain shrinks like \(1/N^2\), so
+past roughly a million rows a handful of rows may legitimately sit a hair past a cell boundary
+inside the default \(10^{-10}\). Verifying such a state at zero would reject a partition the solver
+converged on. Pass
+`gain_tolerance=0.0` to `exchange_stability_report` when the stricter question is the one you want
+answered.
 
 **Compilation.** `PartitionResult.compile_quantizer()` is the D-specific bridge from the finite task
 to the inductive one. It applies only to `DOptimality`, requires exchange stability and nonsingular
 geometry, and verifies that the compiled Mahalanobis rule reproduces every positive-weight training
-label before returning it.
+label — except where the `geometry` certificate has priced the disagreement at or below its
+`gain_tolerance`, which is the same tolerance the solver stopped at.
 
 **Profiled ceiling.** `efficient_score_bound(scores, interest=..., n_bins=...)` bounds the profiled
 information of *every* rule with that cell budget by the between-cell information of the full-data

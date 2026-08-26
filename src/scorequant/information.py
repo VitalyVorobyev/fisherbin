@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -265,23 +267,55 @@ def information_report(
     )
 
 
-def _profiled_blocks(
+@partial(jax.jit, static_argnames=("nuisance",))
+def _nuisance_block_slogdet(
+    information: jnp.ndarray, nuisance: tuple[int, ...]
+) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
+    """Return the nuisance sub-block of one information matrix with its slogdet.
+
+    The exact profiled exchange rebuilds this for every candidate labeling, so
+    the gather and the factorization are compiled together: on a rank-sized
+    matrix the eager dispatch of each primitive costs far more than the
+    arithmetic it performs.
+    """
+    indices = jnp.asarray(nuisance)
+    block = information[jnp.ix_(indices, indices)]
+    sign, logdet = jnp.linalg.slogdet(block)
+    return block, sign, logdet
+
+
+def _nuisance_information(
     information: jnp.ndarray, interest: tuple[int, ...]
 ) -> tuple[jnp.ndarray, jnp.ndarray, tuple[int, ...]]:
+    """Return the guarded nuisance block, its log determinant, and its indices.
+
+    The exact profiled exchange rebuilds this block on every candidate state but
+    never needs the Schur complement, whose gains telescope with the difference
+    of the two log determinants. Splitting the nonsingularity guard out of
+    :func:`_profiled_blocks` keeps that hot path off the discarded
+    ``solve``/matmul, and hands back the log determinant so the caller does not
+    factor the same block twice.
+    """
     dimension = information.shape[0]
     if any(index >= dimension for index in interest):
         raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
     nuisance = tuple(index for index in range(dimension) if index not in set(interest))
     if not nuisance:
         raise ValueError("profiled D requires at least one nuisance score column; use DOptimality")
+    nuisance_block, nuisance_sign, nuisance_logdet = _nuisance_block_slogdet(information, nuisance)
+    if float(np.asarray(nuisance_sign)) <= 0:
+        raise ValueError("profiled D requires nonsingular nuisance information")
+    return nuisance_block, nuisance_logdet, nuisance
+
+
+def _profiled_blocks(
+    information: jnp.ndarray, interest: tuple[int, ...]
+) -> tuple[jnp.ndarray, jnp.ndarray, tuple[int, ...]]:
+    nuisance_block, _, nuisance = _nuisance_information(information, interest)
     interest_indices = jnp.asarray(interest)
     nuisance_indices = jnp.asarray(nuisance)
     interest_block = information[jnp.ix_(interest_indices, interest_indices)]
     cross_block = information[jnp.ix_(interest_indices, nuisance_indices)]
-    nuisance_block = information[jnp.ix_(nuisance_indices, nuisance_indices)]
-    nuisance_sign, _ = jnp.linalg.slogdet(nuisance_block)
-    if float(np.asarray(nuisance_sign)) <= 0:
-        raise ValueError("profiled D requires nonsingular nuisance information")
     schur = interest_block - cross_block @ jnp.linalg.solve(nuisance_block, cross_block.T)
     return 0.5 * (schur + schur.T), nuisance_block, nuisance
 

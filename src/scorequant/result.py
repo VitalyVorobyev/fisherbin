@@ -198,6 +198,11 @@ class PartitionResult:
     Voronoi rule that exchange stability guarantees, and an efficient
     semimetric whose Voronoi rule a stable profiled partition may violate — so
     one name for both would claim an implication that does not hold.
+
+    ``exchange_stable`` and ``geometry`` are verdicts at ``config.gain_tolerance``,
+    which ``GeometryReport`` records, and never claims at tolerance zero. A
+    finite solver stops at that threshold, so verifying its output against a
+    stricter one would reject partitions it legitimately converged on.
     """
 
     labels: jnp.ndarray
@@ -247,7 +252,40 @@ class PartitionResult:
         return self.train_report
 
     def compile_quantizer(self) -> QuantizerResult:
-        """Compile an exchange-stable D partition into its canonical rule."""
+        r"""Compile an exchange-stable D partition into its canonical rule.
+
+        Theorem 3 makes a one-point-exchange-stable, nonsingular D partition a
+        self-consistent \(I^{-1}\)-Mahalanobis Voronoi partition of the observed
+        rows, so the compiled rule
+        \(\hat q(s)=\arg\min_b (s-\mu_b)^\top I^{-1}(s-\mu_b)\) is bookkeeping
+        rather than a new fit. The theorem is exact; the partition behind it is
+        not. A finite solver stops at ``config.gain_tolerance``, so the
+        guarantee this method can offer is self-consistency *at that tolerance*:
+        the rule reproduces every training label except on rows whose relocation
+        is worth no more than ``gain_tolerance``, which the ``geometry``
+        certificate has already measured and stamped with the same tolerance.
+        Requiring exact reproduction instead verifies at tolerance zero and
+        refuses partitions the solver converged on, which is what a boundary row
+        in a million becomes.
+
+        Boundary ties are never resolved here. ``predict_scores`` keeps the
+        ordinary ``argmin`` rule, which is deterministic and breaks a tie toward
+        the lowest cell index; the tolerance governs verification, not
+        assignment.
+
+        Returns
+        -------
+        QuantizerResult
+            Reusable score-space rule carrying the partition's centers, metric,
+            labels, and training report.
+
+        Raises
+        ------
+        ValueError
+            When the criterion is not ``DOptimality``, when the partition is not
+            exchange-stable, when the compilation geometry is missing, or when
+            the rule relabels a training row by more than ``gain_tolerance``.
+        """
         if not isinstance(self.criterion, DOptimality):
             raise ValueError(
                 "finite profiled-D labels have no canonical inductive compilation; "
@@ -269,9 +307,14 @@ class PartitionResult:
         predicted = _chunked_predict_labels(coordinates, self.transformed_centers, self.metric)
         positive = np.asarray(self.positive_weight_mask)
         if not np.array_equal(np.asarray(predicted)[positive], np.asarray(self.labels)[positive]):
-            raise ValueError(
-                "D compilation is degenerate: training labels are not strictly reproduced"
-            )
+            # Only the solver-side certificate can price a disagreement, because
+            # only it holds the row weights the exact relocation gain needs.
+            if self.geometry is None or not self.geometry.voronoi_consistent:
+                raise ValueError(
+                    "D compilation is degenerate: the compiled rule relabels training rows "
+                    "by more than the gain tolerance the partition was certified at; "
+                    "inspect geometry.maximum_violation_gain"
+                )
         trace = OptimizationTrace(
             steps=jnp.arange(self.objective_history.shape[0]),
             centers=jnp.repeat(

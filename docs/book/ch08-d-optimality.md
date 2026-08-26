@@ -415,6 +415,19 @@ theorem's two sides measured on the terminal state: `voronoi_consistent` says no
 misplaced, and `guaranteed_violation_gain` is the largest Theorem-3 bound over
 Voronoi-violating moves, exactly zero when there are none.
 
+One line of fine print separates the theorem from the software. The theorem is exact and
+holds at exchange stability; a solver stops at `gain_tolerance`, so what it delivers is
+stability *at* \(\tau\), and the checks above are made at \(\tau\) rather than at zero.
+The two coincide until the guaranteed gain gets small, and it does get small: it is
+\(\log(1+\alpha\beta q_\delta^2/4)\), and cell centroids crowd together as the sample
+grows, so the guarantee falls like \(1/N^2\). Past roughly a million rows it slips under the
+default \(10^{-10}\), and a handful of rows may then sit a hair past a boundary without any
+relocation being worth taking. `geometry.gain_tolerance` records which tolerance was bought
+and `geometry.maximum_violation_gain` what was actually left on the table, so the compiled
+rule's claim is exact about its own precision: self-consistent at \(\tau\), agreeing with
+the training labels everywhere except on rows worth less than \(\tau\) to move. The
+mathematics of Theorem 3 is untouched by this; only the arithmetic has a floor.
+
 ![A terminal partition with its compiled rule, and exchange runs against a certificate](assets/fig_ch08_exchange_certificate.png)
 
 *Left: an exchange-stable four-cell partition drawn in raw score coordinates, shaded by the

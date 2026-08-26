@@ -16,4 +16,4 @@ The complete research workflow does not commit its 600,000-cell bounded sample.
 It recreates `flowcyt-results/flowcyt_sample_20000.npz` with deterministic HTTP
 range reads from all 180 upstream FCS files. The complete command, sample digest,
 protocol, and resulting metrics are documented in the
-[FlowCyt use case](../../docs/usecases/cellpopulation.md).
+[FlowCyt use case](../../docs/usecases/flowcyt/index.md).

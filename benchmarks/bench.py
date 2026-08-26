@@ -41,27 +41,45 @@ _DEFAULT_TIME_TOLERANCE = 2.5
 _DEFAULT_QUALITY_RTOL = 1e-6
 _SCENARIO_NAMES = (
     "d_exchange",
+    "d_exchange_nobatch",
     "lloyd",
     "kmeans",
     "soft",
     "scalar_dp",
     "profiled_exchange",
     "predict",
+    "compile",
+    "certify",
 )
 # Mirrors ScalarDPConfig's own default so a future change to that default is
 # picked up here automatically instead of silently drifting.
 _SCALAR_DP_DEFAULT_MAX_ROWS = sq.ScalarDPConfig().max_rows
+# Single-move acceptance runs one complete scan per accepted move, so its cost
+# grows as (accepted moves) x (scan cost) rather than (scans) x (scan cost).
+# Above this row count the cell is measured in hours, which is a result worth
+# recording in benchmarks/README.md but not worth re-running in a matrix sweep.
+_NOBATCH_MAX_ROWS = 20_000
+# Hard capacity of the branch-and-bound certifier's recursion depth.
+_CERTIFY_MAX_ROWS = 512
 
 
 @dataclass(frozen=True, slots=True)
 class ScenarioConfig:
-    """One matrix cell: a scenario paired with its deterministic data shape."""
+    """One matrix cell: a scenario paired with its deterministic data shape.
+
+    ``max_scans`` caps the exchange-family scan budget. ``None`` is the library
+    default (run to exchange stability) and is what ``baselines.json`` records;
+    a finite cap turns a cell into a fixed-work steady-state probe, which is how
+    the profiling campaign measures per-scan cost at row counts whose full
+    convergence takes far longer than one measurement window.
+    """
 
     scenario: str
     rows: int
     dims: int
     bins: int
     seed: int
+    max_scans: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,6 +103,7 @@ class RunOutcome:
             "dims": self.config.dims,
             "bins": self.config.bins,
             "seed": self.config.seed,
+            "max_scans": self.config.max_scans,
             "skipped": self.skipped,
             "skip_reason": self.skip_reason,
             "elapsed_seconds": self.elapsed_seconds,
@@ -146,7 +165,25 @@ def _partition_extra(result: sq.PartitionResult) -> dict[str, JsonValue]:
 
 def _bench_d_exchange(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
     scores, weights = _synthetic_sample(cfg.seed, cfg.rows, cfg.dims)
-    config = sq.DExchangeConfig(seed=cfg.seed)
+    config = sq.DExchangeConfig(seed=cfg.seed, max_scans=cfg.max_scans)
+    elapsed, result = _run_timed(
+        lambda: sq.optimize_partition(scores, weights=weights, n_bins=cfg.bins, config=config),
+        lambda r: r.labels,
+        repeats,
+    )
+    return RunOutcome(
+        cfg,
+        elapsed,
+        _peak_rss_megabytes(),
+        float(result.objective),
+        "logdet_objective",
+        _partition_extra(result),
+    )
+
+
+def _bench_d_exchange_nobatch(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
+    scores, weights = _synthetic_sample(cfg.seed, cfg.rows, cfg.dims)
+    config = sq.DExchangeConfig(seed=cfg.seed, batch_moves=False, max_scans=cfg.max_scans)
     elapsed, result = _run_timed(
         lambda: sq.optimize_partition(scores, weights=weights, n_bins=cfg.bins, config=config),
         lambda r: r.labels,
@@ -182,7 +219,7 @@ def _bench_lloyd(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
 
 def _bench_profiled_exchange(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
     scores, weights = _synthetic_sample(cfg.seed, cfg.rows, cfg.dims)
-    config = sq.DExchangeConfig(seed=cfg.seed)
+    config = sq.DExchangeConfig(seed=cfg.seed, max_scans=cfg.max_scans)
     criterion = sq.ProfiledDOptimality(interest=(0,))
     elapsed, result = _run_timed(
         lambda: sq.optimize_partition(
@@ -270,6 +307,46 @@ def _bench_scalar_dp(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
     )
 
 
+def _bench_certify(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
+    """Time global branch-and-bound certification of an exchange incumbent.
+
+    Unlike every other cell this one is pure NumPy and pure Python recursion,
+    with no JAX kernel in the inner loop, so its cost is measured in nodes per
+    second rather than in array throughput. That difference is the whole reason
+    it is in the matrix; see ``benchmarks/README.md``.
+    """
+    scores, weights = _synthetic_sample(cfg.seed, cfg.rows, cfg.dims)
+    config = sq.CertificationConfig(max_rows=cfg.rows)
+    incumbent = sq.optimize_partition(
+        scores, weights=weights, n_bins=cfg.bins, config=sq.DExchangeConfig(seed=cfg.seed)
+    )
+    elapsed, certificate = _run_timed(
+        lambda: sq.certify_partition(
+            scores,
+            weights=weights,
+            n_bins=cfg.bins,
+            incumbent=incumbent.labels,
+            config=config,
+        ),
+        lambda c: jnp.asarray(c.labels),
+        repeats,
+    )
+    extra: dict[str, JsonValue] = {
+        "nodes_explored": int(certificate.nodes_explored),
+        "nodes_per_second": int(certificate.nodes_explored / elapsed) if elapsed > 0 else None,
+        "status": str(certificate.status),
+        "incumbent_was_optimal": bool(certificate.incumbent_was_optimal),
+    }
+    return RunOutcome(
+        cfg,
+        elapsed,
+        _peak_rss_megabytes(),
+        float(certificate.objective),
+        "certified_logdet_objective",
+        extra,
+    )
+
+
 def _bench_predict(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
     train_scores, train_weights = _synthetic_sample(cfg.seed, cfg.rows, cfg.dims)
     held_out_scores, held_out_weights = _synthetic_sample(cfg.seed + 1, cfg.rows, cfg.dims)
@@ -296,14 +373,49 @@ def _bench_predict(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
     )
 
 
+def _bench_compile(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
+    """Time ``compile_quantizer`` on an exchange-stable D partition, then predict.
+
+    The exchange itself is excluded from the clock: this cell measures the
+    theorem-backed compilation (which re-predicts every training row to verify
+    the Mahalanobis rule reproduces the partition) plus one held-out predict.
+    """
+    scores, weights = _synthetic_sample(cfg.seed, cfg.rows, cfg.dims)
+    held_out_scores, held_out_weights = _synthetic_sample(cfg.seed + 1, cfg.rows, cfg.dims)
+    partition = sq.optimize_partition(
+        scores,
+        weights=weights,
+        n_bins=cfg.bins,
+        config=sq.DExchangeConfig(seed=cfg.seed, max_scans=cfg.max_scans),
+    )
+    elapsed, quantizer = _run_timed(
+        partition.compile_quantizer,
+        lambda q: q.labels,
+        repeats,
+    )
+    held_out_report = quantizer.evaluate_scores(held_out_scores, held_out_weights)
+    extra: dict[str, JsonValue] = {"exchange_stable": bool(partition.exchange_stable)}
+    return RunOutcome(
+        cfg,
+        elapsed,
+        _peak_rss_megabytes(),
+        float(held_out_report.geometric_mean_retention),
+        "held_out_geometric_mean_retention",
+        extra,
+    )
+
+
 _RUNNERS: dict[str, Callable[[ScenarioConfig, int], RunOutcome]] = {
     "d_exchange": _bench_d_exchange,
+    "d_exchange_nobatch": _bench_d_exchange_nobatch,
     "lloyd": _bench_lloyd,
     "kmeans": _bench_kmeans,
     "soft": _bench_soft,
     "scalar_dp": _bench_scalar_dp,
     "profiled_exchange": _bench_profiled_exchange,
     "predict": _bench_predict,
+    "compile": _bench_compile,
+    "certify": _bench_certify,
 }
 
 
@@ -312,6 +424,16 @@ def _skip_reason(scenario: str, rows: int, dims: int, bins: int) -> str | None:
     del dims  # forced per-scenario at matrix-build time; kept for a stable signature
     if scenario == "scalar_dp" and rows > _SCALAR_DP_DEFAULT_MAX_ROWS:
         return f"rows exceeds ScalarDPConfig default max_rows={_SCALAR_DP_DEFAULT_MAX_ROWS}"
+    if scenario == "certify" and rows > _CERTIFY_MAX_ROWS:
+        return (
+            f"global certification is exponential in the atom count; "
+            f"CertificationConfig refuses more than {_CERTIFY_MAX_ROWS} atoms"
+        )
+    if scenario == "d_exchange_nobatch" and rows > _NOBATCH_MAX_ROWS:
+        return (
+            f"single-move acceptance needs one full scan per accepted move; "
+            f"above {_NOBATCH_MAX_ROWS} rows the cell runs for hours"
+        )
     if scenario == "profiled_exchange" and bins < 2:
         return "profiled_exchange requires n_bins >= 2 (one interest, one nuisance)"
     return None
@@ -331,13 +453,14 @@ def _build_matrix(
     bins_list: Sequence[int],
     scenarios: Sequence[str],
     seed: int,
+    max_scans: int | None = None,
 ) -> list[ScenarioConfig]:
     matrix: list[ScenarioConfig] = []
     for scenario in scenarios:
         scenario_dims = _scenario_dims(scenario, dims)
         for rows in rows_list:
             for bins in bins_list:
-                matrix.append(ScenarioConfig(scenario, rows, scenario_dims, bins, seed))
+                matrix.append(ScenarioConfig(scenario, rows, scenario_dims, bins, seed, max_scans))
     return matrix
 
 
@@ -357,12 +480,14 @@ def _run_matrix(matrix: Sequence[ScenarioConfig], repeats: int) -> list[RunOutco
 def _run_from_json(record: dict[str, JsonValue], repeats: int) -> RunOutcome:
     """Re-run the exact scenario shape a baseline JSON record describes."""
     scenario = str(record["scenario"])
+    recorded_scans = record.get("max_scans")
     cfg = ScenarioConfig(
         scenario=scenario,
         rows=int(record["rows"]),  # type: ignore[arg-type]
         dims=int(record["dims"]),  # type: ignore[arg-type]
         bins=int(record["bins"]),  # type: ignore[arg-type]
         seed=int(record["seed"]),  # type: ignore[arg-type]
+        max_scans=None if recorded_scans is None else int(recorded_scans),  # type: ignore[arg-type]
     )
     reason = _skip_reason(cfg.scenario, cfg.rows, cfg.dims, cfg.bins)
     if reason is not None:
@@ -500,6 +625,29 @@ def _run_check(
     return 0
 
 
+def _run_regenerate(baseline_path: Path, repeats: int, destination: Path | None) -> int:
+    """Re-measure exactly the cells a baseline file records and rewrite it.
+
+    The cell list in ``benchmarks/baselines.json`` is a curated contract, not a
+    matrix product: it is chosen to cover every solver while staying cheap
+    enough for a shared CI runner. Regeneration therefore replays that recorded
+    list instead of rebuilding a matrix from flags, so an intentional timing
+    refresh never silently changes which scenarios CI checks.
+    """
+    document = json.loads(baseline_path.read_text())
+    outcomes = [_run_from_json(record, repeats) for record in document["runs"]]
+    print(_format_table(outcomes))
+    refreshed: dict[str, JsonValue] = {
+        "description": document.get("description"),
+        "environment": _environment(),
+        "runs": [outcome.to_json() for outcome in outcomes],
+    }
+    target = baseline_path if destination is None else destination
+    target.write_text(json.dumps(refreshed, indent=2) + "\n")
+    print(f"\nwrote {target}")
+    return 0
+
+
 def _parse_int_list(raw: str) -> list[int]:
     return [int(token) for token in raw.split(",") if token.strip()]
 
@@ -522,8 +670,10 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--scenarios", type=str, default=",".join(_SCENARIO_NAMES))
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--seed", type=int, default=_DEFAULT_SEED)
+    parser.add_argument("--max-scans", type=int, default=None)
     parser.add_argument("--json", type=Path, default=None)
     parser.add_argument("--check", type=Path, default=None)
+    parser.add_argument("--regenerate", type=Path, default=None)
     parser.add_argument("--time-tolerance", type=float, default=_DEFAULT_TIME_TOLERANCE)
     parser.add_argument("--quality-rtol", type=float, default=_DEFAULT_QUALITY_RTOL)
     return parser
@@ -537,10 +687,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.check is not None:
         return _run_check(args.check, args.repeats, args.time_tolerance, args.quality_rtol)
 
+    if args.regenerate is not None:
+        return _run_regenerate(args.regenerate, args.repeats, args.json)
+
     rows_list = _parse_int_list(args.rows)
     bins_list = _parse_int_list(args.bins)
     scenarios = _parse_scenario_list(args.scenarios)
-    matrix = _build_matrix(rows_list, args.dims, bins_list, scenarios, args.seed)
+    matrix = _build_matrix(rows_list, args.dims, bins_list, scenarios, args.seed, args.max_scans)
     outcomes = _run_matrix(matrix, args.repeats)
     print(_format_table(outcomes))
 

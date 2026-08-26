@@ -56,6 +56,32 @@ and `tests/test_notebooks.py`; every headline number in prose is asserted in a p
 in `tests/test_evidence_suite.py`/`tests/test_research_claims.py` from committed JSON; strict
 MkDocs build passes.
 
+### Phase 4 — FlowCyt master showcase and performance closure
+
+**Status:** done.
+
+- 4A: restructured the 534-line `docs/usecases/cellpopulation.md` wall into the six-page
+  `docs/usecases/flowcyt/` section (index, data, scores, quantization, profiled, solvers) and
+  added the profiled-\(D_s\) study extension on real data; every inbound link re-pointed, the old
+  page deleted.
+- 4B: added the real-data solver comparison (`docs/usecases/flowcyt/solvers.md`) covering every
+  dispatch-table solver plus the three canonical baselines, on both the frozen CI fixture and the
+  600,000-cell bounded sample, with committed JSON evidence and publish-grade figures.
+- 4C: ran the profiling campaign to \(N=10^6\) (`benchmarks/README.md`: bottleneck table, machine
+  roofline, folded-stack profiles under `benchmarks/profiles/`), applied three bit-identical
+  numerical wins, refreshed `benchmarks/baselines.json`, reached a measured Rust no-go for the
+  numerical core, and fixed the terminal geometry check that had blocked the converged
+  \(N=10^6\) D-exchange measurement ([ADR 0016](adr/0016-tolerance-consistent-geometry-verification.md)).
+- 4D: closure sweep — this page, `docs/system-design.md`, `docs/development.md`, and `README.md`
+  truth-passed against final `src/`, `benchmarks/`, and `tests/`; repo-wide dev-notation and
+  stray-artifact sweep; full exit gate re-run.
+
+**Gate:** every number quoted from the 600,000-cell sample or the full corpus states its
+provenance and is asserted from committed JSON; `tests/test_cell_population.py` and
+`tests/test_readme.py` stay green; strict MkDocs build passes; the full validation gate at the
+bottom of this page passes, plus `uv run python benchmarks/bench.py --check
+benchmarks/baselines.json --time-tolerance 10 --quality-rtol 1e-6`.
+
 ## M2 — Exact finite D reference core
 
 **Status:** implemented baseline.
@@ -158,6 +184,12 @@ singleton-completion bound, agreeing with the exhaustive oracle on seeded weight
 instances and downgrading to `status="budget_exhausted"` with a genuine outstanding bound when its
 node budget runs out. Certification is D-only and never runs implicitly, per ADR 0014.
 
+**Scale gate completed:** every certificate states the `gain_tolerance` it holds at, and every
+geometry verification judges the exact relocation gain against that same tolerance instead of
+against zero. A converged 1 000 000-row D-exchange or Mahalanobis-Lloyd fit therefore returns,
+certifies, and compiles, where a zero-tolerance comparison previously rejected it over 13 boundary
+rows in a million, per ADR 0016.
+
 ## Explicitly outside the development plan
 
 An E-optimal solver is not planned. The E-optimality chapter and deterministic counterexample stay
@@ -165,11 +197,32 @@ as theory and boundary evidence, but there is no implementation milestone, publi
 solver API. Reconsidering this decision requires a concrete application use case and a new roadmap
 decision.
 
-## Next execution order
+## Beyond 1.0
 
-1. Add population samplers and moment oracles.
-2. Add streaming diagnostic aggregation and profile further exact-D factorization updates.
-3. Add versioned, non-pickle quantizer persistence (`save_quantizer`/`load_quantizer`).
+What stays deliberately out of scope, and why, in one place:
+
+- **Population samplers, moment oracles, streaming aggregation, versioned persistence** — the
+  four capability gaps recorded in the pre-1.0 API audit (`docs/system-design.md`); no concrete
+  application is forcing any of them yet. In likely order: samplers/oracles, then streaming
+  aggregation and further exact-D factorization profiling, then a non-pickle
+  `save_quantizer`/`load_quantizer` artifact.
+- **E/A-optimality** — theory and a boundary counterexample only ([Chapter
+  11](book/ch11-e-optimality.md)); no implementation milestone, public criterion, or solver API.
+  Reconsidering needs a concrete application use case and a new roadmap decision (see "Explicitly
+  outside the development plan" above).
+- **A Rust port of `certify.py`'s branch-and-bound search** — the one hot path the Phase 4
+  profiling campaign found with no JAX kernel in its inner loop, measuring a flat ~34-40k nodes/s
+  across a 260x range of tree sizes with roughly 38% of that time in NumPy allocation and
+  dispatch (`benchmarks/README.md`). A port of `_Search` alone would plausibly return **>=40x**.
+  Deferred: reconsider when certifying more than ~48 atoms becomes a user-facing requirement, and
+  only after the cheaper preallocated-buffer/hand-rolled-determinant step is tried first; a
+  compiled extension is a large change to the distribution story for one bounded diagnostic.
+- **Algebraic reformulation of the D-exchange gain kernel** — expanding the quadratic form
+  measured a 3.5x speedup on one chunk while staying in JAX, but it is not bit-identical to the
+  residual-first formulation and needs its own ADR and error analysis before it can replace it
+  (`benchmarks/README.md`, "Optimizations deliberately not taken").
+- **A second numerical backend, signed weights, advanced statistical objectives** — gated on an
+  approved roadmap change per `AGENTS.md`; none is planned.
 
 ## Full handoff gate
 

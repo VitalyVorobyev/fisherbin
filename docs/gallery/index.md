@@ -180,9 +180,9 @@ the certification machinery rather than this page.
 
 ## FlowCyt cell-population quantification
 
-[![FlowCyt population quantification](../usecases/assets/cell_population.png)](../usecases/cellpopulation.md)
+[![FlowCyt population quantification](../usecases/assets/cell_population.png)](../usecases/flowcyt/index.md)
 
-The [complete FlowCyt study](../usecases/cellpopulation.md) uses all 30 patients, 600,000
+The [complete FlowCyt study](../usecases/flowcyt/index.md) uses all 30 patients, 600,000
 real cells, a frozen ten-patient test cohort, competing partitions, a downstream mixture
 likelihood, uncertainty checks, and machine-readable evidence. The `cell_population`
 command above is its small integration path; the page documents the reproducible

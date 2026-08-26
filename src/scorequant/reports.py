@@ -93,6 +93,16 @@ class GeometryReport:
     measures both sides of that statement on the terminal state instead of
     assuming them.
 
+    A finite solver stops at a tolerance, so this certificate states one too.
+    The theorem is exact, but the guaranteed gain of a violation shrinks with
+    the cell separation, and on a large sample \(q_\delta\) shrinks with the
+    sample size: once \(\log(1+\alpha\beta q_\delta^2/4)\) falls below the
+    solver's ``gain_tolerance``, exchange stability *at that tolerance* no
+    longer forbids a row from sitting a hair past a cell boundary. Verifying
+    such a state at tolerance zero rejects a partition the solver never claimed
+    to have refined further, so every field below is judged against
+    ``gain_tolerance`` instead.
+
     All quadratic forms use the same metric and cell means the solver ended
     with, evaluated over the distinct positive-weight score atoms.
 
@@ -102,12 +112,19 @@ class GeometryReport:
         Largest value over rows of the own-cell distance minus the smallest
         other-cell distance. A nonpositive value means every row already sits in
         its nearest cell under the terminal metric. It is ``-inf`` for a
-        single-cell partition, which has no alternative destination.
+        single-cell partition, which has no alternative destination. This is a
+        Mahalanobis distance gap, not a criterion gain, so it is a diagnostic
+        and never the verdict.
     guaranteed_violation_gain
         Largest Theorem-3 lower bound \(\log(1+\alpha\beta q_\delta^2/4)\) over
         admissible Voronoi-violating moves, and exactly ``0.0`` when no such
-        move exists. A positive value is the log-determinant gain that
-        exchange stability rules out.
+        move exists.
+    maximum_violation_gain
+        Largest *exact* log-determinant gain over the same admissible
+        Voronoi-violating moves, and exactly ``0.0`` when none exists. Theorem 3
+        bounds this from below, so ``guaranteed_violation_gain <=
+        maximum_violation_gain`` always holds. This is the quantity the solver
+        drives below its tolerance, so it is the one the verdict uses.
     maximum_separation_residual
         Largest value over unordered cell pairs of \(q_\delta-(1/W_a+1/W_b)\).
         The leverage lemma makes this nonpositive for every labeling, so a
@@ -118,19 +135,27 @@ class GeometryReport:
         A move is admissible when its source cell keeps positive weight and its
         destination differs from its source.
     voronoi_consistent
-        Whether ``maximum_voronoi_violation`` is nonpositive.
+        Whether ``maximum_violation_gain`` is at most ``gain_tolerance``: no
+        Voronoi violation is worth more than the solver's own stopping
+        threshold. It is ``True`` whenever no row is misplaced at all.
     separation_certified
         Whether ``maximum_separation_residual`` respects the leverage lemma up
         to a small relative floating-point tolerance.
+    gain_tolerance
+        Log-determinant gain tolerance this certificate holds at, taken from the
+        configuration that produced the labels. ``voronoi_consistent`` means
+        self-consistent at this tolerance and claims nothing at tolerance zero.
     """
 
     maximum_voronoi_violation: float
     guaranteed_violation_gain: float
+    maximum_violation_gain: float
     maximum_separation_residual: float
     violating_moves: int
     evaluated_moves: int
     voronoi_consistent: bool
     separation_certified: bool
+    gain_tolerance: float
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible Voronoi-geometry representation."""
@@ -145,11 +170,14 @@ class StabilityReport:
     complete exact scan, so it verifies labels of any origin: a guarded
     Mahalanobis-Lloyd run that stopped early, an external tool, or a hand edit.
 
+    Stability is always a statement at a tolerance, never at tolerance zero, so
+    the certificate carries the tolerance it was issued at.
+
     Attributes
     ----------
     stable
-        Whether no admissible relocation improves the criterion by more than the
-        requested gain tolerance.
+        Whether no admissible relocation improves the criterion by more than
+        ``gain_tolerance``.
     best_gain
         Largest exact objective gain found in the scan. It is ``-inf`` when the
         labeling admits no relocation at all.
@@ -163,6 +191,10 @@ class StabilityReport:
         Number of cells the labeling declares.
     criterion
         Criterion the scan certified against.
+    gain_tolerance
+        Strict minimum gain the scan counted as an improvement. ``stable``
+        means ``best_gain <= gain_tolerance``; a labeling certified at one
+        tolerance is not certified at a smaller one.
     """
 
     stable: bool
@@ -171,6 +203,7 @@ class StabilityReport:
     objective: float
     n_bins: int
     criterion: DOptimality | ProfiledDOptimality
+    gain_tolerance: float
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible stability representation."""

@@ -9,6 +9,7 @@ oracle.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 
 import numpy as np
@@ -19,6 +20,10 @@ import scorequant as sq
 from ._oracles import _exhaustive_d_oracle
 
 _ORACLE_CASES = [(1, 8), (2, 9), (3, 9), (4, 10), (5, 10), (6, 8)]
+
+# Tolerance of the boundary-row fixture below, chosen just above the single
+# improving move that fixture leaves on the table (0.0022702 nats).
+_BOUNDARY_GAIN_TOLERANCE = 2.5e-3
 
 
 def _seeded_scores(seed: int, n_rows: int, n_features: int = 2) -> np.ndarray:
@@ -96,6 +101,7 @@ def test_stability_report_certifies_an_exchange_result() -> None:
     assert report.criterion == sq.DOptimality()
     assert report.objective == pytest.approx(result.objective, abs=1e-12)
     assert report.best_gain == pytest.approx(result.best_remaining_gain, abs=1e-12)
+    assert report.gain_tolerance == sq.DExchangeConfig().gain_tolerance
     json.dumps(report.to_dict(), allow_nan=False)
 
 
@@ -234,6 +240,128 @@ def test_geometry_report_bounds_the_remaining_gain_of_a_violating_partition(seed
     assert geometry.guaranteed_violation_gain > 0
     assert result.best_remaining_gain >= geometry.guaranteed_violation_gain
     assert geometry.separation_certified is True
+
+
+def _boundary_fixture(nudge: float = 1e-6) -> tuple[np.ndarray, np.ndarray]:
+    r"""Build a labeling whose only improving move crosses a cell boundary.
+
+    The table is exactly symmetric under \(\sigma(x,y)=(-x,y)\): cell 0 is a
+    blob at \((+3,0)\), cell 1 is its mirror image, and cell 2 is a mirrored
+    pair of blobs at \((0,4)\). Mirror symmetry forces \(\mu_0=\sigma\mu_1\),
+    \(\sigma\mu_2=\mu_2\), and \(\sigma I\sigma=I\), so the \(0|1\)
+    Mahalanobis bisector is the axis \(x=0\) exactly, whatever the blobs do.
+
+    Two extra rows sit at \((\pm\eta, 0)\) and are labeled across that axis, so
+    each is a genuine Voronoi violator by a definite margin far above rounding
+    yet ``nudge``-small in distance. The pair keeps the mirror symmetry, so the
+    bisector does not move when they are added.
+    """
+    rng = np.random.default_rng(19)
+    n_per = 20
+    right = np.column_stack([3.0 + rng.normal(0, 0.3, n_per), rng.normal(0, 0.3, n_per)])
+    left = np.column_stack([-right[:, 0], right[:, 1]])
+    top_half = np.column_stack([rng.uniform(0.2, 1.0, n_per), 4.0 + rng.normal(0, 0.3, n_per)])
+    top = np.vstack([top_half, np.column_stack([-top_half[:, 0], top_half[:, 1]])])
+    scores = np.vstack([right, left, top, np.array([[nudge, 0.0], [-nudge, 0.0]])])
+    labels = np.concatenate(
+        [
+            np.zeros(n_per, dtype=np.int64),
+            np.ones(n_per, dtype=np.int64),
+            np.full(2 * n_per, 2, dtype=np.int64),
+            np.array([1, 0], dtype=np.int64),
+        ]
+    )
+    return scores, labels
+
+
+def _boundary_configs() -> list[sq.PartitionConfig]:
+    return [
+        sq.DExchangeConfig(gain_tolerance=_BOUNDARY_GAIN_TOLERANCE, n_restarts=1),
+        sq.MahalanobisLloydConfig(gain_tolerance=_BOUNDARY_GAIN_TOLERANCE),
+    ]
+
+
+def test_a_boundary_row_is_not_certifiable_at_tolerance_zero() -> None:
+    """The fixture's only improving move is the boundary crossing itself.
+
+    This is the whole defect in one assertion pair: the labeling is stable at
+    the tolerance the solver runs at and unstable at tolerance zero, so a
+    verification that compares at zero contradicts the certificate the same
+    engine issues.
+    """
+    scores, labels = _boundary_fixture()
+    exact = sq.exchange_stability_report(scores, labels, gain_tolerance=0.0)
+    assert exact.stable is False
+    assert exact.gain_tolerance == 0.0
+    assert exact.best_move == (80, 0)
+    assert exact.best_gain == pytest.approx(0.002270181625500942, rel=1e-9)
+
+    tolerated = sq.exchange_stability_report(
+        scores, labels, gain_tolerance=_BOUNDARY_GAIN_TOLERANCE
+    )
+    assert tolerated.stable is True
+    assert tolerated.best_move is None
+    assert tolerated.gain_tolerance == _BOUNDARY_GAIN_TOLERANCE
+    assert tolerated.best_gain == pytest.approx(exact.best_gain, abs=0)
+
+
+@pytest.mark.parametrize("config", _boundary_configs(), ids=["exchange", "lloyd"])
+def test_a_boundary_row_within_the_tolerance_keeps_the_partition_compilable(
+    config: sq.PartitionConfig,
+) -> None:
+    """A row a hair past a boundary must not reject an otherwise stable partition.
+
+    Both finite solvers share the terminal geometry check, and both rejected
+    this state before the verification was made tolerance-consistent. The same
+    thing happens on real data once the sample is large enough for the
+    Theorem-3 guaranteed gain to fall under the tolerance: at N = 10^6 it is
+    2e-11 against the default 1e-10, and 13 rows in a million land inside it.
+    Raising the tolerance puts this 82-row fixture in the same regime.
+    """
+    scores, labels = _boundary_fixture()
+    result = sq.optimize_partition(scores, n_bins=3, initial_labels=labels, config=config)
+    assert result.exchange_stable is True
+    assert np.array_equal(np.asarray(result.labels), labels)
+
+    geometry = result.geometry
+    assert geometry is not None
+    assert geometry.gain_tolerance == _BOUNDARY_GAIN_TOLERANCE
+    # Both predicates the pre-fix verification used are violated here: the
+    # distance gap is positive, and the terminal rule relabels two rows.
+    assert geometry.maximum_voronoi_violation > 0.0
+    assert geometry.maximum_voronoi_violation < 1e-7
+    assert geometry.violating_moves == 2
+    # Theorem 3 bounds the exact gain from below, and the exact gain is what the
+    # solver stopped on, so only the latter can decide the verdict.
+    assert geometry.guaranteed_violation_gain <= geometry.maximum_violation_gain
+    assert geometry.maximum_violation_gain == pytest.approx(0.002270181625500942, rel=1e-9)
+    assert geometry.maximum_violation_gain <= geometry.gain_tolerance
+    assert geometry.maximum_violation_gain > 1e-10  # the default would not certify it
+    assert geometry.voronoi_consistent is True
+    json.dumps(geometry.to_dict(), allow_nan=False)
+
+    compiled = result.compile_quantizer()
+    predicted = np.asarray(compiled.predict_scores(scores))
+    # Assignment is untouched: argmin still decides, and the two boundary rows
+    # are the only rows the rule and the labels disagree on.
+    assert np.flatnonzero(predicted != labels).tolist() == [80, 81]
+    assert np.array_equal(predicted, np.asarray(compiled.predict_scores(scores)))
+
+
+def test_compilation_still_refuses_a_disagreement_its_certificate_does_not_cover() -> None:
+    """The tolerance excuses the disagreement; nothing else does."""
+    scores, labels = _boundary_fixture()
+    result = sq.optimize_partition(
+        scores, n_bins=3, initial_labels=labels, config=_boundary_configs()[0]
+    )
+    assert result.geometry is not None
+    uncertified = dataclasses.replace(
+        result, geometry=dataclasses.replace(result.geometry, voronoi_consistent=False)
+    )
+    with pytest.raises(ValueError, match="more than the gain tolerance"):
+        uncertified.compile_quantizer()
+    with pytest.raises(ValueError, match="more than the gain tolerance"):
+        dataclasses.replace(result, geometry=None).compile_quantizer()
 
 
 def test_geometry_reports_are_criterion_specific() -> None:

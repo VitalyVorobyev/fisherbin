@@ -256,7 +256,7 @@ including which pipeline stage each comparable package occupies.
   teaser into the FlowCyt study below.
 - [API guide](https://vitalyvorobyev.github.io/scorequant/api/) and
   [reference](https://vitalyvorobyev.github.io/scorequant/reference/) — released contracts.
-- [FlowCyt study](https://vitalyvorobyev.github.io/scorequant/usecases/cellpopulation/) — a
+- [FlowCyt study](https://vitalyvorobyev.github.io/scorequant/usecases/flowcyt/) — a
   reproducible end-to-end evaluation on a frozen patient split that separates classifier-score
   error, compression loss, identifiability, patient shift, and downstream fraction-estimation
   error. Raw data is not committed; manifests, hashes, aggregates, tables, and figures are.
