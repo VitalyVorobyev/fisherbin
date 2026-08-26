@@ -24,6 +24,16 @@ the same criterion pays off. Reading the two together is the point: profiled
 \(D_s\) is not a better criterion, it is a different question, and whether it is
 worth asking depends on how much headroom plain D has left.
 
+![Plain D against profiled D_s across the bin-budget sweep, and the gain for every fraction](../assets/flowcyt_profiled_ds.png)
+
+The left panel is the [bin-budget sweep](#the-bin-budget-and-where-the-initializer-earns-its-place):
+plain D, the better of the two profiled seedings, and the certified ceiling, all against the
+bin budget on the 600,000-cell sample. The gap between the orange and grey lines is
+exactly the headroom table below quotes; it narrows from five bins to thirty. The right
+panel is the [all-five-fractions sweep](#all-five-fractions): the best-of-two profiled gain
+over plain D, in points, for every declared fraction of interest at the eight-bin operating
+point.
+
 ## The nuisance parameterization is derived, not invented
 
 Nothing here is a new model. The [score page](scores.md) already established

@@ -81,6 +81,7 @@ nav:
           - Score model and calibration: usecases/flowcyt/scores.md
           - Quantization at scale: usecases/flowcyt/quantization.md
           - "One fraction of interest: profiled Ds": usecases/flowcyt/profiled.md
+          - Solver comparison: usecases/flowcyt/solvers.md
   - API:
       - API guide: api.md
       - Reference:

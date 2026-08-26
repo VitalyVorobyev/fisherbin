@@ -18,7 +18,7 @@ from .data import (
     load_fixture,
 )
 from .experiment import run_experiment
-from .figures import write_outputs
+from .figures import write_outputs, write_profiled_figure, write_solver_figure
 from .fixture import (
     write_fixture,
     write_remote_fixture,
@@ -34,6 +34,16 @@ from .profiled import (
     run_profiled_study,
     save_profiled_inputs,
     write_profiled_metrics,
+)
+from .solvers import (
+    OPERATING_BINS as SOLVER_OPERATING_BINS,
+)
+from .solvers import (
+    load_solver_inputs,
+    run_solver_comparison,
+    save_solver_inputs,
+    solver_inputs_from_data,
+    write_solver_metrics,
 )
 from .transport_audit import write_transport_audit
 
@@ -126,6 +136,39 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="build and cache the profiled inputs, then stop",
     )
+    parser.add_argument(
+        "--solvers",
+        action="store_true",
+        help="run the real-data solver-and-baseline comparison instead of the main experiment",
+    )
+    parser.add_argument(
+        "--solvers-output",
+        type=Path,
+        default=Path("docs/usecases/assets/flowcyt_solvers.json"),
+        help="multi-scale JSON evidence file for the solver comparison",
+    )
+    parser.add_argument(
+        "--solvers-figure",
+        type=Path,
+        default=Path("docs/usecases/assets/flowcyt_solvers.png"),
+        help="figure path written only for the full-scale solver comparison run",
+    )
+    parser.add_argument(
+        "--solvers-cache",
+        type=Path,
+        help="cache the prepared solver-comparison inputs so a long run can resume",
+    )
+    parser.add_argument(
+        "--solvers-bins",
+        type=int,
+        default=SOLVER_OPERATING_BINS,
+        help="bin budget of the solver comparison",
+    )
+    parser.add_argument(
+        "--solvers-prepare-only",
+        action="store_true",
+        help="build and cache the solver-comparison inputs, then stop",
+    )
     return parser
 
 
@@ -197,7 +240,46 @@ def _run_profiled(args: argparse.Namespace, *, quick: bool, data_source: str) ->
         provenance=provenance,
     )
     write_profiled_metrics(study.metrics, args.profiled_output)
+    if not quick:
+        # The committed figure shows real-data numbers, so it is only refreshed
+        # by the full-scale run; the fixture-scale CI run never touches it.
+        write_profiled_figure(study.metrics, Path("docs/usecases/assets/flowcyt_profiled_ds.png"))
     print(study.metrics["run"])
+
+
+def _run_solvers(args: argparse.Namespace, *, quick: bool, data_source: str) -> None:
+    """Run or resume the real-data solver comparison and update its JSON evidence."""
+    cache = args.solvers_cache
+    resumed = cache is not None and cache.is_file()
+    if resumed:
+        inputs = load_solver_inputs(cache)
+    else:
+        inputs = solver_inputs_from_data(_load_data(args), quick=quick)
+        if cache is not None:
+            save_solver_inputs(inputs, cache)
+    if args.solvers_prepare_only:
+        print({"cached": str(cache), "rows": inputs.rows})
+        return
+    provenance: dict[str, object] = {
+        "data_source": data_source,
+        "scale": "frozen CI fixture" if quick else "600,000-cell bounded sample",
+        "rows": inputs.rows["total"],
+        "score_model_settings": "quick" if quick else "frozen research settings",
+        "resumed_from_cache": resumed,
+    }
+    manifest_path = args.fixture.with_suffix(".json") if args.fixture is not None else None
+    if manifest_path is not None and manifest_path.is_file():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for key in ("sample_rows", "sample_sha256", "source_url", "source_license"):
+            if key in manifest:
+                provenance[key] = manifest[key]
+    metrics = run_solver_comparison(
+        inputs, quick=quick, n_bins=args.solvers_bins, provenance=provenance
+    )
+    write_solver_metrics(metrics, args.solvers_output)
+    if not quick:
+        write_solver_figure(metrics, args.solvers_figure)
+    print(metrics["run"])
 
 
 def main() -> None:
@@ -249,6 +331,9 @@ def main() -> None:
         quick = is_fast_mode() or args.fixture is not None or args.data_dir is None
     if args.profiled or args.profiled_prepare_only:
         _run_profiled(args, quick=quick, data_source=data_source)
+        return
+    if args.solvers or args.solvers_prepare_only:
+        _run_solvers(args, quick=quick, data_source=data_source)
         return
     data = _load_data(args)
     result = run_experiment(

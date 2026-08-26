@@ -37,6 +37,7 @@ for cytometry users and for developers adapting the same API to another domain.
 | [Score model and calibration](scores.md) | How twelve markers become five mixture-score coordinates, the nested calibration audit that chose the ratio model, and what the normalization residual does and does not prove |
 | [Quantization at scale](quantization.md) | The zero-configuration `fit_quantizer` call on 600,000 cells, retention against bin budget, the finite-D exchange and its compile bridge, the downstream mixture fit, uncertainty, and transport diagnostics |
 | [One fraction of interest](profiled.md) | What changes when the measurement is a single population fraction with the rest of the composition floating: plain D against profiled \(D_s\), a certified ceiling, and the downstream interval |
+| [Solver comparison](solvers.md) | Every applicable solver and the three canonical baselines, at both the frozen fixture and the 600,000-cell sample: train and held-out retention, search effort, and wall-clock cost |
 
 ## Result at a glance
 

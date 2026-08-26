@@ -324,6 +324,131 @@ def make_uncertainty_figure(result: ExperimentResult) -> Figure:
     return figure
 
 
+def make_solver_comparison_figure(metrics: dict[str, object]) -> Figure:
+    """Render held-out retention and cost for every real-data solver and baseline.
+
+    Parameters
+    ----------
+    metrics
+        One scale's metrics from `examples.cell_population.solvers.run_solver_comparison`.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Two panels: the held-out information deficit (lower is better, log
+        scale, with a black dot marking each method's training deficit), and
+        the median wall-clock cost per fit.
+    """
+    figure, axes = plt.subplots(1, 2, figsize=(12, 5.5), constrained_layout=True)
+    methods = cast(list[dict[str, object]], metrics["methods"])
+    positions = np.arange(len(methods))
+    colors = ["#cc79a7" if row["family"] == "baseline" else "#3b6fb6" for row in methods]
+    held_out = [float(cast(float, row["held_out_retention"])) for row in methods]
+    deficits = [1.0 - value for value in held_out]
+    bars = axes[0].barh(positions, deficits, color=colors)
+    axes[0].scatter(
+        [1.0 - float(cast(float, row["train_retention"])) for row in methods],
+        positions,
+        color="black",
+        s=18,
+        zorder=3,
+        label="train deficit",
+    )
+    axes[0].bar_label(bars, labels=[f"{value:.5f}" for value in held_out], padding=4, fontsize=8)
+    axes[0].set(
+        yticks=positions,
+        yticklabels=[str(row["label"]) for row in methods],
+        xscale="log",
+        xlabel="held-out information deficit, 1 - D-efficiency (lower is better)",
+        title="Retention by solver and baseline",
+    )
+    axes[0].invert_yaxis()
+    axes[0].legend(loc="lower right", fontsize=8)
+
+    seconds = [float(cast(float, row["seconds"])) for row in methods]
+    axes[1].barh(positions, seconds, color=colors)
+    axes[1].set(
+        yticks=positions,
+        yticklabels=[str(row["label"]) for row in methods],
+        xscale="log",
+        xlabel="median seconds per fit (log scale)",
+        title="Cost per fit on one machine",
+    )
+    axes[1].invert_yaxis()
+    figure.suptitle(f"FlowCyt solver comparison at {metrics['n_bins']} bins")
+    return figure
+
+
+def write_solver_figure(metrics: dict[str, object], path: Path) -> None:
+    """Write the committed solver-comparison figure for one scale's metrics."""
+    figure = make_solver_comparison_figure(metrics)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(path, dpi=160)
+    plt.close(figure)
+
+
+def make_profiled_figure(metrics: dict[str, object]) -> Figure:
+    """Render the profiled-\\(D_s\\) bin-budget sweep and the per-fraction gain.
+
+    Parameters
+    ----------
+    metrics
+        One scale's metrics from `examples.cell_population.profiled.run_profiled_study`.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Left: plain D, the better of the two profiled seedings, and the
+        certified ceiling against the bin budget. Right: the best-of-two
+        profiled gain over plain D for every declared fraction of interest.
+    """
+    figure, axes = plt.subplots(1, 2, figsize=(12, 5.0), constrained_layout=True)
+    budgets = cast(list[dict[str, object]], metrics["budget_sweep"])
+    bins = [int(cast(int, row["n_bins"])) for row in budgets]
+    plain = [float(cast(float, row["d_profiled_retention"])) for row in budgets]
+    best_ds = [
+        max(
+            float(cast(float, row["ds_seeded_retention"])),
+            float(cast(float, row["ds_initialized_retention"])),
+        )
+        for row in budgets
+    ]
+    ceiling = [float(cast(float, row["ceiling_retention"])) for row in budgets]
+    axes[0].plot(bins, plain, marker="o", color="#3b6fb6", label="Plain D")
+    axes[0].plot(bins, best_ds, marker="s", color="#d55e00", label="Profiled $D_s$ (best seeding)")
+    axes[0].plot(
+        bins, ceiling, marker="^", color="#777777", linestyle="--", label="Certified ceiling"
+    )
+    axes[0].set(
+        xlabel="bin budget",
+        ylabel="profiled retention of the interest fraction",
+        xticks=bins,
+        title="Plain D vs profiled $D_s$ against the certified ceiling",
+    )
+    axes[0].legend(fontsize=8)
+
+    sweep = cast(list[dict[str, object]], metrics["interest_sweep"])
+    names = [str(row["population"]) for row in sweep]
+    gains = [100 * float(cast(float, row["gain"])) for row in sweep]
+    palette = ("#3b6fb6", "#e69f00", "#009e73", "#d55e00", "#8c6bb1")
+    axes[1].bar(names, gains, color=palette[: len(names)])
+    axes[1].set(
+        ylabel="profiled $D_s$ gain over plain D (points)",
+        title="Best-of-two profiled gain, every interest fraction",
+    )
+    axes[1].tick_params(axis="x", rotation=25)
+    figure.suptitle("FlowCyt profiled $D_s$: real-data headroom is already nearly saturated")
+    return figure
+
+
+def write_profiled_figure(metrics: dict[str, object], path: Path) -> None:
+    """Write the committed profiled-\\(D_s\\) figure for one scale's metrics."""
+    figure = make_profiled_figure(metrics)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(path, dpi=160)
+    plt.close(figure)
+
+
 def write_outputs(result: ExperimentResult, output_dir: Path) -> None:
     """Write the committed figure and JSON evidence summary."""
     output_dir.mkdir(parents=True, exist_ok=True)

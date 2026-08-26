@@ -88,4 +88,6 @@ audit](../usecases/flowcyt/data.md#the-full-corpus-transport-audit). The
 [profiled-\(D_s\) extension](../usecases/flowcyt/profiled.md) then asks what changes when
 the measurement is a single population fraction with the rest of the composition
 floating — and answers, with a certificate, that on this dataset the answer is
-"almost nothing".
+"almost nothing". The [solver comparison](../usecases/flowcyt/solvers.md) runs every
+applicable solver and the three canonical baselines on the same rows this study uses, and
+shows where the synthetic shootout's near-ties do and do not survive real data.
