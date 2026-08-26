@@ -1,8 +1,15 @@
 {
   "problem": "gaussian_location",
+  "n_bins": 4,
+  "n_train": 2000,
+  "n_test": 10000,
+  "kmeans_train_retention": 0.8788920382459964,
   "kmeans_test_retention": 0.883268666954927,
+  "soft_train_retention": 0.8788910415818698,
   "soft_test_retention": 0.8832548807212119,
-  "observation_kmeans_test_retention": 0.883268666954927,
+  "observation_kmeans_train_retention": 0.8788379581996659,
+  "observation_kmeans_test_retention": 0.8831379414993523,
+  "equal_grid_train_retention": 0.8548726556727889,
   "equal_grid_test_retention": 0.8610369939158858,
   "random_test_retentions": [
     0.8055791389553463,
@@ -56,6 +63,7 @@
     0.7172876126517791,
     0.6972108317982368
   ],
+  "random_median_train_retention": 0.8017435433790873,
   "random_median_test_retention": 0.8057340609811059,
   "soft_validation_retention": 0.8731829566976814
 }

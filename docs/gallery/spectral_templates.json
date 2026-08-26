@@ -1,8 +1,15 @@
 {
   "problem": "spectral_templates",
-  "kmeans_test_retention": 0.9967340428790921,
-  "soft_test_retention": 0.9966925752781177,
-  "observation_kmeans_test_retention": 0.9368532044467122,
+  "n_bins": 8,
+  "n_train": 4000,
+  "n_test": 15000,
+  "kmeans_train_retention": 0.9969335878328345,
+  "kmeans_test_retention": 0.9967375511430844,
+  "soft_train_retention": 0.9968778205777584,
+  "soft_test_retention": 0.9966886599479774,
+  "observation_kmeans_train_retention": 0.9410590000004779,
+  "observation_kmeans_test_retention": 0.9381508056069908,
+  "equal_grid_train_retention": 0.9284172469200835,
   "equal_grid_test_retention": 0.9235217778753169,
   "random_test_retentions": [
     0.9777849331635844,
@@ -56,6 +63,7 @@
     0.992637174010459,
     0.9605617291267721
   ],
+  "random_median_train_retention": 0.9927683949770594,
   "random_median_test_retention": 0.9924558476999232,
-  "soft_validation_retention": 0.9968652541707782
+  "soft_validation_retention": 0.9968575812841016
 }

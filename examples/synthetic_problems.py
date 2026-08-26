@@ -386,6 +386,49 @@ def signal_background_shape(
     )
 
 
+def separable_1d_direction(scores: np.ndarray, weights: np.ndarray | None = None) -> np.ndarray:
+    """Return the leading weighted-variance direction of a score matrix.
+
+    `separable_1d_projection` is exactly ``scores @ direction`` for this
+    direction. Callers that must project a second split (a held-out sample)
+    onto the *same* axis need the direction itself, not just one split's
+    projected column, so this helper exposes it.
+
+    Parameters
+    ----------
+    scores
+        Finite score matrix with shape ``[N, P]``.
+    weights
+        Nonnegative weights with shape ``[N]``. Uniform weights are used
+        when omitted.
+
+    Returns
+    -------
+    numpy.ndarray
+        A unit-norm direction with shape ``[P]``. The sign is whatever
+        `numpy.linalg.eigh` returns, which is deterministic for a given
+        input but carries no meaning.
+
+    Raises
+    ------
+    ValueError
+        If `scores` is empty or malformed, or `weights` does not sum to a
+        positive value.
+    """
+    values = np.asarray(scores, dtype=float)
+    if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] == 0:
+        raise ValueError("scores must have non-empty shape [N, P]")
+    w = np.ones(values.shape[0]) if weights is None else np.asarray(weights, dtype=float)
+    total = float(w.sum())
+    if total <= 0:
+        raise ValueError("weights must have a positive sum")
+    mean = (w[:, None] * values).sum(axis=0) / total
+    centered = values - mean
+    covariance = (centered * w[:, None]).T @ centered / total
+    eigenvalues, eigenvectors = np.linalg.eigh(covariance)
+    return eigenvectors[:, np.argmax(eigenvalues)]
+
+
 def separable_1d_projection(scores: np.ndarray, weights: np.ndarray | None = None) -> np.ndarray:
     """Project multi-column scores onto their leading weighted-variance direction.
 
@@ -409,18 +452,7 @@ def separable_1d_projection(scores: np.ndarray, weights: np.ndarray | None = Non
         A single-column score matrix with shape ``[N, 1]``.
     """
     values = np.asarray(scores, dtype=float)
-    if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] == 0:
-        raise ValueError("scores must have non-empty shape [N, P]")
-    w = np.ones(values.shape[0]) if weights is None else np.asarray(weights, dtype=float)
-    total = float(w.sum())
-    if total <= 0:
-        raise ValueError("weights must have a positive sum")
-    mean = (w[:, None] * values).sum(axis=0) / total
-    centered = values - mean
-    covariance = (centered * w[:, None]).T @ centered / total
-    eigenvalues, eigenvectors = np.linalg.eigh(covariance)
-    direction = eigenvectors[:, np.argmax(eigenvalues)]
-    return (values @ direction)[:, None]
+    return (values @ separable_1d_direction(values, weights))[:, None]
 
 
 PROBLEMS = {

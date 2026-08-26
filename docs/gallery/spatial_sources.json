@@ -1,8 +1,15 @@
 {
   "problem": "spatial_sources",
-  "kmeans_test_retention": 0.9992707261728258,
-  "soft_test_retention": 0.9992727781986316,
-  "observation_kmeans_test_retention": 0.9321129270647217,
+  "n_bins": 16,
+  "n_train": 6000,
+  "n_test": 20000,
+  "kmeans_train_retention": 0.9992955027542326,
+  "kmeans_test_retention": 0.9992721478543649,
+  "soft_train_retention": 0.9992964618590889,
+  "soft_test_retention": 0.9992728136839066,
+  "observation_kmeans_train_retention": 0.9311780531424652,
+  "observation_kmeans_test_retention": 0.9248743352240169,
+  "equal_grid_train_retention": 0.8909913260314134,
   "equal_grid_test_retention": 0.8826150162564367,
   "random_test_retentions": [
     0.9983949434907287,
@@ -56,6 +63,7 @@
     0.9988611797235065,
     0.9981552789493683
   ],
+  "random_median_train_retention": 0.998164520221419,
   "random_median_test_retention": 0.9981903532406391,
-  "soft_validation_retention": 0.9992728096875747
+  "soft_validation_retention": 0.9992720409924578
 }

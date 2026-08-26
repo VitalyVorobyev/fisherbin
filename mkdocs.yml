@@ -65,6 +65,7 @@ nav:
       - Door 1, precomputed score events: examples/door1-score-events.md
       - Door 2, mixture densities: examples/door2-mixture-densities.md
       - Door 3, a trained classifier: examples/door3-classifier.md
+      - Solver shootout: examples/solver-shootout.md
   - Evidence:
       - Synthetic gallery: gallery/index.md
       - FlowCyt study: usecases/cellpopulation.md
