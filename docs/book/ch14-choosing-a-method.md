@@ -126,7 +126,9 @@ def retention(scores, labels, n_bins):
 def rectangular_labels(scores, n_side):
     """Label rows by a quantile grid on the raw score coordinates."""
     quantiles = np.linspace(0.0, 1.0, n_side + 1)[1:-1]
-    index = [np.digitize(scores[:, axis], np.quantile(scores[:, axis], quantiles)) for axis in (0, 1)]
+    index = [
+        np.digitize(scores[:, axis], np.quantile(scores[:, axis], quantiles)) for axis in (0, 1)
+    ]
     return index[0] * n_side + index[1]
 
 
@@ -284,7 +286,10 @@ compiled = partition.compile_quantizer()
 validation = compiled.evaluate_scores(holdout)
 assert abs(float(report.geometric_mean_retention) - 0.63777) < 1e-4
 assert abs(float(validation.geometric_mean_retention) - 0.63315) < 1e-4
-print(round(float(report.geometric_mean_retention), 5), round(float(validation.geometric_mean_retention), 5))
+print(
+    round(float(report.geometric_mean_retention), 5),
+    round(float(validation.geometric_mean_retention), 5),
+)
 ```
 
 Retention 0.6378 on the training rows and 0.6331 on three thousand fresh ones — a

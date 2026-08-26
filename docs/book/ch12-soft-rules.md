@@ -149,9 +149,9 @@ trace = fitted.trace
 assert hasattr(fitted, "predict_scores")  # this one really is a rule
 assert trace.objective_label == "logdet_retained"
 assert float(np.asarray(trace.temperatures)[0]) > float(np.asarray(trace.temperatures)[-1])
-assert abs(
-    float(np.asarray(trace.temperatures)[-1] / np.asarray(trace.temperatures)[0]) - 0.05
-) < 1e-6
+assert (
+    abs(float(np.asarray(trace.temperatures)[-1] / np.asarray(trace.temperatures)[0]) - 0.05) < 1e-6
+)
 print(round(float(np.asarray(trace.soft_retention)[-1]), 6), fitted.n_bins)
 ```
 
@@ -377,7 +377,9 @@ analogue and not a corollary.
 The visible consequence is that the train/validation difference of a fitted rule shrinks:
 
 ```python
-population = np.random.default_rng(999).normal(size=(20_000, 2)) @ np.array([[1.0, 0.5], [0.0, 1.2]])
+population = np.random.default_rng(999).normal(size=(20_000, 2)) @ np.array(
+    [[1.0, 0.5], [0.0, 1.2]]
+)
 
 differences = []
 for n_rows in (100, 400, 1600, 6400):

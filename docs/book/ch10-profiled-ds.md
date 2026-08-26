@@ -201,10 +201,7 @@ def information(labels):
     """Exact rational binned information of one labeling."""
     mass, moment = cell_moments(labels)
     return [
-        [
-            sum(moment[cell][i] * moment[cell][j] / mass[cell] for cell in range(3))
-            for j in range(2)
-        ]
+        [sum(moment[cell][i] * moment[cell][j] / mass[cell] for cell in range(3)) for j in range(2)]
         for i in range(2)
     ]
 
@@ -498,8 +495,12 @@ assert warm.objective > achieved.objective
 assert warm.scans < achieved.scans // 10
 assert bound.gap_to(warm) < bound.gap_to(achieved) / 5
 print(
-    round(bound.gap_to(achieved), 6), round(bound.gap_to(warm), 6),
-    achieved.scans, warm.scans, achieved.accepted_moves, warm.accepted_moves,
+    round(bound.gap_to(achieved), 6),
+    round(bound.gap_to(warm), 6),
+    achieved.scans,
+    warm.scans,
+    achieved.accepted_moves,
+    warm.accepted_moves,
 )
 ```
 

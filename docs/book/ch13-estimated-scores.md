@@ -136,10 +136,13 @@ mapping = np.array([[0.4, 3.0], [-1.5, 0.9]])  # invertible: det = 4.86
 distorted = sq.optimize_partition(exact @ mapping.T, n_bins=4, config=sq.DExchangeConfig(seed=0))
 
 assert np.array_equal(np.asarray(distorted.labels), np.asarray(truth.labels))
-assert abs(
-    float(sq.information_report(exact, distorted.labels, n_bins=4).geometric_mean_retention)
-    - float(truth.train_report.geometric_mean_retention)
-) < 1e-9
+assert (
+    abs(
+        float(sq.information_report(exact, distorted.labels, n_bins=4).geometric_mean_retention)
+        - float(truth.train_report.geometric_mean_retention)
+    )
+    < 1e-9
+)
 ```
 
 A classifier that gets the relative scale of two score coordinates wrong, or mixes them,

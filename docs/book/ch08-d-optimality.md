@@ -178,9 +178,7 @@ q_source = u_source @ inverse @ u_source
 q_destination = u_destination @ inverse @ u_destination
 q_cross = u_source @ inverse @ u_destination
 
-lemma = np.log(
-    (1.0 + alpha * q_source) * (1.0 - beta * q_destination) + alpha * beta * q_cross**2
-)
+lemma = np.log((1.0 + alpha * q_source) * (1.0 - beta * q_destination) + alpha * beta * q_cross**2)
 recomputed = np.linalg.slogdet(after)[1] - np.linalg.slogdet(information)[1]
 assert abs(lemma - recomputed) < 1e-10
 ```

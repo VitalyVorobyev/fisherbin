@@ -248,8 +248,13 @@ exchange = sq.optimize_partition(big, n_bins=6, config=sq.DExchangeConfig(seed=1
 assert lloyd.exchange_stable and exchange.exchange_stable
 assert abs(lloyd.objective - exchange.objective) < 0.01
 print(
-    lloyd.lloyd_iterations, lloyd.accepted_lloyd_steps, lloyd.scans, lloyd.accepted_moves,
-    "|", exchange.scans, exchange.accepted_moves,
+    lloyd.lloyd_iterations,
+    lloyd.accepted_lloyd_steps,
+    lloyd.scans,
+    lloyd.accepted_moves,
+    "|",
+    exchange.scans,
+    exchange.accepted_moves,
 )
 ```
 

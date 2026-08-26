@@ -300,10 +300,13 @@ assert padded.transform.input_dim == 3
 assert padded.transform.rank == 2
 assert padded.transform.dropped_directions == 1
 assert np.array_equal(np.asarray(padded.labels), labels)  # the third column changed nothing
-assert abs(
-    float(padded.train_report.geometric_mean_retention)
-    - float(partition.train_report.geometric_mean_retention)
-) < 1e-9
+assert (
+    abs(
+        float(padded.train_report.geometric_mean_retention)
+        - float(partition.train_report.geometric_mean_retention)
+    )
+    < 1e-9
+)
 ```
 
 The third column was an exact linear combination of the first two. Projecting it out
