@@ -115,4 +115,4 @@ matters more than proximity in measurement space.
 It is not a general-purpose compressor, a classifier trainer, or a complete likelihood framework,
 and it cannot certify that an upstream simulator or a learned likelihood ratio is unbiased. It
 optimizes what the supplied scores say; the quality of the scores is your responsibility, and the
-[book chapter on estimated scores](book/11-score-estimation.md) explains how to check it.
+[book chapter on estimated scores](book/ch13-estimated-scores.md) explains how to check it.
