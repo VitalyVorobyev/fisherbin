@@ -45,12 +45,15 @@ SCOREQUANT_EXAMPLE_FAST=1 uv run python -m examples.gaussian_location
 ## Benchmark harness
 
 `benchmarks/bench.py` is a deterministic, seeded timing-and-quality harness, not a runtime
-promise. It covers every public solver path — `d_exchange`, `lloyd`, `kmeans`, `soft`,
-`scalar_dp`, `profiled_exchange`, and `predict` (`QuantizerResult.predict_scores`) — over a
-`--rows` × `--dims` × `--bins` × `--scenarios` matrix, reporting wall-clock seconds (minimum over
-`--repeats`), process-lifetime peak RSS, and a solver-appropriate quality metric (a log-determinant
-objective or a geometric-mean retention) alongside solver diagnostics such as `accepted_moves`,
-`scans`, and `exchange_stable`:
+promise. It covers every public solver path — `d_exchange` and `d_exchange_nobatch`, `lloyd`,
+`kmeans`, `soft`, `scalar_dp`, `profiled_exchange`, `certify`, and the two reusable rules,
+`predict` (`QuantizerResult.predict_scores`) and `compile` (`PartitionResult.compile_quantizer`) —
+over a `--rows` × `--dims` × `--bins` × `--scenarios` matrix, reporting wall-clock seconds (minimum
+over `--repeats`), process-lifetime peak RSS, and a solver-appropriate quality metric (a
+log-determinant objective or a geometric-mean retention) alongside solver diagnostics such as
+`accepted_moves`, `scans`, and `exchange_stable`. `--max-scans` caps the exchange scan budget,
+which turns a cell into a fixed-work steady-state probe for row counts whose full convergence
+exceeds one measurement window:
 
 ```bash
 JAX_ENABLE_X64=1 uv run python benchmarks/bench.py --rows 20000,100000 --bins 8,64
@@ -71,9 +74,40 @@ flags are ignored in this mode) and prints a comparison table. It fails (exit 1)
 runs slower than `--time-tolerance` times its baseline — deliberately loose, since CI machines
 differ — or if a quality metric drifts beyond `--quality-rtol`; deterministic seeds make quality
 the real regression signal, since it is exact for a given seed and code path. The `benchmarks` CI
-job runs this check after the test suite passes. To refresh `benchmarks/baselines.json` after an
-intentional performance or numerical change, regenerate it with `--json` on the same matrix and
-review the diff.
+job runs this check after the test suite passes. To refresh the file after an intentional
+performance change, replay its recorded cell list and review the diff:
+
+```bash
+JAX_ENABLE_X64=1 uv run python benchmarks/bench.py --regenerate benchmarks/baselines.json --repeats 1
+```
+
+Use `--repeats 1`, matching how `--check` runs: the harness reports the minimum over repeats, so
+a baseline recorded warm and checked cold reports spurious slowdowns on compilation-dominated
+cells.
+
+## Profiling and the Rust question
+
+`benchmarks/profile.py` is a sampling profiler that drives the same scenario runners, separating
+JIT warm-up from steady state and writing folded stacks plus JSON summaries under
+`benchmarks/profiles/`. `benchmarks/README.md` holds the full measured campaign to one million
+rows: a per-solver bottleneck table, a phase decomposition of one exchange scan, a measured
+machine roofline, and the applied optimizations with before/after numbers.
+
+Its conclusion, recorded so the question does not get reopened on intuition: **the numerical core
+does not justify a Rust port.** At a million rows with 64 bins and 8 score dimensions, one
+D-exchange scan spends 86.7% inside a single compiled XLA kernel, 9.9% inside NumPy's compiled
+reductions, and 1.6% in JAX's Python dispatch; across a whole run, Python-interpreter
+orchestration is at most about 4%, so a port that made it free would return about 1.04x. The
+kernel does sit at only 7% of this machine's measured float64 matmul roofline, but that headroom
+is a formulation problem — reshaping the batched contraction into a GEMM measures 3.5x while
+staying in JAX — not a language problem.
+
+The one path with a real case is the branch-and-bound certifier in `certify.py`, which runs no
+JAX kernel and measures a flat ~34–40k nodes per second across a 260x range of tree sizes, with
+roughly 38% of that time in NumPy allocation and dispatch on 2x2 matrices. A port of `_Search`
+alone would plausibly return 40x or more. It stays deferred: it would put a compiled extension in
+the wheel for one bounded diagnostic, and `AGENTS.md` requires an approved roadmap change before a
+second numerical backend.
 
 ## Repository guidance
 
