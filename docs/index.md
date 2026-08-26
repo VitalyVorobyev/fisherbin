@@ -100,9 +100,9 @@ same for each door, and [Choosing your workflow](user-workflow.md) walks through
   validation rules.
 - [Choosing your workflow](user-workflow.md) — which task, which door, which criterion and solver.
 - [The book](book/index.md) — the statistical theory developed independently of this package's API.
-- Tutorials — [first partition](tutorials/first-partition.md),
-  [linear components](tutorials/linear-components.md),
-  [classifier posteriors](tutorials/classifier-mixtures.md).
+- Examples — [Door 1, precomputed score events](examples/door1-score-events.md),
+  [Door 2, mixture densities](examples/door2-mixture-densities.md),
+  [Door 3, a trained classifier](examples/door3-classifier.md).
 - Evidence — the [synthetic gallery](gallery/index.md) and the reproducible
   [FlowCyt study](usecases/cellpopulation.md).
 - [API guide](api.md) and [reference](reference/index.md) — released contracts and errors.

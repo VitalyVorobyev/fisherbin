@@ -61,10 +61,10 @@ nav:
       - Soft rules, purification, and consistency: book/ch12-soft-rules.md
       - "Estimated scores: classifiers and calibration": book/ch13-estimated-scores.md
       - Diagnostics and choosing a method: book/ch14-choosing-a-method.md
-  - Tutorials:
-      - First analytic partition: tutorials/first-partition.md
-      - Linear components: tutorials/linear-components.md
-      - Classifier posteriors for mixtures: tutorials/classifier-mixtures.md
+  - Examples:
+      - Door 1, precomputed score events: examples/door1-score-events.md
+      - Door 2, mixture densities: examples/door2-mixture-densities.md
+      - Door 3, a trained classifier: examples/door3-classifier.md
   - Evidence:
       - Synthetic gallery: gallery/index.md
       - FlowCyt study: usecases/cellpopulation.md
