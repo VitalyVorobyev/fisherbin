@@ -17,3 +17,4 @@ Only decisions that materially constrain future implementation are recorded here
 13. [ADR 0013 — Complete the pre-1.0 API with capability-specific boundaries](0013-complete-pre-1-api-boundaries.md) — partially superseded by ADR 0014
 14. [ADR 0014 — One exchange engine with criterion-specific objectives and explicit certificates](0014-unified-exchange-and-certificates.md)
 15. [ADR 0015 — Efficient-score upper bound and solver initialization](0015-efficient-score-bound-and-initialization.md)
+16. [ADR 0016 — Verify partition geometry at the tolerance it was optimized at](0016-tolerance-consistent-geometry-verification.md) — refines ADR 0014

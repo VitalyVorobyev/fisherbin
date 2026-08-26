@@ -376,9 +376,19 @@ def optimize_d_partition(
     compiled_labels = compiled_labels.at[sample.positive_weight_mask].set(effective_labels)
     if run.exchange_stable:
         geometric = _assign_nearest(prepared.coordinates, state.means, state.inverse)
-        if not np.array_equal(np.asarray(geometric), np.asarray(run.labels)):
+        disagreement = _voronoi_disagreement_gain(
+            prepared.coordinates,
+            prepared.weights,
+            run.labels,
+            geometric,
+            state,
+            _DObjective(),
+        )
+        if disagreement > config.gain_tolerance:
             raise ValueError(
-                "terminal D state is geometrically degenerate; duplicate/tied score atoms "
+                "terminal D state is geometrically degenerate: relabeling a row by the "
+                f"terminal Mahalanobis rule gains {disagreement:.6g}, above "
+                f"gain_tolerance={config.gain_tolerance:g}; duplicate/tied score atoms "
                 "must be merged or assigned consistently"
             )
 
@@ -393,7 +403,13 @@ def optimize_d_partition(
         provenance=provenance,
         transformed_centers=state.means,
         metric=state.inverse,
-        geometry=_geometry_report(prepared.coordinates, prepared.weights, run.labels, state),
+        geometry=_geometry_report(
+            prepared.coordinates,
+            prepared.weights,
+            run.labels,
+            state,
+            gain_tolerance=config.gain_tolerance,
+        ),
     )
 
 
@@ -404,6 +420,40 @@ def _require_d_bin_budget(prepared: _PreparedPartition, n_bins: int) -> None:
             "D-optimality requires at least as many bins as informative directions; "
             "a normalized mean-zero score law generally requires one additional bin"
         )
+
+
+def _voronoi_disagreement_gain(
+    points: jnp.ndarray,
+    weights: jnp.ndarray,
+    labels: jnp.ndarray,
+    geometric: np.ndarray,
+    state: _ExchangeState,
+    objective: _ExchangeObjective,
+) -> float:
+    """Return the largest exact gain over rows the terminal Voronoi rule relabels.
+
+    This is the compile bridge measured in the units the solver optimizes. A
+    terminal labeling and the nearest-centroid rule of its own metric may
+    disagree on rows within the solver's stopping tolerance of a cell boundary;
+    the disagreement is immaterial exactly when relocating those rows is worth
+    no more than that tolerance. Comparing the two labelings for equality
+    instead verifies at tolerance zero and rejects such a state, which is what
+    made a converged 10^6-row fit unusable.
+
+    A row whose cell holds no other weight admits no relocation at all, so no
+    tolerance can excuse a rule that sends it elsewhere; that case returns
+    ``inf`` and is always rejected.
+    """
+    rows = np.flatnonzero(np.asarray(geometric) != np.asarray(labels))
+    if rows.size == 0:
+        return float("-inf")
+    index = jnp.asarray(rows)
+    row_weights = weights[index]
+    sources = jnp.asarray(np.asarray(labels)[rows])
+    if bool(np.asarray(jnp.any(state.weights[sources] <= row_weights))):
+        return float("inf")
+    gains = np.asarray(objective.chunk_gains(state, points[index], row_weights, sources))
+    return float(np.max(gains[np.arange(rows.size), np.asarray(geometric)[rows]]))
 
 
 def optimize_profiled_d_partition(
@@ -517,14 +567,16 @@ def exchange_stability_report(
         Relative threshold of the informative Fisher subspace, matching the
         solver configuration that produced the labels.
     gain_tolerance
-        Strict minimum gain that counts as an improvement, matching the
-        ``gain_tolerance`` of the solver configuration.
+        Strict minimum gain that counts as an improvement. Match it to the
+        ``gain_tolerance`` of the solver configuration that produced the
+        labels: a labeling optimized at one tolerance is not certified at a
+        smaller one, and the returned report records the tolerance it holds at.
 
     Returns
     -------
     StabilityReport
-        Stability verdict, exact objective, best remaining gain, and the
-        improving move in original row indexing when one exists.
+        Stability verdict at ``gain_tolerance``, exact objective, best remaining
+        gain, and the improving move in original row indexing when one exists.
     """
     resolved = DOptimality() if criterion is None else criterion
     if not isinstance(resolved, (DOptimality, ProfiledDOptimality)):
@@ -558,6 +610,7 @@ def exchange_stability_report(
         objective=state.objective,
         n_bins=n_bins,
         criterion=resolved,
+        gain_tolerance=gain_tolerance,
     )
 
 
@@ -1535,6 +1588,8 @@ def _geometry_report(
     weights: jnp.ndarray,
     labels: jnp.ndarray,
     state: _ExchangeState,
+    *,
+    gain_tolerance: float,
 ) -> GeometryReport:
     """Measure the self-consistent Voronoi geometry of a terminal D state.
 
@@ -1542,6 +1597,12 @@ def _geometry_report(
     ``[chunk, B]`` table supplies the own-cell distance, the nearest competing
     distance, and the Voronoi-violating move set. The cell-separation lemma
     needs only the ``[B, B]`` table of centroid distances.
+
+    The verdict is taken on the exact gain of the violating moves rather than on
+    the sign of a distance gap: a distance gap is not the quantity the solver
+    stops on, and comparing it to zero verifies at a tolerance no finite
+    optimizer claims. ``gain_tolerance`` is the solver's own threshold, and the
+    same per-row gain kernel the scan uses supplies the gains.
     """
     n_bins = int(state.weights.shape[0])
     n_rows = int(coordinates.shape[0])
@@ -1559,6 +1620,7 @@ def _geometry_report(
 
     worst_violation = -np.inf
     guaranteed_gain = 0.0
+    violation_gain = 0.0
     violating = 0
     evaluated = 0
     chunk_rows = _candidate_chunk_rows(coordinates, n_bins)
@@ -1589,17 +1651,34 @@ def _geometry_report(
         )
         bounds = np.log1p(alpha[:, None] * beta * separations[sources] ** 2 / 4)
         guaranteed_gain = max(guaranteed_gain, float(np.max(np.where(violates, bounds, 0.0))))
+        if violates.any():
+            # A clean chunk contributes 0.0 either way, so the gain kernel runs
+            # only where there is actually a violation to price.
+            exact = np.asarray(
+                _d_chunk_gains(
+                    coordinates[start:stop],
+                    weights[start:stop],
+                    label_array[start:stop],
+                    state.weights,
+                    state.means,
+                    state.inverse,
+                ),
+                dtype=np.float64,
+            )
+            violation_gain = max(violation_gain, float(np.max(np.where(violates, exact, 0.0))))
         violating += int(np.count_nonzero(violates))
         evaluated += int(np.count_nonzero(admissible))
 
     return GeometryReport(
         maximum_voronoi_violation=worst_violation,
         guaranteed_violation_gain=guaranteed_gain,
+        maximum_violation_gain=violation_gain,
         maximum_separation_residual=separation_residual,
         violating_moves=violating,
         evaluated_moves=evaluated,
-        voronoi_consistent=worst_violation <= 0.0,
+        voronoi_consistent=violation_gain <= gain_tolerance,
         separation_certified=separation_residual <= _SEPARATION_RTOL * separation_scale,
+        gain_tolerance=gain_tolerance,
     )
 
 

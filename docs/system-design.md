@@ -106,7 +106,7 @@ not a need for a generic facade:
 | certified profiled ceiling | trust profiled exchange with no upper bound | `efficient_score_bound`/`EfficientScoreBound`, an exact scalar-DP ceiling on the profiled objective | implemented |
 | global guarantee | imply exchange stability is global | explicit bounded branch-and-bound certificate | implemented as `certify_partition`/`PartitionCertificate` (D-only) |
 | local stability of any labeling | trust a solver's own termination claim | one exact scan via `exchange_stability_report`/`StabilityReport` | implemented |
-| Voronoi self-consistency of a D result | assume exchange stability implies Voronoi geometry | measured `GeometryReport`/`ProfiledGeometryReport` | implemented |
+| Voronoi self-consistency of a D result | assume exchange stability implies Voronoi geometry | measured `GeometryReport`/`ProfiledGeometryReport`, judged at the solver's own `gain_tolerance` | implemented |
 | Monte Carlo population law | pass an unrecorded callback as a score table | deterministic score/observation sampler source | not yet implemented |
 | analytic cell integrals | pretend an oracle contains rows | moment-oracle evaluation of an existing rule | not yet implemented |
 | large transported data | call minibatch fitting exact | streaming aggregation for a frozen rule | not yet implemented |

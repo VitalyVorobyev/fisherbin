@@ -11,7 +11,9 @@ The one theorem that turns a sample partitioning result into a reusable quantize
 inventing a rule: when a D-optimal finite partition is [exchange-stable](#exchange-stability)
 and its information matrix is nonsingular, it is provably identical to the nearest-cell
 rule in its own \(I_q^{-1}\)-Mahalanobis metric, so `PartitionResult.compile_quantizer()`
-returns exactly that rule and verifies label reproduction before returning it. The bridge
+returns exactly that rule and verifies label reproduction before returning it — at the
+`gain_tolerance` the partition was optimized at, since that is the precision the solver
+actually delivers. The bridge
 exists for the log determinant only; a profiled-\(D_s\) partition has an analogous
 population geometry but no exact finite implication, so it refuses to compile rather than
 approximate one.
@@ -34,11 +36,12 @@ matter only through the regression coefficient, not directly.
 
 ### Exchange stability
 
-A property of a finite labeling: no single row can move to another cell and strictly
-improve the objective, evaluated by one exact scan over every admissible relocation.
-`PartitionResult.exchange_stable` records whether the solver's own output has this
-property, and `exchange_stability_report` checks it for a labeling from any source.
-Exchange stability is necessary for the [compile bridge](#compile-bridge) but is checked
+A property of a finite labeling: no single row can move to another cell and improve the
+objective by more than a stated `gain_tolerance`, evaluated by one exact scan over every
+admissible relocation. `PartitionResult.exchange_stable` records whether the solver's own
+output has this property at the tolerance it ran at, and `exchange_stability_report` checks
+it for a labeling from any source, recording the tolerance on the report. Exchange
+stability is necessary for the [compile bridge](#compile-bridge) but is checked
 independently of it.
 
 ### Finite assignment

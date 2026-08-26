@@ -394,10 +394,12 @@ Recorded so they are not re-attempted.
 
 ---
 
-## Open scale limit: the terminal geometry guard at N = 10^6
+## Closed: the terminal geometry guard at N = 10^6
 
-Not a performance issue, but it is what stops a converged 10^6-row D-exchange measurement, so
-it belongs with the numbers.
+Not a performance issue, but it is what stopped a converged 10^6-row D-exchange measurement,
+so it belongs with the numbers. Fixed in
+[ADR 0016](../docs/adr/0016-tolerance-consistent-geometry-verification.md); the diagnosis
+below is kept because it is the measurement that motivated the change.
 
 `optimize_partition` at N=1 000 000, R=3, B=8, seed 2026 converges normally — 280 scans, 99 001
 accepted moves, `exchange_stable=True` — and then raises:
@@ -419,7 +421,12 @@ tolerance tau and then verified at tolerance zero. It first appears around 10^6 
 because that is where the expected number of rows within tau of a cell boundary reaches one.
 `lloyd` at the same shape trips it identically, since it shares the terminal check.
 
-A principled fix — accept a terminal state when every mismatching row's relocation gain is
-within `gain_tolerance`, matching the exchange's own certificate — is small, but it changes
-`compile_quantizer`'s stated contract and wants an ADR. Filed here as a measurement, not fixed
-in this pass.
+The fix is exactly that: a terminal state is accepted when every mismatching row's relocation
+gain is within `gain_tolerance`, matching the exchange's own certificate, and both
+`GeometryReport` and `StabilityReport` now record the tolerance they hold at. The same cell
+now converges and compiles — 280 scans, 99 001 accepted moves, `best_remaining_gain`
+8.65e-11, `geometry.maximum_violation_gain` 8.65e-11 over 13 violating moves, all under the
+default 1e-10 — in about 20 s on the reference machine. `compile_quantizer`'s contract moved
+with it: the compiled rule is self-consistent at the tolerance, not at zero, and its
+`predict_scores` differs from `PartitionResult.labels` on exactly those 13 boundary rows.
+See [ADR 0016](../docs/adr/0016-tolerance-consistent-geometry-verification.md).

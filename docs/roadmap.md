@@ -158,6 +158,12 @@ singleton-completion bound, agreeing with the exhaustive oracle on seeded weight
 instances and downgrading to `status="budget_exhausted"` with a genuine outstanding bound when its
 node budget runs out. Certification is D-only and never runs implicitly, per ADR 0014.
 
+**Scale gate completed:** every certificate states the `gain_tolerance` it holds at, and every
+geometry verification judges the exact relocation gain against that same tolerance instead of
+against zero. A converged 1 000 000-row D-exchange or Mahalanobis-Lloyd fit therefore returns,
+certifies, and compiles, where a zero-tolerance comparison previously rejected it over 13 boundary
+rows in a million, per ADR 0016.
+
 ## Explicitly outside the development plan
 
 An E-optimal solver is not planned. The E-optimality chapter and deterministic counterexample stay
