@@ -12,8 +12,6 @@ exclude_docs: |
   roadmap.md
   system-design.md
   adr/**
-  motivation.md
-  method.md
 
 theme:
   name: material
@@ -43,20 +41,26 @@ theme:
 
 nav:
   - Home: index.md
+  - Why ScoreQuant: motivation.md
+  - Method overview: method.md
+  - Three doors: three-doors.md
+  - Choosing your workflow: user-workflow.md
   - Book:
       - Overview: book/index.md
-      - Likelihood, score, and score law: book/01-likelihood-score-law.md
-      - Probability and intensity scores: book/02-probability-intensity.md
-      - Information after hard labels: book/03-hard-label-information.md
-      - Three optimization levels: book/04-three-optimization-levels.md
-      - Trace and weighted k-means: book/05-trace-kmeans.md
-      - Population geometry: book/06-population-geometry.md
-      - D-optimality: book/07-d-optimality.md
-      - Profiled D-s: book/08-profiled-ds.md
-      - E-optimality: book/09-e-optimality.md
-      - Randomized rules and consistency: book/10-randomized-consistency.md
-      - Exact and estimated scores: book/11-score-estimation.md
-      - Diagnostics and method choice: book/12-diagnostics-choice.md
+      - Why bin at all: book/ch01-why-bin.md
+      - One dimension by hand: book/ch02-one-dimension.md
+      - Exact 1D binning by dynamic programming: book/ch03-exact-1d.md
+      - Scores, score laws, and the three doors: book/ch04-scores-and-doors.md
+      - Information after hard labels: book/ch05-information-after-binning.md
+      - Two tasks and three optimization levels: book/ch06-two-tasks.md
+      - The trace criterion and whitened k-means: book/ch07-trace-kmeans.md
+      - D-optimality and exact exchange: book/ch08-d-optimality.md
+      - Mahalanobis geometry and guarded Lloyd: book/ch09-mahalanobis-lloyd.md
+      - Nuisance parameters and profiled Ds: book/ch10-profiled-ds.md
+      - "E-optimality: why not": book/ch11-e-optimality.md
+      - Soft rules, purification, and consistency: book/ch12-soft-rules.md
+      - "Estimated scores: classifiers and calibration": book/ch13-estimated-scores.md
+      - Diagnostics and choosing a method: book/ch14-choosing-a-method.md
   - Tutorials:
       - First analytic partition: tutorials/first-partition.md
       - Linear components: tutorials/linear-components.md
@@ -64,11 +68,8 @@ nav:
   - Evidence:
       - Synthetic gallery: gallery/index.md
       - FlowCyt study: usecases/cellpopulation.md
-  - How-to and API:
-      - Workflow guide: user-workflow.md
-      - Sources and providers: score-sources.md
+  - API:
       - API guide: api.md
-      - Migration guide: migration.md
       - Reference:
           - Overview: reference/index.md
           - Fitting: reference/fitting.md
@@ -79,6 +80,7 @@ nav:
           - Information: reference/information.md
           - Transforms: reference/transforms.md
           - Visualization: reference/visualization.md
+  - Related work: related-work.md
   - Glossary: glossary.md
   - Bibliography: bibliography.md
 

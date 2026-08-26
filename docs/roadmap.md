@@ -15,6 +15,22 @@ implemented interfaces.
 **Gate:** one glossary; no nonexistent APIs in published pages; documentation tests and strict
 MkDocs pass.
 
+### Phase 2 documentation overhaul
+
+**Status:** done.
+
+- Replaced the 12-chapter book with the gradual, 1D-first 14-chapter book (`docs/book/ch01`–`ch14`)
+  and swapped the mkdocs nav and every cross-link to match.
+- Rewrote `docs/book/index.md` as a book overview with a chapter list and two reading paths.
+- Rewrote `docs/bibliography.md` with one anchored entry per citation used by the book, grouped by
+  theme, verified against every `bibliography.md#anchor` reference in the published docs.
+- Rewrote `docs/glossary.md` in alphabetical order with terms consistent with the new book
+  (sample partitioning, space quantization, three doors, exchange stability, compile bridge,
+  efficient score, retention).
+- Swept `docs/api.md` of stale TODO markers and verified its claims against `src/scorequant/`.
+- Removed dev-only notation (TODO/phase references) from published pages; tutorial pages keep
+  their planned-for-replacement content with neutralized skip-marker wording.
+
 ## M2 — Exact finite D reference core
 
 **Status:** implemented baseline.

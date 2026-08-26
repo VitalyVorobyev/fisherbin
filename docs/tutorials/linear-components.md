@@ -3,6 +3,8 @@
 For \(\lambda(x;\theta)=\sum_k\theta_k\phi_k(x)\), define the components and reference
 coefficients:
 
+<!-- illustrative fragment; signal/background are defined in surrounding prose, not runnable standalone. -->
+<!-- snippet: skip -->
 ```python
 model = sq.LinearComponents(
     components={"signal": signal, "background": background},
@@ -14,6 +16,8 @@ provider = sq.LinearComponentScore(model)
 
 Pair observations and their measure with the provider:
 
+<!-- illustrative fragment; X_mc/mc_weights are defined in surrounding prose, not runnable standalone. -->
+<!-- snippet: skip -->
 ```python
 quantizer = sq.fit_quantizer(
     sq.ObservationSample(X_mc, mc_weights),
@@ -26,6 +30,8 @@ quantizer = sq.fit_quantizer(
 
 Prediction keeps score construction visible:
 
+<!-- illustrative fragment; X_data is defined in surrounding prose, not runnable standalone. -->
+<!-- snippet: skip -->
 ```python
 data_scores = provider.score(X_data)
 data_bins = quantizer.predict_scores(data_scores)

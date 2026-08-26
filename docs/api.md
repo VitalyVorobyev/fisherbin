@@ -4,6 +4,7 @@
 
 ### `optimize_partition`
 
+<!-- snippet: skip -->
 ```python
 optimize_partition(
     scores,
@@ -34,6 +35,7 @@ Mahalanobis-Lloyd solver starts from them directly.
 
 ### `fit_quantizer`
 
+<!-- snippet: skip -->
 ```python
 fit_quantizer(
     source,
@@ -67,6 +69,7 @@ optimum rather than a local one, and `max_rows` bounds its exact quadratic work.
 
 ## The efficient-score upper bound
 
+<!-- snippet: skip -->
 ```python
 efficient_score_bound(
     scores,
@@ -90,6 +93,7 @@ the result would no longer be certified.
 
 ## Certificates
 
+<!-- snippet: skip -->
 ```python
 exchange_stability_report(
     scores,

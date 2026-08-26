@@ -1,53 +1,105 @@
+"""Execute the fenced Python snippets in README.md and guard published prose.
+
+The README is the library's front door, so every ```python fence in it is a
+claim about the current API. Blocks are extracted with the same helpers the
+documentation harness uses and executed in order in one shared namespace,
+honoring the same ``<!-- snippet: skip -->`` / ``<!-- snippet: fresh -->``
+markers.
+"""
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
-import numpy as np
+from tests.test_docs_snippets import REPO_ROOT, Snippet, _extract_blocks
+
+README = REPO_ROOT / "README.md"
+
+# Internal planning vocabulary that must not reach a reader. "adr" is matched
+# on word boundaries so ordinary words containing those three letters
+# (quadrature, quadratic) do not trip the guard.
+_FORBIDDEN_PROSE = (
+    r"\broadmap\b",
+    r"\badr\b",
+    r"\bpre-release\b",
+    r"\bmigration history\b",
+    r"\bdevelopment phase\b",
+)
+
+# Front-door pages rewritten together with the README. They additionally carry
+# no work-in-progress markers.
+_FRONT_DOOR = (
+    "index.md",
+    "motivation.md",
+    "method.md",
+    "three-doors.md",
+    "user-workflow.md",
+    "related-work.md",
+)
+
+# Pages that mkdocs.yml keeps out of the published site.
+_UNPUBLISHED = {
+    Path("docs/development.md"),
+    Path("docs/roadmap.md"),
+    Path("docs/system-design.md"),
+}
 
 
-def test_readme_quickstart_is_executable_and_deterministic() -> None:
-    readme = Path("README.md").read_text(encoding="utf-8")
-    match = re.search(
-        r"<!-- quickstart-test:start -->\s*```python\n(.*?)\n```\s*"
-        r"<!-- quickstart-test:end -->",
-        readme,
-        flags=re.DOTALL,
-    )
-    assert match is not None
+def _readme_blocks() -> list[Snippet]:
+    return _extract_blocks(README.read_text(encoding="utf-8"))
+
+
+def test_readme_has_snippets() -> None:
+    blocks = _readme_blocks()
+    assert blocks, "no Python snippet was discovered in README.md"
+    assert any(not block.skip for block in blocks)
+
+
+def test_readme_snippets_execute() -> None:
     namespace: dict[str, object] = {}
-    exec(compile(match.group(1), "README.md", "exec"), namespace)
-    np.testing.assert_array_equal(np.sort(namespace["counts"]), [200, 485, 547, 768])
-    quantizer = namespace["quantizer"]
-    assert np.isclose(quantizer.train_report.geometric_mean_retention, 0.8824679259859257)
+    for block in _readme_blocks():
+        if block.fresh:
+            namespace = {}
+        if block.skip:
+            continue
+        exec(compile(block.code, f"README.md:block{block.index}", "exec"), namespace)
 
 
 def test_readme_contains_only_current_user_facing_language() -> None:
-    readme = Path("README.md").read_text(encoding="utf-8").lower()
-    forbidden = ("roadmap", "adr", "pre-release", "migration history", "development phase")
-    assert all(term not in readme for term in forbidden)
+    text = README.read_text(encoding="utf-8")
+    for pattern in (*_FORBIDDEN_PROSE, r"\bTODO\b", r"\bFIXME\b"):
+        assert not re.search(pattern, text, flags=re.IGNORECASE), pattern
 
 
 def test_published_markdown_has_no_internal_or_malformed_content() -> None:
-    excluded_files = {
-        Path("docs/development.md"),
-        Path("docs/method.md"),
-        Path("docs/motivation.md"),
-        Path("docs/roadmap.md"),
-        Path("docs/system-design.md"),
-    }
     published = [
         path
-        for path in Path("docs").rglob("*.md")
-        if path not in excluded_files and "adr" not in path.parts
+        for path in (REPO_ROOT / "docs").rglob("*.md")
+        if path.relative_to(REPO_ROOT) not in _UNPUBLISHED and "adr" not in path.parts
     ]
-    forbidden = ("roadmap", "pre-release", "migration history", "development phase")
+    assert published
     for path in published:
         content = path.read_text(encoding="utf-8")
         assert "\t" not in content, f"tab character in {path}"
-        lowered = content.lower()
-        assert all(term not in lowered for term in forbidden), path
+        for pattern in _FORBIDDEN_PROSE:
+            assert not re.search(pattern, content, flags=re.IGNORECASE), (path, pattern)
 
-    mkdocs = Path("mkdocs.yml").read_text(encoding="utf-8")
+    mkdocs = (REPO_ROOT / "mkdocs.yml").read_text(encoding="utf-8")
     for excluded in ("development.md", "roadmap.md", "system-design.md", "adr/**"):
         assert excluded in mkdocs
+
+
+def test_front_door_pages_have_no_work_in_progress_markers() -> None:
+    for name in _FRONT_DOOR:
+        content = (REPO_ROOT / "docs" / name).read_text(encoding="utf-8")
+        for pattern in (r"\bTODO\b", r"\bFIXME\b", r"snippet:\s*skip"):
+            assert not re.search(pattern, content, flags=re.IGNORECASE), (name, pattern)
+
+
+def test_retired_pages_are_gone() -> None:
+    for retired in ("docs/migration.md", "docs/score-sources.md"):
+        assert not (REPO_ROOT / retired).exists()
+    mkdocs = (REPO_ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+    assert "migration.md" not in mkdocs
+    assert "score-sources.md" not in mkdocs

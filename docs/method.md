@@ -1,85 +1,200 @@
-# Method
+# Method overview
 
-## Information algebra
+Every ScoreQuant run follows the same five stages.
 
-For weighted rows \((s_i,w_i)\) and labels \(b(i)\),
+```text
+score  ->  informative subspace  ->  criterion  ->  solver  ->  certificate
+```
+
+This page walks that pipeline once. The [book](book/index.md) develops the same material as theory,
+independently of the package API; the [API guide](api.md) states the contracts and errors.
+
+## 1. Score
+
+The input to every optimizer is a weighted table of score rows \((s_i, w_i)\) with
+\(s_i\in\mathbb R^P\), one coordinate per parameter, evaluated at a reference point \(\theta_0\).
+Weights are finite and nonnegative with at least one positive value; a zero-weight row remains
+predictable but contributes no measure. Where those rows come from — precomputed, an analytic
+component model, or a calibrated classifier — is the subject of [Three doors](three-doors.md).
+
+For labels \(b(i)\) the relevant quantities are the unbinned information, the cell masses and score
+sums, and the between-cell information:
 
 $$
 I_\infty=\sum_i w_i s_i s_i^\top,
-\quad W_b=\sum_{i:b(i)=b}w_i,
-\quad m_b=\sum_{i:b(i)=b}w_i s_i,
-\quad I_B=\sum_b\frac{m_bm_b^\top}{W_b}.
+\quad W_b=\!\!\sum_{i:b(i)=b}\!\!w_i,
+\quad m_b=\!\!\sum_{i:b(i)=b}\!\!w_i s_i,
+\quad I_B=\sum_b \frac{m_b m_b^\top}{W_b}.
 $$
 
 The loss identity
 
 $$
-I_\infty-I_B=\sum_b\sum_{i:b(i)=b}
-w_i(s_i-\mu_b)(s_i-\mu_b)^\top\succeq0
+I_\infty-I_B=\sum_b\sum_{i:b(i)=b} w_i\,(s_i-\mu_b)(s_i-\mu_b)^\top\;\succeq\;0,
+\qquad \mu_b=m_b/W_b,
 $$
 
-implies refinement monotonicity and the trace/k-means correspondence. Zero-weight rows do not
-contribute. Uniform scaling and split-weight duplication leave normalized results invariant.
-Identical positive-weight score rows are coalesced into one score-law atom before optimization and
-their common label is expanded afterward; duplicating an atom cannot create a randomized extra
-degree of freedom.
+is what makes the whole problem well posed: hard labels can only lose information, refinement can
+only help, and the loss is exactly the within-cell scatter of the score.
 
-Numerically singular directions are projected out with a relative eigenthreshold. No ridge is
-used because a ridge would invent information. Scores are projected and optionally whitened but
-never translated.
+The algebra also fixes the invariances the library is required to preserve. Zero-weight rows do not
+contribute. Scaling all weights uniformly and splitting one row into duplicates with the same total
+weight leave normalized results unchanged. Identical positive-weight score rows are coalesced into
+one weighted atom before optimization and their common label is expanded afterwards, so duplicating
+an atom cannot smuggle in a randomized extra degree of freedom.
 
-## Implemented criteria and solvers
+## 2. Informative subspace
 
-### Exact finite D exchange
+Scores are eigendecomposed through \(I_\infty\) and projected onto the directions that carry
+numerically meaningful information, using a relative eigenvalue threshold (`rank_rtol`, with a
+dtype-aware default). Directions below the threshold are dropped, not repaired: adding a ridge
+would invent information the sample does not contain. The retained rank appears on every result as
+`rank`, and the full spectrum on `FisherTransform`.
 
-For \(F_D(I)=\log\det I\), moving row \(i\) from cell \(a\) to \(b\) gives
+Solvers optionally whiten the retained directions so that the unbinned information is the identity
+there, which is what makes the trace criterion coincide with ordinary squared distance. Scores are
+projected and rescaled but **never translated**: \(I_B\) is a second moment about the origin, and
+\(s=0\) is the direction of no sensitivity, so centering would change the statistical object.
+
+## 3. Criterion
+
+Three criteria are implemented, and each has a fixed set of solvers it is allowed to pair with.
+
+**`DOptimality`** maximizes \(\log\det I_B\) in the informative subspace. It balances every
+information direction at once and corresponds to the volume of the local confidence ellipsoid.
+Because the objective is a determinant, its geometry is metric-dependent: the effective distance
+uses the currently retained information, which upweights directions where little information has
+survived so far.
+
+**`ProfiledDOptimality(interest=...)`** maximizes the log determinant of the Schur complement for a
+declared block of interest columns, with nuisance information estimated from the *same* labels. At
+least one nuisance column must remain. This is the criterion to use when some parameters are
+genuinely of interest and the rest are being profiled away.
+
+**`NormalizedTrace`** maximizes the retained trace after whitening. By the loss identity this is
+identical to minimizing weighted within-cell squared distance, so its solver is weighted k-means.
+It is a deterministic, well-understood baseline rather than a competitor to the determinant
+objectives.
+
+## 4. Solver
+
+Solvers are selected by passing a configuration object. The pairing of configuration and criterion
+is a closed table, validated before any optimization runs; an unsupported pair raises rather than
+silently substituting something else.
+
+| Configuration | `optimize_partition` | `fit_quantizer` |
+| --- | --- | --- |
+| `DExchangeConfig` | `DOptimality`, `ProfiledDOptimality` | `DOptimality` |
+| `MahalanobisLloydConfig` | `DOptimality`, `ProfiledDOptimality` | `DOptimality` |
+| `SoftVoronoiConfig` | — | `DOptimality`, `ProfiledDOptimality` |
+| `KMeansConfig` | — | `NormalizedTrace` |
+| `ScalarDPConfig` | — | `DOptimality` |
+
+### Exact finite exchange
+
+Moving row \(i\) from cell \(a\) to cell \(b\) changes the between-cell information by a rank-two
+update,
 
 $$
-\Delta I=\alpha u_au_a^\top-\beta u_bu_b^\top,
-\quad
-\alpha=\frac{w_iW_a}{W_a-w_i},\quad
-\beta=\frac{w_iW_b}{W_b+w_i}.
+\Delta I=\alpha\,u_au_a^\top-\beta\,u_bu_b^\top,
+\qquad
+\alpha=\frac{w_iW_a}{W_a-w_i},\qquad
+\beta=\frac{w_iW_b}{W_b+w_i},
 $$
 
-The rank-two determinant lemma gives the exact gain. The solver accepts only gains above a fixed
-tolerance, recomputes cell state after every accepted move, and terminates at a deterministic
-one-point scan or an explicit move limit. For a positive-definite stable state, final labels are
-reproduced by the common Mahalanobis metric \(I_B^{-1}\); only then may the result compile to a
-quantizer. Zero-weight rows receive that final rule without influencing the fit.
+so the matrix determinant lemma reduces the exact log-determinant gain to a \(2\times2\)
+determinant. The solver evaluates every admissible relocation in a scan, accepts only gains above a
+strict tolerance, and rebuilds cell state after every accepted move. The objective is therefore
+monotone, termination is guaranteed, and the terminal state is exchange-stable by construction.
+With `batch_moves` a single scan may relocate many rows, so `accepted_moves` normally exceeds
+`scans`; a batch is truncated before it displaces too much of any cell's weight and adopted only
+when the exactly rebuilt objective improves, halving and finally falling back to the single best
+move otherwise.
 
-### Normalized-trace k-means
+### Guarded Mahalanobis-Lloyd
 
-After projection and Fisher whitening, weighted Lloyd steps minimize within-cell squared distance,
-equivalently maximize normalized retained trace. This is a deterministic multi-restart baseline
-and yields a reusable Euclidean Voronoi quantizer.
+An iteration freezes the current criterion metric, proposes the complete nearest-centroid
+relabeling in that metric, and accepts it only when the exactly rebuilt objective strictly improves.
+The guard is part of the contract, not a safety net: the tangent of the concave log determinant is
+an upper bound rather than a minorizer, so an unguarded batch step is not monotone and a committed
+eight-row fixture loses 0.136521 nat in one such step. With the default `guard="exchange"` the
+labels are finished by the exact exchange engine, so the reported state is exchange-stable and a
+nonsingular D result stays compilable; `guard="reject"` stops at the last accepted batch and
+reports whatever stability it actually reached.
 
-### Soft D quantizer fitting
+### Soft Voronoi
 
-Soft responsibilities define fractional cell moments and a differentiable D objective. Adam
-optimizes centers while temperature decreases; the final result is the hardened nearest-center
-rule. Reports distinguish soft objective, hard train/validation information, and hardening gap.
-This is a nonconvex empirical solver, not a global-optimality certificate.
+Soft responsibilities turn cell moments into differentiable functions of the centers, giving a
+differentiable surrogate for the D or profiled-D objective. Adam optimizes the centers while the
+temperature anneals, and the returned rule is the hardened nearest-center assignment. The reports
+keep the soft objective, the hard train and validation information, and the gap between them
+separate, because the last of those is the honest quantity. This is a nonconvex empirical solver
+with no optimality certificate.
 
-## Score acquisition
+### Weighted k-means
 
-- `ScoreSample` carries precomputed score rows and their measure.
-- `ObservationSample` needs a `ScoreFunction`, `LinearComponentScore`, or `ClassifierScore`.
-- `IntegrationSource` materializes deterministic tensor Gauss-Legendre quadrature on a finite
-  box. Density or intensity is mandatory. Its exponential point growth restricts it to low
-  observation dimension.
-- `LinearComponentScore` evaluates \(s_\alpha=\phi_\alpha/(\phi^\top\theta_0)\).
-- `CentralLogRatioTransform` converts calibrated minus/plus posteriors, with training-prior
-  correction, to central finite-difference scores.
-- `MixturePosteriorTransform` converts calibrated multiclass posteriors to constrained mixture
-  scores after class-prior correction.
+After projection and whitening, weighted Lloyd iterations from deterministic k-means++ restarts
+minimize within-cell squared distance, which is the normalized-trace objective. The resulting rule
+is an ordinary Euclidean Voronoi quantizer in whitened score space.
 
-Classifier callbacks must already be trained and calibrated. Validation sources remain diagnostic
-and cannot affect gradients, stopping, initialization selection, or checkpoints.
+### Exact scalar dynamic program
 
-## Criterion-specific limits
+When the effective score space is rank one after projection, the D-optimal partition has ordered
+interval cells, so a weighted interval dynamic program returns the **global** optimum rather than a
+local one. `ScalarDPConfig` rejects a higher-rank score space by name rather than approximating it,
+and `max_rows` bounds the exact quadratic recursion.
 
-Profiled \(D_s\) remains a gated future solver and E-optimality is explicitly outside the
-development plan. Both remain theory and regression-test subjects. Exact rational and exhaustive
-fixtures prove that their globally optimal finite assignments can violate the corresponding
-apparent nearest-cell geometries. Any future reconsideration would require separate finite and
-inductive contracts before public exposure.
+## 5. Certificate
+
+Nothing below runs implicitly during fitting; each is an explicit call on results you already have.
+
+**Exchange stability.** `exchange_stability_report(scores, labels, ...)` runs exactly one complete
+exact scan of a supplied labeling and nothing else, so labels from any origin — a rejected batch, an
+external tool, a hand edit — can be checked before they are trusted. It reports the exact objective,
+the best remaining gain, and the improving move when one exists. Every `PartitionResult` already
+carries the same verdict as `exchange_stable` and `best_remaining_gain`.
+
+**Geometry.** A `DOptimality` result carries a `GeometryReport` measuring the largest
+Mahalanobis-Voronoi violation of the terminal metric, the log-determinant gain such a violation
+guarantees is being left on the table, and the cell-separation residual against the leverage bound.
+A `ProfiledDOptimality` result carries a `ProfiledGeometryReport` instead. The two are never merged
+under one name, because they describe different objects: a strict Voronoi rule that exchange
+stability forces, and an efficient semimetric whose Voronoi rule a stable profiled partition may
+legitimately violate.
+
+**Compilation.** `PartitionResult.compile_quantizer()` is the D-specific bridge from the finite task
+to the inductive one. It applies only to `DOptimality`, requires exchange stability and nonsingular
+geometry, and verifies that the compiled Mahalanobis rule reproduces every positive-weight training
+label before returning it.
+
+**Profiled ceiling.** `efficient_score_bound(scores, interest=..., n_bins=...)` bounds the profiled
+information of *every* rule with that cell budget by the between-cell information of the full-data
+efficient score \(\hat s=s_\psi-B^\ast s_\lambda\). For one parameter of interest the maximizing
+rule has ordered interval cells and is found exactly, so `upper_bound` is a certificate rather than
+an estimate, and `gap_to(result)` is the remaining slack. Its labels double as the `initial_labels`
+initializer for profiled exchange. More than one interest column raises `NotImplementedError`: a
+multivariate efficient score would need a multivariate solver, and the answer would no longer be
+certified.
+
+**Global optimality.** `certify_partition(scores, n_bins=..., incumbent=...)` decides global
+optimality by depth-first branch and bound with the singleton-completion upper bound — unassigned
+atoms are left as singleton cells, so refinement monotonicity of the log determinant bounds every
+completion of a partial assignment. It returns `status="optimal"` only when the tree was exhausted;
+a spent node budget returns `status="budget_exhausted"` with the outstanding bound and gap. The
+search is exponential, so `CertificationConfig` guards both the node count and the number of
+distinct score atoms and refuses an oversized instance by name. Certification is `DOptimality` only:
+the refinement bound uses Loewner monotonicity of \(\log\det\), which the profiled Schur objective
+does not inherit.
+
+## Reading the numbers
+
+Retention is reported as the spectrum of \(I_B\) relative to \(I_\infty\) in the informative
+subspace, summarized by `arithmetic_mean_retention`, `geometric_mean_retention` (the D-efficiency),
+and `logdet_retention`. Optimizer traces carry an explicit `objective_label`, because solvers do
+not share one convention: `"whitened_sse"` is a minimized within-cell squared error in whitened
+coordinates, while `"logdet_retained"` and `"profiled_logdet"` are maximized log determinants. Two
+traces are comparable only under the same label.
+
+Validation sources are diagnostic. They never influence gradients, stopping, initialization
+selection, or checkpoints — and the optimizer is judged by the final hardened partition, not by a
+soft objective it passed through on the way.

@@ -221,6 +221,7 @@ cohort is not used to choose among them.
 This use case learns a reusable rule from externally estimated scores, so it
 uses an explicit `ScoreSample` and `fit_quantizer`:
 
+<!-- snippet: skip -->
 ```python
 quantizer = sq.fit_quantizer(
     sq.ScoreSample(reference_scores[partition_rows], integration_weights),
@@ -500,9 +501,9 @@ opportunity to choose the frozen patient split, classifier, calibration, bin
 count, or quantizer.
 
 The connection to the theory is precise. The information identity in
-[Chapter 3](../book/03-hard-label-information.md) depends on cell masses and
+[Chapter 5](../book/ch05-information-after-binning.md) depends on cell masses and
 score first moments, while the empirical-consistency statement in
-[Chapter 10](../book/10-randomized-consistency.md) requires control of the
+[Chapter 12](../book/ch12-soft-rules.md) requires control of the
 underlying score law. Class fractions and marker means are useful necessary
 transport diagnostics, but they are not sufficient statistics for arbitrary
 learned score providers. The held-out score-information, occupancy, geometry,

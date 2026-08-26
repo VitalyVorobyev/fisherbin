@@ -74,6 +74,9 @@ jobs:
           enable-cache: true
       - run: uv python install 3.13
       - run: uv sync --all-extras --dev --locked
+      # Quality is the strict cross-platform gate; baselines.json timings come
+      # from a fixed local machine, and shared CI runners are slower and noisy,
+      # so the wall-clock tolerance only catches order-of-magnitude blowups.
       - run: >
           uv run python benchmarks/bench.py --check benchmarks/baselines.json
-          --time-tolerance 2.5 --quality-rtol 1e-6
+          --time-tolerance 10 --quality-rtol 1e-6

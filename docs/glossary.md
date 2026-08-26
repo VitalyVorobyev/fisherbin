@@ -1,61 +1,162 @@
 # Glossary
 
-**Bin.** One category of a hard partition. After binning, events are represented
-only by integer labels or aggregate counts.
+### Bin
 
-**D-efficiency.** Geometric mean of retained-information eigenvalues. It
-summarizes balanced local retention across informative parameter directions.
+One category of a hard partition. After binning, events are represented only by integer
+labels or aggregate counts.
 
-**Finite assignment.** Labels optimized for one fixed weighted score table. It
-does not by itself define labels for unseen scores.
+### Compile bridge
 
-**Fisher information.** Expected outer product of the score. It measures local
-model sensitivity, not estimator bias.
+The one theorem that turns a sample partitioning result into a reusable quantizer without
+inventing a rule: when a D-optimal finite partition is [exchange-stable](#exchange-stability)
+and its information matrix is nonsingular, it is provably identical to the nearest-cell
+rule in its own \(I_q^{-1}\)-Mahalanobis metric, so `PartitionResult.compile_quantizer()`
+returns exactly that rule and verifies label reproduction before returning it. The bridge
+exists for the log determinant only; a profiled-\(D_s\) partition has an analogous
+population geometry but no exact finite implication, so it refuses to compile rather than
+approximate one.
 
-**Hard quantizer.** A deterministic score-space mapping that assigns every
-score to exactly one bin.
+### D-efficiency
 
-**Intensity.** An unnormalized event-rate model. Unlike a probability density,
-its integral may encode expected yield.
+Geometric mean of retained-information eigenvalues, also called the geometric-mean
+[retention](#retention). It summarizes balanced local information retention across
+informative parameter directions and equals a single retained/unbinned ratio when there is
+only one informative direction.
 
-**Likelihood.** The probability density or mass of observed data, viewed as a
-function of model parameters.
+### Efficient score
 
-**Likelihood ratio.** Ratio of two likelihoods or component densities. A
-classifier posterior divided by its class prior can estimate component ratios
-up to a common event-wise factor.
+In a model with interest parameters \(\psi\) and nuisance parameters \(\lambda\), the part
+of the interest score \(s_\psi\) that is left after regressing away the nuisance score
+\(s_\lambda\): \(e(s) = s_\psi - BC^{-1}s_\lambda\), where \(B\) and \(C\) are blocks of the
+unbinned information matrix. Profiled \(D_s\)-optimality's population stationarity
+condition is a nearest-cell rule in this projection alone; the directions it annihilates
+matter only through the regression coefficient, not directly.
 
-**Oracle.** A calculation using the exact data-generating likelihood or exact
-score. A learned classifier ratio is not an oracle merely because it is used
-without binning.
+### Exchange stability
 
-**Population design.** Optimization of a measurable rule under a specified
-score law rather than only its finite realization.
+A property of a finite labeling: no single row can move to another cell and strictly
+improve the objective, evaluated by one exact scan over every admissible relocation.
+`PartitionResult.exchange_stable` records whether the solver's own output has this
+property, and `exchange_stability_report` checks it for a labeling from any source.
+Exchange stability is necessary for the [compile bridge](#compile-bridge) but is checked
+independently of it.
 
-**Reference point.** Parameter value \(\theta_0\) at which scores and Fisher
-information are evaluated.
+### Finite assignment
 
-**Score.** Gradient of log likelihood with respect to parameters. It describes
-an event's local parameter sensitivity.
+See [sample partitioning](#sample-partitioning).
 
-**Score law.** The distribution or intensity measure induced on score space by
-a reference source and an observation-to-score provider.
+### Fisher information
 
-**Score provider.** A map from observations to score vectors. It does not
-supply a reference measure.
+Expected outer product of the score. It measures local model sensitivity, not estimator
+bias.
 
-**Simplex.** Set of nonnegative fractions that sum to one. A \(K\)-component
-mixture has \(K-1\) free directions.
+### Hard quantizer
 
-**Source.** An empirical table or integration rule that supplies the reference
-measure used by an objective.
+A deterministic score-space mapping that assigns every score to exactly one bin. Contrast
+with a randomized quantizer, which assigns a probability distribution over bins.
 
-**Surrogate information.** Between-cell information computed from estimated
-scores. It is exact for those supplied vectors but not automatically Fisher
-information of the original statistical model.
+### Intensity
 
-**Template.** Conditional bin probabilities \(P(B_j\mid k)\) for a model
-component \(k\).
+An unnormalized event-rate model. Unlike a probability density, its integral may encode
+expected yield rather than one.
 
-**Whitening.** Linear scaling of informative score directions so that their
-unbinned Fisher matrix is the identity. ScoreQuant does not mean-center scores.
+### Likelihood
+
+The probability density or mass of observed data, viewed as a function of model
+parameters.
+
+### Likelihood ratio
+
+Ratio of two likelihoods or component densities. A classifier posterior divided by its
+class prior can estimate component ratios up to a common event-wise factor.
+
+### Oracle
+
+A calculation using the exact data-generating likelihood or exact score. A learned
+classifier ratio is not an oracle merely because it is used without binning.
+
+### Population design
+
+Optimization of a measurable rule under a specified score law itself, rather than only its
+finite realization. It is the inductive half of [space quantization](#space-quantization);
+`fit_quantizer` performs it exactly when given an `IntegrationSource` and approximately, as
+empirical inductive fitting, when given a finite sample.
+
+### Reference point
+
+Parameter value \(\theta_0\) at which scores and Fisher information are evaluated.
+
+### Retention
+
+The fraction of unbinned Fisher information a labeling keeps, reported per informative
+direction as an eigenvalue ratio of \(I_{\text{full}}^{-1}I_q\) and summarized as
+`geometric_mean_retention` (equivalently, [D-efficiency](#d-efficiency)) or
+`arithmetic_mean_retention`. A retention of \(1\) loses nothing; a retention of \(0\) means
+a direction carries no information after binning. \(1/\sqrt{\text{retention}}\) is the
+resulting inflation of a Gaussian standard error in that direction.
+
+### Sample partitioning
+
+The transductive task: given one fixed weighted table of scores, choose the labels that
+maximize the retained information *of those rows*. `optimize_partition` performs it and
+returns a `PartitionResult`, which deliberately has no predict method — a labeling of one
+table does not by itself determine what happens to a score that was not in it. Also called
+finite assignment.
+
+### Score
+
+Gradient of log likelihood with respect to parameters. It describes an event's local
+parameter sensitivity.
+
+### Score law
+
+The distribution or intensity measure induced on score space by a reference source and an
+observation-to-score provider.
+
+### Score provider
+
+A map from observations to score vectors. It does not supply a reference measure; a source
+must supply that separately.
+
+### Simplex
+
+Set of nonnegative fractions that sum to one. A \(K\)-component mixture has \(K-1\) free
+directions.
+
+### Source
+
+An empirical table or integration rule that supplies the reference measure used by an
+objective.
+
+### Space quantization
+
+The inductive task: given a score law — an empirical sample or a density over a bounded
+box — choose a reusable rule that assigns any future score to a bin. `fit_quantizer`
+performs it and returns a `QuantizerResult`, whose answer is a geometric object (a
+transform, centers, sometimes a metric) with a well-defined `predict_scores` method,
+because the rule is defined everywhere rather than only on the rows it was fit from.
+
+### Surrogate information
+
+Between-cell information computed from estimated scores. It is exact for those supplied
+vectors but not automatically Fisher information of the original statistical model.
+
+### Template
+
+Conditional bin probabilities \(P(B_j\mid k)\) for a model component \(k\).
+
+### Three doors
+
+The three ways a weighted table of score rows can arise, differing in what you already
+possess rather than in what the optimizer does with the result: door 1, precomputed
+`(event, score)` rows supplied directly as a `ScoreSample`; door 2, component densities or
+an analytic score model, reached through an `ObservationSample` or `IntegrationSource`
+together with `LinearComponentScore` or `ScoreFunction`; door 3, a trained classifier's
+calibrated probabilities, reached through an `ObservationSample` with `ClassifierScore` and
+a posterior transform. All three doors open onto the same object — a weighted score
+table — and are validated together with a source, never supplied alone.
+
+### Whitening
+
+Linear scaling of informative score directions so that their unbinned Fisher matrix is the
+identity. ScoreQuant does not mean-center scores while whitening.

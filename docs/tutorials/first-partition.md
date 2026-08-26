@@ -27,6 +27,7 @@ partition.train_report.geometric_mean_retention
 For future scores, compile only after stability:
 
 ```python
+future_scores = rng.normal(size=(200, 1))
 quantizer = partition.compile_quantizer()
 future_bins = quantizer.predict_scores(future_scores)
 ```
