@@ -426,4 +426,9 @@ want the rule the theorem supplies rather than one you chose. Either way, before
 believe any number, check the rank, check the occupancy, check the train/validation
 difference, and check where the scores came from.
 
+**Runnable examples:** [solver-shootout](../examples/solver-shootout.md) puts every solver
+and baseline from this chapter's decision on one problem;
+[flowcyt-teaser](../examples/flowcyt-teaser.md) points to a complete real-data study where
+these choices were made once and audited.
+
 The rest of this book is why those are the right things to check.

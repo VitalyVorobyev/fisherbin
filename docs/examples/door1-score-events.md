@@ -32,7 +32,7 @@ train, test = problem.train, problem.test
 
 provenance = sq.ScoreProvenance(kind="exact", reference_point=(0.0,))
 sample = sq.ScoreSample(train.scores, train.weights, provenance=provenance)
-sample.scores.shape
+assert sample.scores.shape == (2000, 1)
 ```
 
 ![Training histogram and the compiled test-set partition](assets/door1-score-events.png)
@@ -103,6 +103,7 @@ direct = sq.fit_quantizer(
 )
 direct_retention = float(direct.evaluate_scores(test.scores, test.weights).geometric_mean_retention)
 assert 0.85 < direct_retention < 0.92
+assert round(compiled_retention, 6) == round(direct_retention, 6)
 ```
 
 On this one-dimensional problem the two routes land on the same test-set D-efficiency to six

@@ -250,6 +250,10 @@ including which pipeline stage each comparable package occupies.
   task, which door, which criterion and solver.
 - [The book](https://vitalyvorobyev.github.io/scorequant/book/) — the statistical theory developed
   independently of this package's API.
+- [Examples](https://vitalyvorobyev.github.io/scorequant/examples/) — ten runnable pages, nine with
+  a matching notebook: the three doors, a solver shootout against three baselines, theory
+  demonstrations (profiled $D_s$, soft rules, two counterexamples, global certification), and a
+  teaser into the FlowCyt study below.
 - [API guide](https://vitalyvorobyev.github.io/scorequant/api/) and
   [reference](https://vitalyvorobyev.github.io/scorequant/reference/) — released contracts.
 - [FlowCyt study](https://vitalyvorobyev.github.io/scorequant/usecases/cellpopulation/) — a

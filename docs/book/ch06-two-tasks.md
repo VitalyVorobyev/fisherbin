@@ -163,6 +163,9 @@ except ValueError as error:
     assert "no canonical inductive compilation" in str(error)
 ```
 
+**Runnable example:** [door1-score-events](../examples/door1-score-events.md) runs both
+tasks — `optimize_partition` and the compile bridge — on one problem.
+
 ## Three optimization levels of a rule
 
 Once you are on the inductive side, there is a second three-way choice: what exactly is

@@ -270,6 +270,10 @@ anything into a fit that stopped warm. The single positive entry, \(+8\times10^{
 the coldest schedule, is a rounding difference between two nearly identical numbers; its
 sign carries no information.
 
+```python
+assert sq.SoftVoronoiConfig().temperature_end_ratio == 0.05
+```
+
 ### Purification: what randomization costs
 
 D-efficiency of a randomized rule against the deterministic rule that hardens it, at the

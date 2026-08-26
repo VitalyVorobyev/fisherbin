@@ -66,6 +66,7 @@ from examples.global_certification import incumbent_cases
 cases = {case.key: case for case in incumbent_cases()}
 confirmed = cases["confirmed"]
 
+assert confirmed.n_rows == 8
 assert confirmed.status == "optimal"
 assert confirmed.incumbent_was_optimal is True
 assert confirmed.gap == 0.0
@@ -82,6 +83,7 @@ nodes.
 ```python
 improved = cases["improved"]
 
+assert improved.n_rows == 10
 assert improved.status == "optimal"
 assert improved.incumbent_was_optimal is False
 assert abs(improved.gain - 0.046845) < 1e-6
@@ -189,7 +191,7 @@ one above: 28 events, 5 cells, proved optimal in 51292 nodes and 3.4 seconds.
 
 | Restarts | k-means++ seeding | Random seeding | Seconds per fit, k-means++ |
 | --- | --- | --- | --- |
-| 1 | 0.359 | 0.141 | 0.015 |
+| 1 | 0.359 | 0.141 | 0.014 |
 | 2 | 0.609 | 0.203 | 0.014 |
 | 3 | 0.703 | 0.297 | 0.019 |
 | 4 | 0.828 | 0.391 | 0.024 |
@@ -263,6 +265,15 @@ roughly 32 to 36 atoms at four or more cells, a certificate becomes a bounded se
 answer is a ceiling rather than a proof. `CertificationConfig.max_rows` defaults to 64 and
 may not exceed 512, which is a statement about the recursion depth rather than a promise that
 512 is reachable.
+
+```python
+assert sq.CertificationConfig().max_rows == 64
+try:
+    sq.CertificationConfig(max_rows=513)
+    raise AssertionError("512 is the stated ceiling")
+except ValueError as error:
+    assert "max_rows must be at most 512" in str(error)
+```
 
 ### The workflow this suggests
 

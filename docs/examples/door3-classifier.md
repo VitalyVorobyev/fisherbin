@@ -153,6 +153,24 @@ small, medium, large = ladder
 assert small[1] > 0.95 and small[2] < 0.90  # surrogate looks fine; the truth is not
 assert large[2] > medium[2] > small[2]  # true retention rises with classifier quality
 assert abs(large[1] - large[2]) < 0.01  # a good classifier's surrogate is finally trustworthy
+
+# The table below rounds each ladder entry to three decimals.
+assert [round(small[1], 3), round(small[2], 3)] == [0.966, 0.885]
+assert [round(medium[1], 3), round(medium[2], 3)] == [0.969, 0.952]
+assert [round(large[1], 3), round(large[2], 3)] == [0.970, 0.966]
+
+# The ceiling a quantizer fit directly from the exact score reaches on this sample.
+direct = sq.fit_quantizer(
+    sq.ObservationSample(train_observations),
+    score=exact_provider,
+    n_bins=4,
+    criterion=sq.DOptimality(),
+    config=sq.DExchangeConfig(seed=7),
+)
+direct_retention = float(
+    direct.evaluate_scores(exact_provider.score(test_observations)).geometric_mean_retention
+)
+assert round(direct_retention, 3) == 0.972
 ```
 
 ## Analysis

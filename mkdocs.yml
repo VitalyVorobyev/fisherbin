@@ -62,6 +62,7 @@ nav:
       - "Estimated scores: classifiers and calibration": book/ch13-estimated-scores.md
       - Diagnostics and choosing a method: book/ch14-choosing-a-method.md
   - Examples:
+      - Overview: examples/index.md
       - Door 1, precomputed score events: examples/door1-score-events.md
       - Door 2, mixture densities: examples/door2-mixture-densities.md
       - Door 3, a trained classifier: examples/door3-classifier.md
@@ -71,6 +72,7 @@ nav:
       - A batch step that loses information: examples/lloyd-nonmonotone.md
       - A profiled optimum outside its geometry: examples/ds-geometry-counterexample.md
       - Certificates and restarts: examples/global-certification.md
+      - FlowCyt, a real-data teaser: examples/flowcyt-teaser.md
   - Evidence:
       - Synthetic gallery: gallery/index.md
       - FlowCyt study: usecases/cellpopulation.md

@@ -171,6 +171,15 @@ PAGE_SCALE_PROBE = [
 ]
 
 
+def test_shootout_json_matches_the_full_study_scale() -> None:
+    # The scale the "Analysis" section states in prose: 16 bins, 4000 training
+    # and 15000 held-out events.
+    metrics = _shootout_metrics()
+    assert metrics["n_bins"] == 16
+    assert metrics["n_train"] == 4_000
+    assert metrics["n_test"] == 15_000
+
+
 def test_shootout_json_matches_the_published_method_table() -> None:
     methods = _shootout_methods()
     assert set(methods) == set(PAGE_RETENTION)
@@ -238,8 +247,22 @@ def test_shootout_headline_gaps_hold_in_the_committed_study() -> None:
     assert max(float(row["gap"]) for row in sweep) > 0.29
 
     # Claim 3: the information-aware solvers agree far more closely than they
-    # differ in cost.
-    assert max(held_out) - min(held_out) < 2e-5
+    # differ in cost. "within 0.000011 ... within 0.0000051 on training".
+    assert max(held_out) - min(held_out) == pytest.approx(0.000011, abs=2e-6)
+    train = [
+        float(row["train_retention"])  # type: ignore[arg-type]
+        for row in methods.values()
+        if row["family"] == "information_aware"
+    ]
+    assert max(train) - min(train) == pytest.approx(0.0000051, abs=1e-6)
+
+    # Claim 2's "loses only 0.00012" and "lost 0.0012" gaps.
+    whitened_test = float(methods["quantizer_whitened_kmeans"]["test_retention"])  # type: ignore[arg-type]
+    euclidean_test = float(methods["baseline_euclidean_kmeans_scores"]["test_retention"])  # type: ignore[arg-type]
+    assert whitened_test - euclidean_test == pytest.approx(0.00012, abs=2e-5)
+    equal_frequency_test = float(methods["baseline_equal_frequency_1d"]["test_retention"])  # type: ignore[arg-type]
+    assert max(held_out) - equal_frequency_test == pytest.approx(0.0012, abs=2e-4)
+
     ratios = [
         float(row["seconds_ratio"])  # type: ignore[arg-type]
         for row in methods.values()
@@ -253,8 +276,12 @@ def test_shootout_whitening_is_inert_on_a_line_and_decisive_off_it() -> None:
     probe = metrics["whitening_probe"]
     assert isinstance(probe, dict)
     # Claim 2, first half: on a two-parameter component score the whole cloud
-    # lies on a line, so whitening cannot change the k-means partition.
+    # lies on a line, so whitening cannot change the k-means partition. The
+    # page states the full-study gap as "0.0000082".
     assert abs(float(probe["whitened"]) - float(probe["unwhitened"])) < 1e-4
+    assert abs(float(probe["whitened"]) - float(probe["unwhitened"])) == pytest.approx(
+        0.0000082, abs=1e-6
+    )
 
     scale_probe = metrics["scale_probe"]
     assert isinstance(scale_probe, dict)
@@ -263,11 +290,15 @@ def test_shootout_whitening_is_inert_on_a_line_and_decisive_off_it() -> None:
     whitened = [float(row["whitened"]) for row in entries]
     euclidean = [float(row["euclidean"]) for row in entries]
     # Claim 2, second half: off the line, D-efficiency is invariant under a
-    # score reparameterization and only the whitened fit reflects that.
+    # score reparameterization and only the whitened fit reflects that. The
+    # page states "invariant to twelve decimal places" and "lost 58
+    # D-efficiency points" at the widest rescaling.
     assert max(whitened) - min(whitened) < 1e-9
+    assert max(whitened) - min(whitened) < 5e-12
     assert euclidean[0] > 0.97
     assert min(euclidean) < 0.5
     assert euclidean[0] - min(euclidean) > 0.5
+    assert euclidean[0] - min(euclidean) == pytest.approx(0.5847, abs=2e-3)
 
 
 def test_fast_rerun_reproduces_the_score_space_gap_and_solver_agreement() -> None:
@@ -960,6 +991,19 @@ PAGE_CERT_HIT_RATES = [
     (16, 0.984, 0.906),
 ]
 
+# The "Seconds per fit, k-means++" column of the same table, at the precision
+# the page prints.
+PAGE_CERT_SECONDS_PER_FIT = [
+    (1, 0.014),
+    (2, 0.014),
+    (3, 0.019),
+    (4, 0.024),
+    (6, 0.035),
+    (8, 0.044),
+    (12, 0.065),
+    (16, 0.083),
+]
+
 # The certification cost table: atoms, then nodes explored at three, four, and
 # five cells.
 PAGE_CERT_SCALING = [
@@ -1016,7 +1060,14 @@ def test_certification_json_matches_the_published_hit_rate_table() -> None:
     # prove the optimum -- about a hundredfold."
     six = float(rows[("kmeans++", 6)]["seconds_per_trial"])  # type: ignore[arg-type]
     assert round(six, 3) == pytest.approx(0.035, abs=5e-4)
-    assert float(rates["certified_seconds"]) / six == pytest.approx(100.0, abs=5.0)  # type: ignore[arg-type]
+    certified_seconds = float(rates["certified_seconds"])  # type: ignore[arg-type]
+    assert round(certified_seconds, 1) == pytest.approx(3.4, abs=0.05)
+    assert certified_seconds / six == pytest.approx(100.0, abs=5.0)
+
+    # The full "Seconds per fit, k-means++" column.
+    for n_restarts, seconds in PAGE_CERT_SECONDS_PER_FIT:
+        measured = float(rows[("kmeans++", n_restarts)]["seconds_per_trial"])  # type: ignore[arg-type]
+        assert round(measured, 3) == pytest.approx(seconds, abs=5e-4)
 
     # "0.55 seconds for sixteen random restarts against 0.083 for sixteen
     # seeded ones".

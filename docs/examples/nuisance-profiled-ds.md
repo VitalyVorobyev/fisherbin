@@ -284,11 +284,12 @@ The certified ceiling and the two profiled runs, over the bin budget:
 | 8 | 0.98940 | 0.99322 | 0.99509 | 0.99518 |
 
 Every column here is information about the fraction, so the ceiling applies to all of
-them. Three things fall out. Plain D never comes close: at six bins it is still below what
-profiled \(D_s\) reaches with four. The ceiling is *tight enough to be useful* — the
-initialized profiled partition is within 0.0007 nat of a quantity no four-cell rule can
-exceed, which is 0.07% in ratio terms. And the certificate costs almost nothing: the exact
-scalar dynamic program on the efficient score is a one-dimensional problem.
+them. Three things fall out. Plain D is inefficient at this: it needs six bins just to
+match what profiled \(D_s\) already reaches with four (0.98047 against 0.97903). The
+ceiling is *tight enough to be useful* — the initialized profiled partition is within
+0.0007 nat of a quantity no four-cell rule can exceed, which is 0.07% in ratio terms. And
+the certificate costs almost nothing: the exact scalar dynamic program on the efficient
+score is a one-dimensional problem.
 
 ### What the initializer buys
 

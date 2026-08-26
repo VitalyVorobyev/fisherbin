@@ -348,5 +348,8 @@ provenance, check the closure, validate the transform against a known case, eval
 labels against the best truth available, and treat every reported number as conditional on
 the score estimate — because it is.
 
+**Runnable example:** [door3-classifier](../examples/door3-classifier.md) runs this protocol
+on a trained classifier and traces retention against classifier quality.
+
 [Chapter 14](ch14-choosing-a-method.md) puts this alongside every other choice the library
 asks you to make, and says which of them are decided by the problem rather than by taste.

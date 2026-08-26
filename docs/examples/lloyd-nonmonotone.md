@@ -97,6 +97,7 @@ distortion_after = frozen_metric_distortion(scores, weights, proposal, means, me
 assert distortion_after < distortion_before
 assert abs(distortion_before - 13.5450) < 1e-3
 assert abs(distortion_after - 9.7464) < 1e-3
+assert round((distortion_before - distortion_after) / distortion_before, 2) == 0.28
 ```
 
 Distortion falls 28%; the objective falls 0.14 nat. The surrogate and the criterion are not
@@ -166,6 +167,7 @@ history = np.asarray(rescued.objective_history)
 
 assert rescued.accepted_lloyd_steps == 0
 assert rescued.accepted_moves == 4
+assert len(history) == 5
 assert np.all(np.diff(history) > 0)
 assert rescued.exchange_stable is True
 assert abs((rescued.objective - float(history[0])) - 2.775392) < 1e-5
@@ -204,6 +206,13 @@ assert run.outcome == "fixed"
 assert run.went_downhill is True
 assert abs(run.worst_step - (-0.136521)) < 1e-6
 assert abs(run.objectives[-1] - (-1.035251)) < 1e-6
+
+# The trajectory table's "Change" column.
+changes = np.diff(np.asarray(run.objectives))
+assert abs(changes[0] - (-0.136521)) < 1e-6
+assert abs(changes[1] - 2.580919) < 1e-6
+assert abs(changes[2] - 0.330994) < 1e-6
+assert abs(changes[3] - 0.0) < 1e-9
 ```
 
 | Step | Raw log determinant | Change |

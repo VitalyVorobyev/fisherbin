@@ -81,6 +81,7 @@ best, optimum = ranked[0]
 assert optimum == (0, 1, 2, 1, 2, 0, 0, 2)
 assert best == Fraction(20449, 1920)
 assert best - ranked[1][0] == Fraction(2929, 21120)
+assert round(float(Fraction(2929, 21120)), 3) == 0.139
 ```
 
 ### The geometry that optimum induces
@@ -217,6 +218,7 @@ profiled_survey = rank_labelings("profiled", table)
 determinant_survey = rank_labelings("determinant", table)
 
 assert profiled_survey.singular_labelings == 2
+assert len(labelings) - profiled_survey.singular_labelings == 964
 assert profiled_survey.consistent_ranks == [5]
 assert determinant_survey.consistent_ranks == [0, 55, 60, 63, 75]
 assert determinant_survey.optimum_is_consistent is True

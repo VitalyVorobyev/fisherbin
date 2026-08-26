@@ -72,6 +72,7 @@ their weight, so `ObservationSample` plus `provider` reaches `fit_quantizer` dir
 
 ```python
 train, test = problem.train, problem.test
+assert train.observations.shape == (4000, 1)
 
 quantizer_mc = sq.fit_quantizer(
     sq.ObservationSample(train.observations, train.weights),
@@ -110,6 +111,7 @@ int_retention = float(
     quantizer_int.evaluate_scores(test.scores, test.weights).geometric_mean_retention
 )
 assert 0.99 < int_retention <= 1.0
+assert round(mc_retention, 4) == round(int_retention, 4)
 ```
 
 The two fits — one from a 4000-event Monte Carlo sample, one from a 64-point deterministic
@@ -131,9 +133,9 @@ profiled = sq.profiled_information_report(
     test.scores, labels, interest=problem.interest, weights=test.weights, n_bins=problem.n_bins
 )
 fraction_retention = float(profiled.geometric_mean_retention)
-assert 0.99 < fraction_retention <= 1.0
+assert round(fraction_retention, 3) == 0.996
 schur_ratio = float(profiled.schur_binned[0, 0] / profiled.schur_unbinned[0, 0])
-assert 0.99 < schur_ratio <= 1.0
+assert 0.99 < schur_ratio < 1.0  # strictly less than the unbinned ceiling
 ```
 
 Six bins retain about 99.6% of the Fisher information specifically about the signal fraction
