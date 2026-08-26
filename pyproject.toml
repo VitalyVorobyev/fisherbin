@@ -53,6 +53,7 @@ dev = [
     "nbclient>=0.10",
     "nbformat>=5.10",
     "pytest>=8.3",
+    "pyyaml>=6",
     "ruff>=0.11",
     "ty>=0.0.70,<0.1",
 ]
