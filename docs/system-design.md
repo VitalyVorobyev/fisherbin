@@ -13,7 +13,10 @@ IntegrationSource + ScoreProvider ------+
 `PartitionResult` owns one fixed assignment: labels, cell weights/moments/means, full and retained
 information, objective, rank diagnostics, accepted moves, exchange stability, remaining gain, and
 provenance. It has no prediction method. `compile_quantizer()` is available only for a stable,
-nonsingular D result whose rule reproduces every positive-weight training label.
+nonsingular D result whose geometry certificate is Voronoi-consistent at the tolerance the
+partition was optimized at ([ADR 0016](adr/0016-tolerance-consistent-geometry-verification.md)):
+the compiled rule reproduces every training label except boundary rows whose relocation gain sits
+inside that tolerance.
 
 `QuantizerResult` owns score-space centers and metric, `predict_scores`, train/validation reports,
 hardening gap, trace, criterion/configuration, source kind, and provenance. There is deliberately
@@ -65,9 +68,12 @@ profiled rule is canonical away from the training rows. See
 - `criteria.py`, `config.py`, `result.py`, `api.py`: public contracts and orchestration. `api.py`
   validates every `(config, criterion, task)` combination against one declarative table instead of
   scattered isinstance chains.
-- `_binstats.py`, `_chunking.py`, `_validation.py`: private numerical helpers shared across modules
-  (weighted per-bin scatter-add statistics, the shared memory-bounded row-chunking budget used by
-  exchange scans and assignment kernels, and input validation including dtype promotion).
+- `_binstats.py`, `_chunking.py`, `_validation.py`, `_json.py`, `_typing.py`: private helpers shared
+  across modules (weighted per-bin scatter-add statistics, the shared memory-bounded row-chunking
+  budget used by exchange scans and assignment kernels, input validation including dtype promotion,
+  `to_dict()` JSON conversion, and the shared `ArrayLike`/`JsonValue` type aliases).
+- `visualization.py`: optional Matplotlib views over `PartitionResult`/`QuantizerResult`, imported
+  lazily so the core package carries no hard visualization dependency.
 - `examples/`, tests, and `research/`: datasets, tuning, counterexample search, and application logic.
 
 JAX is the sole numerical kernel implementation and Optax supplies gradient optimization. Optional

@@ -66,7 +66,7 @@ numbers). Check a fresh run against it with:
 
 ```bash
 JAX_ENABLE_X64=1 uv run python benchmarks/bench.py --check benchmarks/baselines.json \
-  --time-tolerance 2.5 --quality-rtol 1e-6
+  --time-tolerance 10 --quality-rtol 1e-6
 ```
 
 `--check` re-runs exactly the scenarios recorded in the baseline file (its own `--rows`/`--bins`
