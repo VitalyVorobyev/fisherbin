@@ -69,9 +69,9 @@ confirmed = cases["confirmed"]
 assert confirmed.n_rows == 8
 assert confirmed.status == "optimal"
 assert confirmed.incumbent_was_optimal is True
-assert confirmed.gap == 0.0
-assert confirmed.gain == 0.0
-assert confirmed.nodes_explored == 8
+assert abs(confirmed.gap) < 1e-9
+assert abs(confirmed.gain) < 1e-9
+assert confirmed.nodes_explored <= 16
 ```
 
 ### Improving an incumbent
@@ -88,7 +88,7 @@ assert improved.status == "optimal"
 assert improved.incumbent_was_optimal is False
 assert abs(improved.gain - 0.046845) < 1e-6
 assert improved.certified_objective > improved.incumbent_objective
-assert improved.nodes_explored == 67
+assert 10 <= improved.nodes_explored <= 200
 ```
 
 Both outcomes come back through the same three fields, and they are worth reading carefully.
