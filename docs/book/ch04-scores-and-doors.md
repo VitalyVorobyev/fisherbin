@@ -314,6 +314,10 @@ noise from the answer entirely. Use Door 3 when there is no other way in — and
 treat every number the library reports as conditional on the score estimate, because it
 is.
 
+**Runnable examples:** [door1-score-events](../examples/door1-score-events.md),
+[door2-mixture-densities](../examples/door2-mixture-densities.md), and
+[door3-classifier](../examples/door3-classifier.md) walk each door end to end.
+
 All three doors open onto the same room: a weighted table of score vectors. From here on
 the table is all that matters. Chapter 5 works out exactly how much information survives
 when that table is compressed into \(K\) labels.

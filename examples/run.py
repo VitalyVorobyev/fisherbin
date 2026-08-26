@@ -12,6 +12,7 @@ from matplotlib.figure import Figure
 from sklearn.cluster import KMeans
 
 import scorequant
+from examples._env import is_fast_mode
 from examples.synthetic_problems import PROBLEMS, SyntheticDataset, SyntheticProblem
 
 
@@ -20,7 +21,7 @@ class ExperimentResult:
     problem: SyntheticProblem
     kmeans: scorequant.QuantizerResult
     soft: scorequant.QuantizerResult
-    metrics: dict[str, float | list[float]]
+    metrics: dict[str, float | int | list[float]]
 
 
 def _nearest(points: np.ndarray, centers: np.ndarray) -> np.ndarray:
@@ -94,24 +95,48 @@ def run_experiment(
         sample_weight=problem.train.weights,
     )
     observation_labels = observation_model.predict(problem.test.observations)
+    observation_train_labels = observation_model.predict(problem.train.observations)
     equal_labels = _equal_grid_labels(
         problem.train.observations, problem.test.observations, problem.n_bins
     )
+    equal_train_labels = _equal_grid_labels(
+        problem.train.observations, problem.train.observations, problem.n_bins
+    )
     random_retentions: list[float] = []
+    random_train_retentions: list[float] = []
     rng = np.random.default_rng(2026)
     for _ in range(n_random):
         indices = rng.choice(problem.train.scores.shape[0], size=problem.n_bins, replace=False)
-        labels = _nearest(problem.test.scores, problem.train.scores[indices])
-        random_retentions.append(_report_retention(problem.test, labels, problem.n_bins))
+        centers = problem.train.scores[indices]
+        random_retentions.append(
+            _report_retention(problem.test, _nearest(problem.test.scores, centers), problem.n_bins)
+        )
+        random_train_retentions.append(
+            _report_retention(
+                problem.train, _nearest(problem.train.scores, centers), problem.n_bins
+            )
+        )
 
-    metrics: dict[str, float | list[float]] = {
+    metrics: dict[str, float | int | list[float]] = {
+        "n_bins": problem.n_bins,
+        "n_train": int(problem.train.scores.shape[0]),
+        "n_test": int(problem.test.scores.shape[0]),
+        "kmeans_train_retention": kmeans.train_report.geometric_mean_retention,
         "kmeans_test_retention": kmeans_test.geometric_mean_retention,
+        "soft_train_retention": soft.train_report.geometric_mean_retention,
         "soft_test_retention": soft_test.geometric_mean_retention,
+        "observation_kmeans_train_retention": _report_retention(
+            problem.train, observation_train_labels, problem.n_bins
+        ),
         "observation_kmeans_test_retention": _report_retention(
             problem.test, observation_labels, problem.n_bins
         ),
+        "equal_grid_train_retention": _report_retention(
+            problem.train, equal_train_labels, problem.n_bins
+        ),
         "equal_grid_test_retention": _report_retention(problem.test, equal_labels, problem.n_bins),
         "random_test_retentions": random_retentions,
+        "random_median_train_retention": float(np.median(random_train_retentions)),
         "random_median_test_retention": float(np.median(random_retentions)),
         "soft_validation_retention": soft.validation_report.geometric_mean_retention,
     }
@@ -212,9 +237,23 @@ def make_example_figure(experiment: ExperimentResult) -> Figure:
     return figure
 
 
-def run_and_save(problem_name: str, output_dir: Path, *, quick: bool = False) -> ExperimentResult:
-    """Run one named experiment and save its figure and summary JSON."""
+def run_and_save(
+    problem_name: str, output_dir: Path, *, quick: bool | None = None
+) -> ExperimentResult:
+    """Run one named experiment and save its figure and summary JSON.
 
+    Parameters
+    ----------
+    problem_name
+        Key into `PROBLEMS`.
+    output_dir
+        Directory that receives the rendered figure and summary JSON.
+    quick
+        Use short optimizer settings. Defaults to `is_fast_mode()`, honoring
+        the `SCOREQUANT_EXAMPLE_FAST` environment variable, so callers only
+        need to pass an explicit value when overriding that default.
+    """
+    quick = is_fast_mode() if quick is None else quick
     problem = PROBLEMS[problem_name]()
     experiment = run_experiment(
         problem, soft_steps=80 if quick else 300, n_random=10 if quick else 50

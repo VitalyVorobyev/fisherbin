@@ -529,3 +529,8 @@ So a profiled partition is a fact about the rows you have, and a profiled quanti
 different object that must be fitted as one. Chapter 8's criterion is the exception in this
 book, not the rule, and the next chapter shows a criterion where even the population
 geometry stops being well defined.
+
+**Runnable examples:** [nuisance-profiled-ds](../examples/nuisance-profiled-ds.md) measures
+plain D against profiled \(D_s\) with the efficient-score bound and a DP initializer;
+[ds-geometry-counterexample](../examples/ds-geometry-counterexample.md) is the exact
+rational fixture behind the geometry claim above.

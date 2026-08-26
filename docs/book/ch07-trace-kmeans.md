@@ -305,3 +305,6 @@ trace decide by accident of units.
 The determinant costs something for this. It couples every direction through
 \(I_q^{-1}\), so there is no reduction to an additive per-row distortion, no fixed metric,
 and no Lloyd monotonicity theorem to inherit. The next chapter shows what replaces them.
+
+**Runnable example:** [solver-shootout](../examples/solver-shootout.md) puts whitened
+k-means alongside every other solver and the three baselines on one two-parameter problem.

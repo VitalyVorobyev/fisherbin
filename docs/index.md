@@ -100,9 +100,9 @@ same for each door, and [Choosing your workflow](user-workflow.md) walks through
   validation rules.
 - [Choosing your workflow](user-workflow.md) — which task, which door, which criterion and solver.
 - [The book](book/index.md) — the statistical theory developed independently of this package's API.
-- Tutorials — [first partition](tutorials/first-partition.md),
-  [linear components](tutorials/linear-components.md),
-  [classifier posteriors](tutorials/classifier-mixtures.md).
+- [Examples](examples/index.md) — ten runnable pages: the three doors, a solver shootout against
+  three baselines, theory demonstrations (profiled \(D_s\), soft rules, two counterexamples,
+  global certification), and a teaser into the real-data study below.
 - Evidence — the [synthetic gallery](gallery/index.md) and the reproducible
   [FlowCyt study](usecases/cellpopulation.md).
 - [API guide](api.md) and [reference](reference/index.md) — released contracts and errors.

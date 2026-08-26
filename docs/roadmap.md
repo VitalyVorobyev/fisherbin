@@ -31,6 +31,31 @@ MkDocs pass.
 - Removed dev-only notation (TODO/phase references) from published pages; tutorial pages keep
   their planned-for-replacement content with neutralized skip-marker wording.
 
+### Phase 3 — synthetic examples and evidence suite
+
+**Status:** done.
+
+- 3A: shared examples infrastructure — `examples/baselines.py` (the three canonical naive
+  baselines), `examples/_env.py` fast-mode helper, and the `tests/test_notebooks.py` harness.
+- 3B: replaced the `Tutorials` nav section with `Examples`; added door1-score-events,
+  door2-mixture-densities, and door3-classifier pages and notebooks.
+- 3C: added the solver-shootout page and notebook, and rebuilt the gallery as a comparison
+  dashboard.
+- 3D: added the nuisance-profiled-ds and soft-purification pages and notebooks.
+- 3E: added the three theorem-demonstration pages and notebooks — lloyd-nonmonotone,
+  ds-geometry-counterexample, global-certification.
+- 3F: added the flowcyt-teaser page (a pointer into the FlowCyt study, no notebook) and the
+  `examples/index.md` section overview; verified every notebook-backed example page links its
+  notebook and vice versa, and every example page links at least one book chapter; added
+  reciprocal "runnable example" pointers on the relevant book chapters; closed orphaned-number
+  gaps found in the claim-assertion sweep; updated the README and docs front matter to reference
+  the Examples section.
+
+**Gate:** all ten example pages and nine notebooks execute under `tests/test_docs_snippets.py`
+and `tests/test_notebooks.py`; every headline number in prose is asserted in a page snippet or
+in `tests/test_evidence_suite.py`/`tests/test_research_claims.py` from committed JSON; strict
+MkDocs build passes.
+
 ## M2 — Exact finite D reference core
 
 **Status:** implemented baseline.

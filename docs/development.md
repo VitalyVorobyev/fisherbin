@@ -34,6 +34,14 @@ uv run mkdocs serve
 
 The generated API reference is collected from NumPy-style docstrings with mkdocstrings. Public API changes must update docstrings, the handwritten [API guide](api.md), examples, and an ADR when the decision is durable.
 
+## Example fast mode
+
+Every example script and notebook honors one environment variable, `SCOREQUANT_EXAMPLE_FAST`: any non-empty value shrinks dataset sizes and optimizer budgets for CI and quick local checks, while an unset variable keeps the full research-scale sizes used for the committed gallery figures. `examples/_env.py` provides the two helpers example code should use directly, `is_fast_mode()` and `example_scale(full, fast)`; `tests/test_notebooks.py` sets it before executing every notebook.
+
+```bash
+SCOREQUANT_EXAMPLE_FAST=1 uv run python -m examples.gaussian_location
+```
+
 ## Benchmark harness
 
 `benchmarks/bench.py` is a deterministic, seeded timing-and-quality harness, not a runtime

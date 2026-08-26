@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 import scorequant as sq
+from examples._env import example_scale
 
 
 def signal(X: np.ndarray) -> np.ndarray:
@@ -35,8 +36,25 @@ def build_model() -> sq.LinearComponents:
 
 
 def run(seed: int = 17) -> tuple[sq.QuantizerResult, np.ndarray]:
+    """Fit an eight-bin quantizer from physical variables and predict on new data.
+
+    Sample sizes shrink under `SCOREQUANT_EXAMPLE_FAST` (see `examples._env`).
+
+    Parameters
+    ----------
+    seed
+        Deterministic seed for both event generation and the D-exchange fit.
+
+    Returns
+    -------
+    tuple
+        The fitted `scorequant.QuantizerResult` and the per-bin counts of a
+        held-out data sample.
+    """
     rng = np.random.default_rng(seed)
-    X_mc = np.column_stack([rng.uniform(0, 1, 2_000), rng.uniform(-1, 1, 2_000)])
+    n_mc = example_scale(2_000, 400)
+    n_data = example_scale(500, 100)
+    X_mc = np.column_stack([rng.uniform(0, 1, n_mc), rng.uniform(-1, 1, n_mc)])
     mc_weights = 0.5 + rng.random(len(X_mc))
     model = build_model()
     result = sq.fit_quantizer(
@@ -47,7 +65,7 @@ def run(seed: int = 17) -> tuple[sq.QuantizerResult, np.ndarray]:
         config=sq.DExchangeConfig(seed=seed),
     )
 
-    X_data = np.column_stack([rng.uniform(0, 1, 500), rng.uniform(-1, 1, 500)])
+    X_data = np.column_stack([rng.uniform(0, 1, n_data), rng.uniform(-1, 1, n_data)])
     data_bins = result.predict_scores(sq.LinearComponentScore(model).score(X_data))
     counts = np.bincount(np.asarray(data_bins), minlength=result.n_bins)
     return result, counts

@@ -1,0 +1,27 @@
+# Examples
+
+Every page here is a runnable story: problem, data, an API walkthrough with executed
+snippets, and a discussion of which task, door, criterion, and solver were in play. The
+first three enter through each of the three doors in turn; the shootout puts every solver
+and baseline on one problem; the next five are theory demonstrations — a nuisance-parameter
+criterion, a soft relaxation, two counterexamples, and global certification; the last is a
+pointer into the one study that runs on real data.
+
+Nine of the ten pages have a matching notebook under
+[`examples/notebooks/`](https://github.com/VitalyVorobyev/scorequant/tree/main/examples/notebooks)
+that runs the same story at a larger, more decisive scale. See [Three
+doors](../three-doors.md) for what a door is, and [Choosing your
+workflow](../user-workflow.md) for a task-first decision guide.
+
+| Page | Demonstrates | Task(s) | Door | Notebook |
+| --- | --- | --- | --- | --- |
+| [door1-score-events](door1-score-events.md) | Precomputed `(event, score)` rows, an exchange-stability certificate, and the compile bridge from a partition into a reusable rule | Both | 1 | [`door1_score_events.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/door1_score_events.ipynb) |
+| [door2-mixture-densities](door2-mixture-densities.md) | Analytic component densities to a binned mixture-fraction measurement, with a two-parameter `IntegrationSource` fit | Space quantization | 2 | [`door2_mixture_densities.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/door2_mixture_densities.ipynb) |
+| [door3-classifier](door3-classifier.md) | A trained classifier's posteriors turned into scores, retention against classifier quality, and the surrogate-information caveat | Space quantization | 3 | [`door3_classifier.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/door3_classifier.ipynb) |
+| [solver-shootout](solver-shootout.md) | Every solver the library dispatches, and the three canonical baselines, on one two-parameter problem | Both | 1 | [`solver_shootout.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/solver_shootout.ipynb) |
+| [nuisance-profiled-ds](nuisance-profiled-ds.md) | Plain D against profiled \(D_s\) for a signal fraction with a floating background shape, an efficient-score ceiling, and a DP initializer | Sample partitioning | 1 | [`nuisance_profiled_ds.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/nuisance_profiled_ds.ipynb) |
+| [soft-purification](soft-purification.md) | Responsibility-space relaxation, a temperature schedule, the hardening gap, and purification | Space quantization | 1 | [`soft_purification.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/soft_purification.ipynb) |
+| [lloyd-nonmonotone](lloyd-nonmonotone.md) | The manuscript's non-monotone Lloyd step, and the guard's acceptance trace rescuing it | Sample partitioning | 1 | [`lloyd_nonmonotone.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/lloyd_nonmonotone.ipynb) |
+| [ds-geometry-counterexample](ds-geometry-counterexample.md) | An exact rational fixture whose globally optimal profiled-\(D_s\) partition violates its own induced geometry, and why there is no compile bridge | Sample partitioning | 1 | [`ds_geometry_counterexample.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/ds_geometry_counterexample.ipynb) |
+| [global-certification](global-certification.md) | Branch-and-bound optimality certificates and a multi-restart hit-rate study | Sample partitioning | 2 | [`global_certification.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/global_certification.ipynb) |
+| [flowcyt-teaser](flowcyt-teaser.md) | A pointer into the complete real-data FlowCyt study: 600,000 real cells, a classifier-derived score, and a full population-fraction measurement | Space quantization | 3 | — see the [FlowCyt study](../usecases/cellpopulation.md) |

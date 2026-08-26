@@ -311,6 +311,9 @@ what improves. That discipline costs one exact rebuild per proposal and buys a m
 algorithm; the alternative costs 0.136521 nat on an eight-row table, and there is no
 reason to think it is bounded on a larger one.
 
+**Runnable example:** [lloyd-nonmonotone](../examples/lloyd-nonmonotone.md) is the
+manuscript's counterexample, with the guard's acceptance trace rescuing monotonicity.
+
 The next chapter changes the criterion rather than the solver. When only some of the
 parameters are of interest, profiling the rest away gives an objective that keeps the
 population geometry of Chapter 8 and loses its finite theorem — a different kind of gap,

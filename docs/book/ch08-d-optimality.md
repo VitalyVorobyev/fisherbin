@@ -553,6 +553,9 @@ determinant analogue of the Voronoi-realizability argument [Inaba, Katoh and Ima
 polynomial for fixed parameters and useless in practice for anything but small \(d\) and
 \(K\); the branch and bound with a Loewner-monotone bound is what the library implements.
 
+**Runnable example:** [global-certification](../examples/global-certification.md) runs the
+branch-and-bound certificate and a multi-restart hit-rate study.
+
 ## What has and has not been shown
 
 Exact algebra, a monotone finite algorithm, a theorem that turns terminal labels into a

@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import scorequant as sq
+from examples.synthetic_problems import signal_background_shape
 
 
 def test_score_callback_requires_a_reference_measure() -> None:
@@ -131,3 +132,56 @@ def test_classifier_provider_is_always_estimated() -> None:
         config=sq.KMeansConfig(n_init=2),
     )
     assert result.information_kind == "supplied_score_surrogate"
+
+
+def test_integration_source_end_to_end_with_two_score_columns() -> None:
+    """`fit_quantizer(IntegrationSource(...), score=...)` with a multi-parameter score.
+
+    The existing quadrature test above covers only a single score column from an
+    identity provider. Two score directions (a signal fraction and one
+    background-shape nuisance) exercise the bounded-quadrature path the way a real
+    linear-component model would use it, closing that coverage gap.
+    """
+    problem = signal_background_shape(background_rates=(2.5,), n_bins=4)
+
+    def signal_component(x: np.ndarray) -> np.ndarray:
+        return problem.signal_density(np.asarray(x)[:, 0])
+
+    def background_component(x: np.ndarray) -> np.ndarray:
+        return problem.background_densities[0](np.asarray(x)[:, 0])
+
+    model = sq.LinearComponents(
+        components={"signal": signal_component, "background": background_component},
+        coefficients={
+            "signal": float(problem.coefficients[0]),
+            "background": float(problem.coefficients[1]),
+        },
+        variables=["x"],
+    )
+    provider = sq.LinearComponentScore(model)
+
+    source = sq.IntegrationSource(
+        problem.bounds, density=problem.intensity, quadrature=sq.GaussLegendreConfig(order=48)
+    )
+    result = sq.fit_quantizer(
+        source,
+        score=provider,
+        n_bins=problem.n_bins,
+        criterion=sq.DOptimality(),
+        config=sq.DExchangeConfig(seed=50, n_init=4),
+    )
+    assert result.source_kind == "integration_source"
+    assert result.transform.rank == 2
+
+    test = problem.test
+    report = result.evaluate_scores(test.scores, test.weights)
+    assert report.geometric_mean_retention > 0.9
+
+    profiled = sq.profiled_information_report(
+        test.scores,
+        np.asarray(result.predict_scores(test.scores)),
+        interest=problem.interest,
+        weights=test.weights,
+        n_bins=problem.n_bins,
+    )
+    assert profiled.geometric_mean_retention > 0.9

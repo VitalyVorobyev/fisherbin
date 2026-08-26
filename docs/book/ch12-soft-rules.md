@@ -414,5 +414,9 @@ is open for all three criteria, and Chapter 10's counterexample shows that for p
 Theorem 3 makes the relationship unusually favorable — every global finite optimum is
 already a self-consistent geometric rule — but favorable is not the same as proved.
 
+**Runnable example:** [soft-purification](../examples/soft-purification.md) runs the
+responsibility-space relaxation through a temperature schedule and measures the
+hardening gap directly.
+
 The next chapter goes back upstream, to the place where the score vectors themselves came
 from, and asks what happens when they are estimated rather than known.
