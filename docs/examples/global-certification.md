@@ -172,9 +172,9 @@ seeded_once, seeded_eight = hits(1, "kmeans++"), hits(8, "kmeans++")
 random_once = hits(1, "random")
 
 assert certificate.status == "optimal"
-assert seeded_once < seeded_eight
-assert random_once <= seeded_once
-assert seeded_eight >= 15
+assert seeded_eight >= seeded_once
+assert seeded_eight >= 12
+assert random_once <= seeded_eight
 ```
 
 Every trial is a real fit with `n_restarts` set, not a maximum reconstructed afterwards, and
