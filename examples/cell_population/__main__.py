@@ -8,6 +8,8 @@ from pathlib import Path
 
 import numpy as np
 
+from examples._env import is_fast_mode
+
 from .data import (
     REFERENCE_PATIENTS,
     TEST_PATIENTS,
@@ -147,7 +149,14 @@ def main() -> None:
         )
         return
     data = _load_data(args)
-    quick = args.quick or (not args.full and (args.fixture is not None or args.data_dir is None))
+    if args.quick:
+        quick = True
+    elif args.full:
+        quick = False
+    else:
+        # No explicit --quick/--full: honor SCOREQUANT_EXAMPLE_FAST, falling back to
+        # the original heuristic (fixture or unspecified data defaults to quick).
+        quick = is_fast_mode() or args.fixture is not None or args.data_dir is None
     result = run_experiment(
         data,
         bin_counts=tuple(args.bins),

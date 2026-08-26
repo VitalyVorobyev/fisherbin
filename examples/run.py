@@ -12,6 +12,7 @@ from matplotlib.figure import Figure
 from sklearn.cluster import KMeans
 
 import scorequant
+from examples._env import is_fast_mode
 from examples.synthetic_problems import PROBLEMS, SyntheticDataset, SyntheticProblem
 
 
@@ -212,9 +213,23 @@ def make_example_figure(experiment: ExperimentResult) -> Figure:
     return figure
 
 
-def run_and_save(problem_name: str, output_dir: Path, *, quick: bool = False) -> ExperimentResult:
-    """Run one named experiment and save its figure and summary JSON."""
+def run_and_save(
+    problem_name: str, output_dir: Path, *, quick: bool | None = None
+) -> ExperimentResult:
+    """Run one named experiment and save its figure and summary JSON.
 
+    Parameters
+    ----------
+    problem_name
+        Key into `PROBLEMS`.
+    output_dir
+        Directory that receives the rendered figure and summary JSON.
+    quick
+        Use short optimizer settings. Defaults to `is_fast_mode()`, honoring
+        the `SCOREQUANT_EXAMPLE_FAST` environment variable, so callers only
+        need to pass an explicit value when overriding that default.
+    """
+    quick = is_fast_mode() if quick is None else quick
     problem = PROBLEMS[problem_name]()
     experiment = run_experiment(
         problem, soft_steps=80 if quick else 300, n_random=10 if quick else 50
