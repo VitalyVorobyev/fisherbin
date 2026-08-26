@@ -8,6 +8,22 @@ import pytest
 
 import scorequant as sq
 from examples.baselines import rectangular_observation_bins
+from examples.ds_geometry_counterexample import (
+    canonical_labelings,
+    efficient_semimetric,
+    exact_table,
+    library_run,
+    profiled_value,
+    violation_margins,
+)
+from examples.global_certification import restart_hit_rates
+from examples.lloyd_nonmonotone import (
+    COUNTEREXAMPLE_BINS,
+    COUNTEREXAMPLE_LABELS,
+    COUNTEREXAMPLE_SCORES,
+    counterexample_study,
+    unguarded_trajectory,
+)
 from examples.nuisance_profiled_ds import (
     build_problem,
     finite_partitions,
@@ -35,6 +51,9 @@ ASSETS = REPO_ROOT / "docs" / "examples" / "assets"
 SHOOTOUT_METRICS = ASSETS / "solver_shootout.json"
 NUISANCE_METRICS = ASSETS / "nuisance-profiled-ds.json"
 SOFT_METRICS = ASSETS / "soft-purification.json"
+LLOYD_METRICS = ASSETS / "lloyd-nonmonotone.json"
+DS_GEOMETRY_METRICS = ASSETS / "ds-geometry-counterexample.json"
+CERTIFICATION_METRICS = ASSETS / "global-certification.json"
 
 # Reduced sizes for the bound checks below: the committed JSON carries the
 # full study, and these re-runs only have to reproduce its qualitative claims.
@@ -729,3 +748,334 @@ def test_fast_rerun_reproduces_the_hardening_and_purification_signs() -> None:
         exchange.train_report.geometric_mean_retention
         >= float(fitted.train_report.geometric_mean_retention) - 1e-9
     )
+
+
+# --- docs/examples/lloyd-nonmonotone.md ------------------------------------
+
+# The failure ledger, exactly as the page tabulates it: how many of the 24
+# unguarded runs of each configuration vacated a cell.
+PAGE_LLOYD_LEDGER = {
+    ("signal_background_shape", 4): (17, 11, 16),
+    ("signal_background_shape", 6): (23, 22, 23),
+    ("spectral_templates", 4): (3, 0, 0),
+    ("spectral_templates", 6): (5, 5, 0),
+    ("spatial_sources", 4): (2, 3, 0),
+    ("spatial_sources", 6): (4, 4, 1),
+}
+PAGE_LLOYD_SIZES = (60, 250, 1_000)
+
+# The scale table: full-data passes, accepted steps, and terminal objective of
+# the guarded batch and of plain exchange from the same random start.
+PAGE_LLOYD_CLIMB = {
+    "n_rows": 4_000,
+    "n_bins": 6,
+    "lloyd_iterations": 26,
+    "accepted_lloyd_steps": 25,
+    "scans": 44,
+    "accepted_moves": 43,
+    "exchange_scans": 48,
+    "exchange_moves": 3_781,
+    "final_objective": -0.074225,
+    "exchange_objective": -0.074208,
+}
+
+
+def test_lloyd_json_matches_the_published_failure_ledger() -> None:
+    metrics = _load(LLOYD_METRICS)
+    rows = {(str(row["problem"]), int(row["n_bins"])): row for row in _listing(metrics, "ledger")}
+    assert set(rows) == set(PAGE_LLOYD_LEDGER)
+    for (problem, n_bins), published in PAGE_LLOYD_LEDGER.items():
+        for n_rows, emptied in zip(PAGE_LLOYD_SIZES, published, strict=True):
+            row = next(
+                entry
+                for entry in _listing(metrics, "ledger")
+                if entry["problem"] == problem
+                and int(entry["n_bins"]) == n_bins  # type: ignore[call-overload]
+                and int(entry["n_rows"]) == n_rows  # type: ignore[call-overload]
+            )
+            assert int(row["emptied_runs"]) == emptied  # type: ignore[call-overload]
+            assert int(row["runs"]) == 24  # type: ignore[call-overload]
+
+    totals = _mapping(metrics, "ledger_totals")
+    # "139 of 432 did", and "not one ever stepped downhill".
+    assert int(totals["runs"]) == 432  # type: ignore[call-overload]
+    assert int(totals["emptied_runs"]) == 139  # type: ignore[call-overload]
+    assert int(totals["downhill_runs"]) == 0  # type: ignore[call-overload]
+    assert float(totals["worst_step"]) == 0.0  # type: ignore[arg-type]
+
+
+def test_lloyd_json_matches_the_published_counterexample_and_scale_table() -> None:
+    metrics = _load(LLOYD_METRICS)
+    case = _mapping(metrics, "counterexample")
+    # Every number the page's counterexample section prints.
+    assert round(float(case["before"]), 6) == pytest.approx(-3.810643)  # type: ignore[arg-type]
+    assert round(float(case["after"]), 6) == pytest.approx(-3.947164)  # type: ignore[arg-type]
+    assert round(float(case["step"]), 6) == pytest.approx(-0.136521)  # type: ignore[arg-type]
+    assert round(float(case["distortion_before"]), 4) == pytest.approx(13.5450)  # type: ignore[arg-type]
+    assert round(float(case["distortion_after"]), 4) == pytest.approx(9.7464)  # type: ignore[arg-type]
+    assert round(float(case["tangent_change"]), 4) == pytest.approx(8.2274)  # type: ignore[arg-type]
+    assert round(float(case["whitening_offset"]), 6) == pytest.approx(-0.783062)  # type: ignore[arg-type]
+    assert int(case["moved"]) == 4  # type: ignore[call-overload]
+    assert int(case["rejected_iterations"]) == 1  # type: ignore[call-overload]
+    assert int(case["rejected_accepted"]) == 0  # type: ignore[call-overload]
+    assert case["rejected_stable"] is False
+    assert int(case["rescued_moves"]) == 4  # type: ignore[call-overload]
+
+    # The unguarded trajectory table: it dips once, then climbs to a fixed point
+    # that is exactly where the guarded solver ends up.
+    trajectory = [round(float(value), 6) for value in case["unguarded"]]  # type: ignore[union-attr]
+    assert trajectory == [-3.810643, -3.947164, -1.366245, -1.035251, -1.035251]
+    assert case["unguarded_outcome"] == "fixed"
+    assert round(float(case["rescued_objective"]), 6) == pytest.approx(-1.035251)  # type: ignore[arg-type]
+
+    climb = _mapping(metrics, "climb")
+    for key in ("n_rows", "n_bins", "lloyd_iterations", "accepted_lloyd_steps", "scans"):
+        assert int(climb[key]) == PAGE_LLOYD_CLIMB[key]  # type: ignore[call-overload]
+    assert int(climb["accepted_moves"]) == PAGE_LLOYD_CLIMB["accepted_moves"]  # type: ignore[call-overload]
+    assert int(climb["exchange_scans"]) == PAGE_LLOYD_CLIMB["exchange_scans"]  # type: ignore[call-overload]
+    assert int(climb["exchange_moves"]) == PAGE_LLOYD_CLIMB["exchange_moves"]  # type: ignore[call-overload]
+    assert round(float(climb["final_objective"]), 6) == pytest.approx(  # type: ignore[arg-type]
+        PAGE_LLOYD_CLIMB["final_objective"]
+    )
+    assert round(float(climb["exchange_objective"]), 6) == pytest.approx(  # type: ignore[arg-type]
+        PAGE_LLOYD_CLIMB["exchange_objective"]
+    )
+    assert climb["monotone"] is True
+    # "relocating nearly ninety times as many rows".
+    ratio = float(climb["exchange_moves"]) / float(climb["accepted_moves"])  # type: ignore[arg-type]
+    assert ratio == pytest.approx(88.0, abs=2.0)
+
+
+def test_fast_rerun_reproduces_the_counterexample_and_the_guard() -> None:
+    """The page's core claim, recomputed rather than read from the JSON."""
+    case = counterexample_study()
+    assert case.step == pytest.approx(-0.136521, abs=2e-6)
+    assert case.distortion_after < case.distortion_before
+    # Concavity: the tangent is an upper bound, so it can rise while the
+    # criterion falls, and it must never fall below the criterion's change.
+    assert case.tangent_change > 0.0
+    assert case.step <= case.tangent_change
+
+    weights = np.full(COUNTEREXAMPLE_SCORES.shape[0], 1.0 / COUNTEREXAMPLE_SCORES.shape[0])
+    for guard in ("exchange", "reject"):
+        result = sq.optimize_partition(
+            COUNTEREXAMPLE_SCORES,
+            weights=weights,
+            n_bins=COUNTEREXAMPLE_BINS,
+            config=sq.MahalanobisLloydConfig(seed=0, guard=guard),  # type: ignore[arg-type]
+            initial_labels=COUNTEREXAMPLE_LABELS,
+        )
+        history = np.asarray(result.objective_history)
+        assert np.all(np.diff(history) > 0)
+        assert result.objective >= float(history[0])
+        assert result.accepted_lloyd_steps == 0
+
+    run = unguarded_trajectory(
+        COUNTEREXAMPLE_SCORES, weights, COUNTEREXAMPLE_LABELS, n_bins=COUNTEREXAMPLE_BINS
+    )
+    assert run.went_downhill is True
+    assert run.outcome == "fixed"
+
+
+# --- docs/examples/ds-geometry-counterexample.md ---------------------------
+
+
+def test_ds_geometry_json_matches_the_published_survey() -> None:
+    metrics = _load(DS_GEOMETRY_METRICS)
+    assert int(metrics["n_labelings"]) == 966  # type: ignore[call-overload]
+    assert metrics["efficient_regression"] == "-1/60"
+
+    profiled = _mapping(metrics, "profiled")
+    assert profiled["optimum"] == [0, 1, 2, 1, 2, 0, 0, 2]
+    assert profiled["optimum_value"] == "20449/1920"
+    assert profiled["runner_up_margin"] == "2929/21120"
+    assert profiled["optimum_is_consistent"] is False
+    assert profiled["optimum_margins"][6] == "8/195"  # type: ignore[index]
+    assert int(profiled["singular_labelings"]) == 2  # type: ignore[call-overload]
+    # "exactly one labeling of 966 satisfies it, and that labeling is
+    # fifth-best, retaining 91.83% of the profiled information".
+    assert profiled["consistent_ranks"] == [5]
+    assert round(float(profiled["best_consistent_ratio"]), 6) == pytest.approx(0.918327)  # type: ignore[arg-type]
+    assert -np.log(float(profiled["best_consistent_ratio"])) == pytest.approx(  # type: ignore[arg-type]
+        0.085201, abs=5e-6
+    )
+
+    determinant = _mapping(metrics, "determinant")
+    assert determinant["optimum_value"] == "71289/1024"
+    assert determinant["optimum_is_consistent"] is True
+    assert determinant["consistent_ranks"] == [0, 55, 60, 63, 75]
+    assert float(determinant["best_consistent_ratio"]) == pytest.approx(1.0)  # type: ignore[arg-type]
+
+
+def test_ds_geometry_json_matches_what_the_library_reports() -> None:
+    published = _mapping(_load(DS_GEOMETRY_METRICS), "library")
+    measured = library_run()
+    assert measured.profiled_labels == published["profiled_labels"]
+    assert measured.violating_moves == 1
+    assert measured.maximum_positive_violation == pytest.approx(8 / 195, abs=1e-12)
+    assert measured.maximum_bound_residual <= 0.0
+    assert measured.bound_certified is True
+    assert measured.compile_refusal == (
+        "finite profiled-D labels have no canonical inductive compilation; "
+        "fit an explicit quantizer instead"
+    )
+    # The determinant contrast on the very same rows.
+    assert measured.d_voronoi_consistent is True
+    assert measured.d_violating_moves == 0
+    assert measured.d_compiles is True
+    assert measured.d_certificate_status == "optimal"
+    assert measured.d_incumbent_was_optimal is True
+    assert measured.d_nodes_explored == int(published["d_nodes_explored"])  # type: ignore[call-overload]
+
+
+def test_exact_enumeration_reproduces_the_geometry_violation() -> None:
+    """The exact claim, recomputed in rational arithmetic from scratch."""
+    table = exact_table()
+    labelings = canonical_labelings()
+    assert len(labelings) == 966
+
+    ranked = sorted(((profiled_value(labels, table), labels) for labels in labelings), reverse=True)
+    best, optimum = ranked[0]
+    metric = efficient_semimetric(optimum, table)
+    assert metric is not None
+    margins = violation_margins(optimum, table, metric)
+    assert optimum == (0, 1, 2, 1, 2, 0, 0, 2)
+    assert float(best) == pytest.approx(20449 / 1920)
+    assert float(margins[6]) == pytest.approx(8 / 195)
+    assert sum(margin > 0 for margin in margins) == 1
+
+
+# --- docs/examples/global-certification.md ---------------------------------
+
+# The hit-rate table: restarts, then the fraction of 64 trials reaching the
+# certified optimum under each seeding, at the precision the page prints.
+PAGE_CERT_HIT_RATES = [
+    (1, 0.359, 0.141),
+    (2, 0.609, 0.203),
+    (3, 0.703, 0.297),
+    (4, 0.828, 0.391),
+    (6, 0.953, 0.516),
+    (8, 0.969, 0.672),
+    (12, 0.984, 0.812),
+    (16, 0.984, 0.906),
+]
+
+# The certification cost table: atoms, then nodes explored at three, four, and
+# five cells.
+PAGE_CERT_SCALING = [
+    (12, 151, 332, 414),
+    (16, 330, 847, 1_152),
+    (20, 948, 7_204, 8_361),
+    (24, 3_051, 27_129, 36_813),
+    (28, 5_117, 26_281, 51_292),
+    (32, 37_471, 263_634, 925_202),
+]
+
+
+def test_certification_json_matches_the_published_incumbent_cases() -> None:
+    cases = {
+        str(row["key"]): row for row in _listing(_load(CERTIFICATION_METRICS), "incumbent_cases")
+    }
+    confirmed = cases["confirmed"]
+    assert confirmed["status"] == "optimal"
+    assert confirmed["incumbent_was_optimal"] is True
+    assert float(confirmed["gain"]) == 0.0  # type: ignore[arg-type]
+    assert int(confirmed["nodes_explored"]) == 8  # type: ignore[call-overload]
+
+    improved = cases["improved"]
+    assert improved["status"] == "optimal"
+    assert improved["incumbent_was_optimal"] is False
+    assert round(float(improved["gain"]), 6) == pytest.approx(0.046845)  # type: ignore[arg-type]
+    assert int(improved["nodes_explored"]) == 67  # type: ignore[call-overload]
+    assert float(improved["certified_objective"]) > float(improved["incumbent_objective"])  # type: ignore[arg-type]
+
+
+def test_certification_json_matches_the_published_hit_rate_table() -> None:
+    rates = _mapping(_load(CERTIFICATION_METRICS), "hit_rates")
+    # "28 events, 5 cells, proved optimal in 51292 nodes".
+    assert int(rates["n_rows"]) == 28  # type: ignore[call-overload]
+    assert int(rates["n_bins"]) == 5  # type: ignore[call-overload]
+    assert int(rates["certified_nodes"]) == 51_292  # type: ignore[call-overload]
+
+    rows = {
+        (str(row["init"]), int(row["n_restarts"])): row  # type: ignore[call-overload]
+        for row in _listing(rates, "rows")
+    }
+    for n_restarts, seeded, random_init in PAGE_CERT_HIT_RATES:
+        assert int(rows[("kmeans++", n_restarts)]["trials"]) == 64  # type: ignore[call-overload]
+        assert round(float(rows[("kmeans++", n_restarts)]["hit_rate"]), 3) == pytest.approx(seeded)  # type: ignore[arg-type]
+        assert round(float(rows[("random", n_restarts)]["hit_rate"]), 3) == pytest.approx(  # type: ignore[arg-type]
+            random_init
+        )
+        # Seeded restarts dominate random ones at every budget.
+        assert float(rows[("kmeans++", n_restarts)]["hit_rate"]) >= float(  # type: ignore[arg-type]
+            rows[("random", n_restarts)]["hit_rate"]  # type: ignore[arg-type]
+        )
+
+    # "Six restarts reach 95%, at 0.035 seconds per fit against 3.4 seconds to
+    # prove the optimum -- about a hundredfold."
+    six = float(rows[("kmeans++", 6)]["seconds_per_trial"])  # type: ignore[arg-type]
+    assert round(six, 3) == pytest.approx(0.035, abs=5e-4)
+    assert float(rates["certified_seconds"]) / six == pytest.approx(100.0, abs=5.0)  # type: ignore[arg-type]
+
+    # "0.55 seconds for sixteen random restarts against 0.083 for sixteen
+    # seeded ones".
+    assert round(float(rows[("random", 16)]["seconds_per_trial"]), 2) == pytest.approx(0.55)  # type: ignore[arg-type]
+    assert round(float(rows[("kmeans++", 16)]["seconds_per_trial"]), 3) == pytest.approx(0.083)  # type: ignore[arg-type]
+
+    # "the worst of them is 2.4% of the retained information, and the most
+    # common miss is 0.08%".
+    shortfalls = np.asarray(rates["single_restart_shortfalls"]["kmeans++"])  # type: ignore[index]
+    misses = shortfalls[shortfalls > 1e-9]
+    assert 100.0 * (1.0 - np.exp(-float(misses.max()))) == pytest.approx(2.4, abs=0.1)
+    assert 100.0 * (1.0 - np.exp(-float(np.median(misses)))) == pytest.approx(0.08, abs=0.01)
+    # "take only four distinct values, one per local optimum reached: two
+    # within 0.0008 nat of the optimum, one at 0.013, and one at 0.024".
+    levels = sorted({round(float(value), 5) for value in misses})
+    assert levels == [0.00065, 0.00077, 0.0133, 0.02405]
+
+
+def test_certification_json_matches_the_published_cost_table() -> None:
+    metrics = _load(CERTIFICATION_METRICS)
+    rows = {
+        (int(row["n_bins"]), int(row["n_rows"])): row  # type: ignore[call-overload]
+        for row in _listing(metrics, "scaling")
+    }
+    for n_rows, three, four, five in PAGE_CERT_SCALING:
+        for n_bins, published in ((3, three), (4, four), (5, five)):
+            row = rows[(n_bins, n_rows)]
+            assert row["status"] == "optimal"
+            assert float(row["gap"]) == 0.0  # type: ignore[arg-type]
+            assert int(row["nodes_explored"]) == published  # type: ignore[call-overload]
+
+    # "the tree grows by a factor of 250 at three cells, 790 at four, and 2200
+    # at five -- roughly 1.3 to 1.5 times per event".
+    for n_bins, factor in ((3, 250.0), (4, 790.0), (5, 2_200.0)):
+        growth = float(rows[(n_bins, 32)]["nodes_explored"]) / float(  # type: ignore[arg-type]
+            rows[(n_bins, 12)]["nodes_explored"]  # type: ignore[arg-type]
+        )
+        assert growth == pytest.approx(factor, rel=0.05)
+        assert 1.3 <= growth ** (1 / 20) <= 1.5
+
+    # "26281 nodes at 28 atoms and four cells against 27129 at 24".
+    assert int(rows[(4, 28)]["nodes_explored"]) < int(rows[(4, 24)]["nodes_explored"])  # type: ignore[call-overload]
+
+    overrun = _mapping(metrics, "overrun")
+    assert int(overrun["n_rows"]) == 36  # type: ignore[call-overload]
+    assert int(overrun["n_bins"]) == 4  # type: ignore[call-overload]
+    assert overrun["status"] == "budget_exhausted"
+    assert int(overrun["nodes_explored"]) == 200_001  # type: ignore[call-overload]
+    assert round(float(overrun["gap"]), 3) == pytest.approx(0.030)  # type: ignore[arg-type]
+
+
+def test_fast_rerun_reproduces_the_restart_hit_rate_trend() -> None:
+    """Restarts help, seeded restarts help more, and the certificate bounds both."""
+    study = restart_hit_rates(restarts=(1, 8), trials=12)
+    rows = {(row.init, row.n_restarts): row for row in study.rows}
+    assert study.certified_objective < 0.0
+    assert rows[("kmeans++", 1)].hit_rate < rows[("kmeans++", 8)].hit_rate
+    assert rows[("random", 1)].hit_rate <= rows[("kmeans++", 1)].hit_rate
+    assert rows[("kmeans++", 8)].hit_rate >= 0.9
+    for row in study.rows:
+        assert 0.0 <= row.hit_rate <= 1.0
+        assert row.median_shortfall >= 0.0

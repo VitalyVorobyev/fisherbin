@@ -386,7 +386,8 @@ The finite profiled optimum is not forced into the geometry it induces: an exact
 eight-row fixture has a *globally optimal* profiled labeling that violates its own
 efficient-Voronoi rule by \(8/195\). The theory is
 [Chapter 10, an optimum that violates its own geometry](../book/ch10-profiled-ds.md#an-optimum-that-violates-its-own-geometry),
-and that fixture gets its own page in this section, **ds-geometry-counterexample**.
+and that fixture gets its own page in this section,
+[ds-geometry-counterexample](ds-geometry-counterexample.md).
 Practically: a profiled partition is a fact about the rows you have, and a profiled *rule*
 is a different object that must be fitted as one.
 

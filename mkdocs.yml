@@ -68,6 +68,9 @@ nav:
       - Solver shootout: examples/solver-shootout.md
       - "Nuisance parameters: profiled Ds": examples/nuisance-profiled-ds.md
       - Soft rules and purification: examples/soft-purification.md
+      - A batch step that loses information: examples/lloyd-nonmonotone.md
+      - A profiled optimum outside its geometry: examples/ds-geometry-counterexample.md
+      - Certificates and restarts: examples/global-certification.md
   - Evidence:
       - Synthetic gallery: gallery/index.md
       - FlowCyt study: usecases/cellpopulation.md
