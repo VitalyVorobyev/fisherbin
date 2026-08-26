@@ -4,9 +4,10 @@ ScoreQuant never sees a marker. It sees a five-column score matrix. This page is
 about how twelve fluorescence channels become those five columns, and about the
 audit that decided which of three candidate constructions to trust.
 
-This is [Door 3](../../examples/door3-classifier.md): a trained classifier,
-converted to score coordinates by an explicit adapter. Classifier training and
-calibration are application code and stay outside the library.
+This is [Door 3](../../examples/door3-classifier.md): density ratios estimated
+by a trained classifier, converted to score coordinates by the explicit
+ratio-to-score chain. Classifier training and calibration are application code
+and stay outside the library.
 
 ## From class probabilities to mixture scores
 

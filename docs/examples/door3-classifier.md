@@ -1,4 +1,4 @@
-# Door 3: a trained classifier, and what it honestly buys you
+# Door 3: classifier-estimated density ratios, and what they honestly buy you
 
 This page solves **space quantization** (`fit_quantizer`) through [Door 3](../three-doors.md):
 density ratios estimated by a trained scikit-learn classifier, standing in for a likelihood

@@ -178,7 +178,7 @@ Bounds alone never imply a uniform measure — the density is mandatory — and 
 count is `order ** D`, so this door closes quickly above a few dimensions. Beyond that,
 use a sample.
 
-## Door 3: a trained classifier
+## Door 3: estimated density ratios
 
 Often there is no evaluable likelihood at all: the model is a simulator, the detector
 response is learned, the background is data. The score can still be estimated. Generate
