@@ -15,6 +15,30 @@ Do not store only screenshots or random seeds.
 
 ---
 
+## CE-D-UNMERGED-DUPLICATES-001 — split duplicate atoms block strict D-Voronoi closure
+
+**Status:** exact rational boundary counterexample.
+
+**Claim falsified:**
+
+> One-point exchange stability implies strict self-consistent nearest-centroid
+> assignment even when coincident positive-weight score atoms may be assigned
+> to different cells.
+
+Take scalar scores \((1,1,-1)\), weights \((1/4,1/4,1/2)\), and put each row in
+one of \(K=3\) singleton cells. Then \(I_q=1\), all cells are nonempty, and no
+nonempty-preserving relocation exists. The labeling is therefore vacuously
+exchange stable. The first two centroids coincide, however, so strict assignment
+fails and no deterministic score-only rule can reproduce the split labels.
+
+**Boundary resolution:** merge coincident score atoms before optimization, or
+require labels to be constant on each duplicate class. The audited theorem then
+forces distinct centroids and strict assignment.
+
+**Fixture:** `CE-D-UNMERGED-DUPLICATES-001.json`.
+
+---
+
 ## CE-D-LLOYD-001 — adaptive D-Mahalanobis Lloyd can decrease log-det
 
 **Status:** established project negative result; exact minimal dataset should be copied here from the numerical test suite before publication.

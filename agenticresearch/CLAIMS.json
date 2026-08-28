@@ -468,12 +468,14 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "Under the current nondegeneracy assumptions, any strict violation of the current I_q^{-1} nearest-centroid assignment yields a strictly positive exact finite D gain; hence one-point exchange stability implies strict self-consistent D-Voronoi geometry.",
+      "statement": "For distinct positive-weight score atoms obtained by merging duplicate rows, positive-definite retained information, exactly K nonempty cells, no move constraints beyond preserving nonempty cells, and zero-tolerance exact stability, every tied-or-worse nearest-centroid comparison from a non-singleton source has strictly positive exact D gain. Stability forces distinct centroids; singleton rows are then strictly nearest to their own centroids. Hence one-point exchange stability implies strict self-consistent D-Voronoi geometry.",
       "assumptions": [
-        "positive weights",
+        "strictly positive atom weights",
+        "coincident score rows merged, or labels constant on every duplicate class",
         "I_q positive definite",
-        "nonempty cells",
-        "duplicate-score degeneracies handled"
+        "exactly K nonempty cells",
+        "no relocation constraints beyond preserving nonempty cells",
+        "exact zero-gain-tolerance exchange stability"
       ],
       "dependencies": [
         "D-LOGDET-GAIN",
@@ -486,7 +488,11 @@
         "file": "KNOWN_RESULTS.md",
         "section": "D5. Exchange stability implies strict D-Voronoi geometry"
       },
-      "warning": "Requires publication-grade proof and prior-art audit before any novelty/first claim.",
+      "audit": "AUDITS/AUDIT-D-EXCHANGE-VORONOI-001.md",
+      "boundary_counterexamples": [
+        "CE-D-UNMERGED-DUPLICATES-001"
+      ],
+      "warning": "The internal proof has passed the priority-0 audit. The targeted literature search found no direct equivalent, but that search gap is not a novelty/priority claim.",
       "role": "primary structural theorem",
       "priority": 0,
       "implies": [
@@ -496,6 +502,26 @@
         "OPEN-CRITERION-CHARACTERIZATION",
         "OPEN-D-EXCHANGE-CONSISTENCY"
       ]
+    },
+    {
+      "id": "D-UNMERGED-DUPLICATES-FAIL",
+      "title": "Split duplicate atoms defeat strict D-Voronoi closure",
+      "criterion": [
+        "D"
+      ],
+      "level": "finite_assignment",
+      "status": "counterexample",
+      "publication_status": "internal",
+      "statement": "If coincident positive-weight score atoms may occupy different singleton cells, a positive-definite labeling can be vacuously one-point exchange stable while strict nearest-centroid assignment and deterministic score-only label reproduction fail.",
+      "counterexamples": [
+        "CE-D-UNMERGED-DUPLICATES-001"
+      ],
+      "proof_location": {
+        "file": "COUNTEREXAMPLES/README.md",
+        "section": "CE-D-UNMERGED-DUPLICATES-001 — split duplicate atoms block strict D-Voronoi closure"
+      },
+      "artifact": "COUNTEREXAMPLES/CE-D-UNMERGED-DUPLICATES-001.json",
+      "role": "boundary condition for the finite D theorem and compiler"
     },
     {
       "id": "D-EXCHANGE-VIOLATION-LOWER-BOUND",
@@ -525,7 +551,7 @@
       "level": "empirical_inductive_quantizer",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "Every one-point-exchange-stable positive-definite finite D solution compiles to q_hat(s)=argmin_b (s-μ_b)^T I_hat^{-1}(s-μ_b), reproducing all training labels under the theorem's degeneracy handling.",
+      "statement": "Every exact zero-tolerance one-point-exchange-stable positive-definite finite D solution on merged distinct positive-weight score atoms compiles to q_hat(s)=argmin_b (s-μ_b)^T I_hat^{-1}(s-μ_b), reproducing all merged-atom training labels strictly; original duplicate rows inherit the merged label. Positive solver tolerance gives only a tolerance-stamped boundary-disagreement guarantee.",
       "dependencies": [
         "D-EXCHANGE-IMPLIES-VORONOI"
       ],
@@ -1590,9 +1616,9 @@
         "D"
       ],
       "level": "finite_assignment",
-      "status": "open",
-      "publication_status": "open",
-      "statement": "Independently verify/refute the D exchange=>strict Voronoi theorem including weighted, singleton, duplicate, tie, and near-singular cases, and search for equivalent prior art.",
+      "status": "project_proved",
+      "publication_status": "internal",
+      "statement": "The finite D exchange=>strict Voronoi theorem was independently re-derived and survived exact-rational exhaustive attack over weighted, singleton, tie, and near-singular cases. The audit sharpened duplicate handling, exact-tolerance, positivity, and move-feasibility assumptions; an unmerged split-duplicate boundary failure is serialized. Targeted prior-art search found no direct equivalent, which is a search gap rather than a novelty claim.",
       "dependencies": [
         "D-RANK2-MOVE",
         "D-LOGDET-GAIN",
@@ -1600,10 +1626,14 @@
         "D-EXCHANGE-IMPLIES-VORONOI"
       ],
       "proof_location": {
-        "file": "OPEN_PROBLEMS.md",
-        "section": "OP0. Publication-grade audit of D exchange ⇒ Voronoi"
+        "file": "AUDITS/AUDIT-D-EXCHANGE-VORONOI-001.md",
+        "section": "Publication-grade audit of finite D exchange implies Voronoi"
       },
-      "priority": 0
+      "counterexamples": [
+        "CE-D-UNMERGED-DUPLICATES-001"
+      ],
+      "artifact": "py/audit_d_exchange_voronoi.py",
+      "literature_search_status": "search_gap"
     },
     {
       "id": "OPEN-CRITERION-CHARACTERIZATION",
@@ -2272,6 +2302,7 @@
         "A-EXACT-MOVE-ORACLE",
         "A-EXCHANGE-TERMINATES",
         "A-TANGENT-SCREENING",
+        "AUDIT-D-EXCHANGE-VORONOI",
         "CONSISTENCY-RESTRICTED-AFFINE",
         "D-BB-SINGLETON-BOUND",
         "D-EXCHANGE-IMPLIES-VORONOI",
@@ -2308,6 +2339,7 @@
       "counterexample": [
         "A-FINITE-GEOMETRY-FAILS",
         "D-LLOYD-NONMONOTONE",
+        "D-UNMERGED-DUPLICATES-FAIL",
         "D-VORONOI-NOT-EXCHANGE",
         "DS-FINITE-GEOMETRY-FAILS",
         "DS-GLOBAL-NONGEOMETRIC",
@@ -2316,7 +2348,6 @@
       ],
       "conjecture": [],
       "open": [
-        "AUDIT-D-EXCHANGE-VORONOI",
         "OPEN-A-QUANTITATIVE-BOUND",
         "OPEN-ATOMIC-RANDOMIZATION-GAP",
         "OPEN-CLASSIFIER-CALIBRATION-FI",
@@ -2383,6 +2414,7 @@
         "D-RANK2-MOVE",
         "D-REPARAM-INVARIANCE",
         "D-TANGENT-SCREENING",
+        "D-UNMERGED-DUPLICATES-FAIL",
         "D-VORONOI-NOT-EXCHANGE",
         "GENERAL-REFINEMENT-BB",
         "GENERAL-SUPERGRADIENT-SCREENING",
@@ -2540,6 +2572,7 @@
         "D-LOGDET-GAIN",
         "D-RANK2-MOVE",
         "D-TANGENT-SCREENING",
+        "D-UNMERGED-DUPLICATES-FAIL",
         "D-VORONOI-NOT-EXCHANGE",
         "DS-EXACT-MOVE-ORACLE",
         "DS-EXCHANGE-TERMINATES",
@@ -2618,7 +2651,6 @@
       ]
     },
     "priority_open_claims": [
-      "AUDIT-D-EXCHANGE-VORONOI",
       "OPEN-A-QUANTITATIVE-BOUND",
       "OPEN-CRITERION-CHARACTERIZATION",
       "OPEN-E-COMMON-SUPERGRADIENT",

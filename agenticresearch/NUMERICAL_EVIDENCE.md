@@ -6,6 +6,7 @@
 |---|---|---|---|---|
 | N-D-MOVE | Rank-two relocation + exact D gain | thousands of random admissible moves | full recomputation agreement at numerical precision | algebra regression |
 | N-D-THM | D exchange⇒Voronoi lower bound stress | 15,000 states / 5,547 qualifying moves in independent suite | 0 violations | theorem falsification |
+| N-D-AUDIT-EXACT | Exact-rational D exchange⇒Voronoi audit | 80 data sets; d=1,2,3; 8,727 PD partitions; 97,601 admissible moves; 30,881 tied-or-worse moves; 93 stable partitions | PASS; 0 identity, bound, or strict-geometry violations | publication-grade theorem regression |
 | N-D-LLOYD | Adaptive Mahalanobis Lloyd monotonicity | 300 instances | 57 contained a decreasing step; explicit ≈ −0.137 nat | negative algorithm result |
 | N-D-FIXED | Lloyd fixed vs exchange stable | 100 Lloyd fixed points | 35 exactly improvable; max ≈ +1.033 nat | hierarchy regression |
 | N-D-GLOBAL | Exhaustive D benchmark | N=12,d=2,K=3, 30 instances | best-of-10 exchange 30/30 global; whitened k-means 24/30 | solver baseline |

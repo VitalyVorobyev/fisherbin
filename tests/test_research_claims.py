@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from fractions import Fraction
 from itertools import product
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -100,6 +102,26 @@ def test_d_voronoi_violation_has_positive_gain_lower_bound() -> None:
             assert determinant_increment >= lower_bound - 1e-10
             checked += 1
     assert checked > 0
+
+
+def test_unmerged_duplicate_atoms_are_an_exact_boundary_failure() -> None:
+    """Split duplicates can be vacuously stable without strict score geometry."""
+    fixture_path = (
+        Path(__file__).parents[1]
+        / "agenticresearch"
+        / "COUNTEREXAMPLES"
+        / "CE-D-UNMERGED-DUPLICATES-001.json"
+    )
+    fixture = json.loads(fixture_path.read_text())
+    scores = tuple(Fraction(row[0]) for row in fixture["scores"])
+    weights = tuple(Fraction(value) for value in fixture["weights"])
+    labels = tuple(fixture["labels_before"])
+
+    assert sum(weight * score for score, weight in zip(scores, weights, strict=True)) == 0
+    assert sum(weight * score**2 for score, weight in zip(scores, weights, strict=True)) == 1
+    assert all(labels.count(label) == 1 for label in range(fixture["K"]))
+    assert scores[0] == scores[1]
+    assert (scores[0] - scores[labels[0]]) ** 2 == (scores[0] - scores[labels[1]]) ** 2 == 0
 
 
 def test_adaptive_mahalanobis_lloyd_step_can_decrease_d_objective() -> None:

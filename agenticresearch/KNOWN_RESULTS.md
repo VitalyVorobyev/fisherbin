@@ -276,9 +276,30 @@ and for centroid difference \(\delta=\mu_a-\mu_b\),
 
 This is a standard projection/leverage inequality; its role here is to bridge infinitesimal D geometry to exact finite gains.
 
-## D5. Exchange stability implies strict D-Voronoi geometry — [PROJECT-PROVED; primary audit target]
+Explicitly, with
 
-Under the current nondegeneracy assumptions, if a point is not closer to its own centroid than a competing centroid under \(I^{-1}\), moving it is guaranteed to increase the **finite exact** D objective. Quantitatively,
+\[
+A=[\sqrt{W_1}\mu_1,\ldots,\sqrt{W_K}\mu_K],
+\qquad I=AA^\top,
+\]
+
+the matrix \(P=A^\top(AA^\top)^{-1}A\) is an orthogonal projector. Taking
+\(v_a=1/\sqrt{W_a}\), \(v_b=-1/\sqrt{W_b}\), and all other coordinates zero
+gives \(Av=\mu_a-\mu_b\), hence
+
+\[
+(\mu_a-\mu_b)^\top I^{-1}(\mu_a-\mu_b)
+=v^\top Pv\le v^\top v=1/W_a+1/W_b.
+\]
+
+## D5. Exchange stability implies strict D-Voronoi geometry — [PROJECT-PROVED; audited]
+
+Let coincident score rows be merged into distinct atoms with positive weights,
+and partition those atoms into exactly \(K\) nonempty cells. Assume \(I\succ0\),
+that the only relocation constraint is preservation of nonempty cells, and that
+exchange stability means no **exact positive-gain** relocation (zero gain
+tolerance). Then a point in a non-singleton source that is tied with or farther
+from its own centroid than a competing centroid under \(I^{-1}\) has
 
 \[
 \boxed{
@@ -288,7 +309,25 @@ Under the current nondegeneracy assumptions, if a point is not closer to its own
 }
 \]
 
-for a strict violating comparison with distinct centroids.
+when the two centroids are distinct. Here
+\(q_\delta=(\mu_a-\mu_b)^\top I^{-1}(\mu_a-\mu_b)\).
+
+The exact algebra is
+
+\[
+\frac{\det(I+\Delta I)}{\det I}=1+E,
+\qquad
+E\ge\frac{\alpha\beta}{4}
+\left[q_\delta^2+(q_{aa}-q_{bb})^2\right].
+\]
+
+Distinct centroids follow from stability rather than needing a separate
+assumption. If \(\mu_a=\mu_b\) and either cell is non-singleton, moving a
+non-centroid atom between them gives determinant ratio
+\(1+(\alpha-\beta)q_{aa}>1\). If both are singletons, equality would mean the
+two score atoms are duplicates, excluded by merging. A singleton atom is then
+strictly nearest to its own centroid because its own distance is zero and every
+other centroid is distinct.
 
 Hence
 
@@ -302,6 +341,18 @@ Hence
 
 The converse fails.
 
+Exact ties between distinct centroids are therefore ruled out, not left as an
+unresolved degeneracy. Split duplicate atoms are a genuine boundary failure:
+see `COUNTEREXAMPLES/CE-D-UNMERGED-DUPLICATES-001.json`. Zero-weight rows,
+singular/pseudodeterminant objectives, extra capacity or mass constraints, and
+nonzero solver gain tolerances are outside the theorem. At tolerance
+\(\varepsilon>0\), the implementation certifies only that no geometric
+disagreement has exact gain exceeding \(\varepsilon\); strict training-label
+reproduction need not hold.
+
+Publication-grade audit and proof: `AUDITS/AUDIT-D-EXCHANGE-VORONOI-001.md`.
+Exact-rational regression: `py/audit_d_exchange_voronoi.py`.
+
 ## D6. Exact finite inductive closure / compiler — [PROJECT-PROVED]
 
 Every one-point-exchange-stable positive-definite finite D solution can be compiled to
@@ -313,7 +364,13 @@ Every one-point-exchange-stable positive-definite finite D solution can be compi
 }
 \]
 
-Under the theorem's degeneracy handling, this predictor reproduces **all training labels exactly**. Therefore a terminal D exchange solution is not merely transductive: it has a canonical deployable extension.
+For merged distinct positive-weight score atoms at exact zero-tolerance
+stability, this predictor reproduces **all training labels exactly**, without a
+tie breaker. Original duplicate rows inherit the merged atom's label. Therefore
+an exact terminal D exchange solution is not merely transductive: it has a
+canonical deployable extension. A finite numerical solver using a positive gain
+tolerance has the weaker, explicitly tolerance-stamped compiler guarantee
+documented by `GeometryReport`.
 
 ## D7. Every finite global D optimum is geometrically realizable — [PROJECT-PROVED COROLLARY]
 

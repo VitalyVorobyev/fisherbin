@@ -5,20 +5,6 @@
 
 ---
 
-# Priority 0 — audit the foundation before building on it
-
-## OP0. Publication-grade audit of D exchange ⇒ Voronoi
-
-**Target.** Independently verify or refute:
-
-> Every nondegenerate positive-definite finite one-point-exchange-stable D partition is a strict self-consistent \(I_q^{-1}\)-Mahalanobis Voronoi partition, with the stated quantitative gain lower bound.
-
-**Required audit.** Re-derive the rank-two relocation, determinant gain, leverage inequality, strictness/degeneracy handling, singleton behavior, duplicate atoms, weights, ties, and near-singular limits. Search old determinant-partition/exchange literature for an equivalent theorem under different notation.
-
-**Dependencies unlocked:** finite D compiler, global geometric realizability, XP enumeration.
-
----
-
 # Priority 1 — characterize why D is special
 
 ## OP1. Which concave matrix criteria have finite exchange ⇒ first-order geometry?
