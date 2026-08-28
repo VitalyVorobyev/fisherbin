@@ -360,7 +360,10 @@ This is a **search gap**, not a proof of uniqueness.
 
 ---
 
-# 7. Reading order for a theorem agent
+# 7. Paper reading order for literature study
+
+(This orders the *papers* below for a literature deep-dive; the workspace read
+order is defined once, in `README.md`.)
 
 1. `PROBLEM.md`
 2. Kiefer–Wolfowitz (D sensitivity/equivalence)

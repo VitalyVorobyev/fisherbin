@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-08-28",
+  "purpose": "Reproducible literature-discovery state for citation snowballing (protocols/literature.md). One record per paper; papers link to claim ids, never merely to 'ScoreQuant'.",
+  "record_schema": {
+    "id": "short-slug",
+    "title": "...",
+    "year": 0,
+    "authors": ["..."],
+    "source_of_discovery": "seed | backward:<id> | forward:<id> | concept-search | author-search",
+    "cites_relevant": ["ids"],
+    "cited_by_relevant": ["ids"],
+    "research_area": "fisher-quantization | optimal-design | determinant-clustering | vq | hep-inference | score-compression | other",
+    "relevant_claims": ["CLAIMS.json ids"],
+    "status": "unread | screened | deeply_reviewed | irrelevant"
+  },
+  "rounds": [],
+  "papers": []
+}

@@ -3,13 +3,14 @@
 **Version:** 2.0 · 26 August 2026  
 **Purpose:** canonical theorem/result ledger. Read `PROBLEM.md` first.
 
-Status vocabulary:
+Status vocabulary (mirrors `CLAIMS.json` `status_definitions`):
 
 - **[LIT]** established literature.
 - **[BRIDGE]** direct synthesis/translation of known results into ScoreQuant notation.
 - **[PROJECT-PROVED]** derived in this project and currently treated as proved internally; still subject to publication-grade audit.
 - **[COUNTEREXAMPLE]** explicit falsification in the project setting.
 - **[MEASURED]** numerical evidence/regression test, not a theorem.
+- **[CONJECTURE]** precise unproved conjecture.
 - **[SEARCH-GAP]** no direct precedent located in targeted search; not a novelty proof.
 - **[OPEN]** unresolved.
 

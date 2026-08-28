@@ -1,84 +1,90 @@
 # ScoreQuant LLM research workspace
 
-**Version:** 2.0 · 26 August 2026
+**Version:** 3.0 · 28 August 2026
 
-This workspace is a theorem-oriented scientific memory for **D- and \(D_s\)-optimal hard quantization of multivariate score space**.
+A theorem-oriented scientific memory for **D- and \(D_s\)-optimal hard
+quantization of multivariate score space**, operated by research agents
+(Claude Code, Codex, or any harness — the files are the contract). Knowledge
+is stored finely (one claim per node); work is executed coarsely (one
+`WORK/` packet per session).
 
-## Read order
+## Read order (canonical — the only one)
+
+A map, not a manual. Read 1–3 always; read everything else on demand.
 
 1. `PROBLEM.md` — canonical problem and goals.
-2. `KNOWN_RESULTS.md` — all currently established project/literature results and negative results.
-3. `CLAIMS.json` — granular machine-readable claim/dependency registry.
-4. `COUNTEREXAMPLES/` — exact falsification fixtures.
-5. `OPEN_PROBLEMS.md` — only unresolved tasks.
-6. `LITERATURE.md` — annotated prior art and direct PDFs where known.
-7. `NUMERICAL_EVIDENCE.md` — measured theorem/solver regression evidence.
-8. `AGENT.md` — theorem-research operating protocol.
-9. `START_HERE.md` — short scope-check prompt for a new agent.
-10. `archive/` — historical context only.
+2. `AGENT.md` — invariants, map, claim-graph lookup, session policy.
+3. Your `WORK/active/` packet (or `OPEN_PROBLEMS.md` to pick one).
+4. The `CLAIMS.json` branch relevant to the packet (graph lookup, never a
+   linear read), then the documents that branch cites: `KNOWN_RESULTS.md`
+   sections, `COUNTEREXAMPLES/` fixtures, `LITERATURE.md` entries,
+   `NUMERICAL_EVIDENCE.md` rows.
+5. The `protocols/` file for the activity at hand
+   (`theorem`, `audit`, `literature`, `numerical`, `algorithm`).
+6. `manuscripts/README.md` — only if the task concerns the paper; never load
+   the article bodies.
+7. `archive/`, `design/` — historical/meta context only; canonical files win
+   on any conflict.
+
+`AGENT.md` and `CLAIMS.json` defer to this order; no other file defines one
+(`LITERATURE.md` §7 is a paper reading order for literature study, not a
+workspace read order).
+
+## Workspace map
+
+| Path | Role |
+|---|---|
+| `PROBLEM.md` | Canonical scientific target |
+| `AGENT.md` | Non-negotiable invariants + map (short) |
+| `CLAIMS.json` | Fine-grained theorem/claim dependency graph (96 nodes) |
+| `KNOWN_RESULTS.md` | Human-readable current mathematical state |
+| `OPEN_PROBLEMS.md` | The single priority queue: 8 programmes, OP sub-items |
+| `research-plan-proposal.md` | North star, session model, roadmap narrative |
+| `WORK/active/`, `WORK/completed/` | Coarse work packets (one per session) |
+| `protocols/` | Detailed recipes, read when relevant |
+| `COUNTEREXAMPLES/` | Immutable exact falsification fixtures |
+| `AUDITS/` | Publication-grade audit reports |
+| `LITERATURE.md`, `LITERATURE/`, `../papers/` | Curated prior art + discovery state |
+| `NUMERICAL_EVIDENCE.md` | Measured ledger; never theorem authority |
+| `manuscripts/` | Frozen paper snapshots (lagging; see its README) |
+| `py/` | Workspace numerical scripts |
+| `design/` | Meta-reviews of the workspace itself |
+| `archive/` | Historical documents |
+
+CI keeps the memory honest: `tests/test_research_registry.py` (registry
+integrity) and `tests/test_research_claims.py` (fixture-pinned claims) run in
+the library's test suite.
 
 ## Canonical scope
 
-The project asks how to construct a deployable hard \(K\)-cell quantizer of event score (or an explicitly tracked score proxy) that preserves maximal **D** or **\(D_s\)** Fisher information and reports information loss relative to unbinned inference.
-
-Supported model access:
-
-- direct scores;
-- exact/autodiff scores;
-- analytic or learned density ratios;
-- component ratios;
-- calibrated classifiers.
-
-Primary application: multicomponent linear/template fitting with nuisance parameters, especially HEP.
-
-## Important v2 corrections
-
-The workspace now explicitly includes:
-
-- exact finite D inductive closure and global geometric realizability;
-- general concavity/supergradient screening;
-- full-data efficient-score domination for \(D_s\);
-- scalar efficient-score dynamic-programming upper certificate;
-- \(K\le d\) split between in-bin profiling and external-nuisance projected formulation;
-- exact global finite \(D_s\) non-geometric counterexample;
-- E repeated-eigenvalue degeneracy and finite global failure;
-- A exact move oracle + finite geometry failure;
-- randomized-quantizer FIM and exact soft gradient;
-- hard finite geometric objective piecewise constancy;
-- atomless criterion-independent purification;
-- **restricted affine-class consistency as an established project proposition**, while unrestricted consistency remains open;
-- local Fisher-losslessness criterion;
-- score-proxy truth-versus-surrogate Fisher accounting;
-- numerical evidence separated from theorem status.
+Construct a deployable hard \(K\)-cell quantizer of event score (or an
+explicitly tracked score proxy) that preserves maximal **D** or **\(D_s\)**
+Fisher information and reports information loss relative to unbinned
+inference. Supported model access: direct scores; exact/autodiff scores;
+analytic or learned density ratios; component ratios; calibrated classifiers.
+Primary application: multicomponent linear/template fitting with nuisance
+parameters, especially HEP. The research queue is ordered **product-first**
+(see `research-plan-proposal.md`): theorems that unblock shippable library
+capabilities outrank purely academic branches; the paper is harvested from
+the ledger, not the other way around.
 
 ## Discipline
 
-- `PROBLEM.md` defines the target.
-- `KNOWN_RESULTS.md` defines the canonical mathematical state.
-- `CLAIMS.json` defines machine-readable status/dependencies.
+- `PROBLEM.md` defines the target; `KNOWN_RESULTS.md` the canonical state;
+  `CLAIMS.json` machine-readable status/dependencies.
 - `OPEN_PROBLEMS.md` must not contain already-solved claims.
-- every exact counterexample gets a permanent artifact.
-- every solver distinguishes sample-only labels from a deployable quantizer.
-- every evaluation reports D/\(D_s\) information retention versus unbinned inference.
-
+- Every exact counterexample gets a permanent artifact; every solver
+  distinguishes sample-only labels from a deployable quantizer; every
+  evaluation reports D/\(D_s\) retention versus unbinned inference.
+- Claims are atomic; work is not.
 
 ## CLAIMS.json registry model
 
-`CLAIMS.json` is a machine-readable theorem graph, not a narrative document.
-
-Each theorem, lemma, counterexample, certificate, or open question has a stable `id` and may contain:
-
-- `status`
-- `criterion`
-- `level`
-- `statement`
-- `assumptions`
-- `dependencies`
-- `implies`
-- `converse_failures`
-- `counterexamples`
-- `literature`
-- `proof_location`
-- `publication_status`
-
-The file includes generated indexes by status, criterion, and problem level. An agent should locate a target node, recursively follow its `dependencies`, then open `proof_location` for the detailed mathematical statement.
+A machine-readable theorem graph, not a narrative document. Each node has a
+stable `id` and may carry: `status`, `criterion`, `level`, `statement`,
+`assumptions`, `dependencies`, `implies`, `converse_failures`,
+`counterexamples`, `boundary_counterexamples`, `literature`,
+`literature_search_status`, `proof_location`, `publication_status`, `audit`,
+`artifact`, `priority`, `role`, `warning`. Generated indexes exist by status,
+criterion, and level. Locate a node, recursively follow `dependencies`, open
+`proof_location` for the detailed statement (protocol in `AGENT.md`).
