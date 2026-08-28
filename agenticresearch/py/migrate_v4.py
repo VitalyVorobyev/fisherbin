@@ -357,3 +357,149 @@ def shard_claims(workspace: Path = WORKSPACE) -> None:
         stripped[claim_id] = json.dumps(node, sort_keys=True)
     assert rebuilt == stripped, "sharding changed claim content"
     print(f"sharded {len(claims)} claims; {tagged} tagged with a programme")
+
+
+#: LITERATURE.md chapter -> topic file. Chapters 7 (reading order) and 8 (search
+#: vocabulary) are workflow, not paper records, and move to the index.
+LITERATURE_TOPICS: list[tuple[str, str]] = [
+    ("# 1. Optimal experimental design backbone", "01-optimal-design.md"),
+    ("# 2. Fisher-information quantization", "02-fisher-quantization.md"),
+    ("# 3. Determinant clustering and partition exchange", "03-determinant-clustering.md"),
+    ("# 4. Vector quantization and Voronoi theory", "04-vector-quantization.md"),
+    ("# 5. Inference-aware summaries and HEP categorization", "05-hep-inference-aware.md"),
+    ("# 6. Software landscape", "06-software-landscape.md"),
+    (
+        "# 9. Additional score-compression and ratio-estimation sources (v2 update)",
+        "07-score-compression.md",
+    ),
+]
+
+LITERATURE_WORKFLOW = ("# 7. Paper reading order for literature study", "# 8. Search vocabulary for new prior art")
+
+#: Heading prefix -> bibliography keys. The registry's keys never matched the
+#: prose headings, so `claims[].literature[]` resolved to nothing; a **Key:** line
+#: under each heading closes that path, mirroring **Claims:** in KNOWN_RESULTS.
+BIB_ANCHORS: dict[str, list[str]] = {
+    "Kiefer & Wolfowitz (1960)": ["Kiefer-Wolfowitz-1960"],
+    "Wynn (1970)": ["Wynn-1970"],
+    "Wynn (1972)": ["Wynn-1972"],
+    "Whittle (1973)": ["Whittle-1973"],
+    "Kiefer (1974)": ["Kiefer-1974"],
+    "Näther & Reinsch (1981)": ["Nather-Reinsch-1981"],
+    "Venkitasubramaniam, Tong & Swami (2006)": ["Venkitasubramaniam-Tong-Swami-2006"],
+    "Farias & Brossier (2013/2014)": ["Farias-Brossier-2013"],
+    "Barnes, Han & Özgür (2018)": ["Barnes-Han-Ozgur-2018"],
+    "Dülek (2023)": ["Dulek-2023"],
+    "Domain-specific D-optimal threshold quantizers": ["Jiang-et-al-2026"],
+    "Friedman & Rubin (1967)": ["Friedman-Rubin-1967"],
+    "Scott & Symons (1971)": ["Scott-Symons-1971"],
+    "Späth (1977)": ["Spaeth-1977"],
+    "Späth (1985)": ["Spaeth-1985"],
+    "Coleman, Dong, Hardin, Rocke & Woodruff (1999)": ["Coleman-et-al-1999"],
+    "Pollard (1981, 1982) and the k-means consistency cluster": ["Pollard-1981"],
+    "Du, Faber & Gunzburger (1999)": ["Du-Faber-Gunzburger-1999"],
+    "Richter & Alexa (2015)": ["Richter-Alexa-2015"],
+    "Targeted audit for the DS-POPULATION-BRIDGE claims": ["Li-Mathias-2000"],
+}
+
+LITERATURE_BANNER = (
+    "> Curated theorem-level annotations. Machine records for the citation graph\n"
+    "> live in `graph.json`; `BIBLIOGRAPHY.md` (generated) maps every registry\n"
+    "> bibliography key to the heading that annotates it.\n"
+)
+
+
+def _annotate_bib_keys(lines: list[str]) -> list[str]:
+    """Insert a ``**Key:**`` line under every heading that anchors a bib key."""
+    out: list[str] = []
+    for line in lines:
+        out.append(line)
+        if not line.startswith("#"):
+            continue
+        heading = line.lstrip("#").strip()
+        for prefix, keys in BIB_ANCHORS.items():
+            if heading.startswith(prefix):
+                out.append("")
+                out.append(f"**Key:** {', '.join(keys)}")
+                break
+    return out
+
+
+def split_literature(workspace: Path = WORKSPACE) -> None:
+    source = workspace / "LITERATURE.md"
+    blocks = _blocks(source.read_text().splitlines())
+    target = workspace / "LITERATURE"
+    (target / "topics").mkdir(parents=True, exist_ok=True)
+    (target / "audits").mkdir(exist_ok=True)
+
+    def extract_audits(body: list[str]) -> tuple[list[str], list[tuple[str, list[str]]]]:
+        """Pull dated targeted-audit blocks out of a topical chapter."""
+        kept: list[str] = []
+        audits: list[tuple[str, list[str]]] = []
+        current: list[str] | None = None
+        heading = ""
+        for line in body:
+            if line.startswith("### Targeted audit"):
+                if current is not None:
+                    audits.append((heading, current))
+                heading, current = line, [line]
+                continue
+            if current is not None and (line.startswith("## ") or line.startswith("# ")):
+                audits.append((heading, current))
+                current = None
+            (current if current is not None else kept).append(line)
+        if current is not None:
+            audits.append((heading, current))
+        return kept, audits
+
+    collected: list[tuple[str, list[str]]] = []
+    for heading, filename in LITERATURE_TOPICS:
+        body, audits = extract_audits(blocks[heading])
+        collected.extend(audits)
+        body = _annotate_bib_keys(body)
+        text = f"{heading}\n\n{LITERATURE_BANNER}\n" + "\n".join(body).rstrip() + "\n"
+        (target / "topics" / filename).write_text(re.sub(r"\n{3,}", "\n\n", text))
+
+    for heading, body in collected:
+        claim = re.search(r"`?([A-Z][A-Z0-9-]+)`?", heading.split("for")[1])
+        date = re.search(r"(\d{1,2} \w+ \d{4})", heading)
+        slug = f"{claim.group(1) if claim else 'audit'}-{(date.group(1) if date else '').replace(' ', '-')}"
+        body = _annotate_bib_keys([line.replace("### ", "# ", 1) for line in body])
+        (target / "audits" / f"{slug}.md").write_text("\n".join(body).rstrip() + "\n")
+
+    index = [
+        "# Literature — index",
+        "",
+        "> Discovery state for the ScoreQuant prior-art search. Procedure lives in",
+        "> `protocols/literature.md`; PDFs, where held, are in `../../papers/`.",
+        "",
+        "\n".join(blocks["__preamble__"]).strip(),
+        "",
+        "## Files",
+        "",
+        "| File | Role |",
+        "|---|---|",
+        "| `BIBLIOGRAPHY.md` | **Generated.** Registry bibliography key -> annotating heading. |",
+        "| `topics/` | Curated theorem-level annotations, one file per research community. |",
+        "| `audits/` | Dated targeted prior-art searches, one per audited claim. |",
+        "| `graph.json` | Machine paper records for citation snowballing (`rounds`, `papers`). |",
+        "| `seeds.md` | Anchor papers for bidirectional traversal. |",
+        "| `reviewed.md`, `rejected.md`, `gaps.md` | Human-readable outcomes and coverage gaps. |",
+        "",
+        "## Topics",
+        "",
+    ]
+    for heading, filename in LITERATURE_TOPICS:
+        index.append(f"- `topics/{filename}` — {heading[2:]}")
+    index.append("")
+    for heading in LITERATURE_WORKFLOW:
+        index.append(heading.replace("# ", "## ", 1))
+        index.append("")
+        index.append("\n".join(blocks[heading]).strip())
+        index.append("")
+    (target / "index.md").write_text(re.sub(r"\n{3,}", "\n\n", "\n".join(index).rstrip() + "\n"))
+    source.unlink()
+    print(
+        f"literature split into {len(LITERATURE_TOPICS)} topics "
+        f"and {len(collected)} audit records"
+    )
