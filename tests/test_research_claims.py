@@ -404,3 +404,144 @@ def test_symmetric_wasted_cells_defeat_the_efficient_semimetric_rule() -> None:
     for row, label in enumerate(labels):
         distances = [distance(row, other) for other in range(4)]
         assert distances[label] == min(distances)
+
+
+def test_ds13_leverage_bound_at_every_stable_state_with_vector_nuisance() -> None:
+    """DS13 audit pin: the leverage bound holds at every exchange-stable state.
+
+    Exhaustive exact verification in a configuration class the original
+    packet evidence never exercised: d=3 with a two-dimensional nuisance
+    block. All canonical surjective labelings are enumerated, one-point
+    exchange stability is decided by exact determinant-ratio comparison, and
+    the DS13 bound s_aa - s_bb <= beta * q_aa * q_bb is asserted for every
+    admissible move at every stable state, including moves whose destination
+    nuisance block is exactly singular.
+    """
+    scores = [
+        [Fraction(2), Fraction(1), Fraction(0)],
+        [Fraction(-1), Fraction(1), Fraction(1)],
+        [Fraction(0), Fraction(-2), Fraction(1)],
+        [Fraction(1), Fraction(0), Fraction(-1)],
+        [Fraction(-2), Fraction(-1), Fraction(0)],
+        [Fraction(1), Fraction(2), Fraction(2)],
+        [Fraction(-1), Fraction(-1), Fraction(-2)],
+    ]
+    weight = Fraction(1, 7)
+    n_bins = 3
+    nuisance = (1, 2)
+
+    def determinant(matrix: list[list[Fraction]]) -> Fraction:
+        size = len(matrix)
+        if size == 1:
+            return matrix[0][0]
+        if size == 2:
+            return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+        total = Fraction(0)
+        for column in range(size):
+            minor = [row[:column] + row[column + 1 :] for row in matrix[1:]]
+            total += (-1 if column % 2 else 1) * matrix[0][column] * determinant(minor)
+        return total
+
+    def inverse(matrix: list[list[Fraction]]) -> list[list[Fraction]]:
+        size = len(matrix)
+        full = determinant(matrix)
+        cofactors = [
+            [
+                (-1 if (i + j) % 2 else 1)
+                * determinant(
+                    [row[:j] + row[j + 1 :] for k, row in enumerate(matrix) if k != i]
+                )
+                for j in range(size)
+            ]
+            for i in range(size)
+        ]
+        return [[cofactors[j][i] / full for j in range(size)] for i in range(size)]
+
+    def binned(labels: tuple[int, ...]) -> tuple[list[Fraction], list[list[Fraction]]]:
+        masses = [Fraction(0)] * n_bins
+        moments = [[Fraction(0)] * 3 for _ in range(n_bins)]
+        for row, label in enumerate(labels):
+            masses[label] += weight
+            for column in range(3):
+                moments[label][column] += weight * scores[row][column]
+        info = [[Fraction(0)] * 3 for _ in range(3)]
+        for mass, moment in zip(masses, moments, strict=True):
+            if mass == 0:
+                continue
+            for i in range(3):
+                for j in range(3):
+                    info[i][j] += moment[i] * moment[j] / mass
+        return masses, info
+
+    def dets(labels: tuple[int, ...]) -> tuple[Fraction, Fraction]:
+        _, info = binned(labels)
+        lam = [[info[i][j] for j in nuisance] for i in nuisance]
+        return determinant(info), determinant(lam)
+
+    def quadratic(u: list[Fraction], g: list[list[Fraction]]) -> Fraction:
+        return sum(u[i] * g[i][j] * u[j] for i in range(3) for j in range(3))
+
+    feasible = stable = checked = degenerate_destinations = 0
+    max_ratio = Fraction(0)
+    for labels in _canonical_partitions(7, n_bins):
+        masses, info = binned(labels)
+        lam = [[info[i][j] for j in nuisance] for i in nuisance]
+        det_info, det_lam = determinant(info), determinant(lam)
+        if det_info <= 0 or det_lam <= 0:
+            continue
+        feasible += 1
+        counts = [labels.count(label) for label in range(n_bins)]
+        improvable = False
+        for row, source in enumerate(labels):
+            if counts[source] <= 1:
+                continue
+            for destination in range(n_bins):
+                if destination == source:
+                    continue
+                moved = labels[:row] + (destination,) + labels[row + 1 :]
+                moved_info, moved_lam = dets(moved)
+                if moved_info > 0 and moved_lam > 0 and moved_info * det_lam > det_info * moved_lam:
+                    improvable = True
+                    break
+            if improvable:
+                break
+        if improvable:
+            continue
+        stable += 1
+        full_inverse = inverse(info)
+        lam_inverse = inverse(lam)
+        metric = [row[:] for row in full_inverse]
+        for a, i in enumerate(nuisance):
+            for b, j in enumerate(nuisance):
+                metric[i][j] -= lam_inverse[a][b]
+        cell_moments = [[Fraction(0)] * 3 for _ in range(n_bins)]
+        for row, label in enumerate(labels):
+            for column in range(3):
+                cell_moments[label][column] += weight * scores[row][column]
+        means = [
+            [cell_moments[label][column] / masses[label] for column in range(3)]
+            for label in range(n_bins)
+        ]
+        for row, source in enumerate(labels):
+            if counts[source] <= 1:
+                continue
+            residual_source = [scores[row][c] - means[source][c] for c in range(3)]
+            violation_own = quadratic(residual_source, metric)
+            leverage_own = quadratic(residual_source, full_inverse)
+            for destination in range(n_bins):
+                if destination == source:
+                    continue
+                residual_dest = [scores[row][c] - means[destination][c] for c in range(3)]
+                gap = violation_own - quadratic(residual_dest, metric)
+                beta = weight * masses[destination] / (masses[destination] + weight)
+                bound = beta * leverage_own * quadratic(residual_dest, full_inverse)
+                assert gap <= bound
+                checked += 1
+                if gap > 0 and bound > 0:
+                    max_ratio = max(max_ratio, gap / bound)
+                moved = labels[:row] + (destination,) + labels[row + 1 :]
+                if dets(moved)[1] == 0:
+                    degenerate_destinations += 1
+    assert (feasible, stable, checked) == (258, 17, 212)
+    assert degenerate_destinations == 14
+    assert max_ratio == Fraction(4, 15)
