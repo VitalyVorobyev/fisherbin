@@ -1739,16 +1739,20 @@
         "mass margin min_b W_b >= c0 > 0 along the sequence",
         "conditioning margin lambda_min(I_q) >= kappa > 0 along the sequence",
         "projected-centroid separation >= gamma > 0 (dropped in the merged-rule variant)",
+        "Lambda := 2 E||S||^2 bounds lambda_max(S_psi(I_N)) eventually a.s. (derived from (A1), not an extra assumption)",
         "margins are assumed, not derived: see OPEN-DS-MARGINS-AT-OPTIMA"
       ],
       "boundary_counterexamples": [
         "CE-DS-DEGENERATE-GLOBAL-TIE-001"
       ],
       "implies": [
-        "OPEN-DS-MARGINS-AT-OPTIMA"
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-POPULATION-BRIDGE"
       ],
-      "warning": "Conditional theorem: the margin assumptions are not automatic at finite optima (singleton cells and exact degenerate ties occur; see OPEN-DS-MARGINS-AT-OPTIMA and N-DS-BRIDGE-TREND). Publication-grade audit pending: WORK/active/AUDIT-DS-POPULATION-BRIDGE.md.",
-      "role": "the compile bridge candidate for profiled criteria"
+      "warning": "Conditional theorem: the margin assumptions are not automatic at finite optima (singleton cells and exact degenerate ties occur; see OPEN-DS-MARGINS-AT-OPTIMA and N-DS-BRIDGE-TREND). Passed the publication-grade audit (AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md), which supplied the fixed-class slab Glivenko-Cantelli step, the derived Lambda, the explicit compact parameter set, and the merged-variant value identification.",
+      "role": "the compile bridge candidate for profiled criteria",
+      "audit": "AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md",
+      "literature_search_status": "search_gap"
     },
     {
       "id": "OPEN-DS-POP-COMMON-METRIC",
@@ -1772,15 +1776,21 @@
       "assumptions": [
         "P atomless, E[S]=0, E||S||^2 finite",
         "all cell masses positive, I_q nonsingular (hence nuisance block nonsingular)",
-        "stationarity tested against bounded-barycenter packet relocations"
+        "stationarity tested against bounded-barycenter packet relocations",
+        "atomlessness is load-bearing only for necessity (stationary => nearest rule); sufficiency holds for every P",
+        "deployability characterization read selection-independently: the nearest-centroid correspondence is a.e. single-valued and reproduces q iff centroids are distinct and tie hyperplanes are null"
       ],
       "boundary_counterexamples": [
-        "CE-DS-POP-WASTED-CELLS-001"
+        "CE-DS-POP-WASTED-CELLS-001",
+        "CE-DS-GLOBAL-GEOMETRY-001"
       ],
       "implies": [
-        "OPEN-DS-FINITE-POP-BRIDGE"
+        "OPEN-DS-FINITE-POP-BRIDGE",
+        "AUDIT-DS-POPULATION-BRIDGE"
       ],
-      "role": "population-side geometry of the finite-to-population bridge"
+      "role": "population-side geometry of the finite-to-population bridge",
+      "audit": "AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md",
+      "literature_search_status": "search_gap"
     },
     {
       "id": "OPEN-DS-DOMINATION-EQUALITY",
@@ -2256,9 +2266,12 @@
       "level": "universal",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "S_psi^+(I_q) = min_B Var(E[S_psi - B S_lam | Z]) (Loewner minimum, attained at solutions of B I_ll = I_pl), extending the profiled objective to singular nuisance blocks; yields refinement monotonicity with an exact neutrality characterization for d_psi=1 splits, the wasted-cell/global-tie phenomena, and a one-line re-derivation of efficient-score domination with its exact gap.",
+      "statement": "S_psi^+(I_q) = min_B Var(E[S_psi - B S_lam | Z]) (Loewner minimum, attained exactly at solutions of B I_ll = I_pl), extending the profiled objective to singular nuisance blocks; yields refinement monotonicity with an exact neutrality characterization for splits (any d_psi; audited), the wasted-cell/global-tie phenomena, and a one-line re-derivation of efficient-score domination with its exact gap. The core identity is the classical extremal characterization of the generalized Schur complement (Krein 1947; Anderson 1971; Li-Mathias 2000, Thm 2.2).",
       "assumptions": [
-        "binned information matrix PSD"
+        "binned information matrix PSD (sufficient for the matrix identity)",
+        "centered scores (E[S]=0) for the Var(E[.|Z]) statistical reading",
+        "K->infty gap vanishing additionally requires a nonsingular full nuisance block (the pseudo-inverse map is discontinuous at rank drops)",
+        "consequence (c) neutrality requires the merged configuration to be entirely nuisance-degenerate"
       ],
       "dependencies": [
         "DS-SCHUR",
@@ -2268,13 +2281,19 @@
         "DS-EFFICIENT-SCORE-DOMINATION",
         "OPEN-DS-DOMINATION-EQUALITY",
         "DS-GLOBAL-TIE-DEGENERACY",
-        "OPEN-DS-FINITE-POP-BRIDGE"
+        "OPEN-DS-FINITE-POP-BRIDGE",
+        "AUDIT-DS-POPULATION-BRIDGE"
       ],
       "proof_location": {
         "file": "KNOWN_RESULTS.md",
         "section": "DS11. Variational form of the profiled objective"
       },
-      "warning": "The pseudo-inverse extension at singular nuisance blocks leaves the in-bin statistical formulation (DS9): it can strictly exceed the feasible in-bin optimum (see CE-DS-DEGENERATE-GLOBAL-TIE-001)."
+      "warning": "The pseudo-inverse extension at singular nuisance blocks leaves the in-bin statistical formulation (DS9): it can strictly exceed the feasible in-bin optimum (see CE-DS-DEGENERATE-GLOBAL-TIE-001).",
+      "audit": "AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md",
+      "literature": [
+        "Li-Mathias-2000"
+      ],
+      "literature_search_status": "prior_art_found"
     },
     {
       "id": "DS-EXCHANGE-LEVERAGE-BOUND",
@@ -2287,21 +2306,25 @@
       "publication_status": "internal",
       "statement": "At a one-point exchange-stable Ds state, every admissible move satisfies s_aa - s_bb <= beta q_aa q_bb <= w_i q_aa q_bb (efficient-semimetric violation bounded by the product of full-metric leverages); no balancedness or mass margin needed, complementing DS-OKN-BOUND.",
       "assumptions": [
-        "merged atoms, nonsingular I and nuisance block at the current state",
-        "admissible moves preserve nonempty cells (non-singleton source)"
+        "positive weights; nonsingular I and nuisance block at the current state (merged atoms NOT required; audited exhaustively with unmerged duplicates)",
+        "admissible moves preserve nonempty cells: non-singleton source with positive co-weight (W_a > w_i)",
+        "moves with singular post-move states are covered: a singular destination nuisance block forces singular I' (Fischer), and the bound there needs no stability input"
       ],
       "dependencies": [
         "DS-EXACT-MOVE-ORACLE",
         "D-LOGDET-GAIN"
       ],
       "implies": [
-        "OPEN-DS-FINITE-POP-BRIDGE"
+        "OPEN-DS-FINITE-POP-BRIDGE",
+        "AUDIT-DS-POPULATION-BRIDGE"
       ],
       "proof_location": {
         "file": "KNOWN_RESULTS.md",
         "section": "DS13. Exact profiled leverage stability bound"
       },
-      "role": "finite half of the finite-to-population bridge"
+      "role": "finite half of the finite-to-population bridge",
+      "audit": "AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md",
+      "literature_search_status": "search_gap"
     },
     {
       "id": "DS-GLOBAL-TIE-DEGENERACY",
@@ -2369,6 +2392,36 @@
         "section": "OP28. Margins at finite \\(D_s\\) optima"
       },
       "priority": 1
+    },
+    {
+      "id": "AUDIT-DS-POPULATION-BRIDGE",
+      "title": "Publication-grade audit of the profiled Ds population bridge",
+      "criterion": [
+        "Ds"
+      ],
+      "level": "empirical_to_population",
+      "status": "project_proved",
+      "publication_status": "internal",
+      "statement": "DS11-DS14 were independently re-derived and survived exact-rational exhaustive attack (1,748 admissible moves at all 171 stable states of five adversarial datasets including vector nuisance and vector POI; 400 variational-identity instances with singular blocks; both fixtures re-verified; fully exact N=10 global-optimum margin scan). DS11's core identity is classical (Krein/Anderson/Li-Mathias: prior art found); DS12/DS13 verified with hardened assumptions (selection-independent deployability; merged atoms dropped, degenerate destinations closed via Fischer); DS14 verified as a conditional theorem after supplying the fixed-class slab Glivenko-Cantelli step, the derived Lambda, the compact parameter set, and the general-d_psi merged-value argument. Targeted search for DS12-DS14 found no direct equivalent: a search gap, not novelty.",
+      "dependencies": [
+        "DS-PROFILED-VARIATIONAL",
+        "OPEN-DS-POP-COMMON-METRIC",
+        "DS-EXCHANGE-LEVERAGE-BOUND",
+        "OPEN-DS-FINITE-POP-BRIDGE",
+        "FI-QUANT-IDENTITY",
+        "D-RANK2-MOVE",
+        "D-LOGDET-GAIN",
+        "DS-GRADIENT-EFFICIENT-SEMIMETRIC"
+      ],
+      "proof_location": {
+        "file": "AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md",
+        "section": "Publication-grade audit of the profiled Ds population bridge"
+      },
+      "artifact": "py/audit_ds_population_bridge.py",
+      "literature": [
+        "Li-Mathias-2000"
+      ],
+      "literature_search_status": "prior_art_found"
     }
   ],
   "bibliography": {
@@ -2450,6 +2503,11 @@
     "Jiang-et-al-2026": {
       "title": "Direct target localization in USNs with hybrid quantized multi-snapshot measurements: A geometric structure-aided approach",
       "doi": "10.1016/j.dsp.2025.105552"
+    },
+    "Li-Mathias-2000": {
+      "title": "Extremal Characterizations of the Schur Complement and Resulting Inequalities",
+      "doi": "10.1137/S0036144599337290",
+      "note": "SIAM Review 42(2):233-246. Theorem 2.2 is the DS11 identity (Loewner-minimal generalized Schur complement with exact attainment set); attributed to M. G. Krein (1947) and Anderson's shorted operator (1971)."
     }
   },
   "indexes": {
@@ -2524,7 +2582,8 @@
         "OPEN-DS-POP-COMMON-METRIC",
         "OPEN-DS-DOMINATION-EQUALITY",
         "DS-PROFILED-VARIATIONAL",
-        "DS-EXCHANGE-LEVERAGE-BOUND"
+        "DS-EXCHANGE-LEVERAGE-BOUND",
+        "AUDIT-DS-POPULATION-BRIDGE"
       ],
       "counterexample": [
         "D-UNMERGED-DUPLICATES-FAIL",
@@ -2689,7 +2748,8 @@
         "DS-EXCHANGE-LEVERAGE-BOUND",
         "DS-GLOBAL-TIE-DEGENERACY",
         "DS-POP-WASTED-CELLS",
-        "OPEN-DS-MARGINS-AT-OPTIMA"
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-POPULATION-BRIDGE"
       ],
       "trace": [
         "TRACE-WHITENED-KMEANS"
@@ -2836,7 +2896,8 @@
         "OPEN-D-UNRESTRICTED-CONSISTENCY",
         "OPEN-D-EXCHANGE-CONSISTENCY",
         "OPEN-DS-E-UNRESTRICTED-CONSISTENCY",
-        "OPEN-DS-MARGINS-AT-OPTIMA"
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-POPULATION-BRIDGE"
       ],
       "score_oracle": [
         "RATIO-LOCAL-SCORE",

@@ -601,7 +601,16 @@ Residual open conditions live in `OPEN_PROBLEMS.md` OP28 (whether the margin
 assumptions hold automatically at finite optima) and C2 (unrestricted
 population attainment).
 
-## DS11. Variational form of the profiled objective and \(\Phi\)-neutral splits — [PROJECT-PROVED]
+## DS11. Variational form of the profiled objective and \(\Phi\)-neutral splits — [BRIDGE core + PROJECT-PROVED consequences; audited]
+
+**Audit (28 Aug 2026, `AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`):** the boxed
+identity is classical — it is the extremal characterization of the generalized
+Schur complement (Krein 1947; Anderson's shorted operator 1971; Li–Mathias,
+SIAM Review 42(2), 2000, Thm 2.2, including the Loewner order, the
+pseudo-inverse, and the exact attainment set). The statistical reading
+\(V(B)=\operatorname{Var}(E[S_\psi-BS_\lambda\mid Z])\) additionally requires
+**centered scores** (\(E[S]=0\)). The binned transfer and consequences (a)–(d)
+are project-level.
 
 For any partition with binned information blocks
 \(I_{\psi\psi},I_{\psi\lambda},I_{\lambda\lambda}\) define the **generalized
@@ -650,10 +659,16 @@ Equality for a fixed \(q\) holds **iff**
 projection is already optimal for the binned centroids. The finite-\(K\) gap is
 therefore exactly the cost of estimating the nuisance projection from bins.
 Along any refining sequence of partitions generating the Borel
-\(\sigma\)-field, \(E[S\mid Z_K]\to S\) in \(L^2\), so \(I_{q_K}\to I_{\rm
-full}\), \(B^*_{q_K}\to B^*_{\rm full}\), and the gap vanishes — the
-\(K\to\infty\) part of OP6. The behavior at global optima is tied to OP28 and
-remains open.
+\(\sigma\)-field, \(E[S\mid Z_K]\to S\) in \(L^2\) (Lévy upward martingale
+convergence), so \(I_{q_K}\to I_{\rm full}\); **provided
+\(I^{\rm full}_{\lambda\lambda}\succ0\)** (implicit in defining \(\widehat S\)),
+the binned nuisance blocks are eventually nonsingular, where
+\(B\mapsto I_{\psi\lambda}I_{\lambda\lambda}^{-1}\) is continuous, so
+\(B^*_{q_K}\to B^*_{\rm full}\) and the gap vanishes — the \(K\to\infty\) part
+of OP6. (The pseudo-inverse map is discontinuous at rank drops — witness
+\(I_{\lambda\lambda}^{(k)}=\mathrm{diag}(1,1/k)\), \(I_{\psi\lambda}=[1,1]\),
+\(B^*_k=[1,k]\) — so the nonsingular-limit hypothesis is load-bearing; audit
+§8.) The behavior at global optima is tied to OP28 and remains open.
 
 **(b) Refinement monotonicity with exact equality characterization
 (\(d_\psi=1\)).** Splitting cell \(M\) into \((x,y)\): for every slope \(c\),
@@ -666,14 +681,24 @@ V(c;\text{split})=V(c;\text{merged})
 
 Hence \(S_\psi^+\) never decreases under refinement, and the split is
 **profiled-information-neutral iff some \(c\) simultaneously minimizes
-\(V(\cdot;\text{merged}) \) and equalizes \(e_x(c)=e_y(c)\)**.
+\(V(\cdot;\text{merged}) \) and equalizes \(e_x(c)=e_y(c)\)**. (Audit: the
+identity is the exact between-group variance decomposition; the "iff" holds by
+evaluating at a minimizer of the split problem, which exists by the
+normal-equation argument. **The same statement and proof hold for every
+\(d_\psi\ge1\)** with the rank-one PSD gap
+\(\frac{W_xW_y}{W_M}(e_x(B)-e_y(B))(e_x(B)-e_y(B))^\top\) and Loewner
+sandwiching — the form DS14's merged variant consumes; audit §8.)
 
-**(c) Wasted cells and exact global ties.** If a merged group is
-nuisance-degenerate (all its cells have \(\mu_{b\lambda}=0\), so
-\(V(\cdot;\text{merged})\) is constant), every split whose sub-cells have
-distinct nuisance means is exactly neutral, while a split with equal (hence
-zero) nuisance means strictly increases \(S_\psi^+\) but keeps the nuisance
-block singular — it leaves the in-bin formulation (DS9). Exact witnesses:
+**(c) Wasted cells and exact global ties.** If the merged **configuration** is
+entirely nuisance-degenerate (all cells have \(\mu_{b\lambda}=0\), so
+\(V(\cdot;\text{merged})\) is constant and every slope minimizes it), every
+split whose sub-cells have distinct nuisance means is exactly neutral, while a
+split with equal (hence zero) nuisance means and distinct POI means strictly
+increases \(S_\psi^+\) but keeps the nuisance block singular — it leaves the
+in-bin formulation (DS9). (Audit hardening: the neutrality argument needs the
+minimizer set of \(V(\cdot;\text{merged})\) to meet the equalizing slopes;
+full nuisance degeneracy supplies that, a partially degenerate configuration
+need not.) Exact witnesses:
 
 - `COUNTEREXAMPLES/CE-DS-DEGENERATE-GLOBAL-TIE-001.json`: a centered
   equal-weight \(N=8,d=2,d_\psi=1,K=3\) sample whose exact global in-bin
@@ -760,11 +785,18 @@ The factorization \(G_s=C^\top S_\psi^{-1}C\) follows from the block inverse:
 \((I^{-1})_{\psi\psi}=S_\psi^{-1}\), \((I^{-1})_{\psi\lambda}=-S_\psi^{-1}B^*_q\),
 \((I^{-1})_{\lambda\lambda}=I_{\lambda\lambda}^{-1}+B_q^{*\top}S_\psi^{-1}B^*_q\).
 
-**Deployability characterization (OP5).** The stationary geometry defines a
-deployable \(K\)-cell rule reproducing \(q\) up to null sets **iff** (i) the
-projected centroids \(e_b\) are pairwise distinct and (ii) \(P\) charges no
-pairwise tie hyperplane (each tie set is affine in \(e(s)\); both conditions
-hold e.g. when \(P\) is absolutely continuous and (i) holds). Stationarity
+**Deployability characterization (OP5).** The nearest-projected-centroid
+**correspondence** is \(P\)-a.e. single-valued and reproduces \(q\) up to null
+sets **iff** (i) the projected centroids \(e_b\) are pairwise distinct and
+(ii) \(P\) charges no pairwise tie hyperplane (each tie set is affine in
+\(e(s)\); both conditions hold e.g. when \(P\) is absolutely continuous and
+(i) holds). (Audit hardening: the selection-independent reading is the correct
+one — a tie-breaking *selection* could reproduce \(q\) even when (ii) fails,
+so the characterization is about the rule being determined by the geometry
+alone; audit §8. Note also the asymmetry: sufficiency (⟸) of the stationarity
+theorem above holds for every \(P\), while necessity (⟹) genuinely needs
+atomlessness — for a finitely atomic law bounded-packet stationarity is
+vacuous and `CE-DS-GLOBAL-GEOMETRY-001` violates the rule.) Stationarity
 does **not** force (i): `CE-DS-POP-WASTED-CELLS-001` is a stationary partition
 (zero violations, ties allowed) whose coincident-centroid cell pairs no
 efficient-semimetric rule can separate — in sharp contrast to finite D, where
@@ -774,9 +806,13 @@ coincident-\(e_b\) groups (cf. DS11(d)).
 
 ## DS13. Exact profiled leverage stability bound — [PROJECT-PROVED]
 
-Finite level, merged atoms, nonsingular \(I\) and \(I_{\lambda\lambda}\). At
-any one-point exchange-stable profiled-\(D_s\) state, for every point
-\((s_i,w_i)\) in a non-singleton cell \(a\) and every \(b\ne a\):
+Finite level, positive weights, nonsingular \(I\) and \(I_{\lambda\lambda}\)
+at the current state. (Audit: merged atoms are **not** needed — the proof never
+uses row distinctness, confirmed exhaustively on unmerged-duplicate configs;
+the operative hypotheses are positive weights and a non-singleton source with
+positive co-weight, \(W_a>w_i\).) At any one-point exchange-stable
+profiled-\(D_s\) state, for every point \((s_i,w_i)\) in a non-singleton cell
+\(a\) and every \(b\ne a\):
 
 \[
 \boxed{
@@ -811,15 +847,25 @@ Expanding and using \(s_{xx}=q_{xx}-r_{xx}\):
 dropping \(q_{ab}^2\ge0\) and the Cauchy–Schwarz-nonnegative
 \(r_{aa}r_{bb}-r_{ab}^2\). Since \(\beta\le w_i\le\alpha\) and
 \(s_{bb}\ge0\) (\(G_s\succeq0\)), divide by \(\alpha\) and use
-\(\beta/\alpha\le1\). Degenerate post-move states (singular \(I'\)) make the
-left ratio zero and preserve the inequality. ∎
+\(\beta/\alpha\le1\). Degenerate post-move states: if \(I'_{\lambda\lambda}\)
+is singular then so is \(I'\) (Fischer,
+\(\det I'\le\det I'_{\psi\psi}\det I'_{\lambda\lambda}\)); in either singular
+case both determinant-ratio formulas take their true values with the left one
+zero, the displayed inequality holds **without any stability input**, and the
+expansion proceeds unchanged — so the bound also covers moves whose
+destination state is infeasible. ∎
 
 Complements DS6: the leverage form needs **no balancedness or mass margin**;
 tiny or ill-conditioned cells surface through the leverage factors
 \(q_{aa}q_{bb}\) instead. It is the finite half of the DS14 bridge.
-Exact-arithmetic regression: 2,378 admissible moves at 100 exhaustively
-verified global optima plus both canonical fixtures, zero violations
-(`NUMERICAL_EVIDENCE.md` row N-DS-LEVERAGE).
+Exact-arithmetic regressions: 2,706 admissible moves at 110 float-screened,
+exactly re-ranked global optima plus 32 moves on both canonical fixtures, zero
+violations (`NUMERICAL_EVIDENCE.md` row N-DS-LEVERAGE); independently, the
+audit's exhaustive enumeration checked 1,748 admissible moves at all 171
+exchange-stable states of five adversarial datasets — vector nuisance, vector
+POI, unmerged duplicates, unequal weights, 230 singular-destination moves —
+with zero violations (row N-DS-AUDIT-LEVERAGE,
+`tests/test_research_claims.py::test_ds13_leverage_bound_at_every_stable_state_with_vector_nuisance`).
 
 ## DS14. Conditional finite\(\to\)population \(D_s\) bridge — [PROJECT-PROVED, CONDITIONAL]
 
@@ -881,13 +927,22 @@ P_N(z^{(N)}\ne\rho_N)
 \(h_{bb'}(s)\) are affine in \(s\) with normals
 \(v_{bb'}=2C_N^\top S_\psi(\hat I_N)^{-1}(\hat e_b-\hat e_{b'})\); since
 \(\|C_N^\top w\|\ge\|w\|\) and \(\kappa\preceq S_\psi(\hat I_N)\preceq\Lambda\)
-(Schur-complement eigenvalue sandwich from (A3) and the a.s. bounded empirical
-second moment), (A5) gives \(\|v_{bb'}\|\ge2\gamma/\Lambda\). The gap-\(t\)
-band is covered by \(\binom K2\) affine slabs of half-width
-\(t\Lambda/(2\gamma)\); the slab family is a VC class, so
-Glivenko–Cantelli plus (A4) give
+— where \(\Lambda:=2M\) is **derived**, not assumed:
+\(\lambda_{\max}(S_\psi(\hat I_N))\le\operatorname{tr}\hat I_N
+=\sum_b\hat W_b\|\hat\mu_b\|^2\le M_N\to M\) a.s., and the lower bound is
+\(S_\psi=((\hat I_N^{-1})_{\psi\psi})^{-1}\succeq\lambda_{\min}(\hat I_N)\)
+(audit §8) — (A5) gives \(\|v_{bb'}\|\ge2\gamma/\Lambda\). The empirical
+gap-\(t\) band, whatever its data-dependent normals, lies in \(\binom K2\)
+members of the **fixed** family \(\mathcal S=\{\{s:|v^\top s-c|\le r\}\}\) of
+all slabs of half-width \(r=t\Lambda/(2\gamma)\); \(\mathcal S\) is a VC class
+(intersections of two half-spaces), so
+\(\sup_{\mathcal S}|P_N-P|\to0\) a.s. (VC Glivenko–Cantelli; van der
+Vaart–Wellner Thm 2.4.3 / Pollard 1984), and (A4) — already uniform over all
+\((v,c)\) — bounds every population slab mass, giving
 \(\limsup_NP_N(0<\mathrm{gap}\le t)\le\binom K2\varphi(t\Lambda/(2\gamma))\).
 Sending \(N\to\infty\) then \(t\downarrow0\) in Step 1 proves conclusion 1.
+(Audit: the uniform law must run over the fixed class, never the
+data-dependent slabs; this is the repair recorded in §8 of the audit.)
 
 **Step 3 (moment identification).** \(|\hat W_b(z^{(N)})-\hat W_b(\rho_N)|\le
 P_N(z\ne\rho)\to0\) and \(\|\hat m_b(z^{(N)})-\hat m_b(\rho_N)\|\le
@@ -919,17 +974,35 @@ inherits the margins. Both bounds force
 
 **Merged-rule variant (dropping (A5)).** Without a separation margin, pass to
 a subsequence along which every pairwise separation converges; merge
-cell pairs whose separation vanishes. Steps 1–2 apply verbatim to the
-**merged** companion rule (only inter-group boundaries carry slabs, and their
-normals are bounded below along the subsequence), and Steps 3–5 deliver a
-population-stationary **reduced** rule (DS11(d), DS12). This is sharp:
+cell pairs whose separation vanishes (a genuine equivalence relation by the
+triangle inequality). Steps 1–2 apply verbatim to the
+**merged** companion rule (a group-level misassignment is in particular a
+cross-group cell-level one, so DS13 supplies the same gap bound; only
+inter-group boundaries carry slabs, and their normals are bounded below along
+the subsequence), and Steps 3–5 deliver a population-stationary **reduced**
+rule (DS11(d), DS12). The value identification uses the general-\(d_\psi\)
+form of DS11(b): within a group the fine rule's own \(B^*(\hat I_N)\)
+equalizes projected centroids in the limit, so the limit fine and merged
+configurations have exactly equal profiled information (audit §8). This is
+sharp:
 `CE-DS-DEGENERATE-GLOBAL-TIE-001` shows exact finite global optima whose
 label-level structure is not identified (31-fold exact tie), while the reduced
 configuration is unique.
 
+**Audit (28 Aug 2026).** The theorem passed the publication-grade audit
+(`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`) as a conditional result: all five
+steps were independently re-derived, with the fixed-class slab
+Glivenko–Cantelli argument, the derived \(\Lambda\), the explicit compact
+parameter set for Steps 3/5, the two-sided Step-4 fixed-point identification,
+and the merged-variant value argument supplied. The audit also notes a free
+strengthening: in conclusion 3 the comparison class may be broadened to all
+geometric rules with positive masses, distinct centroids, and nonsingular
+information — the margins bind only through the hypotheses on \(z^{(N)}\).
+
 **What is deliberately not claimed.** (i) The margins (A2)/(A3)/(A5) are
 **not** automatic at finite optima: exhaustively verified global optima at
-\(N\le18\) regularly carry singleton cells, and the tie fixture has exactly
+\(N\le18\) regularly carry singleton cells (the audit's own fully exact
+\(N=10\) scan reproduces this), and the tie fixture has exactly
 coincident projected centroids (OP28 records the conjecture that the margins
 hold asymptotically for light-tailed atomless laws; the measured suite is
 N-DS-BRIDGE-TREND). (ii) \(v^*\) is the optimum over the margin-compatible
