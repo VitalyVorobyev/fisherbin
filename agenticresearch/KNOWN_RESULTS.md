@@ -818,19 +818,9 @@ Report normalized retention eigenvalues, their geometric mean, arithmetic mean, 
 
 # 12. Numerical evidence as regression tests — [MEASURED]
 
-These results support implementation/theorem auditing but are not proofs.
-
-- Exact rank-two relocation checked on thousands of random admissible moves against full recomputation; errors were at numerical precision in the reported suites.
-- D theorem stress: 15,000 random states / 5,547 theorem-triggering moves with zero violations in the reported independent suite; larger adversarial stable-state searches also found none.
-- Adaptive D-Lloyd: decreasing step in 57/300 instances; explicit loss about 0.137 nat.
-- Lloyd/Voronoi fixed versus exchange: 35/100 fixed points still improved by exact exchange, up to about 1.033 nat.
-- Small exhaustive D benchmark \(N=12,d=2,K=3\): best-of-10 exchange hit the global optimum 30/30; Fisher-whitened k-means 24/30; trace and D optima differed on 6/30.
-- Single random-start exchange: reported 86% global hit rate; worst local stall about 0.195 nat.
-- D B&B: certificates through reported \(N=40,d=2,K=3\) instances.
-- \(D_s\) O(K/N) bound passed 12,789 tested moves in the reported suite.
-- Efficient-score domination passed 300/300 random partitions in the reported suite.
-- E D-style geometry falsification: 2,167 counterexample moves; safe screening direction zero violations.
-- A D-style geometry falsification: 443 counterexamples in the reported search.
+The measured ledger lives in `NUMERICAL_EVIDENCE.md` — one row per evidence
+item (`N-*` id), with the CLAIMS.json node(s) it supports and the executable
+source that produces it. It is not duplicated here; nothing in it is a proof.
 
 Keep exact seeds/scripts or minimized fixtures beside any claim used in publication.
 

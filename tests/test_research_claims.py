@@ -12,6 +12,10 @@ import scorequant as sq
 
 from ._oracles import _exhaustive_d_oracle
 
+# The research workspace holding the counterexample bank; if it moves, update
+# this constant and tests/test_research_registry.py together.
+RESEARCH_WORKSPACE = Path(__file__).parents[1] / "agenticresearch"
+
 
 def _canonical_partitions(n_rows: int, n_bins: int) -> list[tuple[int, ...]]:
     return [
@@ -107,10 +111,11 @@ def test_d_voronoi_violation_has_positive_gain_lower_bound() -> None:
 def test_unmerged_duplicate_atoms_are_an_exact_boundary_failure() -> None:
     """Split duplicates can be vacuously stable without strict score geometry."""
     fixture_path = (
-        Path(__file__).parents[1]
-        / "agenticresearch"
-        / "COUNTEREXAMPLES"
-        / "CE-D-UNMERGED-DUPLICATES-001.json"
+        RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-D-UNMERGED-DUPLICATES-001.json"
+    )
+    assert fixture_path.is_file(), (
+        f"counterexample fixture missing at {fixture_path}; the research "
+        "workspace may have moved — update RESEARCH_WORKSPACE"
     )
     fixture = json.loads(fixture_path.read_text())
     scores = tuple(Fraction(row[0]) for row in fixture["scores"])
@@ -121,7 +126,23 @@ def test_unmerged_duplicate_atoms_are_an_exact_boundary_failure() -> None:
     assert sum(weight * score**2 for score, weight in zip(scores, weights, strict=True)) == 1
     assert all(labels.count(label) == 1 for label in range(fixture["K"]))
     assert scores[0] == scores[1]
-    assert (scores[0] - scores[labels[0]]) ** 2 == (scores[0] - scores[labels[1]]) ** 2 == 0
+    centroids = {
+        label: sum(
+            weight * score
+            for score, weight, row_label in zip(scores, weights, labels, strict=True)
+            if row_label == label
+        )
+        / sum(
+            weight
+            for weight, row_label in zip(weights, labels, strict=True)
+            if row_label == label
+        )
+        for label in range(fixture["K"])
+    }
+    # the two coincident atoms sit exactly on both of their singleton centroids,
+    # so no deterministic score-only rule can separate their labels
+    assert (scores[0] - centroids[labels[0]]) ** 2 == 0
+    assert (scores[0] - centroids[labels[1]]) ** 2 == 0
 
 
 def test_adaptive_mahalanobis_lloyd_step_can_decrease_d_objective() -> None:

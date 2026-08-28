@@ -41,7 +41,7 @@ forces distinct centroids and strict assignment.
 
 ## CE-D-LLOYD-001 — adaptive D-Mahalanobis Lloyd can decrease log-det
 
-**Status:** established project negative result; exact minimal dataset should be copied here from the numerical test suite before publication.
+**Status:** exact rational counterexample.
 
 **Claim falsified:**
 
@@ -59,7 +59,14 @@ forces distinct centroids and strict assignment.
 
 The tangent is an upper bound, so improvement of the fixed-metric trace surrogate is not a minorize-maximize step for log-det.
 
-**Action:** add smallest rational-coordinate dataset, initial labels, old/new objective, and exact assignment once extracted from tests.
+Eight exact-decimal rows in \(d=2\), uniform weights \(1/8\), \(K=3\), initial
+labels \((1,0,0,1,2,2,2,1)\). The batch adaptive-Mahalanobis step (argmin
+decided in exact rational arithmetic) relabels to \((0,0,1,1,2,1,0,1)\) and the
+exact determinant strictly drops; the log-det decrease is \(\approx 0.136521\)
+nat.
+
+**Fixture:** `CE-D-LLOYD-001.json`.
+**Regression:** `tests/test_research_claims.py::test_adaptive_mahalanobis_lloyd_step_can_decrease_d_objective`.
 
 ---
 
@@ -79,13 +86,21 @@ The proven/project direction is the reverse:
 \text{strict D-Voronoi}.
 \]
 
-**Action:** store smallest explicit finite example.
+**Status:** exact rational counterexample, minimal (\(N=4\), \(d=1\), \(K=2\)).
+
+Centered scalar scores \((-3/4,-3/4,1/4,5/4)\), uniform weights, labels
+\((0,0,0,1)\). Every row is strictly nearest its own centroid (cell centroids
+\(-5/12\) and \(5/4\)), so the partition is a strict self-consistent D-Voronoi
+partition; yet relocating row 2 to cell 1 raises \(I_q\) from \(25/48\) to
+\(9/16\). Voronoi fixed therefore does not imply one-point exchange stable.
+
+**Fixture:** `CE-D-VORONOI-CONVERSE-001.json`.
 
 ---
 
-## CE-DS-GEOMETRY-001 — exact finite \(D_s\) geometry can fail
+## CE-DS-GLOBAL-GEOMETRY-001 / -002 — exact finite \(D_s\) geometry can fail
 
-**Status:** project negative result.
+**Status:** two independent exact rational counterexamples for the same claim.
 
 **Claim falsified:**
 
@@ -93,19 +108,16 @@ The proven/project direction is the reverse:
 
 **Known conclusion:** false in general.
 
-**Action required for publication/research reuse:**
+- `CE-DS-GLOBAL-GEOMETRY-001.json` — the canonical fixture harvested from the
+  26 Aug 2026 manuscript (\(N=8\), 966 partitions, optimum \(6241/984\),
+  runner-up \(4232/669\)).
+- `CE-DS-GLOBAL-GEOMETRY-002.json` — the independent witness pinned by the CI
+  regression test (\(N=8\), optimum \(20449/1920\), margin to second best
+  \(2929/21120\), row 6 violates its own efficient-semimetric rule by exactly
+  \(8/195\)).
+  **Regression:** `tests/test_research_claims.py::test_global_profiled_ds_partition_can_violate_its_own_metric_rule`.
 
-Store:
-
-- score matrix \(S\);
-- positive weights;
-- POI/nuisance index split;
-- \(K\);
-- globally optimal labeling;
-- exact \(D_s\) objective;
-- first-order metric/sensitivity;
-- violating point/cell comparison;
-- exhaustive-search verification.
+The two instances are unrelated data sets; keep both and do not conflate them.
 
 ---
 
@@ -117,21 +129,37 @@ Store:
 
 > Choose one projector onto a minimum-eigenvalue eigenvector; every finite E-optimal partition is pointwise optimal under that fixed quadratic metric.
 
-Repeated minimum eigenvalues make the criterion nonsmooth and there is no canonical unique gradient.
+Repeated minimum eigenvalues make the criterion nonsmooth and there is no canonical unique gradient. The stored instance is stronger: the minimum eigenvalue is **simple** (spectral gap \(\approx 0.068\)) and the rank-one \(vv^\top\) rule still fails.
 
-**Action:** store smallest exact example and then test the stronger common-supergradient conjecture.
+**Status:** float witness verified by exhaustive enumeration (high-precision, not exact-rational — eigenvalue computation).
+
+\(N=8\), \(d=2\), \(K=3\), uniform weights. The unique global E optimum
+\((0,1,1,2,0,0,0,1)\) has a simple minimum eigenvalue, yet row 7 is strictly
+closer to cell 2 than to its own cell 1 under the \(vv^\top\) metric, with
+margin \(\approx 0.068\).
+
+**Fixture:** `CE-E-GEOMETRY-001.json`.
+**Regression:** `tests/test_research_claims.py::test_global_e_partition_can_violate_simple_eigenvector_rule`.
+**Next step:** test the stronger common-supergradient conjecture (`OPEN-E-COMMON-SUPERGRADIENT`).
 
 ---
 
 ## CE-A-DSTYLE-001 — A does not inherit D exchange-to-Voronoi theorem
 
-**Status:** project negative/control result.
+**Status:** exact rational counterexample.
 
 **Claim falsified:**
 
-> The determinant-specific finite theorem extends to every smooth monotone matrix criterion.
+> The determinant-specific finite theorem extends to every smooth monotone matrix criterion — in particular, for the A criterion \(-\operatorname{tr}(I_q^{-1})\), a relocation with strictly positive first-order \(I_q^{-2}\) Mahalanobis margin must not decrease the exact objective.
 
-**Action:** store exact smallest instance.
+\(N=6\), \(d=2\), \(K=3\), integer scores centered exactly, uniform weights.
+Moving row 2 from cell 1 to cell 0 has first-order margin \(567/20 > 0\)
+(the D-style screening says "must improve"), yet \(\operatorname{tr}(I_q^{-1})\)
+rises from \(81/10\) to \(1512/125\) — exact A gain \(-999/250\). The log-det
+coincidence that powers the D theorem does not survive replacing
+\(\log\det\) by \(-\operatorname{tr}(I^{-1})\).
+
+**Fixture:** `CE-A-DSTYLE-001.json`.
 
 ---
 
