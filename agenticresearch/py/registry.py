@@ -288,7 +288,8 @@ def _check_programmes(registry: dict, workspace: Path, out: list[str]) -> None:
     for name, meta in programmes.items():
         if meta.get("readiness") not in {"ready", "blocked"}:
             out.append(f"programme {name}: readiness must be 'ready' or 'blocked'")
-        if name not in used:
+        # Infrastructure programmes (literature coverage) carry no theorem claims.
+        if meta.get("kind") != "infrastructure" and name not in used:
             out.append(f"programme {name} has no open claim")
         if text and name not in text:
             out.append(f"programme {name} is not described in OPEN_PROBLEMS.md")

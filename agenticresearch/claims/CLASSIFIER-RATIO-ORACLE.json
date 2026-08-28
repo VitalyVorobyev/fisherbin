@@ -1,0 +1,24 @@
+{
+  "id": "CLASSIFIER-RATIO-ORACLE",
+  "title": "Calibrated classifier posterior odds recover component density ratios",
+  "criterion": [
+    "general"
+  ],
+  "level": "score_oracle",
+  "status": "literature",
+  "publication_status": "published",
+  "statement": "With known class priors, posterior odds recover component density ratios, which can then be transformed into the local mixture score.",
+  "assumptions": [
+    "calibrated posterior probabilities",
+    "known training priors"
+  ],
+  "proof_location": {
+    "file": "KNOWN_RESULTS/10-oracle.md",
+    "section": "O3. Calibrated classifier posteriors provide ratios"
+  },
+  "role": "classifier-based score oracle",
+  "implies": [
+    "CLASSIFIER-MIXTURE-SCORE-FORMULA",
+    "OPEN-CLASSIFIER-CALIBRATION-FI"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "OPEN-DS-DOMINATION-EQUALITY",
+  "title": "Efficient-score domination: exact gap and equality conditions",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "population_quantizer",
+  "status": "project_proved",
+  "publication_status": "internal",
+  "statement": "Var(E[S_hat|q]) - S_psi^+(I_q) = (B*_full - B*_q) I^q_ll (B*_full - B*_q)^T exactly; equality for fixed q iff (B*_full - B*_q) I^q_ll = 0 (the full-data nuisance projection is binned-optimal); along partition sequences refining to the Borel sigma-field the gap vanishes. Equality behavior at global optima remains open (OPEN-DS-MARGINS-AT-OPTIMA).",
+  "dependencies": [
+    "DS-PROFILED-VARIATIONAL",
+    "DS-EFFICIENT-SCORE-DOMINATION"
+  ],
+  "proof_location": {
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS11. Variational form of the profiled objective"
+  }
+}

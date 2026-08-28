@@ -1,0 +1,21 @@
+{
+  "id": "OPEN-CLASSIFIER-CALIBRATION-FI",
+  "title": "Classifier calibration error to Fisher-information loss",
+  "criterion": [
+    "D",
+    "Ds"
+  ],
+  "level": "score_oracle",
+  "status": "open",
+  "publication_status": "open",
+  "statement": "Relate posterior/ratio calibration error to density-ratio error, score error, representation loss, and final D/Ds efficiency.",
+  "dependencies": [
+    "CLASSIFIER-RATIO-ORACLE",
+    "PROXY-TRUE-RETAINED-FI"
+  ],
+  "proof_location": {
+    "file": "OPEN_PROBLEMS.md",
+    "section": "OP18. Classifier calibration error \u2192 Fisher loss"
+  },
+  "programme": "P2"
+}
