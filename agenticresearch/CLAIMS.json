@@ -1714,62 +1714,92 @@
     },
     {
       "id": "OPEN-DS-FINITE-POP-BRIDGE",
-      "title": "Finite-to-population Ds bridge",
+      "title": "Conditional finite-to-population Ds bridge",
       "criterion": [
         "Ds"
       ],
       "level": "empirical_to_population",
-      "status": "open",
-      "publication_status": "open",
-      "statement": "Determine whether balanced exchange-stable/global finite Ds solutions converge to population stationary deployable quantizers under atomlessness, mass, conditioning, and boundary-margin assumptions.",
+      "status": "project_proved",
+      "publication_status": "internal",
+      "statement": "For i.i.d. samples from an atomless law with finite second moments and a uniform affine-slab margin, one-point exchange-stable finite Ds labelings satisfying mass, conditioning, and projected-centroid-separation margins are asymptotically geometric (vanishing disagreement with their own efficient-semimetric companion rule); subsequential limits are self-consistent, hence population-stationary, efficient-Voronoi quantizers with convergent values; global finite optima converge in value to the population optimum over the margin-compatible geometric class, attained by their limits. Without the separation margin the same conclusions hold for the reduced (merged) rule.",
       "dependencies": [
-        "DS-OKN-BOUND",
-        "DS-GLOBAL-NONGEOMETRIC",
-        "CONSISTENCY-RESTRICTED-AFFINE"
+        "DS-EXCHANGE-LEVERAGE-BOUND",
+        "OPEN-DS-POP-COMMON-METRIC",
+        "CONSISTENCY-RESTRICTED-AFFINE",
+        "DS-PROFILED-VARIATIONAL",
+        "DS-OKN-BOUND"
       ],
       "proof_location": {
-        "file": "OPEN_PROBLEMS.md",
-        "section": "OP4. Finite-to-population \\(D_s\\) bridge"
+        "file": "KNOWN_RESULTS.md",
+        "section": "DS14. Conditional finite\\(\\to\\)population \\(D_s\\) bridge"
       },
-      "priority": 2
+      "assumptions": [
+        "S_i i.i.d., P atomless, E[S]=0, E||S||^2 finite, equal weights",
+        "uniform affine-slab margin: sup_{|v|=1,c} P(|v^T S - c| <= t) <= phi(t) -> 0",
+        "mass margin min_b W_b >= c0 > 0 along the sequence",
+        "conditioning margin lambda_min(I_q) >= kappa > 0 along the sequence",
+        "projected-centroid separation >= gamma > 0 (dropped in the merged-rule variant)",
+        "margins are assumed, not derived: see OPEN-DS-MARGINS-AT-OPTIMA"
+      ],
+      "boundary_counterexamples": [
+        "CE-DS-DEGENERATE-GLOBAL-TIE-001"
+      ],
+      "implies": [
+        "OPEN-DS-MARGINS-AT-OPTIMA"
+      ],
+      "warning": "Conditional theorem: the margin assumptions are not automatic at finite optima (singleton cells and exact degenerate ties occur; see OPEN-DS-MARGINS-AT-OPTIMA and N-DS-BRIDGE-TREND). Publication-grade audit pending: WORK/active/AUDIT-DS-POPULATION-BRIDGE.md.",
+      "role": "the compile bridge candidate for profiled criteria"
     },
     {
       "id": "OPEN-DS-POP-COMMON-METRIC",
-      "title": "Population common-metric efficient-score geometry for Ds",
+      "title": "Population stationary geometry for profiled Ds",
       "criterion": [
         "Ds"
       ],
       "level": "population_quantizer",
-      "status": "open",
-      "publication_status": "open",
-      "statement": "Make population Ds first-order geometry fully rigorous and characterize conditions for a single common deployable affine/Voronoi rule.",
+      "status": "project_proved",
+      "publication_status": "internal",
+      "statement": "For atomless P with finite second moments and a quantizer with positive cell masses and nonsingular I_q, bounded-packet first-order stationarity of Phi_Ds is equivalent to a.e. assignment to the nearest projected centroid e_b=C mu_b of the efficient projection e(s)=Cs in the S_psi(I_q)^{-1} metric (G_s = C^T S_psi^{-1} C). The rule reproduces the partition iff projected centroids are pairwise distinct and tie hyperplanes are null; stationarity does not force distinct projected centroids.",
       "dependencies": [
-        "DS-GRADIENT-EFFICIENT-SEMIMETRIC"
+        "DS-GRADIENT-EFFICIENT-SEMIMETRIC",
+        "GENERAL-FIRST-VARIATION",
+        "D-RANK2-MOVE"
       ],
       "proof_location": {
-        "file": "OPEN_PROBLEMS.md",
-        "section": "OP5. Population common-metric / efficient-score geometry for \\(D_s\\)"
+        "file": "KNOWN_RESULTS.md",
+        "section": "DS12. Population stationary geometry for profiled \\(D_s\\)"
       },
-      "priority": 2
+      "assumptions": [
+        "P atomless, E[S]=0, E||S||^2 finite",
+        "all cell masses positive, I_q nonsingular (hence nuisance block nonsingular)",
+        "stationarity tested against bounded-barycenter packet relocations"
+      ],
+      "boundary_counterexamples": [
+        "CE-DS-POP-WASTED-CELLS-001"
+      ],
+      "implies": [
+        "OPEN-DS-FINITE-POP-BRIDGE"
+      ],
+      "role": "population-side geometry of the finite-to-population bridge"
     },
     {
       "id": "OPEN-DS-DOMINATION-EQUALITY",
-      "title": "Equality/tightness conditions for efficient-score domination",
+      "title": "Efficient-score domination: exact gap and equality conditions",
       "criterion": [
         "Ds"
       ],
       "level": "population_quantizer",
-      "status": "open",
-      "publication_status": "open",
-      "statement": "Characterize equality in Schur_ψ(I_q)<=Var(E[S_hat|q]) for a fixed quantizer, globally, and asymptotically in K.",
+      "status": "project_proved",
+      "publication_status": "internal",
+      "statement": "Var(E[S_hat|q]) - S_psi^+(I_q) = (B*_full - B*_q) I^q_ll (B*_full - B*_q)^T exactly; equality for fixed q iff (B*_full - B*_q) I^q_ll = 0 (the full-data nuisance projection is binned-optimal); along partition sequences refining to the Borel sigma-field the gap vanishes. Equality behavior at global optima remains open (OPEN-DS-MARGINS-AT-OPTIMA).",
       "dependencies": [
+        "DS-PROFILED-VARIATIONAL",
         "DS-EFFICIENT-SCORE-DOMINATION"
       ],
       "proof_location": {
-        "file": "OPEN_PROBLEMS.md",
-        "section": "OP6. Tightness/equality conditions for efficient-score domination"
-      },
-      "priority": 2
+        "file": "KNOWN_RESULTS.md",
+        "section": "DS11. Variational form of the profiled objective"
+      }
     },
     {
       "id": "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
@@ -2216,6 +2246,129 @@
         "section": "E6. Common-supergradient population geometry"
       },
       "priority": 1
+    },
+    {
+      "id": "DS-PROFILED-VARIATIONAL",
+      "title": "Variational form of the profiled objective",
+      "criterion": [
+        "Ds"
+      ],
+      "level": "universal",
+      "status": "project_proved",
+      "publication_status": "internal",
+      "statement": "S_psi^+(I_q) = min_B Var(E[S_psi - B S_lam | Z]) (Loewner minimum, attained at solutions of B I_ll = I_pl), extending the profiled objective to singular nuisance blocks; yields refinement monotonicity with an exact neutrality characterization for d_psi=1 splits, the wasted-cell/global-tie phenomena, and a one-line re-derivation of efficient-score domination with its exact gap.",
+      "assumptions": [
+        "binned information matrix PSD"
+      ],
+      "dependencies": [
+        "DS-SCHUR",
+        "FI-QUANT-IDENTITY"
+      ],
+      "implies": [
+        "DS-EFFICIENT-SCORE-DOMINATION",
+        "OPEN-DS-DOMINATION-EQUALITY",
+        "DS-GLOBAL-TIE-DEGENERACY",
+        "OPEN-DS-FINITE-POP-BRIDGE"
+      ],
+      "proof_location": {
+        "file": "KNOWN_RESULTS.md",
+        "section": "DS11. Variational form of the profiled objective"
+      },
+      "warning": "The pseudo-inverse extension at singular nuisance blocks leaves the in-bin statistical formulation (DS9): it can strictly exceed the feasible in-bin optimum (see CE-DS-DEGENERATE-GLOBAL-TIE-001)."
+    },
+    {
+      "id": "DS-EXCHANGE-LEVERAGE-BOUND",
+      "title": "Exact profiled leverage stability bound",
+      "criterion": [
+        "Ds"
+      ],
+      "level": "finite_assignment",
+      "status": "project_proved",
+      "publication_status": "internal",
+      "statement": "At a one-point exchange-stable Ds state, every admissible move satisfies s_aa - s_bb <= beta q_aa q_bb <= w_i q_aa q_bb (efficient-semimetric violation bounded by the product of full-metric leverages); no balancedness or mass margin needed, complementing DS-OKN-BOUND.",
+      "assumptions": [
+        "merged atoms, nonsingular I and nuisance block at the current state",
+        "admissible moves preserve nonempty cells (non-singleton source)"
+      ],
+      "dependencies": [
+        "DS-EXACT-MOVE-ORACLE",
+        "D-LOGDET-GAIN"
+      ],
+      "implies": [
+        "OPEN-DS-FINITE-POP-BRIDGE"
+      ],
+      "proof_location": {
+        "file": "KNOWN_RESULTS.md",
+        "section": "DS13. Exact profiled leverage stability bound"
+      },
+      "role": "finite half of the finite-to-population bridge"
+    },
+    {
+      "id": "DS-GLOBAL-TIE-DEGENERACY",
+      "title": "A finite global Ds optimum can be a degenerate exact tie class",
+      "criterion": [
+        "Ds"
+      ],
+      "level": "finite_assignment",
+      "status": "counterexample",
+      "publication_status": "internal",
+      "statement": "An exact N=8, d=2, d_psi=1, K=3 sample has a 31-fold exactly tied global in-bin optimum (all feasible refinements of one reduced bipartition); every tied optimum has exactly coincident projected centroids, so zero first-order violations do not make an optimum compilable, and label-level optima are identified only up to Phi-neutral splits.",
+      "dependencies": [
+        "DS-PROFILED-VARIATIONAL"
+      ],
+      "counterexamples": [
+        "CE-DS-DEGENERATE-GLOBAL-TIE-001"
+      ],
+      "artifact": "COUNTEREXAMPLES/CE-DS-DEGENERATE-GLOBAL-TIE-001.json",
+      "proof_location": {
+        "file": "KNOWN_RESULTS.md",
+        "section": "DS11. Variational form of the profiled objective"
+      },
+      "implies": [
+        "OPEN-DS-MARGINS-AT-OPTIMA"
+      ]
+    },
+    {
+      "id": "DS-POP-WASTED-CELLS",
+      "title": "Population-stationary Ds partitions can defeat every efficient-semimetric rule",
+      "criterion": [
+        "Ds"
+      ],
+      "level": "population_quantizer",
+      "status": "counterexample",
+      "publication_status": "internal",
+      "statement": "Under a nuisance-sign-symmetric law, a psi-threshold partition split by sign(s_lam) is exactly stationary with pairwise-coincident projected centroids and profiled-information-free cells; its coarsening has an exactly singular binned nuisance block. Population stationarity does not force a separating deployable rule.",
+      "dependencies": [
+        "OPEN-DS-POP-COMMON-METRIC"
+      ],
+      "counterexamples": [
+        "CE-DS-POP-WASTED-CELLS-001"
+      ],
+      "artifact": "COUNTEREXAMPLES/CE-DS-POP-WASTED-CELLS-001.json",
+      "proof_location": {
+        "file": "KNOWN_RESULTS.md",
+        "section": "DS12. Population stationary geometry for profiled \\(D_s\\)"
+      }
+    },
+    {
+      "id": "OPEN-DS-MARGINS-AT-OPTIMA",
+      "title": "Are the bridge margins automatic at finite Ds optima?",
+      "criterion": [
+        "Ds"
+      ],
+      "level": "empirical_to_population",
+      "status": "open",
+      "publication_status": "open",
+      "statement": "Determine whether global/exchange-stable finite Ds optima under light-tailed atomless laws asymptotically satisfy the DS14 margins (cell mass, conditioning, projected-centroid separation), whether the margin-compatible geometric optimum equals the unrestricted population supremum, and how efficient-score-domination equality behaves at optima. Measured: singleton cells persist at exact global optima through N=18 and one exact degenerate tie exists (N-DS-BRIDGE-TREND).",
+      "dependencies": [
+        "OPEN-DS-FINITE-POP-BRIDGE",
+        "DS-GLOBAL-TIE-DEGENERACY"
+      ],
+      "proof_location": {
+        "file": "OPEN_PROBLEMS.md",
+        "section": "OP28. Margins at finite \\(D_s\\) optima"
+      },
+      "priority": 1
     }
   ],
   "bibliography": {
@@ -2366,7 +2519,12 @@
         "SOFT-ASSIGNMENT-GRADIENT",
         "HARD-GEOMETRIC-EMPIRICAL-PIECEWISE-CONSTANT",
         "CONSISTENCY-RESTRICTED-AFFINE",
-        "AUDIT-D-EXCHANGE-VORONOI"
+        "AUDIT-D-EXCHANGE-VORONOI",
+        "OPEN-DS-FINITE-POP-BRIDGE",
+        "OPEN-DS-POP-COMMON-METRIC",
+        "OPEN-DS-DOMINATION-EQUALITY",
+        "DS-PROFILED-VARIATIONAL",
+        "DS-EXCHANGE-LEVERAGE-BOUND"
       ],
       "counterexample": [
         "D-UNMERGED-DUPLICATES-FAIL",
@@ -2376,15 +2534,14 @@
         "DS-GLOBAL-NONGEOMETRIC",
         "E-GLOBAL-GEOMETRY-FAILS",
         "E-FIRSTORDER-NOT-FINITE",
-        "A-FINITE-GEOMETRY-FAILS"
+        "A-FINITE-GEOMETRY-FAILS",
+        "DS-GLOBAL-TIE-DEGENERACY",
+        "DS-POP-WASTED-CELLS"
       ],
       "open": [
         "OPEN-CRITERION-CHARACTERIZATION",
         "OPEN-A-QUANTITATIVE-BOUND",
         "OPEN-E-SPECTRAL-GAP-BOUND",
-        "OPEN-DS-FINITE-POP-BRIDGE",
-        "OPEN-DS-POP-COMMON-METRIC",
-        "OPEN-DS-DOMINATION-EQUALITY",
         "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
         "OPEN-D-UNRESTRICTED-CONSISTENCY",
         "OPEN-D-EXCHANGE-CONSISTENCY",
@@ -2406,7 +2563,8 @@
         "OPEN-MULTIREFERENCE-ROBUST",
         "OPEN-ATOMIC-RANDOMIZATION-GAP",
         "OPEN-SOFT-HARD-ZEROTEMP",
-        "OPEN-E-COMMON-SUPERGRADIENT"
+        "OPEN-E-COMMON-SUPERGRADIENT",
+        "OPEN-DS-MARGINS-AT-OPTIMA"
       ]
     },
     "by_criterion": {
@@ -2526,7 +2684,12 @@
         "OPEN-PARAMETER-MISMATCH",
         "OPEN-MULTIREFERENCE-ROBUST",
         "OPEN-ATOMIC-RANDOMIZATION-GAP",
-        "OPEN-SOFT-HARD-ZEROTEMP"
+        "OPEN-SOFT-HARD-ZEROTEMP",
+        "DS-PROFILED-VARIATIONAL",
+        "DS-EXCHANGE-LEVERAGE-BOUND",
+        "DS-GLOBAL-TIE-DEGENERACY",
+        "DS-POP-WASTED-CELLS",
+        "OPEN-DS-MARGINS-AT-OPTIMA"
       ],
       "trace": [
         "TRACE-WHITENED-KMEANS"
@@ -2577,7 +2740,8 @@
         "D-REPARAM-INVARIANCE",
         "DS-CLASSICAL-DESIGN-THEORY",
         "DS-SCHUR",
-        "E-SUPERGRADIENT"
+        "E-SUPERGRADIENT",
+        "DS-PROFILED-VARIATIONAL"
       ],
       "information_accounting": [
         "FI-LOSS-DECOMPOSITION",
@@ -2610,7 +2774,8 @@
         "OPEN-PARAMETER-MISMATCH",
         "OPEN-MULTIREFERENCE-ROBUST",
         "OPEN-ATOMIC-RANDOMIZATION-GAP",
-        "OPEN-E-COMMON-SUPERGRADIENT"
+        "OPEN-E-COMMON-SUPERGRADIENT",
+        "DS-POP-WASTED-CELLS"
       ],
       "finite_assignment": [
         "GENERAL-SUPERGRADIENT-SCREENING",
@@ -2654,7 +2819,9 @@
         "OPEN-E-SPECTRAL-GAP-BOUND",
         "OPEN-D-PARAMETERIZED-COMPLEXITY",
         "OPEN-STRONGER-LOCAL-NEIGHBORHOODS",
-        "OPEN-STRONGER-BB"
+        "OPEN-STRONGER-BB",
+        "DS-EXCHANGE-LEVERAGE-BOUND",
+        "DS-GLOBAL-TIE-DEGENERACY"
       ],
       "empirical_inductive_quantizer": [
         "D-FINITE-INDUCTIVE-CLOSURE",
@@ -2668,7 +2835,8 @@
         "OPEN-DS-FINITE-POP-BRIDGE",
         "OPEN-D-UNRESTRICTED-CONSISTENCY",
         "OPEN-D-EXCHANGE-CONSISTENCY",
-        "OPEN-DS-E-UNRESTRICTED-CONSISTENCY"
+        "OPEN-DS-E-UNRESTRICTED-CONSISTENCY",
+        "OPEN-DS-MARGINS-AT-OPTIMA"
       ],
       "score_oracle": [
         "RATIO-LOCAL-SCORE",
@@ -2688,9 +2856,6 @@
       "OPEN-CRITERION-CHARACTERIZATION",
       "OPEN-A-QUANTITATIVE-BOUND",
       "OPEN-E-SPECTRAL-GAP-BOUND",
-      "OPEN-DS-FINITE-POP-BRIDGE",
-      "OPEN-DS-POP-COMMON-METRIC",
-      "OPEN-DS-DOMINATION-EQUALITY",
       "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
       "OPEN-D-UNRESTRICTED-CONSISTENCY",
       "OPEN-D-EXCHANGE-CONSISTENCY",
@@ -2712,7 +2877,8 @@
       "OPEN-MULTIREFERENCE-ROBUST",
       "OPEN-ATOMIC-RANDOMIZATION-GAP",
       "OPEN-SOFT-HARD-ZEROTEMP",
-      "OPEN-E-COMMON-SUPERGRADIENT"
+      "OPEN-E-COMMON-SUPERGRADIENT",
+      "OPEN-DS-MARGINS-AT-OPTIMA"
     ]
   },
   "agent_usage": {
