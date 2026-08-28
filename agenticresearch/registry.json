@@ -24,7 +24,7 @@
   },
   "literature_search_status_definitions": {
     "not_searched": "No targeted prior-art search has been run for this claim.",
-    "search_gap": "Targeted prior-art search found no direct precedent; recorded in LITERATURE.md; not a novelty claim.",
+    "search_gap": "Targeted prior-art search found no direct precedent; recorded in LITERATURE/; not a novelty claim.",
     "prior_art_found": "Direct or near-direct precedent located; see the literature entry cited by the claim."
   },
   "levels": [

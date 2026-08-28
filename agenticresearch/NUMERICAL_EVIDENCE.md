@@ -2,7 +2,7 @@
 
 **Purpose:** preserve empirical evidence that supports theorem auditing and solver regression tests. Nothing in this file is a proof.
 
-Each row names the CLAIMS.json node(s) it supports and the executable source that produces it (`tests/…` runs in CI; `py/…` is a workspace script; legacy sweeps live in `py/dopt_*.py`).
+Each row names the claim node(s) it supports and the executable source that produces it (`tests/…` runs in CI; `py/…` is a workspace script; legacy sweeps live in `py/dopt_*.py`).
 
 | ID | Test | Setting | Reported result | Claims | Source | Scientific use |
 |---|---|---|---|---|---|---|
@@ -35,4 +35,4 @@ Each row names the CLAIMS.json node(s) it supports and the executable source tha
 3. Store random seeds, code revision, and environment beside new benchmark output.
 4. If a new implementation disagrees with an identity regression, treat it as a bug until independently explained.
 5. If a new search finds a theorem violation, stop optimization benchmarking and audit the theorem immediately.
-6. Every new row must cite at least one CLAIMS.json id and one executable source.
+6. Every new row must cite at least one claim id and one executable source; `py/registry.py validate` checks that every cited id resolves.

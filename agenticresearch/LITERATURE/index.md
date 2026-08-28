@@ -38,7 +38,7 @@ order is defined once, in `README.md`.)
 7. Späth 1977/1985 + Coleman et al. (determinant exchange prior art)
 8. Pollard + CVT/Lloyd literature (population consistency/geometric algorithms)
 9. SALLY/SALLINO, INFERNO, ThickBrick, Learning to bin (HEP/practical inference-aware context)
-10. `KNOWN_RESULTS.md` and the project theorem registry
+10. `KNOWN_RESULTS/` and the project theorem registry
 
 ---
 

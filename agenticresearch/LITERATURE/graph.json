@@ -11,7 +11,7 @@
     "cites_relevant": ["ids"],
     "cited_by_relevant": ["ids"],
     "research_area": "fisher-quantization | optimal-design | determinant-clustering | vq | hep-inference | score-compression | other",
-    "relevant_claims": ["CLAIMS.json ids"],
+    "relevant_claims": ["claim ids from claims/"],
     "status": "unread | screened | deeply_reviewed | irrelevant"
   },
   "rounds": [],

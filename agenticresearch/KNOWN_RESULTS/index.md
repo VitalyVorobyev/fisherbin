@@ -4,10 +4,10 @@
 > first. Resolve any claim id -- node, dependency closure, and proof prose --
 > with `python py/registry.py show <ID> --deps --proof`.
 
-**Version:** 2.0 · 26 August 2026  
+**Version:** 3.0 · 28 August 2026  
 **Purpose:** canonical theorem/result ledger. Read `PROBLEM.md` first.
 
-Status vocabulary (mirrors `CLAIMS.json` `status_definitions`):
+Status vocabulary (mirrors `registry.json` `status_definitions`):
 
 - **[LIT]** established literature.
 - **[BRIDGE]** direct synthesis/translation of known results into ScoreQuant notation.
@@ -40,7 +40,7 @@ Status vocabulary (mirrors `CLAIMS.json` `status_definitions`):
 ## 12. Numerical evidence as regression tests — [MEASURED]
 
 The measured ledger lives in `NUMERICAL_EVIDENCE.md` — one row per evidence
-item (`N-*` id), with the CLAIMS.json node(s) it supports and the executable
+item (`N-*` id), with the claim node(s) it supports and the executable
 source that produces it. It is not duplicated here; nothing in it is a proof.
 
 Keep exact seeds/scripts or minimized fixtures beside any claim used in publication.

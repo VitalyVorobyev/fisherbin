@@ -17,7 +17,7 @@ size and rigor.
 2. Criterion and problem level
 3. Status before attempt
 4. Dependencies (rechecked, not just listed)
-5. Nearest literature (per `protocols/literature.md`, recorded in `LITERATURE.md`)
+5. Nearest literature (per `protocols/literature.md`, recorded in `LITERATURE/`)
 6. Counterexample search (per `protocols/numerical.md`)
 7. Algebraic reduction
 8. Proof / counterexample / conditional result
@@ -26,7 +26,7 @@ size and rigor.
 11. Deployability consequence
 12. Information-loss consequence
 13. Updated status
-14. `CLAIMS.json` patch (including `assumptions` made fully explicit)
+14. Registry patch under `claims/` (including `assumptions` made fully explicit)
 15. Counterexample/regression artifact (exact fixture + test) if applicable
 16. Next dependency-blocking question
 
@@ -38,3 +38,6 @@ size and rigor.
   "search_gap"` (never a novelty claim).
 - Boundary failures discovered during the audit become
   `boundary_counterexamples` with fixtures.
+- Any statement the manuscripts now contradict is appended to the staleness
+  list in `manuscripts/README.md`. A re-attribution to prior art especially:
+  that is the kind of change that must not reach a submission unnoticed.

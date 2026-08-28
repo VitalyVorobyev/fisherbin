@@ -19,7 +19,7 @@ Before any mathematics, write down:
 
 ## B. Query the claim graph
 
-Use `CLAIMS.json` per the lookup protocol in `AGENT.md`. List established
+Use the claim graph per the lookup protocol in `AGENT.md`. List established
 prerequisites, unresolved dependencies, and known counterexamples nearby.
 Do not prove something already recorded `project_proved` unless the task is
 explicitly an audit.
@@ -86,9 +86,11 @@ performance.
 
 After every investigation:
 
-1. patch `CLAIMS.json`;
+1. patch the claim node under `claims/` and run `py/registry.py reindex`;
 2. add/minimize any counterexample in `COUNTEREXAMPLES/`;
-3. update `LITERATURE.md` with exact theorem/page metadata for new prior art;
+3. update `LITERATURE/` with exact theorem/page metadata for new prior art;
 4. state whether `PROBLEM.md` assumptions change;
 5. add numerical regression tests if the claim is computational;
-6. update the WORK packet and identify the next dependency-blocking question.
+6. update the WORK packet and identify the next dependency-blocking question;
+7. note the manuscript impact in `manuscripts/README.md` — the staleness list
+   has no other updater, and the paper is harvested from this ledger.
