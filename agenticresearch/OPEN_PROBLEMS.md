@@ -17,7 +17,7 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
 *Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 28 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`). The conditional bridge theorem DS14 awaits its independent audit (`WORK/active/AUDIT-DS-POPULATION-BRIDGE.md`); the surviving mathematical gap is OP28.*
+*Status 28 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`). The conditional bridge theorem DS14 passed its independent adversarial audit on 28 Aug 2026 (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`, packet `WORK/completed/AUDIT-DS-POPULATION-BRIDGE.md`; all four verdicts verified). The surviving mathematical gap is OP28.*
 
 ## OP28. Margins at finite \(D_s\) optima
 

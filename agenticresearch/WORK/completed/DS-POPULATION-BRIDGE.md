@@ -66,7 +66,7 @@ projected centroids.
   epi-convergence templates, Levrard margins; determinant-criterion
   consistency confirmed as a search gap)
 - `OPEN_PROBLEMS.md`: OP4/OP5/OP6 retired, OP28 opened
-- Follow-up: `WORK/active/AUDIT-DS-POPULATION-BRIDGE.md` (independent audit)
+- Follow-up: `WORK/completed/AUDIT-DS-POPULATION-BRIDGE.md` (independent audit, completed 28 Aug 2026)
 
 ## Next dependency-blocking question
 

@@ -22,7 +22,7 @@ Start a fresh session in the repo root, on a fresh branch, and paste:
 You are running a ScoreQuant research session.
 
 Read agenticresearch/README.md and follow its canonical read order.
-Execute the work packet agenticresearch/WORK/active/DS-POPULATION-BRIDGE.md
+Execute the work packet agenticresearch/WORK/active/<PACKET-ID>.md
 following agenticresearch/protocols/theorem.md. Falsify before proving.
 
 Rules of engagement:

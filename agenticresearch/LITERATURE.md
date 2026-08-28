@@ -328,7 +328,7 @@ condition bounding mass near optimal cell boundaries, fast rates; survey
 2018 J. SFdS 159:1–48); Mammen & Tsybakov (1999, Ann. Statist.
 27:1808–1829); Antos, Györfi & György (2005, individual rates).
 
-**Use:** conceptual template for the DS14 slab-margin assumption (A4) and
+**Use:** conceptual template for the DS14 slab-margin assumption (M4) and
 for a future fast-rate refinement of the bridge.
 
 **Does not transfer:** fast-rate mechanics rely on a Pythagorean identity for

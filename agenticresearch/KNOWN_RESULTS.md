@@ -20,6 +20,8 @@ Status vocabulary (mirrors `CLAIMS.json` `status_definitions`):
 
 ## U1. Quantized Fisher-information identity — [LIT]
 
+**Claims:** FI-QUANT-IDENTITY
+
 For \(Z=q(S)\),
 
 \[
@@ -42,6 +44,8 @@ Closest direct literature: score-function quantization; Barnes–Han–Özgür.
 
 ## U2. Exact information-loss decomposition — [LIT/BRIDGE]
 
+**Claims:** FI-LOSS-DECOMPOSITION
+
 \[
 \boxed{
 I_{\rm full}-I_q=E[\operatorname{Cov}(S\mid Z)]\succeq0.
@@ -55,6 +59,8 @@ Consequences:
 
 ## U3. Local Fisher-losslessness criterion — [BRIDGE]
 
+**Claims:** FI-LOSSLESS-IFF-SCORE-MEASURABLE
+
 \[
 \boxed{
 I_q=I_{\rm full}
@@ -67,6 +73,8 @@ Equivalently \(\operatorname{Cov}(S\mid Z)=0\) a.s. Generic smooth score laws ca
 
 ## U4. Rank ceiling — [BRIDGE]
 
+**Claims:** FI-RANK-CEILING
+
 Since \(\sum_bm_b=0\),
 
 \[
@@ -76,6 +84,8 @@ Since \(\sum_bm_b=0\),
 Therefore \(K\ge d+1\) is necessary for nonsingular full-D information.
 
 ## U5. Refinement monotonicity — [BRIDGE]
+
+**Claims:** FI-REFINEMENT-MONOTONICITY, GENERAL-REFINEMENT-BB
 
 If \(\mathcal P'\) refines \(\mathcal P\), then
 
@@ -87,9 +97,13 @@ This powers branch-and-bound upper bounds for every Loewner-monotone criterion.
 
 ## U6. Reparameterization invariance of D — [BRIDGE]
 
+**Claims:** D-REPARAM-INVARIANCE
+
 Under an invertible local parameter transformation, \(I_q\) transforms by congruence and \(\log\det I_q\) changes only by a quantizer-independent constant. D-optimal partitions are therefore invariant under invertible reparameterization.
 
 ## U7. Normalized retained-information spectrum — [BRIDGE]
+
+**Claims:** INFO-RETENTION-SPECTRUM
 
 \[
 R=I_{\rm full}^{-1/2}I_qI_{\rm full}^{-1/2},
@@ -114,6 +128,8 @@ The middle quantity is D-efficiency.
 
 ## T1. Fisher-whitened normalized trace equals weighted k-means — [BRIDGE; essentially known]
 
+**Claims:** TRACE-WHITENED-KMEANS
+
 With
 
 \[
@@ -137,6 +153,8 @@ This is useful as a baseline, not a headline novelty claim.
 
 ## G1. Infinitesimal cell-transfer identity — [PROJECT-PROVED/BRIDGE]
 
+**Claims:** GENERAL-FIRST-VARIATION
+
 Move infinitesimal probability mass \(d\varepsilon\) at score \(s\) from cell \(a\) to \(b\). Then
 
 \[
@@ -159,6 +177,8 @@ For differentiable \(F(I)\) with symmetric \(G=\nabla F(I)\),
 A shared \(G\) makes pairwise boundaries affine because the common \(s^\top Gs\) term cancels.
 
 ## G2. General concavity/supergradient screening — [PROJECT-PROVED]
+
+**Claims:** D-TANGENT-SCREENING, DS-TANGENT-SCREENING, GENERAL-SUPERGRADIENT-SCREENING, GENERAL-WEIGHTED-TANGENT-STABILITY
 
 For a concave criterion \(F\), let \(G\) be any supergradient at the current information matrix. For an exact finite relocation
 
@@ -200,6 +220,8 @@ F_D(I)=\log\det I,
 
 ## D1. Population stationary geometry — [PROJECT-PROVED/BRIDGE]
 
+**Claims:** D-POP-VORONOI
+
 A regular atomless stationary D quantizer satisfies
 
 \[
@@ -215,6 +237,8 @@ Thus cells form a self-consistent common-metric Mahalanobis Voronoi / affine-max
 This is a first-order stationarity result, not a global-optimality theorem.
 
 ## D2. Exact weighted rank-two relocation — [PROJECT-PROVED]
+
+**Claims:** D-RANK2-MOVE
 
 Move weighted point \((s,w)\) from a non-singleton source \(a\) to destination \(b\). Let
 
@@ -239,6 +263,8 @@ Then
 
 ## D3. Exact log-det relocation gain — [PROJECT-PROVED]
 
+**Claims:** D-LOGDET-GAIN
+
 With \(H=I^{-1}\) and
 
 \[
@@ -258,6 +284,8 @@ q_{ab}=u_a^\top Hu_b,
 This supports exact \(O(d^2)\)-type candidate evaluation with cached factorizations.
 
 ## D4. Leverage inequality — [STANDARD/BRIDGE]
+
+**Claims:** D-LEVERAGE
 
 For every cell centroid,
 
@@ -294,6 +322,8 @@ gives \(Av=\mu_a-\mu_b\), hence
 \]
 
 ## D5. Exchange stability implies strict D-Voronoi geometry — [PROJECT-PROVED; audited]
+
+**Claims:** D-EXCHANGE-IMPLIES-VORONOI, D-EXCHANGE-VIOLATION-LOWER-BOUND
 
 Let coincident score rows be merged into distinct atoms with positive weights,
 and partition those atoms into exactly \(K\) nonempty cells. Assume \(I\succ0\),
@@ -356,6 +386,8 @@ Exact-rational regression: `py/audit_d_exchange_voronoi.py`.
 
 ## D6. Exact finite inductive closure / compiler — [PROJECT-PROVED]
 
+**Claims:** D-FINITE-INDUCTIVE-CLOSURE
+
 Every one-point-exchange-stable positive-definite finite D solution can be compiled to
 
 \[
@@ -375,11 +407,15 @@ documented by `GeometryReport`.
 
 ## D7. Every finite global D optimum is geometrically realizable — [PROJECT-PROVED COROLLARY]
 
+**Claims:** D-GLOBAL-GEOMETRIC-REALIZABILITY
+
 A finite global optimum is exchange stable, hence strict D-Voronoi. Therefore unrestricted finite D assignment optimization and global optimization over the corresponding realizable D-Voronoi/affine-max labelings have the same optimum value.
 
 This does **not** say every D-Voronoi fixed point is globally optimal.
 
 ## D8. Monotone exact one-point exchange — [PROJECT-PROVED]
+
+**Claims:** D-EXCHANGE-TERMINATES
 
 Accepting only exact positive D gains gives:
 
@@ -390,6 +426,8 @@ Accepting only exact positive D gains gives:
 - by D5/D6, a canonical deployable D quantizer.
 
 ## D9. Adaptive Mahalanobis Lloyd is not monotone — [COUNTEREXAMPLE]
+
+**Claims:** D-GUARDED-LLOYD, D-LLOYD-NONMONOTONE
 
 The batch iteration “compute \(I^{-1}\) → nearest-centroid reassignment → recompute \(I\)” can decrease \(\log\det I\).
 
@@ -407,9 +445,13 @@ Measured suite: decreasing steps occurred in 57/300 instances; one explicit exam
 
 ## D10. Voronoi fixed point does not imply exchange stability — [COUNTEREXAMPLE]
 
+**Claims:** D-VORONOI-NOT-EXCHANGE
+
 Measured suite: 35/100 Lloyd/Voronoi fixed points still admitted an exact improving one-point move, with improvements up to about 1.033 nat.
 
 ## D11. Exact global enumeration for fixed \((d,K)\) — [PROJECT-PROVED]
+
+**Claims:** D-GLOBAL-XP
 
 D7 restricts candidate global labelings to affine-max-realizable partitions. Arrangement enumeration gives an exact XP algorithm of form
 
@@ -422,6 +464,8 @@ for fixed \((d,K)\), with an effective affine parameter count of order \((K-1)(d
 This is an application of a known computational-geometry template; hardness/FPT status remains open.
 
 ## D12. Singleton-refinement branch-and-bound bound — [PROJECT-PROVED]
+
+**Claims:** D-BB-SINGLETON-BOUND
 
 For a partial assignment and unassigned point set \(U\), singleton refinement yields
 
@@ -450,6 +494,10 @@ Measured implementation: exact agreement with exhaustive search on small instanc
 
 # 5. \(D_s\)-optimality
 
+## DS0. Profiled objective and Schur notation — [LIT]
+
+**Claims:** DS-SCHUR
+
 Let \(\theta=(\psi,\lambda)\) and
 
 \[
@@ -462,9 +510,13 @@ in the nonsingular block regime.
 
 ## DS1. Classical \(D_s\) design theory — [LIT]
 
+**Claims:** DS-CLASSICAL-DESIGN-THEORY
+
 Wynn, Whittle, Näther–Reinsch, Kiefer/general equivalence theory provide classical subset/nuisance-parameter optimal design, sensitivity, and singular-case tools. They do not directly solve the quantizer feasible set.
 
 ## DS2. Gradient / efficient semimetric — [PROJECT-PROVED/BRIDGE]
+
+**Claims:** DS-GRADIENT-EFFICIENT-SEMIMETRIC
 
 For regular nonsingular blocks,
 
@@ -482,6 +534,8 @@ of rank \(d_\psi\). Population first-order stationarity therefore induces an eff
 
 ## DS3. Exact finite one-point objective oracle — [PROJECT-PROVED]
 
+**Claims:** DS-EXACT-MOVE-ORACLE, DS-EXCHANGE-TERMINATES
+
 The same rank-two full-information update applies. The exact profiled gain is
 
 \[
@@ -498,6 +552,8 @@ with each term evaluable by low-rank determinant algebra when blocks remain nons
 
 ## DS4. D-style finite geometry theorem fails — [COUNTEREXAMPLE]
 
+**Claims:** DS-FINITE-GEOMETRY-FAILS
+
 A positive first-order efficient-Voronoi margin need not imply positive exact finite \(D_s\) gain. Therefore
 
 \[
@@ -508,6 +564,8 @@ in general.
 
 ## DS5. A global finite \(D_s\) optimum can be non-geometric — [EXACT COUNTEREXAMPLE]
 
+**Claims:** DS-GLOBAL-NONGEOMETRIC
+
 There is a centered equal-weight \(N=8,d=2,d_\psi=1,K=3\) example for which exhaustive enumeration of all 966 unlabeled nonempty partitions gives a unique global \(D_s\) optimum that violates its own efficient-semi-metric nearest-cell rule.
 
 Canonical fixture is stored in `COUNTEREXAMPLES/CE-DS-GLOBAL-GEOMETRY-001.json`.
@@ -515,6 +573,8 @@ Canonical fixture is stored in `COUNTEREXAMPLES/CE-DS-GLOBAL-GEOMETRY-001.json`.
 This proves that unrestricted finite \(D_s\) assignment and deployable self-consistent geometric \(D_s\) fitting are genuinely different finite problems.
 
 ## DS6. Approximate finite efficient-Voronoi bound — [PROJECT-PROVED]
+
+**Claims:** DS-OKN-BOUND
 
 At a \(D_s\) one-point exchange-stable state, the relative first-order violation obeys a bound of the form
 
@@ -531,6 +591,8 @@ For equal weights and balanced cells this is \(O(K/N)\).
 Measured suite: the observed maximum violation shrank from roughly 0.18 to 0.029 as \(N\) increased from 8 to 64 in the reported experiment.
 
 ## DS7. Full-data efficient-score domination — [PROJECT-PROVED; see also DS11(a)]
+
+**Claims:** DS-EFFICIENT-SCORE-DOMINATION, DS-EFFICIENT-SCORE-GLOBAL-UPPER
 
 Let
 
@@ -566,6 +628,8 @@ For the last equality to deterministic quantization of \(\widehat S\), atomlessn
 
 ## DS8. Scalar efficient-score upper problem is exactly solvable by DP — [PROJECT-PROVED/BRIDGE]
 
+**Claims:** DS-SCALAR-EFFICIENT-DP
+
 For \(d_\psi=1\), deterministic D-optimal quantization of a scalar atomless efficient score has ordered interval cells. On a finite sample the optimal interval partition can be solved exactly by dynamic programming.
 
 Consequences:
@@ -577,6 +641,8 @@ Consequences:
 Measured certificate gaps were 0.003–0.118 nat on reported \(d=3,d_\psi=1,K=4,N=60\) tests and 0.011–0.19 nat on reported \(d=4,d_\psi=2,K=5,N=80\) tests using the corresponding projected D upper problems.
 
 ## DS9. The \(K\le d\) feasibility split — [PROJECT-PROVED/STRUCTURAL]
+
+**Claims:** DS-FULL-PROFILE-K-LE-D-SINGULAR, DS-PROJECTED-K-REQUIREMENT
 
 For the **full in-bin profiled formulation**, \(I_q\) is singular when \(K\le d\), so ordinary full-block \(D_s\) profiling is not identifiable.
 
@@ -602,6 +668,8 @@ assumptions hold automatically at finite optima) and C2 (unrestricted
 population attainment).
 
 ## DS11. Variational form of the profiled objective and \(\Phi\)-neutral splits — [BRIDGE core + PROJECT-PROVED consequences; audited]
+
+**Claims:** DS-GLOBAL-TIE-DEGENERACY, DS-PROFILED-VARIATIONAL, OPEN-DS-DOMINATION-EQUALITY
 
 **Audit (28 Aug 2026, `AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`):** the boxed
 identity is classical — it is the extremal characterization of the generalized
@@ -717,6 +785,8 @@ general identified only up to the reduced configuration of projected centroids
 
 ## DS12. Population stationary geometry for profiled \(D_s\) — [PROJECT-PROVED]
 
+**Claims:** DS-POP-WASTED-CELLS, OPEN-DS-POP-COMMON-METRIC
+
 Let \(P\) be atomless with \(E[S]=0\), \(E\|S\|^2<\infty\), and let \(q\) have
 \(W_b>0\) for all \(b\) and \(I_q\succ0\). Call \(q\) **bounded-packet
 stationary** if for every \(a\ne b\) and every \(R>0\),
@@ -806,6 +876,8 @@ coincident-\(e_b\) groups (cf. DS11(d)).
 
 ## DS13. Exact profiled leverage stability bound — [PROJECT-PROVED]
 
+**Claims:** DS-EXCHANGE-LEVERAGE-BOUND
+
 Finite level, positive weights, nonsingular \(I\) and \(I_{\lambda\lambda}\)
 at the current state. (Audit: merged atoms are **not** needed — the proof never
 uses row distinctness, confirmed exhaustively on unmerged-duplicate configs;
@@ -869,6 +941,8 @@ with zero violations (row N-DS-AUDIT-LEVERAGE,
 
 ## DS14. Conditional finite\(\to\)population \(D_s\) bridge — [PROJECT-PROVED, CONDITIONAL]
 
+**Claims:** OPEN-DS-FINITE-POP-BRIDGE
+
 Let \(S_1,\dots,S_N\) be i.i.d. from \(P\) with equal weights, and let
 \(z^{(N)}\) be one-point exchange-stable finite \(D_s\) labelings into \(K\)
 cells. Write \(\hat I_N\), \(\hat\mu_b\), \(\hat G_s\), \(\hat e_b\) for the
@@ -879,15 +953,15 @@ I_N)^{-1}(\hat e(s)-\hat e_b)\)).
 
 **Assumptions.**
 
-- (A1) \(P\) atomless, \(E[S]=0\), \(E\|S\|^2<\infty\);
-- (A2) mass margin: \(\min_b\hat W_b\ge c_0>0\);
-- (A3) conditioning margin: \(\lambda_{\min}(\hat I_N)\ge\kappa>0\);
-- (A4) slab margin: \(\sup_{\|v\|=1,c}P(|v^\top S-c|\le t)\le\varphi(t)\),
+- (M1) \(P\) atomless, \(E[S]=0\), \(E\|S\|^2<\infty\);
+- (M2) mass margin: \(\min_b\hat W_b\ge c_0>0\);
+- (M3) conditioning margin: \(\lambda_{\min}(\hat I_N)\ge\kappa>0\);
+- (M4) slab margin: \(\sup_{\|v\|=1,c}P(|v^\top S-c|\le t)\le\varphi(t)\),
   \(\varphi(t)\downarrow0\);
-- (A5) projected-centroid separation:
+- (M5) projected-centroid separation:
   \(\min_{b\ne b'}\|\hat e_b-\hat e_{b'}\|\ge\gamma>0\);
 
-(A2)/(A3)/(A5) along the sequence, almost surely eventually.
+(M2)/(M3)/(M5) along the sequence, almost surely eventually.
 
 **Theorem.** Almost surely:
 
@@ -910,7 +984,7 @@ I_N)^{-1}(\hat e(s)-\hat e_b)\)).
 
 **Step 1 (finite near-geometry).** By DS13, every misassigned point (positive
 rule violation \(g_i=s_{aa}-s_{b^*b^*}>0\)) satisfies
-\(g_i\le\frac1N q_{aa}q_{b^*b^*}\). Under (A2)–(A3),
+\(g_i\le\frac1N q_{aa}q_{b^*b^*}\). Under (M2)–(M3),
 \(\|\hat\mu_b\|^2\le M_N/c_0\) with \(M_N=P_N\|S\|^2\to M=E\|S\|^2\), so
 \(q_{xx}\le\frac2\kappa(\|s_i\|^2+M_N/c_0)=:Q_i\) and \(g_i\le Q_i^2/N\).
 Hence for any \(t>0\), a misassigned point has either violation gap
@@ -931,13 +1005,13 @@ P_N(z^{(N)}\ne\rho_N)
 \(\lambda_{\max}(S_\psi(\hat I_N))\le\operatorname{tr}\hat I_N
 =\sum_b\hat W_b\|\hat\mu_b\|^2\le M_N\to M\) a.s., and the lower bound is
 \(S_\psi=((\hat I_N^{-1})_{\psi\psi})^{-1}\succeq\lambda_{\min}(\hat I_N)\)
-(audit §8) — (A5) gives \(\|v_{bb'}\|\ge2\gamma/\Lambda\). The empirical
+(audit §8) — (M5) gives \(\|v_{bb'}\|\ge2\gamma/\Lambda\). The empirical
 gap-\(t\) band, whatever its data-dependent normals, lies in \(\binom K2\)
 members of the **fixed** family \(\mathcal S=\{\{s:|v^\top s-c|\le r\}\}\) of
 all slabs of half-width \(r=t\Lambda/(2\gamma)\); \(\mathcal S\) is a VC class
 (intersections of two half-spaces), so
 \(\sup_{\mathcal S}|P_N-P|\to0\) a.s. (VC Glivenko–Cantelli; van der
-Vaart–Wellner Thm 2.4.3 / Pollard 1984), and (A4) — already uniform over all
+Vaart–Wellner Thm 2.4.3 / Pollard 1984), and (M4) — already uniform over all
 \((v,c)\) — bounds every population slab mass, giving
 \(\limsup_NP_N(0<\mathrm{gap}\le t)\le\binom K2\varphi(t\Lambda/(2\gamma))\).
 Sending \(N\to\infty\) then \(t\downarrow0\) in Step 1 proves conclusion 1.
@@ -951,7 +1025,7 @@ in the compact affine-max class with parameters bounded by
 \((c_0,\kappa,\gamma,M)\); by the C1 uniform moment convergence over that
 class, \(\sup_\rho\|\hat m_b(\rho)-m_b^P(\rho)\|\to0\) and likewise for
 masses. Along a subsequence with converging parameters, dominated convergence
-(tie sets are \(P\)-null by (A4)–(A5)) gives \(\rho_N\to q^*\) a.e. and
+(tie sets are \(P\)-null by (M4)–(M5)) gives \(\rho_N\to q^*\) a.e. and
 population moments converge; chaining the three approximations identifies
 \(\lim\hat W_b(z^{(N)})=W_b^P(q^*)\), \(\lim\hat\mu_b(z^{(N)})=\mu_b^P(q^*)\),
 \(\lim\hat I_N=I_{q^*}\succeq\kappa\).
@@ -972,7 +1046,7 @@ any parameter-convergent subsequence, Step 4 gives
 inherits the margins. Both bounds force
 \(\lim\hat\Phi_s(z^{(N)})=v^*=\Phi_s^{\rm pop}(q^*)\). ∎
 
-**Merged-rule variant (dropping (A5)).** Without a separation margin, pass to
+**Merged-rule variant (dropping (M5)).** Without a separation margin, pass to
 a subsequence along which every pairwise separation converges; merge
 cell pairs whose separation vanishes (a genuine equivalence relation by the
 triangle inequality). Steps 1–2 apply verbatim to the
@@ -999,7 +1073,7 @@ strengthening: in conclusion 3 the comparison class may be broadened to all
 geometric rules with positive masses, distinct centroids, and nonsingular
 information — the margins bind only through the hypotheses on \(z^{(N)}\).
 
-**What is deliberately not claimed.** (i) The margins (A2)/(A3)/(A5) are
+**What is deliberately not claimed.** (i) The margins (M2)/(M3)/(M5) are
 **not** automatic at finite optima: exhaustively verified global optima at
 \(N\le18\) regularly carry singleton cells (the audit's own fully exact
 \(N=10\) scan reproduces this), and the tie fixture has exactly
@@ -1021,6 +1095,8 @@ F_E(I)=\lambda_{\min}(I).
 
 ## E1. Supergradient structure — [LIT]
 
+**Claims:** E-SUPERGRADIENT
+
 If the minimum eigenvalue is simple with unit eigenvector \(v\), one gradient is \(vv^\top\). At multiplicity \(r\) with basis \(V\),
 
 \[
@@ -1029,6 +1105,8 @@ If the minimum eigenvalue is simple with unit eigenvector \(v\), one gradient is
 \]
 
 ## E2. Repeated-eigenvalue one-transfer degeneracy — [PROJECT-PROVED]
+
+**Claims:** E-REPEATED-EIGEN-DEGENERACY
 
 For one infinitesimal transfer \(\Delta I=aa^\top-bb^\top\),
 
@@ -1041,17 +1119,25 @@ whenever the minimum eigenspace dimension is \(r\ge2\). Thus one-point first-ord
 
 ## E3. Finite global E geometry fails even with simple minimum eigenvalue — [COUNTEREXAMPLE]
 
+**Claims:** E-GLOBAL-GEOMETRY-FAILS
+
 Exhaustive \(N=8,d=2,K=3\) search produced a global E optimum whose own rank-one \(vv^\top\) nearest-cell rule disagrees with a training label; reported margin \(\approx0.06796\).
 
 ## E4. Positive first-order E margin need not imply exact improvement — [COUNTEREXAMPLE]
+
+**Claims:** E-FIRSTORDER-NOT-FINITE
 
 Reported suite: 2,167/8,965 subgradient-rule-improving moves had strictly negative exact E gain; one example had margin 2.27 and exact change \(-0.240\).
 
 ## E5. Safe E screening and B&B — [PROJECT-PROVED]
 
+**Claims:** E-BB-APPLIES, E-TANGENT-SCREENING
+
 G2 gives a sound rejection rule. Exact post-move \(\lambda_{\min}\) evaluation can be reserved for screened-in candidates. Refinement B&B applies because \(\lambda_{\min}\) is Loewner-monotone.
 
 ## E6. Common-supergradient population geometry — [OPEN]
+
+**Claims:** OPEN-E-COMMON-SUPERGRADIENT
 
 It remains open whether every suitable population E optimum admits one common supergradient that supports all cell-assignment inequalities almost everywhere.
 
@@ -1067,13 +1153,19 @@ G_A=I^{-2}.
 
 ## A1. Exact finite move oracle — [PROJECT-PROVED]
 
+**Claims:** A-EXACT-MOVE-ORACLE, A-EXCHANGE-TERMINATES
+
 The universal rank-two \(\Delta I\) plus Woodbury gives an exact \(O(d^2)\)-type A move oracle; exact positive-gain exchange is monotone and finitely terminating.
 
 ## A2. D-style finite geometry theorem fails — [COUNTEREXAMPLE]
 
+**Claims:** A-FINITE-GEOMETRY-FAILS
+
 The reported search found 443 A moves violating the would-be D-style implication. Therefore finite exchange stability does not generally collapse to the first-order \(I^{-2}\) Voronoi rule.
 
 ## A3. Concavity screening remains valid — [PROJECT-PROVED]
+
+**Claims:** A-TANGENT-SCREENING
 
 G2 supplies a sound tangent rejection rule for A.
 
@@ -1086,6 +1178,8 @@ No analogue of the \(D_s\) Prop.-17-style \(O(w)\) violation bound has yet been 
 # 8. Randomized/soft quantizers and empirical geometric optimization
 
 ## S1. Soft assignments are an actual randomized quantizer — [PROJECT-PROVED/BRIDGE]
+
+**Claims:** SOFT-RANDOMIZED-FIM
 
 For \(r_{ib}\ge0\), \(\sum_br_{ib}=1\),
 
@@ -1104,6 +1198,8 @@ This is exactly the Fisher information of the corresponding randomized categoric
 
 ## S2. Exact soft-assignment gradient — [PROJECT-PROVED]
 
+**Claims:** SOFT-ASSIGNMENT-GRADIENT
+
 For differentiable \(F\), \(G=\nabla F(I_{\rm soft})\),
 
 \[
@@ -1117,15 +1213,21 @@ Up to a bin-independent term this is negative squared \(G\)-distance to the cent
 
 ## S3. Hard empirical geometric objective is piecewise constant — [PROJECT-PROVED/OBSERVATION]
 
+**Claims:** HARD-GEOMETRIC-EMPIRICAL-PIECEWISE-CONSTANT
+
 For a hard affine/Voronoi quantizer parameterized by continuous generators/hyperplanes, the finite empirical objective is piecewise constant in those parameters: until a training row crosses a boundary, labels and cell moments do not change.
 
 Therefore ordinary gradient descent on the **hard finite** objective is zero almost everywhere and is not a useful generic solver.
 
 ## S4. Fixed-temperature soft optimization has ordinary stationary-point guarantees — [BRIDGE]
 
+**Claims:** SOFT-FIXED-TEMP-STATIONARY
+
 A positive-temperature softmax affine-max family is smooth away from empty cells/singular information. Line-search gradient ascent or quasi-Newton optimization can be made monotone in the soft objective; standard nonconvex theory gives stationary-point/gradient-norm guarantees, not hard local/global optimality.
 
 ## S5. Atomless purification — [LIT + PROJECT APPLICATION]
+
+**Claims:** DWW-PURIFICATION-MOMENTS, SOFT-HARD-ATOMLESS-EQUIVALENCE
 
 For an atomless score law, Dvoretzky–Wald–Wolfowitz purification preserves all \((W_b,m_b)\) of a randomized finite-action quantizer. Hence randomized and deterministic quantizers have the **same population optimum value for every criterion depending only on these moments**.
 
@@ -1140,6 +1242,8 @@ Finite empirical score laws are atomic. Whether splitting atoms can strictly imp
 # 9. Empirical-to-population theory
 
 ## C1. Restricted affine-class consistency — [PROJECT-PROVED / STANDARD EMPIRICAL-PROCESS ROUTE]
+
+**Claims:** CONSISTENCY-RESTRICTED-AFFINE
 
 Let \(\mathcal Q\) be a compact parameterized class of \(K\)-cell affine-max quantizers. Assume bounded scores or suitable uniform integrability, cell masses uniformly bounded below, and the required information matrices uniformly bounded away from singularity.
 
@@ -1163,6 +1267,8 @@ For D, finite geometric realizability makes this program unusually plausible; fo
 
 ## O1. Density ratios suffice for local scores — [BRIDGE]
 
+**Claims:** RATIO-LOCAL-SCORE
+
 \[
 s(x)=\left.\nabla_\theta\log\frac{p(x\mid\theta)}{p(x\mid\theta_0)}\right|_{\theta_0}.
 \]
@@ -1170,6 +1276,8 @@ s(x)=\left.\nabla_\theta\log\frac{p(x\mid\theta)}{p(x\mid\theta_0)}\right|_{\the
 Full absolute densities are not required if the relevant local density ratio is available.
 
 ## O2. Linear-mixture component ratios suffice — [BRIDGE]
+
+**Claims:** MIXTURE-RATIO-SCORE
 
 For
 
@@ -1180,6 +1288,8 @@ p(x\mid\theta)=\sum_\alpha\theta_\alpha\phi_\alpha(x),
 score coordinates depend on \(\phi_\alpha(x)/\sum_\beta\theta_{0\beta}\phi_\beta(x)\). Ratios to one reference component therefore suffice exactly after algebraic reconstruction.
 
 ## O3. Calibrated classifier posteriors provide ratios — [LIT/BRIDGE]
+
+**Claims:** CLASSIFIER-MIXTURE-SCORE-FORMULA, CLASSIFIER-RATIO-ORACLE
 
 With class priors \(\pi_\alpha\), posterior odds recover component density ratios. In the mixture parameterization,
 
@@ -1195,6 +1305,8 @@ Estimated classifiers solve the exact score problem only to the extent that they
 
 ## O4. True retained FI under an estimated score — [BRIDGE]
 
+**Claims:** PROXY-TRUE-RETAINED-FI
+
 If the quantizer uses \(\hat s\), the actual retained Fisher information is
 
 \[
@@ -1206,6 +1318,8 @@ If the quantizer uses \(\hat s\), the actual retained Fisher information is
 not \(\operatorname{Var}(E[\hat s\mid q(\hat s)])\) unless \(\hat s=s\) in the relevant sense.
 
 ## O5. Representation loss and quantization loss separate — [BRIDGE]
+
+**Claims:** REPRESENTATION-QUANTIZATION-LOSS
 
 For a representation \(R(X)\),
 
@@ -1223,11 +1337,15 @@ This separates oracle/representation loss from hard-quantization loss whenever t
 
 ## I1. D-efficiency — [BRIDGE]
 
+**Claims:** INFO-D-EFFICIENCY
+
 \[
 \eta_D=(\det I_q/\det I_{\rm full})^{1/d}.
 \]
 
 ## I2. \(D_s\)-efficiency — [BRIDGE]
+
+**Claims:** INFO-DS-EFFICIENCY
 
 \[
 \eta_{D_s}=
@@ -1235,6 +1353,8 @@ This separates oracle/representation loss from hard-quantization loss whenever t
 \]
 
 ## I3. Directional diagnostics — [BRIDGE]
+
+**Claims:** INFO-DIRECTIONAL-DIAGNOSTICS
 
 Report normalized retention eigenvalues, their geometric mean, arithmetic mean, and minimum. D optimization does not guarantee every direction is equally preserved.
 

@@ -10,6 +10,11 @@ hardened assumptions and its core identity re-attributed to classical prior art
 hardening its assumptions and supplying two missing arguments (the fixed-class
 slab Glivenko–Cantelli step and the general-\(d_\psi\) neutral-split value
 identification for the merged variant). No refutation was found.
+**Editorial note (28 August 2026, workspace v4.0):** DS14's margin assumptions
+were relabelled `(A1)`–`(A5)` → `(M1)`–`(M5)` throughout this report and the
+ledger. The old labels collided with the A-optimality results A1–A4, so `A3`
+named both "concavity screening remains valid" and the conditioning margin.
+No statement changed; `py/registry.py validate` now rejects the collision.
 
 ## 1. Target statement
 
@@ -38,13 +43,13 @@ generalized profiled information and \(F_s=\log\det S_\psi\).
   \(I_{\lambda\lambda}\succ0\): at any one-point exchange-stable profiled-Ds
   state, every admissible move (non-singleton source) satisfies
   \(s_{aa}-s_{bb}\le\beta_i\,q_{aa}q_{bb}\le w_i\,q_{aa}q_{bb}\).
-- **DS14.** Under (A1)–(A5) (i.i.d. atomless centered law with finite second
+- **DS14.** Under (M1)–(M5) (i.i.d. atomless centered law with finite second
   moment; mass, conditioning, slab, and separation margins), one-point
   exchange-stable finite Ds labelings are asymptotically geometric; along
   parameter-convergent subsequences their companion rules converge to
   self-consistent, bounded-packet-stationary efficient-Voronoi quantizers with
   convergent values; global finite optima converge in value to the population
-  optimum over the margin-compatible geometric class; without (A5) the same
+  optimum over the margin-compatible geometric class; without (M5) the same
   holds for the reduced (merged) rule.
 
 ## 2. Criterion and problem level
@@ -142,7 +147,7 @@ Fisher binning in HEP) confirmed the packet's triangulation:
   the practice DS14 would certify — but supplies algorithms only, no
   finite-to-population consistency theorems.
 - **Margin conditions** (Mammen–Tsybakov; Levrard): conceptual template for
-  (A4); fast-rate mechanics rest on a squared-distortion Pythagorean identity
+  (M4); fast-rate mechanics rest on a squared-distortion Pythagorean identity
   with no log-det analogue, so no rates transfer.
 
 ## 6. Counterexample search
@@ -189,7 +194,7 @@ Independent suite `py/audit_ds_population_bridge.py` (pure-stdlib
 - **Margins (`margins` mode):** three own \(N=10,K=3\) datasets (integer LCG,
   exactly centered), globally optimized by **full exact enumeration — no float
   screen, no top-\(k\) cut**. One of three exact global optima carries a
-  singleton cell, independently reconfirming that (A2) is not automatic
+  singleton cell, independently reconfirming that (M2) is not automatic
   (OP28); DS13 and DS6 hold at all optima; separations positive.
 
 **Researcher-evidence weaknesses documented (not relied upon).** The
@@ -332,8 +337,8 @@ algebra is exact (§7, re-verified exhaustively in §6). Two hardenings:
 **DS14 — verified as a conditional theorem with hardened assumptions.** The
 five steps were re-derived; the following were supplied or made explicit:
 
-- *(Step 1.)* DS13 applies because (A2) with equal weights gives every cell
-  \(\ge c_0N\ge2\) points for \(N\ge2/c_0\) and (A3) gives both nonsingular
+- *(Step 1.)* DS13 applies because (M2) with equal weights gives every cell
+  \(\ge c_0N\ge2\) points for \(N\ge2/c_0\) and (M3) gives both nonsingular
   blocks; \(\|\hat\mu_b\|^2\le M_N/c_0\) (Jensen), \(q_{xx}\le
   \frac2\kappa(\|s_i\|^2+M_N/c_0)\) (parallelogram), and the Markov bound is
   valid once \(\sqrt{tN}\kappa/2>M_N/c_0\). Disagreement convention:
@@ -350,7 +355,7 @@ five steps were re-derived; the following were supplied or made explicit:
   slabs of half-width \(r\) is a VC class (each slab is an intersection of two
   half-spaces; VC dimension \(\le\) a constant depending only on \(d\)), so
   \(\sup_{\mathcal S}|P_N-P|\to0\) a.s. (Vapnik–Chervonenkis / van der
-  Vaart–Wellner Thm 2.4.3, Pollard 1984 II.14), and (A4) — which is already
+  Vaart–Wellner Thm 2.4.3, Pollard 1984 II.14), and (M4) — which is already
   uniform over all \((v,c)\) — bounds every population slab mass by
   \(\varphi(r)\). The empirical gap-\(t\) band, whatever its data-dependent
   normals, lies in \(\binom K2\) members of \(\mathcal S\) with
@@ -368,7 +373,7 @@ five steps were re-derived; the following were supplied or made explicit:
   \sqrt{2M/c_0}\}\times\{\kappa\le S_\psi\le2M\}\times\{\|B^*\|\le2M/\kappa\}\)
   — a compact set, so every subsequence has a parameter-convergent
   sub-subsequence. Along one, dominated convergence (tie sets are \(P\)-null:
-  (A4) kills every hyperplane, and limit normals are nonzero by (A5) passing
+  (M4) kills every hyperplane, and limit normals are nonzero by (M5) passing
   to the limit) identifies empirical with population moments of the limit.
 - *(Step 4.)* Written as the two-sided argument: the limit rule's parameters
   are continuous images (at \(I\succeq\kappa\)) of the limit moments, which
@@ -391,7 +396,7 @@ five steps were re-derived; the following were supplied or made explicit:
 - *(Merged variant.)* Vanishing pairwise separation along the subsequence is
   transitive (triangle inequality), so the merge is by genuine equivalence
   classes; inter-group separations have positive limits, giving a group-level
-  (A5) with some \(\gamma'>0\) along the subsequence; Steps 1–2 then run for
+  (M5) with some \(\gamma'>0\) along the subsequence; Steps 1–2 then run for
   the group rule verbatim (a group-level misassignment is in particular a
   cell-level one across groups, so DS13 supplies the same gap bound, and only
   inter-group slabs are needed). The **value identification** for conclusion
@@ -411,12 +416,12 @@ claims already carry after hardening.
 ## 9. Adversarial audit and boundary conditions
 
 - **Ties:** DS12/DS14 tolerate exact ties (the rule condition is \(\le\); the
-  companion rule breaks ties toward the current label); (A4) makes tie sets
+  companion rule breaks ties toward the current label); (M4) makes tie sets
   null in the limit. The 31-fold exact tie fixture shows finite optima can be
   entire tie classes — handled by the merged variant, not excluded.
 - **Singletons:** DS13 excludes singleton *sources* only; the audit's margin
   scan reconfirms singleton cells occur at exact global optima, which is
-  precisely why (A2) is an assumption, not a fact (OP28).
+  precisely why (M2) is an assumption, not a fact (OP28).
 - **Duplicates:** irrelevant to DS13 (assumption dropped, verified
   exhaustively); population claims are unaffected (atomless).
 - **Singular information:** DS12/DS13 require \(I\succ0\),
@@ -430,7 +435,7 @@ claims already carry after hardening.
   infeasible (U4).
 - **Atomic laws:** DS12's necessity direction fails for atomic laws
   (vacuous stationarity; existing fixture as witness); sufficiency survives.
-  DS14 assumes atomless (A1) and never applies DS12 to an atomic law.
+  DS14 assumes atomless (M1) and never applies DS12 to an atomic law.
 - **Hidden compactness:** was the sharpest risk in DS14 Steps 3/5; now an
   explicit compact parameter set (§8), so the subsequence extractions are
   legitimate.
@@ -467,7 +472,7 @@ The deployable object for profiled criteria is the **reduced** configuration
 partition is reproducible by its own rule, and DS14 (merged variant) shows the
 reduced rule is what finite optima determine. A future
 `compile_quantizer`-for-Ds must (i) merge coincident projected centroids
-before compiling, (ii) certify the margins (A2)/(A3)/(A5) on the training
+before compiling, (ii) certify the margins (M2)/(M3)/(M5) on the training
 labeling rather than assume them, and (iii) refuse compilation when the
 nuisance block is singular (DS9). The bridge is conditional: margins are
 certified inputs, not consequences.

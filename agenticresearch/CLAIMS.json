@@ -77,7 +77,7 @@
       "level": "universal",
       "status": "literature",
       "publication_status": "published",
-      "statement": "For Z=q(S), the categorical score is E[S|Z] and I_q=Var(E[S|Z])=Σ_b W_b μ_b μ_b^T=Σ_b m_b m_b^T/W_b.",
+      "statement": "For Z=q(S), the categorical score is E[S|Z] and I_q=Var(E[S|Z])=\u03a3_b W_b \u03bc_b \u03bc_b^T=\u03a3_b m_b m_b^T/W_b.",
       "assumptions": [
         "regular model",
         "quantizer fixed with respect to theta when differentiating"
@@ -271,7 +271,7 @@
       "level": "population_quantizer",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "Moving infinitesimal mass from cell a to b gives dI=[(s-μ_a)(s-μ_a)^T-(s-μ_b)(s-μ_b)^T]dε; for differentiable F the directional derivative is the difference of the corresponding G=∇F(I) quadratic forms.",
+      "statement": "Moving infinitesimal mass from cell a to b gives dI=[(s-\u03bc_a)(s-\u03bc_a)^T-(s-\u03bc_b)(s-\u03bc_b)^T]d\u03b5; for differentiable F the directional derivative is the difference of the corresponding G=\u2207F(I) quadratic forms.",
       "dependencies": [
         "FI-QUANT-IDENTITY"
       ],
@@ -298,7 +298,7 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "For concave F and any supergradient G, exact finite relocation satisfies ΔF <= tr(GΔI)=α u_a^T G u_a-β u_b^T G u_b. Non-positive weighted tangent gain safely rejects the move.",
+      "statement": "For concave F and any supergradient G, exact finite relocation satisfies \u0394F <= tr(G\u0394I)=\u03b1 u_a^T G u_a-\u03b2 u_b^T G u_b. Non-positive weighted tangent gain safely rejects the move.",
       "dependencies": [
         "D-RANK2-MOVE"
       ],
@@ -393,7 +393,7 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "For a weighted point moved from non-singleton a to b, ΔI=αu_a u_a^T-βu_b u_b^T with α=wW_a/(W_a-w), β=wW_b/(W_b+w).",
+      "statement": "For a weighted point moved from non-singleton a to b, \u0394I=\u03b1u_a u_a^T-\u03b2u_b u_b^T with \u03b1=wW_a/(W_a-w), \u03b2=wW_b/(W_b+w).",
       "assumptions": [
         "positive weights",
         "source remains nonempty"
@@ -421,7 +421,7 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "With H=I^{-1}, q_aa=u_a^T H u_a, q_bb=u_b^T H u_b, q_ab=u_a^T H u_b, the determinant ratio is (1+αq_aa)(1-βq_bb)+αβq_ab^2.",
+      "statement": "With H=I^{-1}, q_aa=u_a^T H u_a, q_bb=u_b^T H u_b, q_ab=u_a^T H u_b, the determinant ratio is (1+\u03b1q_aa)(1-\u03b2q_bb)+\u03b1\u03b2q_ab^2.",
       "assumptions": [
         "current and candidate information positive definite"
       ],
@@ -450,7 +450,7 @@
       "level": "finite_assignment",
       "status": "bridge",
       "publication_status": "derived_from_published",
-      "statement": "For every centroid μ_c, μ_c^T I^{-1}μ_c<=1/W_c, and for δ=μ_a-μ_b, δ^T I^{-1}δ<=1/W_a+1/W_b.",
+      "statement": "For every centroid \u03bc_c, \u03bc_c^T I^{-1}\u03bc_c<=1/W_c, and for \u03b4=\u03bc_a-\u03bc_b, \u03b4^T I^{-1}\u03b4<=1/W_a+1/W_b.",
       "dependencies": [
         "FI-QUANT-IDENTITY"
       ],
@@ -524,7 +524,7 @@
       ],
       "proof_location": {
         "file": "COUNTEREXAMPLES/README.md",
-        "section": "CE-D-UNMERGED-DUPLICATES-001 — split duplicate atoms block strict D-Voronoi closure"
+        "section": "CE-D-UNMERGED-DUPLICATES-001 \u2014 split duplicate atoms block strict D-Voronoi closure"
       },
       "artifact": "COUNTEREXAMPLES/CE-D-UNMERGED-DUPLICATES-001.json",
       "role": "boundary condition for the finite D theorem and compiler"
@@ -538,7 +538,7 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "For the theorem-triggering violation, ΔF_D >= log(1+αβ q_delta^2/4)>0 for distinct centroids.",
+      "statement": "For the theorem-triggering violation, \u0394F_D >= log(1+\u03b1\u03b2 q_delta^2/4)>0 for distinct centroids.",
       "dependencies": [
         "D-LOGDET-GAIN",
         "D-LEVERAGE"
@@ -557,7 +557,7 @@
       "level": "empirical_inductive_quantizer",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "Every exact zero-tolerance one-point-exchange-stable positive-definite finite D solution on merged distinct positive-weight score atoms compiles to q_hat(s)=argmin_b (s-μ_b)^T I_hat^{-1}(s-μ_b), reproducing all merged-atom training labels strictly; original duplicate rows inherit the merged label. Positive solver tolerance gives only a tolerance-stamped boundary-disagreement guarantee.",
+      "statement": "Every exact zero-tolerance one-point-exchange-stable positive-definite finite D solution on merged distinct positive-weight score atoms compiles to q_hat(s)=argmin_b (s-\u03bc_b)^T I_hat^{-1}(s-\u03bc_b), reproducing all merged-atom training labels strictly; original duplicate rows inherit the merged label. Positive solver tolerance gives only a tolerance-stamped boundary-disagreement guarantee.",
       "dependencies": [
         "D-EXCHANGE-IMPLIES-VORONOI"
       ],
@@ -706,7 +706,7 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "For unassigned U, I_completion <= I_partial+Σ_{i∈U} w_i s_i s_i^T, so its logdet is a valid upper bound on every completion.",
+      "statement": "For unassigned U, I_completion <= I_partial+\u03a3_{i\u2208U} w_i s_i s_i^T, so its logdet is a valid upper bound on every completion.",
       "dependencies": [
         "FI-REFINEMENT-MONOTONICITY"
       ],
@@ -768,14 +768,14 @@
       "level": "universal",
       "status": "literature",
       "publication_status": "published",
-      "statement": "For POI ψ and nuisance λ, S_ψ(I)=I_ψψ-I_ψλ I_λλ^{-1} I_λψ and F_s=logdet S_ψ(I)=logdet I-logdet I_λλ when the relevant blocks are nonsingular.",
+      "statement": "For POI \u03c8 and nuisance \u03bb, S_\u03c8(I)=I_\u03c8\u03c8-I_\u03c8\u03bb I_\u03bb\u03bb^{-1} I_\u03bb\u03c8 and F_s=logdet S_\u03c8(I)=logdet I-logdet I_\u03bb\u03bb when the relevant blocks are nonsingular.",
       "literature": [
         "Wynn-1972",
         "Nather-Reinsch-1981"
       ],
       "proof_location": {
         "file": "KNOWN_RESULTS.md",
-        "section": "5. \\(D_s\\)-optimality"
+        "section": "DS0. Profiled objective and Schur notation"
       },
       "implies": [
         "DS-EFFICIENT-SCORE-DOMINATION",
@@ -794,7 +794,7 @@
       "level": "population_quantizer",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "For regular nonsingular blocks, G_s=I^{-1}-E_λ I_λλ^{-1} E_λ^T is positive semidefinite of rank d_ψ and induces the population first-order efficient-score semimetric.",
+      "statement": "For regular nonsingular blocks, G_s=I^{-1}-E_\u03bb I_\u03bb\u03bb^{-1} E_\u03bb^T is positive semidefinite of rank d_\u03c8 and induces the population first-order efficient-score semimetric.",
       "dependencies": [
         "GENERAL-FIRST-VARIATION",
         "DS-SCHUR"
@@ -818,7 +818,7 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "The full information has the universal rank-two update and exact profiled gain is Δlogdet I-Δlogdet I_λλ, giving an exact low-rank finite move oracle when blocks stay nonsingular.",
+      "statement": "The full information has the universal rank-two update and exact profiled gain is \u0394logdet I-\u0394logdet I_\u03bb\u03bb, giving an exact low-rank finite move oracle when blocks stay nonsingular.",
       "dependencies": [
         "D-RANK2-MOVE",
         "DS-SCHUR"
@@ -904,7 +904,7 @@
       "level": "finite_assignment",
       "status": "counterexample",
       "publication_status": "internal",
-      "statement": "An exact centered equal-weight N=8,d=2,d_ψ=1,K=3 exhaustive example has a unique global Ds optimum that violates its own efficient-semimetric nearest-cell rule.",
+      "statement": "An exact centered equal-weight N=8,d=2,d_\u03c8=1,K=3 exhaustive example has a unique global Ds optimum that violates its own efficient-semimetric nearest-cell rule.",
       "counterexamples": [
         "CE-DS-GLOBAL-GEOMETRY-001",
         "CE-DS-GLOBAL-GEOMETRY-002"
@@ -950,7 +950,7 @@
       "level": "population_quantizer",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "For full-data efficient score S_hat=S_ψ-B* S_λ, every quantizer satisfies Schur_ψ(I_q) <= Var(E[S_hat|q(S)]) in Loewner order.",
+      "statement": "For full-data efficient score S_hat=S_\u03c8-B* S_\u03bb, every quantizer satisfies Schur_\u03c8(I_q) <= Var(E[S_hat|q(S)]) in Loewner order.",
       "assumptions": [
         "full-data nuisance block regular enough to define B*"
       ],
@@ -1000,7 +1000,7 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "For d_ψ=1, deterministic D-optimal quantization of a scalar efficient score has ordered interval cells, and the finite-sample optimum can be solved exactly by dynamic programming.",
+      "statement": "For d_\u03c8=1, deterministic D-optimal quantization of a scalar efficient score has ordered interval cells, and the finite-sample optimum can be solved exactly by dynamic programming.",
       "dependencies": [
         "DS-EFFICIENT-SCORE-GLOBAL-UPPER"
       ],
@@ -1034,14 +1034,14 @@
     },
     {
       "id": "DS-PROJECTED-K-REQUIREMENT",
-      "title": "Projected efficient-score problem only requires K>=d_ψ+1",
+      "title": "Projected efficient-score problem only requires K>=d_\u03c8+1",
       "criterion": [
         "Ds"
       ],
       "level": "population_quantizer",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "When nuisance information is supplied externally via full-data efficient-score projection, the lower-dimensional projected D problem structurally requires only K>=d_ψ+1.",
+      "statement": "When nuisance information is supplied externally via full-data efficient-score projection, the lower-dimensional projected D problem structurally requires only K>=d_\u03c8+1.",
       "dependencies": [
         "FI-RANK-CEILING",
         "DS-EFFICIENT-SCORE-DOMINATION"
@@ -1272,7 +1272,7 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "For probabilities r_ib, W_b=Σ_i w_i r_ib and m_b=Σ_i w_i r_ib s_i give I_soft=Σ_b m_bm_b^T/W_b, the Fisher information of the corresponding randomized categorical observation when the randomization rule is theta-independent.",
+      "statement": "For probabilities r_ib, W_b=\u03a3_i w_i r_ib and m_b=\u03a3_i w_i r_ib s_i give I_soft=\u03a3_b m_bm_b^T/W_b, the Fisher information of the corresponding randomized categorical observation when the randomization rule is theta-independent.",
       "assumptions": [
         "nonnegative assignments",
         "rows sum to one",
@@ -1298,7 +1298,7 @@
       "level": "finite_assignment",
       "status": "project_proved",
       "publication_status": "internal",
-      "statement": "For differentiable F with G=∇F(I_soft), ∂F/∂r_ib=w_i(2 s_i^T G μ_b-μ_b^T G μ_b), equivalent up to a bin-independent term to negative squared G-distance.",
+      "statement": "For differentiable F with G=\u2207F(I_soft), \u2202F/\u2202r_ib=w_i(2 s_i^T G \u03bc_b-\u03bc_b^T G \u03bc_b), equivalent up to a bin-independent term to negative squared G-distance.",
       "dependencies": [
         "SOFT-RANDOMIZED-FIM"
       ],
@@ -1431,7 +1431,7 @@
       "level": "score_oracle",
       "status": "bridge",
       "publication_status": "derived_from_published",
-      "statement": "s(x)=∇_theta log[p(x|theta)/p(x|theta0)]|theta0; absolute normalized densities are unnecessary if the relevant local density ratio is available.",
+      "statement": "s(x)=\u2207_theta log[p(x|theta)/p(x|theta0)]|theta0; absolute normalized densities are unnecessary if the relevant local density ratio is available.",
       "proof_location": {
         "file": "KNOWN_RESULTS.md",
         "section": "O1. Density ratios suffice for local scores"
@@ -1449,7 +1449,7 @@
       "level": "score_oracle",
       "status": "bridge",
       "publication_status": "derived_from_published",
-      "statement": "For p(x|theta)=Σ_alpha theta_alpha phi_alpha(x), score coordinates depend on phi_alpha(x)/Σ_beta theta0_beta phi_beta(x); ratios to one reference component suffice after algebraic reconstruction.",
+      "statement": "For p(x|theta)=\u03a3_alpha theta_alpha phi_alpha(x), score coordinates depend on phi_alpha(x)/\u03a3_beta theta0_beta phi_beta(x); ratios to one reference component suffice after algebraic reconstruction.",
       "dependencies": [
         "RATIO-LOCAL-SCORE"
       ],
@@ -1497,7 +1497,7 @@
       "level": "score_oracle",
       "status": "bridge",
       "publication_status": "derived_from_published",
-      "statement": "For multiclass posteriors eta_alpha with training priors pi_alpha, s_alpha(x)=[eta_alpha/pi_alpha]/Σ_beta theta0_beta[eta_beta/pi_beta] in the stated mixture parameterization.",
+      "statement": "For multiclass posteriors eta_alpha with training priors pi_alpha, s_alpha(x)=[eta_alpha/pi_alpha]/\u03a3_beta theta0_beta[eta_beta/pi_beta] in the stated mixture parameterization.",
       "dependencies": [
         "CLASSIFIER-RATIO-ORACLE",
         "MIXTURE-RATIO-SCORE"
@@ -1588,7 +1588,7 @@
       "level": "information_accounting",
       "status": "bridge",
       "publication_status": "derived_from_published",
-      "statement": "eta_Ds=(det Schur_ψ(I_q)/det Schur_ψ(I_full))^(1/s).",
+      "statement": "eta_Ds=(det Schur_\u03c8(I_q)/det Schur_\u03c8(I_full))^(1/s).",
       "dependencies": [
         "DS-SCHUR"
       ],
@@ -1667,7 +1667,7 @@
       ],
       "proof_location": {
         "file": "OPEN_PROBLEMS.md",
-        "section": "OP1. Which concave matrix criteria have finite exchange ⇒ first-order geometry?"
+        "section": "OP1. Which concave matrix criteria have finite exchange \u21d2 first-order geometry?"
       },
       "priority": 1
     },
@@ -1739,7 +1739,7 @@
         "mass margin min_b W_b >= c0 > 0 along the sequence",
         "conditioning margin lambda_min(I_q) >= kappa > 0 along the sequence",
         "projected-centroid separation >= gamma > 0 (dropped in the merged-rule variant)",
-        "Lambda := 2 E||S||^2 bounds lambda_max(S_psi(I_N)) eventually a.s. (derived from (A1), not an extra assumption)",
+        "Lambda := 2 E||S||^2 bounds lambda_max(S_psi(I_N)) eventually a.s. (derived from (M1), not an extra assumption)",
         "margins are assumed, not derived: see OPEN-DS-MARGINS-AT-OPTIMA"
       ],
       "boundary_counterexamples": [
@@ -2049,7 +2049,7 @@
       ],
       "proof_location": {
         "file": "OPEN_PROBLEMS.md",
-        "section": "OP18. Classifier calibration error → Fisher loss"
+        "section": "OP18. Classifier calibration error \u2192 Fisher loss"
       },
       "priority": 6
     },

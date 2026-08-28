@@ -23,7 +23,7 @@ before the first audit completed. Current state:
 | 5 — solver theory | **largely embodied** | claims D5/D6, library `partition.py`, ADR-0014; residuals → P7 (OP12) |
 | 6 — global optimization/certification | **partially done** | library `certify.py`; residuals → P7 (OP11, OP13) |
 | 7 — empirical advantage over k-means | open | programme P6 |
-| 8 — \(D_s\) as a separate theory | open, **promoted to "Now"** | programme P1, packet `WORK/active/DS-POPULATION-BRIDGE.md` |
+| 8 — \(D_s\) as a separate theory | **substantially done**, conditional on OP28 | programme P1; see `WORK/completed/` |
 | 9 — HEP mixture specialization | open | programme P5 (OP20–OP22) |
 | 10 — learned score / ratio oracle | open, **promoted to "Now"** | programme P2, packet `WORK/active/SCORE-ORACLE-ROBUSTNESS.md` |
 | 11 — information loss vs systematics | open | programmes P3/P5 |
