@@ -2034,6 +2034,27 @@
       "priority": 6
     },
     {
+      "id": "OPEN-RETENTION-UNCERTAINTY",
+      "title": "Finite-sample uncertainty for retention estimates",
+      "criterion": [
+        "D",
+        "Ds"
+      ],
+      "level": "information_accounting",
+      "status": "open",
+      "publication_status": "open",
+      "statement": "Develop influence-function or bootstrap confidence intervals for reported retention functionals (e.g. geometric-mean retention), handling the non-smoothness of hard assignment at cell boundaries, so retention is reported with error bars rather than as a point estimate.",
+      "dependencies": [
+        "PROXY-TRUE-RETAINED-FI",
+        "INFO-RETENTION-SPECTRUM"
+      ],
+      "priority": 4,
+      "proof_location": {
+        "file": "OPEN_PROBLEMS.md",
+        "section": "OP27. Finite-sample uncertainty for retention estimates"
+      }
+    },
+    {
       "id": "OPEN-MIXTURE-PARAMETERIZATION",
       "title": "Canonical score parameterization for linear mixtures",
       "criterion": [
@@ -2377,6 +2398,7 @@
         "OPEN-SCORE-PERTURBATION",
         "OPEN-CLASSIFIER-CALIBRATION-FI",
         "OPEN-REPRESENTATION-LOSS-ESTIMATION",
+        "OPEN-RETENTION-UNCERTAINTY",
         "OPEN-MIXTURE-PARAMETERIZATION",
         "OPEN-EXTENDED-COUNT-SHAPE",
         "OPEN-HEP-NUISANCE-SCALING",
@@ -2450,6 +2472,7 @@
         "OPEN-SCORE-PERTURBATION",
         "OPEN-CLASSIFIER-CALIBRATION-FI",
         "OPEN-REPRESENTATION-LOSS-ESTIMATION",
+        "OPEN-RETENTION-UNCERTAINTY",
         "OPEN-MIXTURE-PARAMETERIZATION",
         "OPEN-EXTENDED-COUNT-SHAPE",
         "OPEN-PARAMETER-MISMATCH",
@@ -2496,6 +2519,7 @@
         "OPEN-SCORE-PERTURBATION",
         "OPEN-CLASSIFIER-CALIBRATION-FI",
         "OPEN-REPRESENTATION-LOSS-ESTIMATION",
+        "OPEN-RETENTION-UNCERTAINTY",
         "OPEN-MIXTURE-PARAMETERIZATION",
         "OPEN-EXTENDED-COUNT-SHAPE",
         "OPEN-HEP-NUISANCE-SCALING",
@@ -2566,7 +2590,8 @@
         "INFO-DIRECTIONAL-DIAGNOSTICS",
         "OPEN-D-EFFICIENCY-VS-K",
         "OPEN-D-DIRECTIONAL-BOUND",
-        "OPEN-REPRESENTATION-LOSS-ESTIMATION"
+        "OPEN-REPRESENTATION-LOSS-ESTIMATION",
+        "OPEN-RETENTION-UNCERTAINTY"
       ],
       "population_quantizer": [
         "TRACE-WHITENED-KMEANS",
@@ -2679,6 +2704,7 @@
       "OPEN-SCORE-PERTURBATION",
       "OPEN-CLASSIFIER-CALIBRATION-FI",
       "OPEN-REPRESENTATION-LOSS-ESTIMATION",
+      "OPEN-RETENTION-UNCERTAINTY",
       "OPEN-MIXTURE-PARAMETERIZATION",
       "OPEN-EXTENDED-COUNT-SHAPE",
       "OPEN-HEP-NUISANCE-SCALING",

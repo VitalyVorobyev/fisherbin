@@ -1,4 +1,42 @@
-Yes. I would organize ScoreQuant around **one scientific question**, not around a collection of individual theorems.
+# Research plan — goal, session model, and roadmap
+
+**Version:** 1.1 · 28 August 2026
+**Status:** canonical narrative. The executable priority queue lives in
+`OPEN_PROBLEMS.md` (eight programmes P1–P8); this file holds the goal, the
+session model, and the roadmap rationale. On any priority conflict,
+`OPEN_PROBLEMS.md` wins.
+
+ScoreQuant research is organized around **one scientific question**, not
+around a collection of individual theorems.
+
+## Session status ledger (28 August 2026)
+
+The twelve sessions below were drafted before the product-first decision and
+before the first audit completed. Current state:
+
+| Session | State | Where |
+|---|---|---|
+| 1 — freeze the problem | **done** | `PROBLEM.md` |
+| 2 — finite D audit | **done** | `AUDITS/AUDIT-D-EXCHANGE-VORONOI-001.md`, `WORK/completed/` |
+| 3 — population D geometry | open | programme P6 (OP8/OP9 context) |
+| 4 — finite ↔ population D | open | programme P6 (OP8, OP9) |
+| 5 — solver theory | **largely embodied** | claims D5/D6, library `partition.py`, ADR-0014; residuals → P7 (OP12) |
+| 6 — global optimization/certification | **partially done** | library `certify.py`; residuals → P7 (OP11, OP13) |
+| 7 — empirical advantage over k-means | open | programme P6 |
+| 8 — \(D_s\) as a separate theory | open, **promoted to "Now"** | programme P1, packet `WORK/active/DS-POPULATION-BRIDGE.md` |
+| 9 — HEP mixture specialization | open | programme P5 (OP20–OP22) |
+| 10 — learned score / ratio oracle | open, **promoted to "Now"** | programme P2, packet `WORK/active/SCORE-ORACLE-ROBUSTNESS.md` |
+| 11 — information loss vs systematics | open | programmes P3/P5 |
+| 12 — synthesis and novelty audit | **deferred** until the publication decision | programme P8 note |
+
+**Why the reorder (product-first decision, 28 Aug 2026):** this research is
+attached to a shipping library, not free-standing. The library hard-refuses
+profiled compilation today (Session 8's theorem is the blocker), and every
+real dataset already runs through an estimated score (Session 10's gap). Those
+are the two theorems users are waiting on, so they move from "Later" to "Now";
+the D-core paper sessions (3, 4, 7) stay queued as programme P6 but no longer
+gate everything else. The paper is harvested from the ledger when its spine
+completes — it is a by-product, not the driver.
 
 ## Natural top-level research goal
 
@@ -532,34 +570,51 @@ The **agent is free to create twenty temporary subproblems internally**.
 
 They do not become twenty project tasks.
 
+(This one-screen prompt is the ancestor of the standing packet format in
+`WORK/TEMPLATE.md`; new packets use the template.)
+
 ---
 
-# Priority order
+# Priority order (product-first, 28 August 2026)
 
-If I were directing the project from its current state, I would order it:
+The executable form of this ordering is the programme queue in
+`OPEN_PROBLEMS.md`; this is the rationale.
 
 **Now**
 
-1. finite D theorem audit;
-2. population D geometry;
-3. finite ↔ population bridge;
-4. local solver guarantees;
-5. global/certification theory.
+1. **P1 · DS-POPULATION-BRIDGE** — the finite→population profiled-\(D_s\)
+   theory (was Session 8, "Later"). Unblocks the profiled compile bridge the
+   library currently refuses.
+2. **P2 · SCORE-ORACLE-ROBUSTNESS** — perturbation theory for estimated
+   scores and classifier calibration (was Session 10). Turns reported
+   retention into a number with an honest error story on real data.
 
-**Then**
+**Then (product-facing theory)**
 
-6. rigorous D-vs-\(k\)-means benchmarks;
-7. HEP mixture specialization;
-8. density-ratio/classifier proxy.
+3. **P3 · INFORMATION-BUDGET** — sharp \(\eta_D(K)\), high-rate asymptotics,
+   and the bins-for-target-efficiency inversion.
+4. **P4 · DEPLOYMENT-ROBUSTNESS** — \(\theta_0\)-mismatch degradation,
+   minimax/multi-reference design, retention error bars.
+5. **P5 · HEP-SPECIALIZATION** — mixture parameterizations, count+shape,
+   nuisance scalability (Session 9).
 
-**Later / likely separate research thread**
+**Queued (the paper's spine, not blocking)**
 
-9. \(D_s\);
-10. robustness and systematics;
-11. statistical learning bounds;
-12. extensions to A/E/other criteria.
+6. **P6 · D-CORE-COMPLETION** — population D geometry, finite↔population D
+   consistency, and the D-vs-k-means benchmark study (Sessions 3, 4, 7).
 
-The important discipline is that **we should resist opening every interesting mathematical branch simultaneously**. The first five sessions already form a coherent, potentially publishable mathematical contribution.
+**Background**
+
+7. **P7 · FOUNDATIONS** — why D is special, complexity/certificates,
+   randomization limits.
+8. **P8 · LITERATURE-GRAPH** — citation snowballing to saturation; the final
+   claim-by-claim novelty audit (Session 12) waits for frozen theorem
+   statements at the publication decision.
+
+The important discipline is unchanged: **resist opening every interesting
+mathematical branch simultaneously.** The programme queue is the enforcement
+mechanism — a session executes one `WORK/active/` packet drawn from the
+highest programme that is not blocked.
 
 The clearest north-star sentence for the project is therefore:
 
