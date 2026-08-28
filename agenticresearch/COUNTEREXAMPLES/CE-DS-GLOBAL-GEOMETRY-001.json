@@ -1,0 +1,177 @@
+{
+  "id": "CE-DS-GLOBAL-GEOMETRY-001",
+  "criterion": "Ds",
+  "level": "finite_assignment",
+  "claim_falsified": "Every finite globally optimal Ds assignment is self-consistent under its own first-order efficient-score/common-semimetric nearest-cell rule.",
+  "scores": [
+    [
+      "1/2",
+      "7/8"
+    ],
+    [
+      "-1/2",
+      "55/8"
+    ],
+    [
+      "-11/2",
+      "39/8"
+    ],
+    [
+      "3/2",
+      "-65/8"
+    ],
+    [
+      "-7/2",
+      "47/8"
+    ],
+    [
+      "-1/2",
+      "-65/8"
+    ],
+    [
+      "7/2",
+      "31/8"
+    ],
+    [
+      "9/2",
+      "-49/8"
+    ]
+  ],
+  "scores_before_centering": [
+    [
+      2,
+      1
+    ],
+    [
+      1,
+      7
+    ],
+    [
+      -4,
+      5
+    ],
+    [
+      3,
+      -8
+    ],
+    [
+      -2,
+      6
+    ],
+    [
+      1,
+      -8
+    ],
+    [
+      5,
+      4
+    ],
+    [
+      6,
+      -6
+    ]
+  ],
+  "centering": "subtract the exact equal-weight sample mean before computing information",
+  "weights": [
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8"
+  ],
+  "K": 3,
+  "poi_indices": [
+    0
+  ],
+  "nuisance_indices": [
+    1
+  ],
+  "labels_before": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    2,
+    2
+  ],
+  "labels_after_or_optimum": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    2,
+    2
+  ],
+  "global_optimum_labels_up_to_permutation": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    2,
+    2
+  ],
+  "search_space": "966 unlabeled nonempty 3-partitions",
+  "exact_quantities": {
+    "best_profiled_scalar_information": "6241/984",
+    "second_best_profiled_scalar_information": "4232/669",
+    "exact_best_minus_second_gap": "3647/219432",
+    "optimum_induced_efficient_projection": "e_q(s)=s_1+(16/123)s_2",
+    "positive_nearest_cell_violation_margins": [
+      "2862/3239",
+      "618/3239"
+    ]
+  },
+  "verification": {
+    "method": "exact rational exhaustive enumeration",
+    "notes": "Canonical fixture selected from the newest 26 Aug 2026 score-space manuscript. An independent older v5 fixture also exists and should be retained in archive, but not conflated with this one."
+  },
+  "source": "score_space_quantization_article / research_notes_v5",
+  "date": "2026-08-26",
+  "exact_sample_mean": [
+    "3/2",
+    "1/8"
+  ],
+  "scores_centered_exact": [
+    [
+      "1/2",
+      "7/8"
+    ],
+    [
+      "-1/2",
+      "55/8"
+    ],
+    [
+      "-11/2",
+      "39/8"
+    ],
+    [
+      "3/2",
+      "-65/8"
+    ],
+    [
+      "-7/2",
+      "47/8"
+    ],
+    [
+      "-1/2",
+      "-65/8"
+    ],
+    [
+      "7/2",
+      "31/8"
+    ],
+    [
+      "9/2",
+      "-49/8"
+    ]
+  ]
+}

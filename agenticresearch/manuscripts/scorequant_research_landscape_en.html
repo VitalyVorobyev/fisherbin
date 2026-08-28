@@ -93,7 +93,8 @@ table{border-collapse:collapse;width:100%;font-size:.88rem;margin:18px 0 26px}th
 <div class="arrow">→</div>
 <div class="map-card"><h3>Quantization for estimation</h3><p>How to transmit only a finite number of bits while losing as little parameter information as possible. This line introduced score-function quantizers and direct comparisons of Fisher information before and after quantization.</p></div>
 <div class="arrow">→</div>
-<div class="map-card intersection"><h3>Our intersection</h3><p>A deterministic hard quantizer of multivariate score space, a small number of bins, objective \(\log\det I_{\mathrm{bin}}\), a deployable partition of the space, and exact finite exchange moves.</p></div>
+<div class="map-card intersection"><h3>Our intersection</h3><p>A deterministic hard quantizer of multivariate score space, a small number of bins, objective \(\log\det I_{
+m bin}\), a deployable partition of the space, and exact finite exchange moves.</p></div>
 </div>
 <div class="map" style="grid-template-columns:1fr 70px 1fr 70px 1fr">
 <div class="map-card"><h3>Clustering & vector quantization</h3><p>Lloyd, Hartigan, Voronoi diagrams, determinant-based clustering criteria, and global complexity. This tradition provides the language of centroids, local relocations, and partition geometry.</p></div>
@@ -168,7 +169,7 @@ table{border-collapse:collapse;width:100%;font-size:.88rem;margin:18px 0 26px}th
 <div class="claims">
 <div class="claim"><b>Problem formulation</b><p>Hard quantization of multivariate score space with a Fisher objective is historically close to known literature. This is not the strongest place to build a novelty claim.</p><div class="confidence"><span class="status known">prior art strong</span></div></div>
 <div class="claim"><b>D-objective</b><p>Using the full matrix \(\log\det I_{bin}\) rather than trace changes the geometry: the metric depends on the currently retained information and upweights weak information directions.</p><div class="confidence"><span class="status partial">potentially distinctive</span></div></div>
-<div class="claim"><b>Exact finite move</b><p>Moving one weighted observation produces a rank-two update \(\Delta I=\alpha\, uu^\top-\beta\, vv^\top\), while the determinant ratio reduces to a 2×2 determinant.</p><div class="confidence"><span class="status gap">not found directly</span></div></div>
+<div class="claim"><b>Exact finite move</b><p>Moving one weighted observation produces a rank-two update \(\Delta I=lpha uu^	op-eta vv^	op\), while the determinant ratio reduces to a 2×2 determinant.</p><div class="confidence"><span class="status gap">not found directly</span></div></div>
 <div class="claim"><b>Exchange ⇒ Voronoi</b><p>If a finite partition is stable against all admissible one-point moves, then it is already a strict self-consistent Mahalanobis–Voronoi partition in the metric \(I_{bin}^{-1}\). The converse is false.</p><div class="confidence"><span class="status gap">best theorem candidate</span></div></div>
 <div class="claim"><b>Monotone solver</b><p>A Hartigan-style exact exchange algorithm accepts only moves with positive exact log-det gain; the objective is therefore monotone and finite-sample termination is guaranteed.</p><div class="confidence"><span class="status partial">algorithmic contribution</span></div></div>
 <div class="claim"><b>Global certification</b><p>The Voronoi structure reduces the search space; fixed-\((d,K)\) enumeration and refinement-based branch-and-bound provide routes to exact/global certificates.</p><div class="confidence"><span class="status gap">needs complexity review</span></div></div>
@@ -183,12 +184,12 @@ table{border-collapse:collapse;width:100%;font-size:.88rem;margin:18px 0 26px}th
 <div class="open-grid">
 <div class="open"><b>1. Full prior-art closure for the D-case</b><p>Especially determinants of between-cell scatter, finite relocation formulae, and exchange-stable partitions. This is the main novelty risk.</p></div>
 <div class="open"><b>2. Global computational complexity</b><p>NP-hardness / parameterized complexity for variable \(d,K\); and how tight the fixed-parameter geometric enumeration is.</p></div>
-<div class="open"><b>3. Population consistency</b><p>When do the empirical D-optimal quantizer and exact-exchange local optima converge to population objects as \(N\to\infty\)?</p></div>
+<div class="open"><b>3. Population consistency</b><p>When do the empirical D-optimal quantizer and exact-exchange local optima converge to population objects as \(N	o\infty\)?</p></div>
 <div class="open"><b>4. Atomic score distributions</b><p>For atomless laws, purification removes the need for randomization. With atoms, the tightness of the deterministic versus randomized relaxation remains open.</p></div>
 <div class="open"><b>5. Nuisance parameters / D<sub>s</sub></b><p>Population first-order geometry can be expressed through the efficient score, but finite exact geometry no longer matches the D-case. It needs its own theory.</p></div>
 <div class="open"><b>6. E-optimality</b><p>The population objective has a common-supergradient intuition, but finite exchange geometry and representability remain unresolved.</p></div>
 <div class="open"><b>7. Estimated score oracle</b><p>How do noise, classifier miscalibration, and finite training data propagate into the selected bins and retained Fisher information?</p></div>
-<div class="open"><b>8. Distribution shift and \(\theta_0\)</b><p>The score is a local object. How can the quantizer be transferred robustly across reference parameters or under covariate/model shift?</p></div>
+<div class="open"><b>8. Distribution shift and \(	heta_0\)</b><p>The score is a local object. How can the quantizer be transferred robustly across reference parameters or under covariate/model shift?</p></div>
 <div class="open"><b>9. Stronger neighborhoods</b><p>2-exchange, merge/split operations, centroid moves, and hybrid global/local search may substantially reduce the gap to the global optimum.</p></div>
 <div class="open"><b>10. Differentiable vs combinatorial</b><p>When does exact discrete exchange outperform smooth GMM/soft assignments, and when is the reverse true? This is a natural benchmark against GATO/BOBR/INFERNO.</p></div>
 </div>

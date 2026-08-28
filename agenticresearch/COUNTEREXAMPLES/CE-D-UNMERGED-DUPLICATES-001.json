@@ -1,0 +1,50 @@
+{
+  "id": "CE-D-UNMERGED-DUPLICATES-001",
+  "criterion": "D",
+  "level": "finite_assignment",
+  "claim_falsified": "One-point exchange stability implies strict self-consistent nearest-centroid assignment even when coincident positive-weight score atoms may be assigned to different cells.",
+  "scores": [
+    [
+      1
+    ],
+    [
+      1
+    ],
+    [
+      -1
+    ]
+  ],
+  "weights": [
+    "1/4",
+    "1/4",
+    "1/2"
+  ],
+  "K": 3,
+  "labels_before": [
+    0,
+    1,
+    2
+  ],
+  "labels_after_or_optimum": null,
+  "poi_indices": [],
+  "nuisance_indices": [],
+  "objective_before": "log(1)=0",
+  "objective_after": null,
+  "exact_quantities": {
+    "weighted_score_mean": "0",
+    "retained_information": "1",
+    "cell_centroids": [
+      "1",
+      "1",
+      "-1"
+    ],
+    "admissible_nonempty_preserving_moves": 0,
+    "strict_distance_failure": "Rows 0 and 1 have zero distance to both centroids 0 and 1."
+  },
+  "verification": {
+    "method": "exact_formula",
+    "notes": "All three cells are singletons, so the labeling is vacuously one-point exchange stable under the nonempty-cell rule. Information is positive definite in d=1, but split duplicate atoms prevent strict assignment and deterministic score-only reproduction. Merging the two score-1 rows removes the degeneracy."
+  },
+  "source": "AUDIT-D-EXCHANGE-VORONOI",
+  "date": "2026-08-26"
+}

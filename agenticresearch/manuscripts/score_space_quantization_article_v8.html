@@ -101,7 +101,7 @@ sup.ref a{font-size:.75em}
 <section class="abstract">
 <h2>Abstract</h2>
 <p>
-Let \(X\sim P_\theta\) be a regular parametric model and let \(S=s(X)\in\mathbb R^d\) denote the score at a reference parameter. We study compression of \(S\) into \(K\) hard labels while preserving matrix-valued Fisher information. The retained information is the between-cell score scatter, \(I_q=\operatorname{Var}(\mathbb E[S\mid q(S)])\). A central distinction is made between three problems that are often conflated: unrestricted assignment of a finite observed sample, empirical fitting of an inductive quantizer that assigns future scores, and population quantizer design under the score law. For full D-optimality we derive an exact rank-two finite relocation identity and a closed determinant gain. A leverage inequality then yields a strong finite theorem: every one-point-exchange-stable positive-definite partition is already a strict self-consistent \(I_q^{-1}\)-Mahalanobis Voronoi partition. Thus a terminal finite D solution has a canonical extension to unseen score vectors. The corresponding implication fails for profiled \(D_s\) and E criteria: exhaustive finite examples show globally optimal sample assignments that violate their own first-order geometric rule. For \(D_s\), however, the violation of an exchange-stable state is quantitatively \(O(K/N)\) under balanced sampling, and the profiled information is upper-bounded by D-optimal quantization of the full-data efficient score. For E-optimality, repeated minimum eigenvalues make one-point first-order geometry intrinsically non-identifying. We also formulate differentiable randomized quantizers, derive their exact assignment gradient, and clarify what gradient methods can and cannot guarantee. Finally, we show how the same theory supports finite score tables, exact or automatic-differentiation score maps, classifier-derived score estimators, Monte-Carlo population models, and analytic integration backends through the push-forward score law. Classifier-based scores are treated explicitly as estimated oracles: they recover the exact Fisher problem only when the learned likelihood-ratio construction recovers the true local score.
+Let \(X\sim P_\theta\) be a regular parametric model and let \(S=s(X)\in\mathbb R^d\) denote the score at a reference parameter. We study compression of \(S\) into \(K\) hard labels while preserving matrix-valued Fisher information. The retained information is the between-cell score scatter, \(I_q=\operatorname{Var}(\mathbb E[S\mid q(S)])\). A central distinction is made between three problems that are often conflated: unrestricted assignment of a finite observed sample, empirical fitting of an inductive quantizer that assigns future scores, and population quantizer design under the score law. For full D-optimality we derive an exact rank-two finite relocation identity and a closed determinant gain. A leverage inequality then yields a strong finite theorem: every one-point-exchange-stable positive-definite partition is already a strict self-consistent \(I_q^{-1}\)-Mahalanobis Voronoi partition. Thus a terminal finite D solution has a canonical extension to unseen score vectors. The corresponding implication fails for profiled \(D_s\) and E criteria: exhaustive finite examples show globally optimal sample assignments that violate their own first-order geometric rule. For \(D_s\), however, the violation of an exchange-stable state is quantitatively \(O(K/N)\) under balanced sampling, and the profiled information is upper-bounded by D-optimal quantization of the full-data efficient score. For E-optimality, repeated minimum eigenvalues make one-point first-order geometry intrinsically non-identifying. We also formulate differentiable randomized quantizers, derive their exact assignment gradient, and clarify what gradient methods can and cannot guarantee. Finally, we show that full probability densities are not required for model access: the local score is the parameter derivative of a log density ratio, and in linear component models ratios of component densities to a single reference component suffice exactly. Analytic ratio functions, direct density-ratio estimators, and calibrated classifiers therefore form interchangeable upstream routes to score-space quantization. Estimated ratios are treated explicitly as model-access approximations: they recover the exact Fisher problem only when they recover the true local score.
 </p>
 </section>
 
@@ -142,12 +142,15 @@ Determinant-based clustering criteria date at least to Friedman and Rubin <a hre
 <p>
 Centroidal Voronoi tessellations provide the classical population picture for squared-error vector quantization and a mature theory of Lloyd-type algorithms <a href="#ref-13">[13]</a><a href="#ref-14">[14]</a>. Pollard's strong consistency theorem for \(k\)-means is the canonical empirical-to-population template <a href="#ref-12">[12]</a>. These works are important comparators for the inductive problem, but their objective is additive squared distortion rather than a matrix information criterion. The general equivalence theory of optimal experimental design provides the relevant convex-analytic language for D, \(D_s\), and E criteria, including nondifferentiable E-optimality <a href="#ref-15">[15]</a> and classical \(D_s\) equivalence results <a href="#ref-16">[16]</a>.
 </p>
-<h3>2.4 Learned likelihood ratios, scores, and differentiable categorization</h3>
+<h3>2.4 Density-ratio estimation, learned scores, and differentiable categorization</h3>
 <p>
-When the likelihood is unavailable but samples can be generated, discriminative classifiers can estimate likelihood ratios after calibration <a href="#ref-21">[21]</a>. Local score estimation follows by differentiating or finite-differencing such ratios; score-based local likelihood-free inference develops this idea further <a href="#ref-17">[17]</a>. This provides a natural upstream route to score-space quantization when analytic component densities are unavailable or detector effects make them impractical to evaluate event by event.
+Density-ratio estimation is a mature alternative to separate density estimation. Direct methods estimate \(p_1(x)/p_0(x)\) from samples without constructing either density, including KLIEP- and least-squares-based approaches summarized by Sugiyama, Suzuki, and Kanamori <a href="#ref-22">[22]</a>. Probabilistic classification provides another route: calibrated posterior odds recover the same density ratio up to known class-prior odds <a href="#ref-21">[21]</a>. Local score estimation follows by differentiating or finite-differencing such ratios; score-based local likelihood-free inference develops this idea further <a href="#ref-17">[17]</a>.
 </p>
 <p>
-Modern inference-aware methods also learn summaries or categories by differentiating through an inference objective. Examples include INFERNO <a href="#ref-18">[18]</a>, iterative event categorization <a href="#ref-19">[19]</a>, and recent differentiable multidimensional bin optimization <a href="#ref-20">[20]</a>. Neither classifier-based likelihood-ratio estimation nor differentiable binning is claimed as a contribution here. The contribution is the information-quantization problem and its exact finite and population structure once an exact or estimated score representation has been supplied.
+This literature implies an important model-access principle for the present problem: a score-space quantizer does not need full component PDFs when the required local density ratios are available. A classifier is one estimator of those ratios, not a privileged part of the quantization method.
+</p>
+<p>
+Modern inference-aware methods also learn summaries or categories by differentiating through an inference objective. Examples include INFERNO <a href="#ref-18">[18]</a>, iterative event categorization <a href="#ref-19">[19]</a>, and recent differentiable multidimensional bin optimization <a href="#ref-20">[20]</a>. Neither density-ratio estimation nor differentiable binning is claimed as a contribution here. The contribution is the information-quantization problem and its exact finite and population structure once an exact or estimated score representation has been supplied.
 </p>
 </section>
 
@@ -213,47 +216,79 @@ These problems need not have the same finite optimum. Problem C is a legitimate 
 <table class="api-table"><thead><tr><th>Available input</th><th>What can be computed</th><th>Natural use</th></tr></thead><tbody>
 <tr><td>Weighted scores \((s_i,w_i)\)</td><td>Empirical \(W_b,m_b,I_q\)</td><td>Finite assignment and empirical inductive fitting</td></tr>
 <tr><td>Observations \((x_i,w_i)\) + exact/autodiff <code>score(x)</code></td><td>Scores are evaluated once, then the same empirical problems</td><td>Model-aware datasets with evaluable local likelihood derivatives</td></tr>
-<tr><td>Observations or simulator + classifier score estimator \(\hat s(x)\)</td><td>Estimated score table or Monte-Carlo score law</td><td>Implicit models, detector-level simulation, data/MC components</td></tr>
-<tr><td>Sampler \(X\sim P_{\theta_0}\) + score provider</td><td>Monte-Carlo estimates of population moments, stochastic gradients</td><td>Simulation-based population quantizer learning</td></tr>
+<tr><td><b>Density-ratio oracle</b> \(r(x;\theta,\theta_0)\) + reference source</td><td>Exact or estimated local score without evaluating either density separately</td><td>Analytic ratios, simulator-based inference, learned ratio models</td></tr>
+<tr><td>Component density ratios \(\phi_\alpha/\phi_{\rm ref}\) + reference coefficients</td><td>Exact mixture/intensity score coordinates</td><td>Template/component models where only relative shapes are available</td></tr>
+<tr><td>Samples + direct density-ratio estimator</td><td>Estimated ratios, then estimated score coordinates</td><td>High-dimensional models where separate density estimation is undesirable</td></tr>
+<tr><td>Observations or simulator + classifier ratio estimator</td><td>Estimated likelihood/component ratios and score table</td><td>Implicit models, detector-level simulation, data/MC components</td></tr>
+<tr><td>Sampler \(X\sim P_{\theta_0}\) + score/ratio provider</td><td>Monte-Carlo estimates of population moments, stochastic gradients</td><td>Simulation-based population quantizer learning</td></tr>
+<tr><td>Proposal sampler \(X\sim G\) + importance ratio \(dP_{\theta_0}/dG\)</td><td>Reference expectations by weighted Monte Carlo</td><td>Reuse of off-reference or component-wise samples</td></tr>
 <tr><td>Direct score sampler \(S\sim P_S\)</td><td>Same as above without materializing observation space</td><td>Models whose score law is directly available</td></tr>
 <tr><td>Density/integrator + score map</td><td>Quadrature or analytic cell moments; potentially deterministic population objective</td><td>Low-dimensional analytic models</td></tr>
 <tr><td>Moment oracle for a proposed quantizer</td><td>Returns \(W_b,m_b\) directly, optionally derivatives</td><td>Specialized analytic backends</td></tr>
 </tbody></table>
-<div class="warning"><div class="box-title">A score provider alone is not a training distribution</div>
-Knowing \(s(x)\), or an estimator \(\hat s(x)\), for every \(x\) is sufficient to apply an already learned score-space quantizer. It is not sufficient to optimize a population information objective: the expectations defining \(W_b\) and \(m_b\) also require \(P_{\theta_0}\), a sampler, weighted observations, or an equivalent integration oracle. Automatic differentiation or a classifier can supply the score map; neither supplies the reference measure by itself.
+<div class="warning"><div class="box-title">A score or ratio provider alone is not a training distribution</div>
+Knowing \(s(x)\), or enough density ratios to construct it, is sufficient to apply an already learned score-space quantizer. Population optimization additionally requires the reference measure \(P_{\theta_0}\), a sample from it, importance weights relative to a proposal measure, or an equivalent integration oracle.
 </div>
-<h3>3.5 Classifier-based score oracles</h3>
-<p>
-A classifier can supply the score coordinates without an evaluable likelihood. For coordinate \(j\), generate samples at two nearby parameter points
+
+<h3>3.5 Density ratios are sufficient for the local score</h3>
+<p>The full likelihood is more information than this framework needs. Fix a reference parameter \(\theta_0\) and define
 \[
-p_j^-(x)=p(x\mid\theta_0-\delta_j e_j),\qquad p_j^+(x)=p(x\mid\theta_0+\delta_j e_j),
+r(x;\theta,\theta_0)=\frac{p(x\mid\theta)}{p(x\mid\theta_0)}.
 \]
-and train a calibrated binary classifier \(D_j(x)\) to distinguish the two samples. With equal training priors, the Bayes-optimal logit is the log likelihood ratio <a href="#ref-21">[21]</a>,
+Because the denominator is independent of \(\theta\),
 \[
-\operatorname{logit}D_j(x)=\log\frac{p_j^+(x)}{p_j^-(x)}.
+\boxed{s(x)=\nabla_\theta\log p(x\mid\theta)\big|_{\theta_0}
+=\nabla_\theta\log r(x;\theta,\theta_0)\big|_{\theta_0}.}
 \]
-Consequently the central finite-difference estimator
+Thus an exact local family of density ratios is an exact score oracle. Neither density needs to be available separately. For coordinate \(j\), one may use a central derivative of the log ratio, or directly estimate the ratio between the two nearby hypotheses \(\theta_0\pm\delta e_j\). This makes <b>density-ratio estimation</b>, rather than density estimation, the natural upstream inference problem. Direct ratio methods explicitly exploit this asymmetry: estimating \(p/q\) from samples can be preferable to estimating \(p\) and \(q\) independently and dividing the estimates <a href="#ref-22">[22]</a>.</p>
+<p>The statement is especially strong for the linear component model
 \[
-\boxed{\hat s_j(x)=\frac{1}{2\delta_j}\operatorname{logit}D_j(x)}
+\lambda(x;\theta)=\sum_{\alpha=1}^d\theta_\alpha\phi_\alpha(x).
 \]
-converges to \(\partial_{\theta_j}\log p(x\mid\theta)|_{\theta_0}\) as \(\delta_j\to0\) under the usual smoothness assumptions; the deterministic finite-difference bias is \(O(\delta_j^2)\). With unequal class priors, their log-odds must be subtracted from the classifier logit. A vector score can be obtained from one such construction per coordinate or from a parameterized ratio/score estimator.
-</p>
-<p>
-There is a useful specialization for template or mixture-intensity models already motivating the software. If
+Choose a reference component \(0\) and define only
 \[
-\lambda(x;\theta)=\sum_{\alpha=1}^d\theta_\alpha\phi_\alpha(x),
+r_\alpha(x)=\frac{\phi_\alpha(x)}{\phi_0(x)},\qquad r_0(x)=1.
 \]
-then, for the unconstrained intensity parametrization,
+For the eventwise extended-intensity score,
 \[
-s_\alpha(x)=\partial_{\theta_\alpha}\log\lambda(x;\theta)|_{\theta_0}
-=\frac{\phi_\alpha(x)}{\lambda(x;\theta_0)}.
+\boxed{s_\alpha(x)=\frac{\phi_\alpha(x)}{\lambda(x;\theta_0)}
+=\frac{r_\alpha(x)}{\sum_\beta\theta_{0\beta}r_\beta(x)}.}
 \]
-A calibrated multiclass classifier trained to identify component \(\alpha\) estimates posterior component probabilities \(\eta_\alpha(x)\propto\pi_\alpha\phi_\alpha(x)\). Correcting for the known training priors \(\pi_\alpha\) therefore reconstructs the relative component vector and hence the local score. If the classifier priors are chosen proportional to the reference coefficients \(\theta_{0\alpha}\), the relation becomes particularly simple: apart from the known common normalization, \(s_\alpha(x)\propto\eta_\alpha(x)/\theta_{0\alpha}\). Normalized mixture models or constrained mixture weights require the corresponding normalization/constraint correction.
-</p>
-<div class="note"><div class="box-title">Exact score versus estimated score</div>
-The Fisher identity in Eq. (1) is exact for the true score \(s\). If a learned proxy \(\hat s\neq s\) is substituted everywhere, the matrix \(\operatorname{Var}(\mathbb E[\hat s\mid q(\hat s)])\) is a surrogate objective, while the true information retained by the resulting label is \(\operatorname{Var}(\mathbb E[s\mid q(\hat s)])\). The two coincide when the classifier construction recovers the score exactly and converge under a consistent score estimator with suitable regularity. Implementations should therefore retain score-estimator provenance, calibration diagnostics, and preferably held-out or cross-fitted validation rather than silently reporting surrogate information as exact Fisher information.
+The unknown common factor \(\phi_0(x)\) cancels exactly. Hence a programmatic PDF for every component is unnecessary: ratios to one reference component, or any connected set of pairwise component ratios, are sufficient. Normalized mixtures require the usual normalization or constrained-weight correction, but this correction also depends only on ratios plus known component normalizations.</p>
+<div class="note"><div class="box-title">Ratios, not arbitrary classifier scores</div>
+The cancellation is a statement about numerical density ratios, not arbitrary monotone discriminants. A ranking-only classifier output is generally insufficient for Fisher-optimal quantization. The output must be calibrated to posterior odds / likelihood ratios, or replaced by a direct ratio estimator.
 </div>
-<h3>3.6 Rank, refinement, and invariance</h3>
+
+<h3>3.6 Estimating density ratios: classifiers and direct methods</h3>
+<p>A probabilistic classifier is one convenient density-ratio estimator, but not the only one. If \(D(x)\) distinguishes samples from \(p_1\) and \(p_0\) with training priors \(\pi_1,\pi_0\), then at the Bayes optimum
+\[
+\frac{p_1(x)}{p_0(x)}=\frac{D(x)}{1-D(x)}\frac{\pi_0}{\pi_1}.
+\]
+This is the likelihood-ratio trick used in likelihood-free inference <a href="#ref-21">[21]</a>. For nearby hypotheses,
+\[
+\boxed{\hat s_j(x)=\frac{1}{2\delta_j}
+\left[\operatorname{logit}D_j(x)-\log\frac{\pi_1}{\pi_0}\right],}
+\]
+with central finite-difference bias \(O(\delta_j^2)\) before ratio-estimation error.</p>
+<p>For a multiclass component classifier with posterior probabilities \(\eta_\alpha(x)=P(C=\alpha\mid x)\) and training priors \(\pi_\alpha\), Bayes' rule gives
+\[
+\frac{\phi_\alpha(x)}{\phi_\beta(x)}=
+\frac{\eta_\alpha(x)/\pi_\alpha}{\eta_\beta(x)/\pi_\beta}.
+\]
+Combining this with the mixture-score formula avoids reconstructing any component density:
+\[
+\boxed{s_\alpha(x)=
+\frac{\eta_\alpha(x)/\pi_\alpha}
+{\sum_\beta\theta_{0\beta}\,\eta_\beta(x)/\pi_\beta}.}
+\]
+When \(\pi_\alpha\propto\theta_{0\alpha}\), this simplifies to \(s_\alpha(x)=\eta_\alpha(x)/\theta_{0\alpha}\) for the extended-intensity parameterization. This is the direct mathematical basis of the component-classifier workflow.</p>
+<p>Classifier odds are only one backend. Direct density-ratio estimators such as KLIEP or uLSIF fit \(p_1/p_0\) from samples without estimating either density separately <a href="#ref-22">[22]</a>. Analytic ratio callbacks, parameterized neural ratio estimators trained elsewhere, and pairwise component-ratio functions are equally valid inputs. The software should expose one ratio-provider abstraction and convert ratios to score coordinates through model-specific algebra.</p>
+<div class="warning"><div class="box-title">Exact score versus estimated ratio/score</div>
+The Fisher identity in Eq. (1) is exact for the true score \(s\). If estimated ratios produce \(\hat s\neq s\), then \(\operatorname{Var}(\mathbb E[\hat s\mid q(\hat s)])\) is a surrogate objective; the true retained Fisher information is \(\operatorname{Var}(\mathbb E[s\mid q(\hat s)])\). Ratio-estimator provenance, class priors, calibration/direct-ratio validation, and held-out or cross-fitted evaluation should therefore be retained.
+</div>
+<p>Density ratios have a second, independent role. If population moments are evaluated from a proposal law \(G\neq P_{\theta_0}\), reference expectations can be obtained with importance weights \(dP_{\theta_0}/dG\). Again the absolute reference density is unnecessary; only its ratio to the sampling law is required.</p>
+
+<h3>3.7 Rank, refinement, and invariance</h3>
 <p>
 Since \(\sum_bm_b=0\), \(\operatorname{rank}I_q\le\min(d,K-1)\). Consequently \(K\ge d+1\) is necessary for a finite unregularized full D criterion. Refining a partition increases \(I_q\) in Loewner order because conditioning on a finer sigma-algebra increases between-cell variance. Under an invertible reparameterization of \(\theta\), D-optimal partitions are invariant because \(\log\det I_q\) changes only by a quantizer-independent additive constant.
 </p>
@@ -628,7 +663,7 @@ The determinant criterion has a finite cancellation that does not survive profil
 \]
 meets the D leverage bound exactly and turns an infinitesimal Voronoi violation into a guaranteed finite improvement. This explains why D exchange can simultaneously be an exact sample optimizer and, at termination, a constructor of a canonical inductive geometry. \(D_s\) retains the population semimetric but not the exact finite implication; E loses uniqueness of the metric itself at eigenvalue multiplicity.
 </p>
-<h3>12.3 Exact, automatic-differentiation, and learned score interfaces</h3>
+<h3>12.3 Exact scores, density ratios, and learned score interfaces</h3>
 <p>
 The core theory never requires that scores originate from a stored matrix. It requires a representation of the score law. A programmatic score map therefore fits the formalism exactly, and an implicit generative model can be connected through a learned score estimator. The classifier route is especially useful when analytic component functions are unavailable, reconstructed features include detector effects, or backgrounds are represented only by Monte Carlo or data. It belongs upstream of quantization: the quantizer sees score vectors, while the score provider records whether they were exact, differentiated, or learned.
 </p>
@@ -654,7 +689,7 @@ This separation also exposes two different approximation errors. <em>Score-estim
 Hard quantization of multivariate score space has three distinct levels: the population design problem, empirical learning of an inductive score-space rule, and unrestricted optimization of labels on a fixed sample. Treating these as separate objects resolves an apparent conflict between exact exchange optimization and deployability. For D-optimality the conflict disappears at one-point stability: the exact finite exchange algebra and a leverage inequality force the terminal partition to be the training realization of a self-consistent Mahalanobis Voronoi quantizer. For profiled \(D_s\) and E this finite closure fails, even at global sample optima, although their population first-order geometry remains informative and \(D_s\) admits a quantitative asymptotic bound and an efficient-score upper problem.
 </p>
 <p>
-The same formalism also clarifies implementation. The fundamental input is not necessarily a matrix of precomputed scores but a representation of the push-forward score law: a weighted score sample, an observation sample with an exact, autodiff, or classifier-derived score provider, a population sampler, a direct score sampler, or an analytic moment backend. The learned-classifier path extends the framework to implicit models while making its additional approximation explicit. Exact finite assignment and reusable score-space quantization therefore remain complementary capabilities of one framework rather than competing definitions of the problem.
+The same formalism also clarifies implementation. The fundamental input is not necessarily a matrix of precomputed scores but a representation of the push-forward score law: a weighted score sample, an observation sample with an exact/autodiff score provider, an exact or estimated density-ratio provider converted to scores, a population sampler, a direct score sampler, or an analytic moment backend. The learned-classifier path extends the framework to implicit models while making its additional approximation explicit. Exact finite assignment and reusable score-space quantization therefore remain complementary capabilities of one framework rather than competing definitions of the problem.
 </p>
 </section>
 
@@ -682,6 +717,7 @@ The same formalism also clarifies implementation. The fundamental input is not n
 <li id="ref-19">K. T. Matchev and P. Shyamsundar. “Optimal event selection and categorization in high energy physics. Part I. Signal discovery.” JHEP 03, 291, 2021. <a href="https://doi.org/10.1007/JHEP03(2021)291">doi:10.1007/JHEP03(2021)291</a>.</li>
 <li id="ref-20">J. Erdmann, N. K. Kasaraguppe, and F. Mausolf. “Learning to bin: differentiable and Bayesian optimization for multi-dimensional discriminants in high-energy physics.” 2026. <a href="https://arxiv.org/abs/2601.07756">arXiv:2601.07756</a>.</li>
 <li id="ref-21">K. Cranmer, J. Pavez, and G. Louppe. “Approximating Likelihood Ratios with Calibrated Discriminative Classifiers.” 2015. <a href="https://arxiv.org/abs/1506.02169">arXiv:1506.02169</a>.</li>
+<li id="ref-22">M. Sugiyama, T. Suzuki, and T. Kanamori. <em>Density Ratio Estimation in Machine Learning</em>. Cambridge University Press, 2012. <a href="https://doi.org/10.1017/CBO9781139035613">doi:10.1017/CBO9781139035613</a>.</li>
 </ol>
 </section>
 </main>

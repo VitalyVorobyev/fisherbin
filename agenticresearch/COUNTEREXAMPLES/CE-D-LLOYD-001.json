@@ -1,0 +1,89 @@
+{
+  "id": "CE-D-LLOYD-001",
+  "criterion": "D",
+  "level": "finite_assignment",
+  "claim_falsified": "Reassigning all rows to their nearest centroid under the current I_q^{-1} Mahalanobis metric, then recomputing centroids, monotonically increases log det I_q.",
+  "scores": [
+    [
+      "0.1116",
+      "0.4427"
+    ],
+    [
+      "-0.2932",
+      "0.6537"
+    ],
+    [
+      "-0.5995",
+      "-1.2685"
+    ],
+    [
+      "-0.6848",
+      "-1.5456"
+    ],
+    [
+      "0.4810",
+      "0.9521"
+    ],
+    [
+      "1.6707",
+      "0.9370"
+    ],
+    [
+      "0.1689",
+      "1.7090"
+    ],
+    [
+      "-0.8548",
+      "-1.8805"
+    ]
+  ],
+  "weights": [
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8",
+    "1/8"
+  ],
+  "K": 3,
+  "labels_before": [
+    1,
+    0,
+    0,
+    1,
+    2,
+    2,
+    2,
+    1
+  ],
+  "labels_after_or_optimum": [
+    0,
+    0,
+    1,
+    1,
+    2,
+    1,
+    0,
+    1
+  ],
+  "poi_indices": [
+    0,
+    1
+  ],
+  "nuisance_indices": [],
+  "objective_before": -3.810643191735313,
+  "objective_after": -3.9471643803321044,
+  "exact": {
+    "det_before": "254982965894784407/11520000000000000000",
+    "det_after": "37074006279699397/1920000000000000000",
+    "logdet_decrease_float": 0.1365211885967912
+  },
+  "verification": {
+    "method": "exact_formula",
+    "notes": "Scores are exact decimals (rationals). The batch adaptive-Mahalanobis Lloyd step (nearest centroid under the exact inverse of the current binned information, argmin decided in Fraction arithmetic) produces labels_after_or_optimum, and the exact determinant strictly decreases: det_before > det_after. logdet drop ~ 0.136521 nat. Regression: tests/test_research_claims.py::test_adaptive_mahalanobis_lloyd_step_can_decrease_d_objective."
+  },
+  "source": "project test suite (manuscript non-monotone Lloyd example)",
+  "date": "2026-08-28"
+}
