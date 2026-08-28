@@ -448,9 +448,7 @@ def test_ds13_leverage_bound_at_every_stable_state_with_vector_nuisance() -> Non
         cofactors = [
             [
                 (-1 if (i + j) % 2 else 1)
-                * determinant(
-                    [row[:j] + row[j + 1 :] for k, row in enumerate(matrix) if k != i]
-                )
+                * determinant([row[:j] + row[j + 1 :] for k, row in enumerate(matrix) if k != i])
                 for j in range(size)
             ]
             for i in range(size)
