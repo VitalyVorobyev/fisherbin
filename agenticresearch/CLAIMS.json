@@ -3,7 +3,7 @@
   "project": "ScoreQuant",
   "updated": "2026-08-28",
   "canonical_problem_file": "PROBLEM.md",
-  "human_readable_ledger": "KNOWN_RESULTS.md",
+  "human_readable_ledger": "KNOWN_RESULTS/",
   "open_problem_ledger": "OPEN_PROBLEMS.md",
   "counterexample_directory": "COUNTEREXAMPLES",
   "purpose": "Machine-readable theorem/claim registry. One record per theorem, lemma, counterexample, structural result, certificate, or unresolved claim. Use dependencies/implies edges as a theorem dependency graph; use proof_location to open the detailed mathematical statement in KNOWN_RESULTS.md or OPEN_PROBLEMS.md.",
@@ -87,7 +87,7 @@
         "Barnes-Han-Ozgur-2018"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/01-universal.md",
         "section": "U1. Quantized Fisher-information identity"
       },
       "role": "foundational information representation",
@@ -118,7 +118,7 @@
         "FI-QUANT-IDENTITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/01-universal.md",
         "section": "U2. Exact information-loss decomposition"
       },
       "role": "unbinned-vs-binned information accounting",
@@ -142,7 +142,7 @@
         "FI-LOSS-DECOMPOSITION"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/01-universal.md",
         "section": "U3. Local Fisher-losslessness criterion"
       }
     },
@@ -160,7 +160,7 @@
         "FI-QUANT-IDENTITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/01-universal.md",
         "section": "U4. Rank ceiling"
       },
       "implies": [
@@ -186,7 +186,7 @@
         "GENERAL-REFINEMENT-BB"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/01-universal.md",
         "section": "U5. Refinement monotonicity"
       }
     },
@@ -204,7 +204,7 @@
         "FI-QUANT-IDENTITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/01-universal.md",
         "section": "U6. Reparameterization invariance of D"
       },
       "implies": [
@@ -231,7 +231,7 @@
         "INFO-DIRECTIONAL-DIAGNOSTICS"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/01-universal.md",
         "section": "U7. Normalized retained-information spectrum"
       }
     },
@@ -254,7 +254,7 @@
         "Dulek-2023"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/02-trace.md",
         "section": "T1. Fisher-whitened normalized trace equals weighted k-means"
       },
       "warning": "This control case is known in substance and is not a novelty claim.",
@@ -276,7 +276,7 @@
         "FI-QUANT-IDENTITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/03-screening.md",
         "section": "G1. Infinitesimal cell-transfer identity"
       },
       "role": "generic population stationarity engine",
@@ -310,7 +310,7 @@
         "GENERAL-WEIGHTED-TANGENT-STABILITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/03-screening.md",
         "section": "G2. General concavity/supergradient screening"
       },
       "role": "criterion-generic safe pruning and sufficient stability certificate"
@@ -332,7 +332,7 @@
         "GENERAL-SUPERGRADIENT-SCREENING"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/03-screening.md",
         "section": "G2. General concavity/supergradient screening"
       }
     },
@@ -353,7 +353,7 @@
         "FI-REFINEMENT-MONOTONICITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/01-universal.md",
         "section": "U5. Refinement monotonicity"
       },
       "implies": [
@@ -379,7 +379,7 @@
         "GENERAL-FIRST-VARIATION"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D1. Population stationary geometry"
       },
       "role": "deployable population geometry"
@@ -399,7 +399,7 @@
         "source remains nonempty"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D2. Exact weighted rank-two relocation"
       },
       "role": "exact finite move algebra",
@@ -429,7 +429,7 @@
         "D-RANK2-MOVE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D3. Exact log-det relocation gain"
       },
       "role": "exact O(d^2)-type candidate evaluation",
@@ -455,7 +455,7 @@
         "FI-QUANT-IDENTITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D4. Leverage inequality"
       },
       "role": "key inequality in finite D geometry",
@@ -491,7 +491,7 @@
         "D-VORONOI-NOT-EXCHANGE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D5. Exchange stability implies strict D-Voronoi geometry"
       },
       "audit": "AUDITS/AUDIT-D-EXCHANGE-VORONOI-001.md",
@@ -544,7 +544,7 @@
         "D-LEVERAGE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D5. Exchange stability implies strict D-Voronoi geometry"
       }
     },
@@ -562,7 +562,7 @@
         "D-EXCHANGE-IMPLIES-VORONOI"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D6. Exact finite inductive closure / compiler"
       },
       "role": "bridge from finite assignment to deployable classifier",
@@ -588,7 +588,7 @@
         "OPEN-D-UNRESTRICTED-CONSISTENCY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D7. Every finite global D optimum is geometrically realizable"
       }
     },
@@ -609,7 +609,7 @@
         "D-FINITE-INDUCTIVE-CLOSURE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D8. Monotone exact one-point exchange"
       }
     },
@@ -627,7 +627,7 @@
         "CE-D-LLOYD-001"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D9. Adaptive Mahalanobis Lloyd is not monotone"
       },
       "role": "solver design guardrail",
@@ -651,7 +651,7 @@
         "D-LOGDET-GAIN"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D9. Adaptive Mahalanobis Lloyd is not monotone"
       },
       "role": "practical acceleration"
@@ -670,7 +670,7 @@
         "CE-D-VORONOI-CONVERSE-001"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D10. Voronoi fixed point does not imply exchange stability"
       },
       "artifact": "COUNTEREXAMPLES/CE-D-VORONOI-CONVERSE-001.json"
@@ -689,7 +689,7 @@
         "D-GLOBAL-GEOMETRIC-REALIZABILITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D11. Exact global enumeration for fixed \\((d,K)\\)"
       },
       "warning": "This is XP-style, not an FPT result; hardness and tightness remain open.",
@@ -711,7 +711,7 @@
         "FI-REFINEMENT-MONOTONICITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/04-d-optimality.md",
         "section": "D12. Singleton-refinement branch-and-bound bound"
       },
       "role": "global certification",
@@ -733,7 +733,7 @@
         "GENERAL-SUPERGRADIENT-SCREENING"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/03-screening.md",
         "section": "G2. General concavity/supergradient screening"
       }
     },
@@ -754,7 +754,7 @@
         "Kiefer-1974"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS1. Classical \\(D_s\\) design theory"
       },
       "warning": "The design feasible set differs from hard score-space partitioning."
@@ -774,7 +774,7 @@
         "Nather-Reinsch-1981"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS0. Profiled objective and Schur notation"
       },
       "implies": [
@@ -800,7 +800,7 @@
         "DS-SCHUR"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS2. Gradient / efficient semimetric"
       },
       "implies": [
@@ -824,7 +824,7 @@
         "DS-SCHUR"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS3. Exact finite one-point objective oracle"
       },
       "implies": [
@@ -848,7 +848,7 @@
         "DS-EXACT-MOVE-ORACLE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS3. Exact finite one-point objective oracle"
       }
     },
@@ -867,7 +867,7 @@
         "DS-GRADIENT-EFFICIENT-SEMIMETRIC"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/03-screening.md",
         "section": "G2. General concavity/supergradient screening"
       }
     },
@@ -888,7 +888,7 @@
         "CE-DS-GLOBAL-GEOMETRY-001"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS4. D-style finite geometry theorem fails"
       },
       "implies": [
@@ -910,7 +910,7 @@
         "CE-DS-GLOBAL-GEOMETRY-002"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS5. A global finite \\(D_s\\) optimum can be non-geometric"
       },
       "artifact": "COUNTEREXAMPLES/CE-DS-GLOBAL-GEOMETRY-001.json",
@@ -933,7 +933,7 @@
         "DS-EXACT-MOVE-ORACLE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS6. Approximate finite efficient-Voronoi bound"
       },
       "role": "finite-to-population bridge candidate",
@@ -965,7 +965,7 @@
         "OPEN-HEP-NUISANCE-SCALING"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS7. Full-data efficient-score domination"
       }
     },
@@ -983,7 +983,7 @@
         "DS-EFFICIENT-SCORE-DOMINATION"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS7. Full-data efficient-score domination"
       },
       "implies": [
@@ -1005,7 +1005,7 @@
         "DS-EFFICIENT-SCORE-GLOBAL-UPPER"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS8. Scalar efficient-score upper problem is exactly solvable by DP"
       },
       "role": "cheap global upper certificate and initializer",
@@ -1028,7 +1028,7 @@
         "DS-SCHUR"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS9. The \\(K\\le d\\) feasibility split"
       }
     },
@@ -1047,7 +1047,7 @@
         "DS-EFFICIENT-SCORE-DOMINATION"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05a-ds-core.md",
         "section": "DS9. The \\(K\\le d\\) feasibility split"
       },
       "warning": "This is a different statistical formulation from full in-bin nuisance profiling."
@@ -1063,7 +1063,7 @@
       "publication_status": "published",
       "statement": "For F_E(I)=lambda_min(I), a simple minimum eigenvalue has gradient vv^T; with multiplicity r the superdifferential is {VHV^T:H>=0,tr H=1}.",
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/06-e-optimality.md",
         "section": "E1. Supergradient structure"
       },
       "implies": [
@@ -1088,7 +1088,7 @@
         "E-SUPERGRADIENT"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/06-e-optimality.md",
         "section": "E2. Repeated-eigenvalue one-transfer degeneracy"
       },
       "implies": [
@@ -1109,7 +1109,7 @@
         "CE-E-GEOMETRY-001"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/06-e-optimality.md",
         "section": "E3. Finite global E geometry fails even with simple minimum eigenvalue"
       },
       "implies": [
@@ -1132,7 +1132,7 @@
         "CE-E-GEOMETRY-001"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/06-e-optimality.md",
         "section": "E4. Positive first-order E margin need not imply exact improvement"
       },
       "implies": [
@@ -1154,7 +1154,7 @@
         "E-SUPERGRADIENT"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/06-e-optimality.md",
         "section": "E5. Safe E screening and B&B"
       }
     },
@@ -1172,7 +1172,7 @@
         "GENERAL-REFINEMENT-BB"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/06-e-optimality.md",
         "section": "E5. Safe E screening and B&B"
       }
     },
@@ -1190,7 +1190,7 @@
         "D-RANK2-MOVE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/07-a-optimality.md",
         "section": "A1. Exact finite move oracle"
       },
       "implies": [
@@ -1212,7 +1212,7 @@
         "A-EXACT-MOVE-ORACLE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/07-a-optimality.md",
         "section": "A1. Exact finite move oracle"
       }
     },
@@ -1230,7 +1230,7 @@
         "CE-A-DSTYLE-001"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/07-a-optimality.md",
         "section": "A2. D-style finite geometry theorem fails"
       },
       "implies": [
@@ -1253,7 +1253,7 @@
         "GENERAL-SUPERGRADIENT-SCREENING"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/07-a-optimality.md",
         "section": "A3. Concavity screening remains valid"
       },
       "implies": [
@@ -1279,7 +1279,7 @@
         "theta-independent randomization rule"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/08-soft.md",
         "section": "S1. Soft assignments are an actual randomized quantizer"
       },
       "implies": [
@@ -1303,7 +1303,7 @@
         "SOFT-RANDOMIZED-FIM"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/08-soft.md",
         "section": "S2. Exact soft-assignment gradient"
       }
     },
@@ -1321,7 +1321,7 @@
       "publication_status": "internal",
       "statement": "For hard affine/Voronoi parameterizations, finite empirical labels and cell moments remain unchanged until a training row crosses a boundary; ordinary gradient is therefore zero almost everywhere.",
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/08-soft.md",
         "section": "S3. Hard empirical geometric objective is piecewise constant"
       },
       "role": "optimizer design guardrail",
@@ -1342,7 +1342,7 @@
       "publication_status": "derived_from_published",
       "statement": "A positive-temperature softmax affine-max family is smooth on the regular region; line-search gradient/quasi-Newton methods can be monotone in the soft objective and converge only to standard stationary notions.",
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/08-soft.md",
         "section": "S4. Fixed-temperature soft optimization has ordinary stationary-point guarantees"
       },
       "warning": "This gives no hard local/global optimality guarantee.",
@@ -1361,7 +1361,7 @@
       "publication_status": "published",
       "statement": "For an atomless score law and finite labels, Dvoretzky-Wald-Wolfowitz purification can preserve all cell probabilities and first score moments of a randomized quantizer.",
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/08-soft.md",
         "section": "S5. Atomless purification"
       },
       "role": "randomized-vs-deterministic population equivalence",
@@ -1387,7 +1387,7 @@
         "FI-QUANT-IDENTITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/08-soft.md",
         "section": "S5. Atomless purification"
       },
       "implies": [
@@ -1413,7 +1413,7 @@
         "bounded scores or suitable uniform integrability"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/09-consistency.md",
         "section": "C1. Restricted affine-class consistency"
       },
       "warning": "The unrestricted/global consistency problem remains open.",
@@ -1433,7 +1433,7 @@
       "publication_status": "derived_from_published",
       "statement": "s(x)=\u2207_theta log[p(x|theta)/p(x|theta0)]|theta0; absolute normalized densities are unnecessary if the relevant local density ratio is available.",
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/10-oracle.md",
         "section": "O1. Density ratios suffice for local scores"
       },
       "implies": [
@@ -1454,7 +1454,7 @@
         "RATIO-LOCAL-SCORE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/10-oracle.md",
         "section": "O2. Linear-mixture component ratios suffice"
       },
       "role": "primary HEP template-fit interface",
@@ -1479,7 +1479,7 @@
         "known training priors"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/10-oracle.md",
         "section": "O3. Calibrated classifier posteriors provide ratios"
       },
       "role": "classifier-based score oracle",
@@ -1503,7 +1503,7 @@
         "MIXTURE-RATIO-SCORE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/10-oracle.md",
         "section": "O3. Calibrated classifier posteriors provide ratios"
       }
     },
@@ -1523,7 +1523,7 @@
         "FI-QUANT-IDENTITY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/10-oracle.md",
         "section": "O4. True retained FI under an estimated score"
       },
       "implies": [
@@ -1547,7 +1547,7 @@
         "FI-LOSS-DECOMPOSITION"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/10-oracle.md",
         "section": "O5. Representation loss and quantization loss separate"
       },
       "implies": [
@@ -1569,7 +1569,7 @@
         "INFO-RETENTION-SPECTRUM"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/11-efficiency.md",
         "section": "I1. D-efficiency"
       },
       "role": "required user-facing information-loss score",
@@ -1593,7 +1593,7 @@
         "DS-SCHUR"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/11-efficiency.md",
         "section": "I2. \\(D_s\\)-efficiency"
       },
       "role": "required user-facing information-loss score"
@@ -1613,7 +1613,7 @@
         "INFO-RETENTION-SPECTRUM"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/11-efficiency.md",
         "section": "I3. Directional diagnostics"
       },
       "implies": [
@@ -1730,7 +1730,7 @@
         "DS-OKN-BOUND"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05b-ds-bridge.md",
         "section": "DS14. Conditional finite\\(\\to\\)population \\(D_s\\) bridge"
       },
       "assumptions": [
@@ -1770,7 +1770,7 @@
         "D-RANK2-MOVE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05b-ds-bridge.md",
         "section": "DS12. Population stationary geometry for profiled \\(D_s\\)"
       },
       "assumptions": [
@@ -1807,7 +1807,7 @@
         "DS-EFFICIENT-SCORE-DOMINATION"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05b-ds-bridge.md",
         "section": "DS11. Variational form of the profiled objective"
       }
     },
@@ -2252,7 +2252,7 @@
         "E-REPEATED-EIGEN-DEGENERACY"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/06-e-optimality.md",
         "section": "E6. Common-supergradient population geometry"
       },
       "priority": 1
@@ -2285,7 +2285,7 @@
         "AUDIT-DS-POPULATION-BRIDGE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05b-ds-bridge.md",
         "section": "DS11. Variational form of the profiled objective"
       },
       "warning": "The pseudo-inverse extension at singular nuisance blocks leaves the in-bin statistical formulation (DS9): it can strictly exceed the feasible in-bin optimum (see CE-DS-DEGENERATE-GLOBAL-TIE-001).",
@@ -2319,7 +2319,7 @@
         "AUDIT-DS-POPULATION-BRIDGE"
       ],
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05b-ds-bridge.md",
         "section": "DS13. Exact profiled leverage stability bound"
       },
       "role": "finite half of the finite-to-population bridge",
@@ -2344,7 +2344,7 @@
       ],
       "artifact": "COUNTEREXAMPLES/CE-DS-DEGENERATE-GLOBAL-TIE-001.json",
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05b-ds-bridge.md",
         "section": "DS11. Variational form of the profiled objective"
       },
       "implies": [
@@ -2369,7 +2369,7 @@
       ],
       "artifact": "COUNTEREXAMPLES/CE-DS-POP-WASTED-CELLS-001.json",
       "proof_location": {
-        "file": "KNOWN_RESULTS.md",
+        "file": "KNOWN_RESULTS/05b-ds-bridge.md",
         "section": "DS12. Population stationary geometry for profiled \\(D_s\\)"
       }
     },
