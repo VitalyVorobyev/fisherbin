@@ -34,6 +34,7 @@ workspace read order).
 
 | Path | Role |
 |---|---|
+| `PLAYBOOK.md` | Operator playbook: copy-paste session prompts (research/audit/bookkeeping/literature) |
 | `PROBLEM.md` | Canonical scientific target |
 | `AGENT.md` | Non-negotiable invariants + map (short) |
 | `CLAIMS.json` | Fine-grained theorem/claim dependency graph (96 nodes) |
