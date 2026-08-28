@@ -51,7 +51,7 @@ Module ownership (keep code in its owning module):
 - `ratios.py` — density-ratio algebra: prior correction, ratio-to-score maps, closure diagnostic
 - `components.py` — linear models and the intensity score adapter
 - `criteria.py`, `config.py`, `result.py`, `api.py` — public contracts and orchestration
-- `examples/`, `tests/`, `benchmarks/`, `research/` — datasets, tuning, exploration (research is excluded from the Ruff gate; anything relied upon gets copied into a deterministic regression test)
+- `examples/`, `tests/`, `benchmarks/`, `agenticresearch/` — datasets, tuning, exploration (agenticresearch is excluded from the Ruff gate; anything relied upon gets copied into a deterministic regression test)
 
 Criterion/configuration pairs are a closed set (e.g. `DOptimality` + `DExchangeConfig`/`SoftVoronoiConfig`, `NormalizedTrace` + `KMeansConfig`); unsupported pairs fail before optimization. No generic criterion plugin system.
 

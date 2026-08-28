@@ -73,9 +73,7 @@ def test_proof_locations_resolve(registry: dict) -> None:
 
 def test_referenced_counterexamples_have_fixtures(registry: dict) -> None:
     for claim in registry["claims"]:
-        ids = claim.get("counterexamples", []) + claim.get(
-            "boundary_counterexamples", []
-        )
+        ids = claim.get("counterexamples", []) + claim.get("boundary_counterexamples", [])
         for fixture_id in ids:
             fixture = WORKSPACE / "COUNTEREXAMPLES" / f"{fixture_id}.json"
             assert fixture.is_file(), (claim["id"], fixture_id)

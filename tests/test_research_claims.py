@@ -110,9 +110,7 @@ def test_d_voronoi_violation_has_positive_gain_lower_bound() -> None:
 
 def test_unmerged_duplicate_atoms_are_an_exact_boundary_failure() -> None:
     """Split duplicates can be vacuously stable without strict score geometry."""
-    fixture_path = (
-        RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-D-UNMERGED-DUPLICATES-001.json"
-    )
+    fixture_path = RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-D-UNMERGED-DUPLICATES-001.json"
     assert fixture_path.is_file(), (
         f"counterexample fixture missing at {fixture_path}; the research "
         "workspace may have moved — update RESEARCH_WORKSPACE"
@@ -133,9 +131,7 @@ def test_unmerged_duplicate_atoms_are_an_exact_boundary_failure() -> None:
             if row_label == label
         )
         / sum(
-            weight
-            for weight, row_label in zip(weights, labels, strict=True)
-            if row_label == label
+            weight for weight, row_label in zip(weights, labels, strict=True) if row_label == label
         )
         for label in range(fixture["K"])
     }

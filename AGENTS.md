@@ -37,6 +37,12 @@ Use JAX for numerical kernels and Optax for gradient optimization. Do not add Py
 - Keep optional visualization dependencies lazy and outside numerical hot paths.
 - Avoid `O(N^2)` work. Optimization histories store aggregate metrics and center snapshots, never per-observation responsibilities.
 
+## Research workflow
+
+- `agenticresearch/` is the mathematical scientific memory (claim registry, counterexample bank, open-problem queue). It governs itself through its own `agenticresearch/AGENT.md` and is excluded from the Ruff gate.
+- The library crosses into it at exactly two points: `tests/test_research_claims.py` reads counterexample fixtures from `agenticresearch/COUNTEREXAMPLES/`, and `tests/test_research_registry.py` enforces registry integrity. Research results become library behavior only by being copied into deterministic regression tests or theorem-cited code paths.
+- Code in `src/` that relies on a theorem names it; code that refuses a capability names the counterexample forcing the refusal. Keep both in sync with the registry.
+
 ## Tooling: use uv
 
 `uv` is the only supported environment, dependency, build, and command runner. Do not introduce pip, Conda, Poetry, or manually edit `uv.lock`.
