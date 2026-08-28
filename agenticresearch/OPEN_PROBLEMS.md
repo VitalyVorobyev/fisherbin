@@ -16,41 +16,34 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 # P1 · DS-POPULATION-BRIDGE — finish practical \(D_s\) theory
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
-*Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature. Active packet: `WORK/active/DS-POPULATION-BRIDGE.md`.*
+*Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
+*Status 28 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`). The conditional bridge theorem DS14 awaits its independent audit (`WORK/active/AUDIT-DS-POPULATION-BRIDGE.md`); the surviving mathematical gap is OP28.*
 
-## OP4. Finite-to-population \(D_s\) bridge
+## OP28. Margins at finite \(D_s\) optima
 
-Current project result gives an \(O(K/N)\)-type geometric violation bound at balanced exchange-stable states.
+The conditional bridge DS14 assumes, along the sequence of empirical
+solutions: a cell-mass margin, a conditioning margin, and a
+projected-centroid separation margin.
 
-**Question.** Under atomlessness, minimum-cell-mass, nuisance-block conditioning, and boundary-margin assumptions, does this imply convergence of empirical exchange-stable/global finite \(D_s\) solutions to population stationary deployable quantizers?
+**Question.** For light-tailed atomless laws, do global (or exchange-stable)
+finite \(D_s\) optima satisfy these margins asymptotically, almost surely?
+Sub-questions:
 
-Distinguish:
+- Singleton cells persist at exact global optima through \(N=18\)
+  (`NUMERICAL_EVIDENCE.md` N-DS-BRIDGE-TREND); the extreme-cell information
+  heuristic (\(\sim2\log N/N\)) suggests they die out for Gaussian-tailed
+  laws — prove or refute.
+- Exact degenerate global ties exist (`CE-DS-DEGENERATE-GLOBAL-TIE-001`):
+  characterize the laws/sample events for which the separation margin fails,
+  and whether the merged-rule bridge conclusion is the best possible there.
+- Does the margin-compatible geometric optimum \(v^*\) of DS14 equal the
+  unrestricted population supremum over all measurable quantizers (ties into
+  C2 attainment)?
+- How does efficient-score-domination equality (DS11(a)) behave at global
+  optima?
 
-- unrestricted finite assignments;
-- explicit affine/semimetric inductive family;
-- population optimum.
-
-## OP5. Population common-metric / efficient-score geometry for \(D_s\)
-
-For regular population \(D_s\), make the first-order efficient-semi-metric statement fully rigorous and characterize when one common deployable affine/Voronoi rule exists.
-
-If it fails in general, identify minimal additional assumptions or necessary correction terms.
-
-## OP6. Tightness/equality conditions for efficient-score domination
-
-We know
-
-\[
-S_\psi(I_q)\preceq\operatorname{Var}(E[\widehat S\mid q]).
-\]
-
-Characterize equality:
-
-- for a fixed \(q\);
-- at the global optimum;
-- asymptotically as \(K\to\infty\).
-
-Interpret the finite-K gap as the cost of estimating nuisance structure from bins rather than using the full-data nuisance projection.
+A positive resolution upgrades DS14 from conditional to unconditional for the
+covered laws and unlocks an audited `compile_quantizer` for profiled criteria.
 
 ## OP7. Best practical \(D_s\) solver with theorem-backed certificate
 

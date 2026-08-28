@@ -37,7 +37,7 @@ workspace read order).
 | `PLAYBOOK.md` | Operator playbook: copy-paste session prompts (research/audit/bookkeeping/literature) |
 | `PROBLEM.md` | Canonical scientific target |
 | `AGENT.md` | Non-negotiable invariants + map (short) |
-| `CLAIMS.json` | Fine-grained theorem/claim dependency graph (96 nodes) |
+| `CLAIMS.json` | Fine-grained theorem/claim dependency graph (102 nodes) |
 | `KNOWN_RESULTS.md` | Human-readable current mathematical state |
 | `OPEN_PROBLEMS.md` | The single priority queue: 8 programmes, OP sub-items |
 | `research-plan-proposal.md` | North star, session model, roadmap narrative |

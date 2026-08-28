@@ -530,7 +530,7 @@ For equal weights and balanced cells this is \(O(K/N)\).
 
 Measured suite: the observed maximum violation shrank from roughly 0.18 to 0.029 as \(N\) increased from 8 to 64 in the reported experiment.
 
-## DS7. Full-data efficient-score domination — [PROJECT-PROVED]
+## DS7. Full-data efficient-score domination — [PROJECT-PROVED; see also DS11(a)]
 
 Let
 
@@ -584,9 +584,359 @@ The projected efficient-score problem only needs enough categories to identify t
 
 These are different statistical problems and must be exposed separately.
 
-## DS10. Finite-to-population bridge remains incomplete — [OPEN]
+## DS10. Finite-to-population bridge: resolution map — [SUMMARY]
 
-DS6 strongly suggests asymptotic geometric closure for balanced empirical problems, but unrestricted finite \(D_s\) global/exchange-stable solutions have not yet been proved to converge to population stationary deployable quantizers.
+The bridge programme (OP4/OP5, packet `WORK/completed/DS-POPULATION-BRIDGE.md`,
+28 Aug 2026) is resolved as follows:
+
+- DS11 — variational form of the profiled objective, \(\Phi\)-neutral splits,
+  and the exact equality condition for efficient-score domination (OP6, fixed
+  \(q\));
+- DS12 — rigorous population stationary \(D_s\) geometry and its deployability
+  characterization (OP5);
+- DS13 — exact finite leverage stability bound (the finite half of the bridge);
+- DS14 — conditional finite\(\to\)population bridge theorem (OP4).
+
+Residual open conditions live in `OPEN_PROBLEMS.md` OP28 (whether the margin
+assumptions hold automatically at finite optima) and C2 (unrestricted
+population attainment).
+
+## DS11. Variational form of the profiled objective and \(\Phi\)-neutral splits — [PROJECT-PROVED]
+
+For any partition with binned information blocks
+\(I_{\psi\psi},I_{\psi\lambda},I_{\lambda\lambda}\) define the **generalized
+profiled information**
+\(S_\psi^+(I)=I_{\psi\psi}-I_{\psi\lambda}I_{\lambda\lambda}^+I_{\lambda\psi}\)
+(Moore–Penrose pseudo-inverse; the ordinary Schur complement when
+\(I_{\lambda\lambda}\succ0\)). Then
+
+\[
+\boxed{
+S_\psi^+(I_q)
+=\min_B\operatorname{Var}\!\bigl(E[S_\psi-BS_\lambda\mid Z]\bigr)
+=\min_B\sum_bW_b(\mu_{b\psi}-B\mu_{b\lambda})(\mu_{b\psi}-B\mu_{b\lambda})^\top,
+}
+\]
+
+a Loewner minimum over \(d_\psi\times d_\lambda\) matrices \(B\), attained at
+every solution of \(BI_{\lambda\lambda}=I_{\psi\lambda}\) (in particular
+\(B_q^*=I_{\psi\lambda}I_{\lambda\lambda}^+\); solutions exist because
+\(\operatorname{range}(I_{\lambda\psi})\subseteq\operatorname{range}(I_{\lambda\lambda})\)
+for a PSD block matrix).
+
+*Proof.* \(V(B)=I_{\psi\psi}-BI_{\lambda\psi}-I_{\psi\lambda}B^\top
++BI_{\lambda\lambda}B^\top\); for any normal-equation solution \(B_0\),
+completion of squares gives
+\(V(B)=V(B_0)+(B-B_0)I_{\lambda\lambda}(B-B_0)^\top\succeq V(B_0)\), and
+\(V(B_0)=S_\psi^+(I)\). ∎
+
+Consequences.
+
+**(a) Efficient-score domination, singular extension, and the exact equality
+condition (OP6, fixed \(q\)).** Evaluating at \(B=B^*_{\rm full}\)
+re-derives DS7 in one line, extends it to singular binned nuisance blocks, and
+gives the exact gap
+
+\[
+\boxed{
+\operatorname{Var}(E[\widehat S\mid q])-S_\psi^+(I_q)
+=(B^*_{\rm full}-B^*_q)\,I^q_{\lambda\lambda}\,(B^*_{\rm full}-B^*_q)^\top
+\succeq0 .
+}
+\]
+
+Equality for a fixed \(q\) holds **iff**
+\((B^*_{\rm full}-B^*_q)I^q_{\lambda\lambda}=0\): the full-data nuisance
+projection is already optimal for the binned centroids. The finite-\(K\) gap is
+therefore exactly the cost of estimating the nuisance projection from bins.
+Along any refining sequence of partitions generating the Borel
+\(\sigma\)-field, \(E[S\mid Z_K]\to S\) in \(L^2\), so \(I_{q_K}\to I_{\rm
+full}\), \(B^*_{q_K}\to B^*_{\rm full}\), and the gap vanishes — the
+\(K\to\infty\) part of OP6. The behavior at global optima is tied to OP28 and
+remains open.
+
+**(b) Refinement monotonicity with exact equality characterization
+(\(d_\psi=1\)).** Splitting cell \(M\) into \((x,y)\): for every slope \(c\),
+with \(e_b(c)=\mu_{b\psi}-c\,\mu_{b\lambda}\),
+
+\[
+V(c;\text{split})=V(c;\text{merged})
++\frac{W_xW_y}{W_M}\bigl(e_x(c)-e_y(c)\bigr)^2 .
+\]
+
+Hence \(S_\psi^+\) never decreases under refinement, and the split is
+**profiled-information-neutral iff some \(c\) simultaneously minimizes
+\(V(\cdot;\text{merged}) \) and equalizes \(e_x(c)=e_y(c)\)**.
+
+**(c) Wasted cells and exact global ties.** If a merged group is
+nuisance-degenerate (all its cells have \(\mu_{b\lambda}=0\), so
+\(V(\cdot;\text{merged})\) is constant), every split whose sub-cells have
+distinct nuisance means is exactly neutral, while a split with equal (hence
+zero) nuisance means strictly increases \(S_\psi^+\) but keeps the nuisance
+block singular — it leaves the in-bin formulation (DS9). Exact witnesses:
+
+- `COUNTEREXAMPLES/CE-DS-DEGENERATE-GLOBAL-TIE-001.json`: a centered
+  equal-weight \(N=8,d=2,d_\psi=1,K=3\) sample whose exact global in-bin
+  optimum \(1083/4096\) is attained by **31 distinct labelings** — exactly the
+  feasible refinements of one reduced bipartition — every one of which has two
+  exactly coincident projected centroids; the unique nuisance-mean-equal
+  refinement is infeasible (singular nuisance block) with generalized value
+  \(1191/4096>1083/4096\).
+- `COUNTEREXAMPLES/CE-DS-POP-WASTED-CELLS-001.json`: the population/quadrature
+  wasted-cell construction of DS12.
+
+**(d) Identifiability up to neutral splits.** The profiled objective is
+invariant under \(\Phi\)-neutral splits, so a finite global optimum is in
+general identified only up to the reduced configuration of projected centroids
+\(\{(W_b,e_b(B^*_q))\}\); deployable content lives at the reduced level.
+
+## DS12. Population stationary geometry for profiled \(D_s\) — [PROJECT-PROVED]
+
+Let \(P\) be atomless with \(E[S]=0\), \(E\|S\|^2<\infty\), and let \(q\) have
+\(W_b>0\) for all \(b\) and \(I_q\succ0\). Call \(q\) **bounded-packet
+stationary** if for every \(a\ne b\) and every \(R>0\),
+
+\[
+\limsup_{\substack{E\subseteq A_a\cap B(0,R)\\ P(E)\to0}}
+\frac{\Phi_{D_s}(q_{E\to b})-\Phi_{D_s}(q)}{P(E)}\le0,
+\]
+
+where \(q_{E\to b}\) relabels the measurable set \(E\) to cell \(b\). (Any
+local maximizer over small-mass bounded relocations is bounded-packet
+stationary.)
+
+**Packet dictionary.** \(I_q\) depends on the partition only through
+\((W_b,m_b)\), so relabeling a set \(E\) with mass \(\varepsilon=P(E)\) and
+barycenter \(\bar s=\frac1\varepsilon\int_ES\,dP\) changes \(I_q\) **exactly**
+as the finite rank-two relocation D2 of the weighted point
+\((\bar s,\varepsilon)\):
+\(\Delta I=\alpha u_au_a^\top-\beta u_bu_b^\top\), \(u_x=\bar s-\mu_x\),
+\(\alpha=\varepsilon W_a/(W_a-\varepsilon)\),
+\(\beta=\varepsilon W_b/(W_b+\varepsilon)\). All finite relocation algebra
+transfers verbatim to population packets.
+
+**Theorem.** \(q\) is bounded-packet stationary **iff** for every \(a\),
+\(P\)-a.e. \(s\in A_a\) and every \(b\):
+
+\[
+\boxed{
+(s-\mu_a)^\top G_s(s-\mu_a)\le(s-\mu_b)^\top G_s(s-\mu_b),
+\qquad
+G_s=I_q^{-1}-E_\lambda(I_q)_{\lambda\lambda}^{-1}E_\lambda^\top .
+}
+\]
+
+Moreover \(G_s=C^\top S_\psi(I_q)^{-1}C\) with \(C=[\,\mathrm{Id}_{d_\psi},
+-B^*_q\,]\), so the rule reads: assign a.e. to the nearest projected centroid
+\(e_b=C\mu_b\) of the efficient projection \(e(s)=Cs\) in the
+\(S_\psi(I_q)^{-1}\) metric,
+
+\[
+q(s)\in\arg\min_b\,(e(s)-e_b)^\top S_\psi(I_q)^{-1}(e(s)-e_b)
+\quad\text{a.e.}
+\]
+
+*Proof.* The pairwise first-variation function
+\(\delta_{ab}(s)=(s-\mu_a)^\top G_s(s-\mu_a)-(s-\mu_b)^\top G_s(s-\mu_b)
+=2(\mu_b-\mu_a)^\top G_ss+\mu_a^\top G_s\mu_a-\mu_b^\top G_s\mu_b\)
+is **affine** in \(s\) (the quadratic terms cancel; this is G1's common-\(G\)
+affinity). \(\Phi_{D_s}=F(I)\) with \(F=\log\det S_\psi\) is \(C^2\) on a
+neighborhood of \(I_q\succ0\) with \(\nabla F(I_q)=G_s\) (DS2), so for a
+packet with bounded barycenter the exact update gives
+\(\Phi(q_{E\to b})-\Phi(q)=P(E)\,\delta_{ab}(\bar s)+O(P(E)^2)\), with the
+remainder uniform over \(\bar s\in B(0,R)\).
+
+(⟹) If \(V=\{s\in A_a:\delta_{ab}(s)\ge c\}\cap B(0,R)\) had \(P(V)>0\) for
+some \(c>0\), atomlessness supplies packets \(E_n\subseteq V\) with
+\(P(E_n)\to0\); affinity gives \(\delta_{ab}(\bar s_n)\ge c\) (the barycenter
+average of an affine function), so the gain per unit mass is at least
+\(c-O(P(E_n))>0\), contradicting stationarity.
+
+(⟸) For any packet \(E\subseteq A_a\cap B(0,R)\), affinity gives
+\(\delta_{ab}(\bar s_E)=\frac1{P(E)}\int_E\delta_{ab}\,dP\le0\), so the gain is
+\(\le O(P(E)^2)\) and the limsup is \(\le0\). ∎
+
+The factorization \(G_s=C^\top S_\psi^{-1}C\) follows from the block inverse:
+\((I^{-1})_{\psi\psi}=S_\psi^{-1}\), \((I^{-1})_{\psi\lambda}=-S_\psi^{-1}B^*_q\),
+\((I^{-1})_{\lambda\lambda}=I_{\lambda\lambda}^{-1}+B_q^{*\top}S_\psi^{-1}B^*_q\).
+
+**Deployability characterization (OP5).** The stationary geometry defines a
+deployable \(K\)-cell rule reproducing \(q\) up to null sets **iff** (i) the
+projected centroids \(e_b\) are pairwise distinct and (ii) \(P\) charges no
+pairwise tie hyperplane (each tie set is affine in \(e(s)\); both conditions
+hold e.g. when \(P\) is absolutely continuous and (i) holds). Stationarity
+does **not** force (i): `CE-DS-POP-WASTED-CELLS-001` is a stationary partition
+(zero violations, ties allowed) whose coincident-centroid cell pairs no
+efficient-semimetric rule can separate — in sharp contrast to finite D, where
+exchange stability forces distinct centroids (D5). Without (i), stationarity
+constrains exactly the **reduced** partition obtained by merging
+coincident-\(e_b\) groups (cf. DS11(d)).
+
+## DS13. Exact profiled leverage stability bound — [PROJECT-PROVED]
+
+Finite level, merged atoms, nonsingular \(I\) and \(I_{\lambda\lambda}\). At
+any one-point exchange-stable profiled-\(D_s\) state, for every point
+\((s_i,w_i)\) in a non-singleton cell \(a\) and every \(b\ne a\):
+
+\[
+\boxed{
+s_{aa}-s_{bb}\le\beta_i\,q_{aa}q_{bb}\le w_i\,q_{aa}q_{bb},
+\qquad
+\beta_i=\frac{w_iW_b}{W_b+w_i},
+}
+\]
+
+with \(s_{xx}=u_x^\top G_su_x\), \(q_{xx}=u_x^\top I^{-1}u_x\),
+\(u_x=s_i-\mu_x\).
+
+*Proof.* By the exact rank-two determinant ratios (D3 applied to \(I\) and to
+\(I_{\lambda\lambda}\)), the exact profiled gain of the move satisfies
+\(\Delta F_s\le0\) iff
+
+\[
+(1+\alpha q_{aa})(1-\beta q_{bb})+\alpha\beta q_{ab}^2
+\le
+(1+\alpha r_{aa})(1-\beta r_{bb})+\alpha\beta r_{ab}^2,
+\]
+
+where \(r_{xy}=u_{x\lambda}^\top I_{\lambda\lambda}^{-1}u_{y\lambda}\).
+Expanding and using \(s_{xx}=q_{xx}-r_{xx}\):
+
+\[
+\alpha s_{aa}-\beta s_{bb}
+\le\alpha\beta\bigl[(q_{aa}q_{bb}-q_{ab}^2)-(r_{aa}r_{bb}-r_{ab}^2)\bigr]
+\le\alpha\beta\,q_{aa}q_{bb},
+\]
+
+dropping \(q_{ab}^2\ge0\) and the Cauchy–Schwarz-nonnegative
+\(r_{aa}r_{bb}-r_{ab}^2\). Since \(\beta\le w_i\le\alpha\) and
+\(s_{bb}\ge0\) (\(G_s\succeq0\)), divide by \(\alpha\) and use
+\(\beta/\alpha\le1\). Degenerate post-move states (singular \(I'\)) make the
+left ratio zero and preserve the inequality. ∎
+
+Complements DS6: the leverage form needs **no balancedness or mass margin**;
+tiny or ill-conditioned cells surface through the leverage factors
+\(q_{aa}q_{bb}\) instead. It is the finite half of the DS14 bridge.
+Exact-arithmetic regression: 2,378 admissible moves at 100 exhaustively
+verified global optima plus both canonical fixtures, zero violations
+(`NUMERICAL_EVIDENCE.md` row N-DS-LEVERAGE).
+
+## DS14. Conditional finite\(\to\)population \(D_s\) bridge — [PROJECT-PROVED, CONDITIONAL]
+
+Let \(S_1,\dots,S_N\) be i.i.d. from \(P\) with equal weights, and let
+\(z^{(N)}\) be one-point exchange-stable finite \(D_s\) labelings into \(K\)
+cells. Write \(\hat I_N\), \(\hat\mu_b\), \(\hat G_s\), \(\hat e_b\) for the
+labeling's own binned quantities and let the **companion rule** \(\rho_N\) be
+the efficient-semimetric nearest-cell rule built from them
+(\(\rho_N(s)=\arg\min_b(\hat e(s)-\hat e_b)^\top S_\psi(\hat
+I_N)^{-1}(\hat e(s)-\hat e_b)\)).
+
+**Assumptions.**
+
+- (A1) \(P\) atomless, \(E[S]=0\), \(E\|S\|^2<\infty\);
+- (A2) mass margin: \(\min_b\hat W_b\ge c_0>0\);
+- (A3) conditioning margin: \(\lambda_{\min}(\hat I_N)\ge\kappa>0\);
+- (A4) slab margin: \(\sup_{\|v\|=1,c}P(|v^\top S-c|\le t)\le\varphi(t)\),
+  \(\varphi(t)\downarrow0\);
+- (A5) projected-centroid separation:
+  \(\min_{b\ne b'}\|\hat e_b-\hat e_{b'}\|\ge\gamma>0\);
+
+(A2)/(A3)/(A5) along the sequence, almost surely eventually.
+
+**Theorem.** Almost surely:
+
+1. **(Geometrization.)** \(P_N(z^{(N)}\ne\rho_N)\to0\): the labeling
+   disagrees with its own companion rule on a vanishing fraction of the
+   sample.
+2. **(Subsequential population stationarity.)** Along any subsequence with
+   converging rule parameters, \(\rho_N\to q^*\) \(P\)-a.e., where \(q^*\) is
+   a **self-consistent** population efficient-Voronoi quantizer — by DS12
+   exactly a bounded-packet stationary population quantizer — and
+   \(\hat I_N(z^{(N)})\to I_{q^*}\),
+   \(\hat\Phi_s(z^{(N)})\to\Phi_s^{\rm pop}(q^*)\).
+3. **(Global variant.)** If each \(z^{(N)}\) is a global finite \(D_s\)
+   optimum, then \(\hat\Phi_s(z^{(N)})\to v^*=\sup\{\Phi_s^{\rm pop}(\rho)\}\)
+   over the compact class of efficient-Voronoi rules compatible with the
+   margins \((c_0,\kappa,\gamma)\), and every subsequential limit \(q^*\)
+   attains \(v^*\).
+
+*Proof.*
+
+**Step 1 (finite near-geometry).** By DS13, every misassigned point (positive
+rule violation \(g_i=s_{aa}-s_{b^*b^*}>0\)) satisfies
+\(g_i\le\frac1N q_{aa}q_{b^*b^*}\). Under (A2)–(A3),
+\(\|\hat\mu_b\|^2\le M_N/c_0\) with \(M_N=P_N\|S\|^2\to M=E\|S\|^2\), so
+\(q_{xx}\le\frac2\kappa(\|s_i\|^2+M_N/c_0)=:Q_i\) and \(g_i\le Q_i^2/N\).
+Hence for any \(t>0\), a misassigned point has either violation gap
+\(\le t\) or \(\|s_i\|^2\ge\sqrt{tN}\,\kappa/2-M_N/c_0\); Markov's inequality
+gives
+
+\[
+P_N(z^{(N)}\ne\rho_N)
+\le P_N(0<\mathrm{gap}\le t)+
+\frac{M_N}{\sqrt{tN}\,\kappa/2-M_N/c_0}.
+\]
+
+**Step 2 (band mass).** Pairwise decision functions
+\(h_{bb'}(s)\) are affine in \(s\) with normals
+\(v_{bb'}=2C_N^\top S_\psi(\hat I_N)^{-1}(\hat e_b-\hat e_{b'})\); since
+\(\|C_N^\top w\|\ge\|w\|\) and \(\kappa\preceq S_\psi(\hat I_N)\preceq\Lambda\)
+(Schur-complement eigenvalue sandwich from (A3) and the a.s. bounded empirical
+second moment), (A5) gives \(\|v_{bb'}\|\ge2\gamma/\Lambda\). The gap-\(t\)
+band is covered by \(\binom K2\) affine slabs of half-width
+\(t\Lambda/(2\gamma)\); the slab family is a VC class, so
+Glivenko–Cantelli plus (A4) give
+\(\limsup_NP_N(0<\mathrm{gap}\le t)\le\binom K2\varphi(t\Lambda/(2\gamma))\).
+Sending \(N\to\infty\) then \(t\downarrow0\) in Step 1 proves conclusion 1.
+
+**Step 3 (moment identification).** \(|\hat W_b(z^{(N)})-\hat W_b(\rho_N)|\le
+P_N(z\ne\rho)\to0\) and \(\|\hat m_b(z^{(N)})-\hat m_b(\rho_N)\|\le
+M_N^{1/2}P_N(z\ne\rho)^{1/2}\to0\) (Cauchy–Schwarz). The companion rules lie
+in the compact affine-max class with parameters bounded by
+\((c_0,\kappa,\gamma,M)\); by the C1 uniform moment convergence over that
+class, \(\sup_\rho\|\hat m_b(\rho)-m_b^P(\rho)\|\to0\) and likewise for
+masses. Along a subsequence with converging parameters, dominated convergence
+(tie sets are \(P\)-null by (A4)–(A5)) gives \(\rho_N\to q^*\) a.e. and
+population moments converge; chaining the three approximations identifies
+\(\lim\hat W_b(z^{(N)})=W_b^P(q^*)\), \(\lim\hat\mu_b(z^{(N)})=\mu_b^P(q^*)\),
+\(\lim\hat I_N=I_{q^*}\succeq\kappa\).
+
+**Step 4 (self-consistency and stationarity).** The rule \(q^*\) is built
+from the limit centroids and the limit metric, which Step 3 identifies as the
+population centroids and metric **of \(q^*\) itself**; hence \(q^*\) is a
+self-consistent efficient-Voronoi quantizer, and by the DS12 equivalence it is
+bounded-packet stationary. Continuity of \(F\) at \(I_{q^*}\succ0\) gives
+\(\hat\Phi_s(z^{(N)})=F(\hat I_N)\to F(I_{q^*})\) — conclusion 2.
+
+**Step 5 (global sandwich).** For any fixed margin-compatible rule \(\rho\),
+the sample labeling induced by \(\rho\) is feasible (nonempty cells a.s.
+eventually), so \(\hat\Phi_s(z^{(N)})\ge\hat\Phi_s(\rho\text{-labels})\to
+\Phi_s^{\rm pop}(\rho)\); hence \(\liminf\hat\Phi_s(z^{(N)})\ge v^*\). Along
+any parameter-convergent subsequence, Step 4 gives
+\(\hat\Phi_s(z^{(N)})\to\Phi_s^{\rm pop}(q^*)\le v^*\) because \(q^*\)
+inherits the margins. Both bounds force
+\(\lim\hat\Phi_s(z^{(N)})=v^*=\Phi_s^{\rm pop}(q^*)\). ∎
+
+**Merged-rule variant (dropping (A5)).** Without a separation margin, pass to
+a subsequence along which every pairwise separation converges; merge
+cell pairs whose separation vanishes. Steps 1–2 apply verbatim to the
+**merged** companion rule (only inter-group boundaries carry slabs, and their
+normals are bounded below along the subsequence), and Steps 3–5 deliver a
+population-stationary **reduced** rule (DS11(d), DS12). This is sharp:
+`CE-DS-DEGENERATE-GLOBAL-TIE-001` shows exact finite global optima whose
+label-level structure is not identified (31-fold exact tie), while the reduced
+configuration is unique.
+
+**What is deliberately not claimed.** (i) The margins (A2)/(A3)/(A5) are
+**not** automatic at finite optima: exhaustively verified global optima at
+\(N\le18\) regularly carry singleton cells, and the tie fixture has exactly
+coincident projected centroids (OP28 records the conjecture that the margins
+hold asymptotically for light-tailed atomless laws; the measured suite is
+N-DS-BRIDGE-TREND). (ii) \(v^*\) is the optimum over the margin-compatible
+geometric class; whether it equals the unrestricted population supremum over
+all measurable quantizers (and whether that supremum is attained) remains open
+in C2. (iii) Everything is for exact scores; estimated-score robustness is the
+P2 programme.
 
 ---
 

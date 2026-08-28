@@ -271,3 +271,136 @@ def test_global_e_partition_can_violate_simple_eigenvector_rule() -> None:
     assert eigenvalues[1] - eigenvalues[0] > 1e-4
     assert int(np.argmin(distances)) == 2
     assert distances[labels[row]] - distances.min() > 0.06
+
+
+def _exact_ds_cells(
+    scores: list[list[Fraction]], labels: tuple[int, ...], n_bins: int
+) -> tuple[list[Fraction], list[list[Fraction]]]:
+    weight = Fraction(1, len(scores))
+    masses = [Fraction(0)] * n_bins
+    moments = [[Fraction(0), Fraction(0)] for _ in range(n_bins)]
+    for row, label in enumerate(labels):
+        masses[label] += weight
+        for column in range(2):
+            moments[label][column] += weight * scores[row][column]
+    return masses, moments
+
+
+def _exact_binned_information(
+    scores: list[list[Fraction]], labels: tuple[int, ...], n_bins: int
+) -> list[list[Fraction]]:
+    masses, moments = _exact_ds_cells(scores, labels, n_bins)
+    return [
+        [
+            sum(
+                moments[label][row] * moments[label][column] / masses[label]
+                for label in range(n_bins)
+                if masses[label] > 0
+            )
+            for column in range(2)
+        ]
+        for row in range(2)
+    ]
+
+
+def test_global_profiled_ds_optimum_can_be_a_degenerate_tie_class() -> None:
+    path = RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-DEGENERATE-GLOBAL-TIE-001.json"
+    fixture = json.loads(path.read_text())
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    n_rows, n_bins = 8, 3
+
+    def profiled(labels: tuple[int, ...]) -> Fraction | None:
+        info = _exact_binned_information(scores, labels, n_bins)
+        if info[1][1] == 0:
+            return None
+        return info[0][0] - info[0][1] * info[1][0] / info[1][1]
+
+    ranked: list[tuple[Fraction, tuple[int, ...]]] = []
+    infeasible: list[tuple[int, ...]] = []
+    for labels in _canonical_partitions(n_rows, n_bins):
+        value = profiled(labels)
+        if value is None:
+            infeasible.append(labels)
+        else:
+            ranked.append((value, labels))
+    ranked.sort(reverse=True)
+    best = ranked[0][0]
+    ties = [labels for value, labels in ranked if value == best]
+    next_distinct = next(value for value, _ in ranked if value < best)
+
+    assert len(ranked) == 964
+    assert best == Fraction(1083, 4096)
+    assert len(ties) == 31
+    assert best - next_distinct == Fraction(237, 16640)
+
+    # Every tied optimum refines the reduced bipartition {0,1,2,4,6,7} | {3,5}
+    # and has two cells with exactly coincident projected centroids.
+    group = {0, 1, 2, 4, 6, 7}
+    for labels in ties:
+        cells = [{row for row in range(n_rows) if labels[row] == label} for label in range(n_bins)]
+        assert all(cell <= group or cell <= (set(range(n_rows)) - group) for cell in cells)
+        info = _exact_binned_information(scores, labels, n_bins)
+        slope = info[0][1] / info[1][1]
+        masses, moments = _exact_ds_cells(scores, labels, n_bins)
+        projected = sorted(
+            moments[label][0] / masses[label] - slope * moments[label][1] / masses[label]
+            for label in range(n_bins)
+        )
+        assert projected in (
+            [Fraction(-19, 64), Fraction(-19, 64), Fraction(57, 64)],
+            [Fraction(-19, 64), Fraction(57, 64), Fraction(57, 64)],
+        )
+
+    # The unique infeasible refinement has an exactly singular nuisance block and
+    # a generalized pseudo-inverse value strictly above the feasible optimum.
+    assert len(infeasible) == 2
+    singular = (0, 0, 1, 2, 1, 2, 0, 1)
+    assert singular in infeasible
+    info = _exact_binned_information(scores, singular, n_bins)
+    assert info[1][1] == 0
+    assert info[0][1] == 0
+    assert info[0][0] == Fraction(1191, 4096)
+    assert info[0][0] > best
+
+
+def test_symmetric_wasted_cells_defeat_the_efficient_semimetric_rule() -> None:
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-POP-WASTED-CELLS-001.json").read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    labels = tuple(fixture["labels_after_or_optimum"])
+    coarse = tuple(0 if scores[row][0] < 0 else 1 for row in range(8))
+
+    fine_info = _exact_binned_information(scores, labels, 4)
+    coarse_info = _exact_binned_information(scores, coarse, 2)
+    assert coarse_info[1][1] == 0
+    assert coarse_info[0][0] == Fraction(4)
+    assert fine_info[1][1] == Fraction(9, 4)
+    assert fine_info[0][1] == 0
+    profiled = fine_info[0][0] - fine_info[0][1] * fine_info[1][0] / fine_info[1][1]
+    assert profiled == Fraction(4)
+
+    masses, moments = _exact_ds_cells(scores, labels, 4)
+    determinant = fine_info[0][0] * fine_info[1][1] - fine_info[0][1] * fine_info[1][0]
+    inverse = [
+        [fine_info[1][1] / determinant, -fine_info[0][1] / determinant],
+        [-fine_info[1][0] / determinant, fine_info[0][0] / determinant],
+    ]
+    metric = [row[:] for row in inverse]
+    metric[1][1] -= 1 / fine_info[1][1]
+    means = [[moments[label][column] / masses[label] for column in range(2)] for label in range(4)]
+    slope = fine_info[0][1] / fine_info[1][1]
+    projected = [means[label][0] - slope * means[label][1] for label in range(4)]
+    assert sorted(projected) == [Fraction(-2), Fraction(-2), Fraction(2), Fraction(2)]
+
+    def distance(row: int, label: int) -> Fraction:
+        residual = [scores[row][column] - means[label][column] for column in range(2)]
+        return sum(
+            residual[first] * metric[first][second] * residual[second]
+            for first in range(2)
+            for second in range(2)
+        )
+
+    for row, label in enumerate(labels):
+        distances = [distance(row, other) for other in range(4)]
+        assert distances[label] == min(distances)
