@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -23,7 +24,7 @@ WORKSPACE = Path(__file__).parents[1] / "agenticresearch"
 REGISTRY_MODULE = WORKSPACE / "py" / "registry.py"
 
 
-def _load_registry_module():
+def _load_registry_module() -> ModuleType:
     spec = importlib.util.spec_from_file_location("_scorequant_registry", REGISTRY_MODULE)
     assert spec is not None and spec.loader is not None, REGISTRY_MODULE
     module = importlib.util.module_from_spec(spec)
@@ -32,7 +33,7 @@ def _load_registry_module():
 
 
 @pytest.fixture(scope="module")
-def tool():
+def tool() -> ModuleType:
     assert REGISTRY_MODULE.is_file(), (
         f"registry tool not found at {REGISTRY_MODULE}; if the research workspace "
         "moved, update WORKSPACE here and in test_research_claims.py"
@@ -40,7 +41,7 @@ def tool():
     return _load_registry_module()
 
 
-def test_registry_loads_with_one_file_per_claim(tool) -> None:
+def test_registry_loads_with_one_file_per_claim(tool: ModuleType) -> None:
     registry = tool.load(WORKSPACE)
     claims = registry["claims"]
     assert claims, "claim registry is empty"
@@ -50,12 +51,12 @@ def test_registry_loads_with_one_file_per_claim(tool) -> None:
     assert ids == on_disk, "claims/ and the loaded registry disagree"
 
 
-def test_registry_is_referentially_consistent(tool) -> None:
+def test_registry_is_referentially_consistent(tool: ModuleType) -> None:
     violations = tool.validate(WORKSPACE)
     assert not violations, "\n".join(["registry integrity violations:", *violations])
 
 
-def test_generated_indexes_are_current(tool) -> None:
+def test_generated_indexes_are_current(tool: ModuleType) -> None:
     stale = tool.reindex(WORKSPACE, check=True)
     assert not stale, "\n".join(
         ["stale generated indexes; run `python agenticresearch/py/registry.py reindex`", *stale]

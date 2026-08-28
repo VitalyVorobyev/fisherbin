@@ -40,7 +40,9 @@ Rules of engagement:
   dependency-blocking question.
 ```
 
-Swap the packet path for whichever `WORK/active/` packet is current. If no
+Fill `<PACKET-ID>` from `ls agenticresearch/WORK/active/` — that directory is
+the only current list, so nothing here can go stale. Pick the packet from the
+highest-ranked ready programme in `claims/INDEX.md`. If no
 packet exists yet, first ask a session (or do it yourself) to draft one from
 the top unblocked programme in `OPEN_PROBLEMS.md` using `WORK/TEMPLATE.md`.
 
