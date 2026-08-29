@@ -1,0 +1,24 @@
+{
+  "id": "D-LEVERAGE",
+  "title": "D leverage inequality",
+  "criterion": [
+    "D"
+  ],
+  "level": "finite_assignment",
+  "status": "bridge",
+  "publication_status": "derived_from_published",
+  "statement": "For every centroid \u03bc_c, \u03bc_c^T I^{-1}\u03bc_c<=1/W_c, and for \u03b4=\u03bc_a-\u03bc_b, \u03b4^T I^{-1}\u03b4<=1/W_a+1/W_b.",
+  "dependencies": [
+    "FI-QUANT-IDENTITY"
+  ],
+  "proof_location": {
+    "file": "KNOWN_RESULTS/04-d-optimality.md",
+    "section": "D4. Leverage inequality"
+  },
+  "role": "key inequality in finite D geometry",
+  "implies": [
+    "AUDIT-D-EXCHANGE-VORONOI",
+    "D-EXCHANGE-IMPLIES-VORONOI",
+    "D-EXCHANGE-VIOLATION-LOWER-BOUND"
+  ]
+}

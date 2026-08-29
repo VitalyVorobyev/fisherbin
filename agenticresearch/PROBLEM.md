@@ -188,7 +188,7 @@ Population first-variation geometry is not by itself a consistency theorem for a
 - **\(D_s\):** this exact finite bridge fails; even a global finite optimum can be non-geometric.
 - **E:** this exact finite bridge also fails.
 
-See `KNOWN_RESULTS.md` for exact status.
+See `KNOWN_RESULTS/` for exact status.
 
 ---
 

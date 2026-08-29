@@ -29,3 +29,8 @@ Registry patches, fixtures, tests, ledger rows, audit report if publication-crit
 ## Stop conditions
 
 Proved / disproved / reduced to explicitly listed unresolved assumptions — or a scientific branch worth its own packet.
+
+## Next dependency-blocking question
+
+The single question the next session should attack, named with its claim id.
+Required by `protocols/theorem.md`; do not close a packet without it.

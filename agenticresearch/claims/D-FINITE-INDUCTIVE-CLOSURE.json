@@ -1,0 +1,22 @@
+{
+  "id": "D-FINITE-INDUCTIVE-CLOSURE",
+  "title": "Exact finite inductive closure / compiler",
+  "criterion": [
+    "D"
+  ],
+  "level": "empirical_inductive_quantizer",
+  "status": "project_proved",
+  "publication_status": "internal",
+  "statement": "Every exact zero-tolerance one-point-exchange-stable positive-definite finite D solution on merged distinct positive-weight score atoms compiles to q_hat(s)=argmin_b (s-\u03bc_b)^T I_hat^{-1}(s-\u03bc_b), reproducing all merged-atom training labels strictly; original duplicate rows inherit the merged label. Positive solver tolerance gives only a tolerance-stamped boundary-disagreement guarantee.",
+  "dependencies": [
+    "D-EXCHANGE-IMPLIES-VORONOI"
+  ],
+  "proof_location": {
+    "file": "KNOWN_RESULTS/04-d-optimality.md",
+    "section": "D6. Exact finite inductive closure / compiler"
+  },
+  "role": "bridge from finite assignment to deployable classifier",
+  "implies": [
+    "OPEN-D-EXCHANGE-CONSISTENCY"
+  ]
+}

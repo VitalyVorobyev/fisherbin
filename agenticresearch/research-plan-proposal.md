@@ -1,6 +1,6 @@
 # Research plan — goal, session model, and roadmap
 
-**Version:** 1.1 · 28 August 2026
+**Version:** 1.2 · 28 August 2026
 **Status:** canonical narrative. The executable priority queue lives in
 `OPEN_PROBLEMS.md` (eight programmes P1–P8); this file holds the goal, the
 session model, and the roadmap rationale. On any priority conflict,
@@ -9,25 +9,29 @@ session model, and the roadmap rationale. On any priority conflict,
 ScoreQuant research is organized around **one scientific question**, not
 around a collection of individual theorems.
 
-## Session status ledger (28 August 2026)
+## Session-to-programme crosswalk
 
 The twelve sessions below were drafted before the product-first decision and
-before the first audit completed. Current state:
+before the first audit completed. This table is a **crosswalk only** — it maps
+the original session plan onto the programme queue. It deliberately carries no
+status column: current state lives in `claims/INDEX.md` (generated),
+`OPEN_PROBLEMS.md`, and `WORK/completed/`, and a fourth copy here would drift,
+as the Session 8 row did within a day of being written.
 
-| Session | State | Where |
-|---|---|---|
-| 1 — freeze the problem | **done** | `PROBLEM.md` |
-| 2 — finite D audit | **done** | `AUDITS/AUDIT-D-EXCHANGE-VORONOI-001.md`, `WORK/completed/` |
-| 3 — population D geometry | open | programme P6 (OP8/OP9 context) |
-| 4 — finite ↔ population D | open | programme P6 (OP8, OP9) |
-| 5 — solver theory | **largely embodied** | claims D5/D6, library `partition.py`, ADR-0014; residuals → P7 (OP12) |
-| 6 — global optimization/certification | **partially done** | library `certify.py`; residuals → P7 (OP11, OP13) |
-| 7 — empirical advantage over k-means | open | programme P6 |
-| 8 — \(D_s\) as a separate theory | open, **promoted to "Now"** | programme P1, packet `WORK/active/DS-POPULATION-BRIDGE.md` |
-| 9 — HEP mixture specialization | open | programme P5 (OP20–OP22) |
-| 10 — learned score / ratio oracle | open, **promoted to "Now"** | programme P2, packet `WORK/active/SCORE-ORACLE-ROBUSTNESS.md` |
-| 11 — information loss vs systematics | open | programmes P3/P5 |
-| 12 — synthesis and novelty audit | **deferred** until the publication decision | programme P8 note |
+| Session | Programme |
+|---|---|
+| 1 — freeze the problem | delivered as `PROBLEM.md` |
+| 2 — finite D audit | delivered as `AUDITS/AUDIT-D-EXCHANGE-VORONOI-001.md` |
+| 3 — population D geometry | P6 (OP8/OP9 context) |
+| 4 — finite ↔ population D | P6 (OP8, OP9) |
+| 5 — solver theory | embodied in claims D5/D6, library `partition.py`, ADR-0014; residuals P7 (OP12) |
+| 6 — global optimization/certification | embodied in library `certify.py`; residuals P7 (OP11, OP13) |
+| 7 — empirical advantage over k-means | P6 |
+| 8 — \(D_s\) as a separate theory | P1 |
+| 9 — HEP mixture specialization | P5 (OP20–OP22) |
+| 10 — learned score / ratio oracle | P2 |
+| 11 — information loss vs systematics | P3/P5 |
+| 12 — synthesis and novelty audit | P8 (deferred until the publication decision) |
 
 **Why the reorder (product-first decision, 28 Aug 2026):** this research is
 attached to a shipping library, not free-standing. The library hard-refuses

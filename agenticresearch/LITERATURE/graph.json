@@ -1,19 +1,77 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-08-28",
+  "updated": "2026-08-29",
   "purpose": "Reproducible literature-discovery state for citation snowballing (protocols/literature.md). One record per paper; papers link to claim ids, never merely to 'ScoreQuant'.",
   "record_schema": {
     "id": "short-slug",
     "title": "...",
     "year": 0,
-    "authors": ["..."],
+    "authors": [
+      "..."
+    ],
     "source_of_discovery": "seed | backward:<id> | forward:<id> | concept-search | author-search",
-    "cites_relevant": ["ids"],
-    "cited_by_relevant": ["ids"],
+    "cites_relevant": [
+      "ids"
+    ],
+    "cited_by_relevant": [
+      "ids"
+    ],
     "research_area": "fisher-quantization | optimal-design | determinant-clustering | vq | hep-inference | score-compression | other",
-    "relevant_claims": ["CLAIMS.json ids"],
+    "relevant_claims": [
+      "claim ids from claims/"
+    ],
     "status": "unread | screened | deeply_reviewed | irrelevant"
   },
-  "rounds": [],
-  "papers": []
+  "rounds": [
+    {
+      "round": 1,
+      "date": "2026-08-29",
+      "mode": "manual-drop",
+      "scope": "Two PDFs added to papers/ by the maintainer and wired into the workspace. Not a snowballing round: no backward or forward citation traversal was run, so cites_relevant/cited_by_relevant are unpopulated.",
+      "papers_added": [
+        "valassi-2020-wdr",
+        "cms-2025-sannt"
+      ]
+    }
+  ],
+  "papers": [
+    {
+      "id": "valassi-2020-wdr",
+      "title": "Optimising HEP parameter fits via Monte Carlo weight derivative regression",
+      "year": 2020,
+      "authors": [
+        "A. Valassi"
+      ],
+      "bibliography_key": "Valassi-2020",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "hep-inference",
+      "relevant_claims": [
+        "FI-QUANT-IDENTITY",
+        "INFO-D-EFFICIENCY",
+        "INFO-DIRECTIONAL-DIAGNOSTICS"
+      ],
+      "status": "screened",
+      "note": "d=1 statement of the score-space reduction and of the retained-information ratio, in HEP language. Attribution question open -- see LITERATURE/reviewed.md."
+    },
+    {
+      "id": "cms-2025-sannt",
+      "title": "Development of systematic uncertainty-aware neural network trainings for binned-likelihood analyses at the LHC",
+      "year": 2025,
+      "authors": [
+        "CMS Collaboration"
+      ],
+      "bibliography_key": "CMS-2025",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "hep-inference",
+      "relevant_claims": [
+        "DS-SCHUR"
+      ],
+      "status": "screened",
+      "note": "Minimises (F^{-1})_{rr} over parameter-of-interest plus 224 nuisances on a binned likelihood: the D_s objective at s=1, at production scale. Cites INFERNO and a KDE surrogate as the known workarounds for non-differentiable bin edges (no graph records for those yet). Motivation, not prior art -- no claim cites it."
+    }
+  ]
 }

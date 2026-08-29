@@ -1,5 +1,4 @@
 # Counterexample bank
-
 **Purpose:** reusable falsification cases for theorem agents.
 
 A counterexample is only useful if it is:
@@ -15,27 +14,78 @@ Do not store only screenshots or random seeds.
 
 ---
 
-## CE-D-UNMERGED-DUPLICATES-001 — split duplicate atoms block strict D-Voronoi closure
+The quick table of every fixture is generated: see `INDEX.md`.
 
-**Status:** exact rational boundary counterexample.
+# Required JSON format for new cases
+Each exact case should also have a `.json` file:
+
+```json
+{
+  "id": "CE-...",
+  "criterion": "D|Ds|E|A|...",
+  "level": "finite_assignment",
+  "claim_falsified": "...",
+  "scores": [[...], [...]],
+  "weights": [...],
+  "K": 3,
+  "labels_before": [...],
+  "labels_after_or_optimum": [...],
+  "poi_indices": [0],
+  "nuisance_indices": [1],
+  "objective_before": null,
+  "objective_after": null,
+  "verification": {
+    "method": "exhaustive|exact_formula|high_precision",
+    "notes": "..."
+  },
+  "source": "project test / theorem investigation",
+  "date": "YYYY-MM-DD"
+}
+```
+
+---
+
+# Falsification checklist
+For every new theorem candidate, deliberately test:
+
+- \(d=1,2,3\);
+- smallest rank-feasible \(K\);
+- \(N\le10\) exhaustive partitions;
+- unequal weights;
+- tiny cells;
+- singleton cells;
+- duplicate score atoms;
+- near-singular \(I_q\);
+- repeated E minimum eigenvalues;
+- weak/singular nuisance blocks;
+- exact ties;
+- rational/integer coordinates when possible.
+
+The counterexample bank is part of the mathematical memory of the project, not merely a debugging directory.
+
+---
+
+# Catalogue
+
+One entry per fixture: what it falsifies, the construction, and the
+boundary resolution. The `.json` files are the machine source of truth.
+
+## CE-A-DSTYLE-001 — A does not inherit D exchange-to-Voronoi theorem
+
+**Status:** exact rational counterexample.
 
 **Claim falsified:**
 
-> One-point exchange stability implies strict self-consistent nearest-centroid
-> assignment even when coincident positive-weight score atoms may be assigned
-> to different cells.
+> The determinant-specific finite theorem extends to every smooth monotone matrix criterion — in particular, for the A criterion \(-\operatorname{tr}(I_q^{-1})\), a relocation with strictly positive first-order \(I_q^{-2}\) Mahalanobis margin must not decrease the exact objective.
 
-Take scalar scores \((1,1,-1)\), weights \((1/4,1/4,1/2)\), and put each row in
-one of \(K=3\) singleton cells. Then \(I_q=1\), all cells are nonempty, and no
-nonempty-preserving relocation exists. The labeling is therefore vacuously
-exchange stable. The first two centroids coincide, however, so strict assignment
-fails and no deterministic score-only rule can reproduce the split labels.
+\(N=6\), \(d=2\), \(K=3\), integer scores centered exactly, uniform weights.
+Moving row 2 from cell 1 to cell 0 has first-order margin \(567/20 > 0\)
+(the D-style screening says "must improve"), yet \(\operatorname{tr}(I_q^{-1})\)
+rises from \(81/10\) to \(1512/125\) — exact A gain \(-999/250\). The log-det
+coincidence that powers the D theorem does not survive replacing
+\(\log\det\) by \(-\operatorname{tr}(I^{-1})\).
 
-**Boundary resolution:** merge coincident score atoms before optimization, or
-require labels to be constant on each duplicate class. The audited theorem then
-forces distinct centroids and strict assignment.
-
-**Fixture:** `CE-D-UNMERGED-DUPLICATES-001.json`.
+**Fixture:** `CE-A-DSTYLE-001.json`.
 
 ---
 
@@ -70,6 +120,30 @@ nat.
 
 ---
 
+## CE-D-UNMERGED-DUPLICATES-001 — split duplicate atoms block strict D-Voronoi closure
+
+**Status:** exact rational boundary counterexample.
+
+**Claim falsified:**
+
+> One-point exchange stability implies strict self-consistent nearest-centroid
+> assignment even when coincident positive-weight score atoms may be assigned
+> to different cells.
+
+Take scalar scores \((1,1,-1)\), weights \((1/4,1/4,1/2)\), and put each row in
+one of \(K=3\) singleton cells. Then \(I_q=1\), all cells are nonempty, and no
+nonempty-preserving relocation exists. The labeling is therefore vacuously
+exchange stable. The first two centroids coincide, however, so strict assignment
+fails and no deterministic score-only rule can reproduce the split labels.
+
+**Boundary resolution:** merge coincident score atoms before optimization, or
+require labels to be constant on each duplicate class. The audited theorem then
+forces distinct centroids and strict assignment.
+
+**Fixture:** `CE-D-UNMERGED-DUPLICATES-001.json`.
+
+---
+
 ## CE-D-VORONOI-CONVERSE-001 — D-Voronoi fixed does not imply exchange stable
 
 **Status:** project negative result.
@@ -98,6 +172,31 @@ partition; yet relocating row 2 to cell 1 raises \(I_q\) from \(25/48\) to
 
 ---
 
+## CE-DS-DEGENERATE-GLOBAL-TIE-001 — a finite global \(D_s\) optimum can be a 31-fold exact tie class with coincident projected centroids
+
+**Status:** exact rational counterexample (exhaustive enumeration).
+
+**Claim falsified:**
+
+> An exact finite global profiled-\(D_s\) optimum is unique up to label
+> permutation, keeps its efficient-projected centroids pairwise separated, and
+> — when it has zero first-order violations — is reproducible from its own
+> efficient-semimetric nearest-cell rule.
+
+A centered equal-weight \(N=8,d=2,d_\psi=1,K=3\) sample (drawn from a
+correlated Gaussian and rounded to exact eighths) whose global in-bin optimum
+\(1083/4096\) is attained by exactly 31 labelings — the feasible refinements
+of one reduced bipartition. Every tied optimum has two exactly coincident
+projected centroids, so no efficient-semimetric rule separates them; the
+unique nuisance-mean-equal refinement is infeasible (singular nuisance block)
+with generalized pseudo-inverse value \(1191/4096\) **above** the feasible
+optimum, showing the pseudo-inverse extension leaves the in-bin statistical
+formulation. Theory: `KNOWN_RESULTS/05b-ds-bridge.md` DS11(c–d).
+
+**Fixture:** `CE-DS-DEGENERATE-GLOBAL-TIE-001.json`.
+
+---
+
 ## CE-DS-GLOBAL-GEOMETRY-001 / -002 — exact finite \(D_s\) geometry can fail
 
 **Status:** two independent exact rational counterexamples for the same claim.
@@ -118,6 +217,28 @@ partition; yet relocating row 2 to cell 1 raises \(I_q\) from \(25/48\) to
   **Regression:** `tests/test_research_claims.py::test_global_profiled_ds_partition_can_violate_its_own_metric_rule`.
 
 The two instances are unrelated data sets; keep both and do not conflate them.
+
+---
+
+## CE-DS-POP-WASTED-CELLS-001 — population-stationary \(D_s\) partitions can defeat every efficient-semimetric rule
+
+**Status:** exact rational construction (symmetric quadrature verification).
+
+**Claim falsified:**
+
+> A first-order stationary population profiled-\(D_s\) quantizer has
+> pairwise-distinct efficient-projected centroids, so its cells can always be
+> recovered from a common efficient-semimetric nearest-cell rule.
+
+Under a nuisance-sign-symmetric law, a \(\psi\)-threshold partition with each
+side split by \(\operatorname{sign}(s_\lambda)\) (K=4) is exactly stationary
+(zero violations, ties allowed), its two extra cells add nuisance information
+\(9/4\) but exactly zero profiled information, and its projected centroids
+coincide pairwise — while its K=2 coarsening has an exactly singular binned
+nuisance block. The symmetry argument applies verbatim to any
+nuisance-sign-symmetric atomless law. Theory: `KNOWN_RESULTS/05b-ds-bridge.md` DS12.
+
+**Fixture:** `CE-DS-POP-WASTED-CELLS-001.json`.
 
 ---
 
@@ -143,118 +264,3 @@ margin \(\approx 0.068\).
 **Next step:** test the stronger common-supergradient conjecture (`OPEN-E-COMMON-SUPERGRADIENT`).
 
 ---
-
-## CE-A-DSTYLE-001 — A does not inherit D exchange-to-Voronoi theorem
-
-**Status:** exact rational counterexample.
-
-**Claim falsified:**
-
-> The determinant-specific finite theorem extends to every smooth monotone matrix criterion — in particular, for the A criterion \(-\operatorname{tr}(I_q^{-1})\), a relocation with strictly positive first-order \(I_q^{-2}\) Mahalanobis margin must not decrease the exact objective.
-
-\(N=6\), \(d=2\), \(K=3\), integer scores centered exactly, uniform weights.
-Moving row 2 from cell 1 to cell 0 has first-order margin \(567/20 > 0\)
-(the D-style screening says "must improve"), yet \(\operatorname{tr}(I_q^{-1})\)
-rises from \(81/10\) to \(1512/125\) — exact A gain \(-999/250\). The log-det
-coincidence that powers the D theorem does not survive replacing
-\(\log\det\) by \(-\operatorname{tr}(I^{-1})\).
-
-**Fixture:** `CE-A-DSTYLE-001.json`.
-
----
-
-# Required JSON format for new cases
-
-Each exact case should also have a `.json` file:
-
-```json
-{
-  "id": "CE-...",
-  "criterion": "D|Ds|E|A|...",
-  "level": "finite_assignment",
-  "claim_falsified": "...",
-  "scores": [[...], [...]],
-  "weights": [...],
-  "K": 3,
-  "labels_before": [...],
-  "labels_after_or_optimum": [...],
-  "poi_indices": [0],
-  "nuisance_indices": [1],
-  "objective_before": null,
-  "objective_after": null,
-  "verification": {
-    "method": "exhaustive|exact_formula|high_precision",
-    "notes": "..."
-  },
-  "source": "project test / theorem investigation",
-  "date": "YYYY-MM-DD"
-}
-```
-
----
-
-# Falsification checklist
-
-For every new theorem candidate, deliberately test:
-
-- \(d=1,2,3\);
-- smallest rank-feasible \(K\);
-- \(N\le10\) exhaustive partitions;
-- unequal weights;
-- tiny cells;
-- singleton cells;
-- duplicate score atoms;
-- near-singular \(I_q\);
-- repeated E minimum eigenvalues;
-- weak/singular nuisance blocks;
-- exact ties;
-- rational/integer coordinates when possible.
-
-The counterexample bank is part of the mathematical memory of the project, not merely a debugging directory.
-
----
-
-## CE-DS-DEGENERATE-GLOBAL-TIE-001 — a finite global \(D_s\) optimum can be a 31-fold exact tie class with coincident projected centroids
-
-**Status:** exact rational counterexample (exhaustive enumeration).
-
-**Claim falsified:**
-
-> An exact finite global profiled-\(D_s\) optimum is unique up to label
-> permutation, keeps its efficient-projected centroids pairwise separated, and
-> — when it has zero first-order violations — is reproducible from its own
-> efficient-semimetric nearest-cell rule.
-
-A centered equal-weight \(N=8,d=2,d_\psi=1,K=3\) sample (drawn from a
-correlated Gaussian and rounded to exact eighths) whose global in-bin optimum
-\(1083/4096\) is attained by exactly 31 labelings — the feasible refinements
-of one reduced bipartition. Every tied optimum has two exactly coincident
-projected centroids, so no efficient-semimetric rule separates them; the
-unique nuisance-mean-equal refinement is infeasible (singular nuisance block)
-with generalized pseudo-inverse value \(1191/4096\) **above** the feasible
-optimum, showing the pseudo-inverse extension leaves the in-bin statistical
-formulation. Theory: `KNOWN_RESULTS.md` DS11(c–d).
-
-**Fixture:** `CE-DS-DEGENERATE-GLOBAL-TIE-001.json`.
-
----
-
-## CE-DS-POP-WASTED-CELLS-001 — population-stationary \(D_s\) partitions can defeat every efficient-semimetric rule
-
-**Status:** exact rational construction (symmetric quadrature verification).
-
-**Claim falsified:**
-
-> A first-order stationary population profiled-\(D_s\) quantizer has
-> pairwise-distinct efficient-projected centroids, so its cells can always be
-> recovered from a common efficient-semimetric nearest-cell rule.
-
-Under a nuisance-sign-symmetric law, a \(\psi\)-threshold partition with each
-side split by \(\operatorname{sign}(s_\lambda)\) (K=4) is exactly stationary
-(zero violations, ties allowed), its two extra cells add nuisance information
-\(9/4\) but exactly zero profiled information, and its projected centroids
-coincide pairwise — while its K=2 coarsening has an exactly singular binned
-nuisance block. The symmetry argument applies verbatim to any
-nuisance-sign-symmetric atomless law. Theory: `KNOWN_RESULTS.md` DS12.
-
-**Fixture:** `CE-DS-POP-WASTED-CELLS-001.json`.

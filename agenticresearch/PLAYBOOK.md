@@ -22,7 +22,7 @@ Start a fresh session in the repo root, on a fresh branch, and paste:
 You are running a ScoreQuant research session.
 
 Read agenticresearch/README.md and follow its canonical read order.
-Execute the work packet agenticresearch/WORK/active/DS-POPULATION-BRIDGE.md
+Execute the work packet agenticresearch/WORK/active/<PACKET-ID>.md
 following agenticresearch/protocols/theorem.md. Falsify before proving.
 
 Rules of engagement:
@@ -31,15 +31,18 @@ Rules of engagement:
   supports it; do the mathematics yourself.
 - Do not re-derive project_proved claims; if one looks wrong, record an
   audit task instead.
-- Before finishing: patch CLAIMS.json (regenerate indexes), serialize any
-  counterexample, update the packet's status, and run
-  JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py tests/test_research_registry.py
-  and uv run ruff check . — both must be green.
+- Before finishing: patch the claim files under agenticresearch/claims/,
+  serialize any counterexample, update the packet's status, then run
+  python agenticresearch/py/registry.py reindex && python agenticresearch/py/registry.py validate
+  and JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py tests/test_research_registry.py
+  and uv run ruff check . — all must be green.
 - End with the packet's stop-condition verdict and the next
   dependency-blocking question.
 ```
 
-Swap the packet path for whichever `WORK/active/` packet is current. If no
+Fill `<PACKET-ID>` from `ls agenticresearch/WORK/active/` — that directory is
+the only current list, so nothing here can go stale. Pick the packet from the
+highest-ranked ready programme in `claims/INDEX.md`. If no
 packet exists yet, first ask a session (or do it yourself) to draft one from
 the top unblocked programme in `OPEN_PROBLEMS.md` using `WORK/TEMPLATE.md`.
 
@@ -58,8 +61,8 @@ Read agenticresearch/README.md (canonical read order), then
 agenticresearch/protocols/audit.md and follow its 16-item output contract
 exactly. AUDITS/AUDIT-D-EXCHANGE-VORONOI-001.md is the size/rigor exemplar.
 
-Audit target: claim <CLAIM-ID> in agenticresearch/CLAIMS.json, proof at
-<proof_location>.
+Audit target: claim <CLAIM-ID>. Start from
+python agenticresearch/py/registry.py show <CLAIM-ID> --deps --proof
 
 Rules of engagement:
 - Recheck every dependency yourself; do not trust the researcher's summary.
@@ -79,10 +82,13 @@ Rules of engagement:
 
 ```text
 Bookkeeping session for agenticresearch/ — no mathematics.
-Read agenticresearch/README.md. Task: <e.g. regenerate CLAIMS.json indexes
-after manual edits / serialize the counterexample described in <file> /
-sync KNOWN_RESULTS section X with claim Y>.
-Finish with JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
+Read agenticresearch/README.md. Task: <e.g. serialize the counterexample
+described in <file> / sync a KNOWN_RESULTS section with claim Y / add a
+NUMERICAL_EVIDENCE row>.
+Indexes are generated, never hand-edited: run
+python agenticresearch/py/registry.py reindex
+Finish with python agenticresearch/py/registry.py validate clean, and
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
 tests/test_research_registry.py tests/test_research_claims.py and
 uv run ruff check . green.
 ```
@@ -94,14 +100,18 @@ Literature session for agenticresearch/. Read agenticresearch/README.md and
 agenticresearch/protocols/literature.md. Run one snowballing round from
 LITERATURE/seeds.md (or the targeted novelty search for claim <ID>).
 Record per-round candidate/relevant counts in LITERATURE/graph.json, update
-reviewed.md / rejected.md / gaps.md, and link every paper to claim ids.
+reviewed.md / rejected.md / gaps.md, link every paper to claim ids, and give
+any new registry bibliography key a **Key:** line under its annotating heading
+in LITERATURE/topics/ so python agenticresearch/py/registry.py validate stays
+clean.
 Do not change claim statuses; report proposed status changes instead.
 ```
 
 ## After any session (operator checklist)
 
 1. `git log --oneline` — commits are small and labeled.
-2. `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py tests/test_research_registry.py` — green.
+2. `python agenticresearch/py/registry.py validate` — clean; then
+   `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py tests/test_research_registry.py` — green.
 3. Skim the packet file — status updated, stop condition addressed.
 4. Open a PR; the registry validator runs in CI on every push.
 5. If a result was promoted toward publication-critical, schedule the audit

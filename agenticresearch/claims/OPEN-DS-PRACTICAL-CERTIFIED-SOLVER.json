@@ -1,0 +1,21 @@
+{
+  "id": "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+  "title": "Best practical Ds solver with theorem-backed certificate",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "empirical_inductive_quantizer",
+  "status": "open",
+  "publication_status": "open",
+  "statement": "Synthesize efficient-score upper optimization, soft/affine inductive fitting, exact Ds exchange refinement, Cholesky updates, held-out evaluation, and upper-bound gap reporting.",
+  "dependencies": [
+    "DS-EXACT-MOVE-ORACLE",
+    "DS-SCALAR-EFFICIENT-DP",
+    "DS-EFFICIENT-SCORE-GLOBAL-UPPER"
+  ],
+  "proof_location": {
+    "file": "OPEN_PROBLEMS.md",
+    "section": "OP7. Best practical \\(D_s\\) solver with theorem-backed certificate"
+  },
+  "programme": "P1"
+}

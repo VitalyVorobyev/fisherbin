@@ -20,7 +20,7 @@ Find 3–5 nearest sources and state for each:
 - what transfers;
 - what does not.
 
-Record the table in `LITERATURE.md` under a dated subsection naming the claim
+Record the table in `LITERATURE/audits/<CLAIM-ID>-<date>.md`, naming the claim
 id (see the 26 Aug 2026 D-EXCHANGE-IMPLIES-VORONOI audit subsection as the
 exemplar).
 
@@ -65,4 +65,6 @@ Discovery state lives in `LITERATURE/`, not in agent context:
 - `gaps.md` — communities or periods suspected under-covered.
 
 Every paper must be linked to claim ids, never merely labelled "relevant to
-ScoreQuant". Curated theorem-level annotations stay in `LITERATURE.md`.
+ScoreQuant". Curated theorem-level annotations stay in `LITERATURE/topics/`, and
+every bibliography key needs a `**Key:**` line under its annotating heading so
+`registry.json` resolves to it (checked by `py/registry.py validate`).

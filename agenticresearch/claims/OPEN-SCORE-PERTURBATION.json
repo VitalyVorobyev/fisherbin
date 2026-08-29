@@ -1,0 +1,21 @@
+{
+  "id": "OPEN-SCORE-PERTURBATION",
+  "title": "Perturbation theory for estimated scores",
+  "criterion": [
+    "D",
+    "Ds"
+  ],
+  "level": "score_oracle",
+  "status": "open",
+  "publication_status": "open",
+  "statement": "Control cell moments, retained Fisher information, D/Ds objective, efficiency, and boundary displacement from norm bounds on score-proxy error.",
+  "dependencies": [
+    "PROXY-TRUE-RETAINED-FI",
+    "REPRESENTATION-QUANTIZATION-LOSS"
+  ],
+  "proof_location": {
+    "file": "OPEN_PROBLEMS.md",
+    "section": "OP17. Perturbation theory for estimated scores"
+  },
+  "programme": "P2"
+}

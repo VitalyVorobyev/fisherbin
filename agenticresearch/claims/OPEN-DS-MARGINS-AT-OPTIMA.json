@@ -1,0 +1,20 @@
+{
+  "id": "OPEN-DS-MARGINS-AT-OPTIMA",
+  "title": "Are the bridge margins automatic at finite Ds optima?",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "empirical_to_population",
+  "status": "open",
+  "publication_status": "open",
+  "statement": "Determine whether global/exchange-stable finite Ds optima under light-tailed atomless laws asymptotically satisfy the DS14 margins (cell mass, conditioning, projected-centroid separation), whether the margin-compatible geometric optimum equals the unrestricted population supremum, and how efficient-score-domination equality behaves at optima. Measured: singleton cells persist at exact global optima through N=18 and one exact degenerate tie exists (N-DS-BRIDGE-TREND).",
+  "dependencies": [
+    "OPEN-DS-FINITE-POP-BRIDGE",
+    "DS-GLOBAL-TIE-DEGENERACY"
+  ],
+  "proof_location": {
+    "file": "OPEN_PROBLEMS.md",
+    "section": "OP28. Margins at finite \\(D_s\\) optima"
+  },
+  "programme": "P1"
+}

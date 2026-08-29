@@ -40,7 +40,8 @@ Use JAX for numerical kernels and Optax for gradient optimization. Do not add Py
 ## Research workflow
 
 - `agenticresearch/` is the mathematical scientific memory (claim registry, counterexample bank, open-problem queue). It governs itself through its own `agenticresearch/AGENT.md` and is excluded from the Ruff gate.
-- The library crosses into it at exactly two points: `tests/test_research_claims.py` reads counterexample fixtures from `agenticresearch/COUNTEREXAMPLES/`, and `tests/test_research_registry.py` enforces registry integrity. Research results become library behavior only by being copied into deterministic regression tests or theorem-cited code paths.
+- The library crosses into it at exactly two points: `tests/test_research_claims.py` reads counterexample fixtures from `agenticresearch/COUNTEREXAMPLES/`, and `tests/test_research_registry.py` runs `agenticresearch/py/registry.py validate` plus the index-freshness check. Research results become library behavior only by being copied into deterministic regression tests or theorem-cited code paths.
+- The registry is one file per claim under `agenticresearch/claims/`, with vocabularies in `registry.json`. Every index is generated — never hand-edit `claims/INDEX.md`, `COUNTEREXAMPLES/INDEX.md`, or `LITERATURE/BIBLIOGRAPHY.md`; run `python agenticresearch/py/registry.py reindex`.
 - Code in `src/` that relies on a theorem names it; code that refuses a capability names the counterexample forcing the refusal. Keep both in sync with the registry.
 
 ## Tooling: use uv

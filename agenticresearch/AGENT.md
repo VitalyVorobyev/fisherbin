@@ -1,6 +1,6 @@
 # ScoreQuant theorem-research agent protocol
 
-**Version:** 3.0 · 28 August 2026
+**Version:** 4.0 · 28 August 2026
 
 You are a mathematical research agent working on **D- and \(D_s\)-optimal hard
 quantization of multivariate score space**. This file holds only the
@@ -8,25 +8,25 @@ non-negotiable invariants and the map; detailed recipes live in `protocols/`
 and are read when relevant, not up front.
 
 > **Decompose knowledge finely; decompose work only at natural scientific
-> boundaries.** Claims are atomic (`CLAIMS.json`); work is not (`WORK/`).
+> boundaries.** Claims are atomic (`claims/`); work is not (`WORK/`).
 
 ## Map
 
 | Need | Read |
 |---|---|
 | What problem are we solving | `PROBLEM.md` |
-| What is established / open | `CLAIMS.json` (graph) + `KNOWN_RESULTS.md` (prose) |
+| What is established / open | `claims/` (graph, via `py/registry.py`) + `KNOWN_RESULTS/` (prose) |
 | What falsifies naive generalizations | `COUNTEREXAMPLES/` |
 | What to work on | `WORK/active/` packet, then `OPEN_PROBLEMS.md` |
 | How to derive / audit / search / measure / build | `protocols/{theorem,audit,literature,numerical,algorithm}.md` |
-| Prior art | `LITERATURE.md`, `LITERATURE/`, `papers/` |
+| Prior art | `LITERATURE/`, `papers/` |
 | Measured evidence (never theorem authority) | `NUMERICAL_EVIDENCE.md` |
 | Paper snapshots (lagging; do not load bodies) | `manuscripts/README.md` |
 | History | `archive/` — canonical files win on any conflict |
 
 The single canonical read order is in `README.md`. Registry integrity is
-CI-enforced by `tests/test_research_registry.py`; claim fixtures by
-`tests/test_research_claims.py`.
+CI-enforced by `tests/test_research_registry.py`, which runs
+`py/registry.py validate`; claim fixtures by `tests/test_research_claims.py`.
 
 ## Non-negotiable invariants
 
@@ -49,9 +49,11 @@ CI-enforced by `tests/test_research_registry.py`; claim fixtures by
    information loss versus unbinned inference.
 8. For estimated scores, distinguish surrogate optimization from true retained
    Fisher information \(I_{\text{true retained}}=\operatorname{Var}(E[s\mid q(\hat s)])\).
-9. Status vocabulary, used exactly: `literature`, `bridge`, `project_proved`
-   (internally derived/audited, not published), `counterexample`, `measured`,
-   `conjecture`, `open`, `search_gap`.
+9. Two distinct vocabularies, never conflated. A claim's `status` is one of
+   `literature`, `bridge`, `project_proved` (internally derived/audited, not
+   published), `counterexample`, `measured`, `conjecture`, `open`. Its
+   `literature_search_status` is one of `not_searched`, `search_gap`,
+   `prior_art_found` — `search_gap` is never a claim status.
 10. Do not re-derive a `project_proved` node. If you believe one is wrong,
     open an audit task and try to falsify it; never silently downgrade or
     overwrite it.
@@ -78,18 +80,28 @@ Score-oracle regimes: direct scores; exact/autodiff score; analytic density
 ratio; component ratios; learned density-ratio estimator; calibrated
 classifier posterior/ratio proxy. Always identify which one applies.
 
-## CLAIMS.json lookup protocol
+## Claim lookup protocol
 
-Do not read `CLAIMS.json` linearly; treat it as a theorem dependency graph:
+Never read `claims/` linearly; it is a theorem dependency graph.
 
-1. locate the target node by `id` or generated index;
-2. recursively expand `dependencies`;
+```bash
+python py/registry.py show <CLAIM-ID> --deps --proof   # node + closure + prose
+python py/registry.py validate                         # before you finish
+python py/registry.py reindex                          # after you patch a node
+```
+
+1. locate the target node by `id`, or browse `claims/INDEX.md` (generated,
+   grouped by programme in queue order) to pick work;
+2. `show --deps` expands `dependencies` recursively for you;
 3. inspect dependencies with status `project_proved`, `counterexample`,
    `conjecture`, or `open`;
-4. open each node's `proof_location`;
+4. `--proof` prints each node's `proof_location` section;
 5. check `converse_failures` and `counterexamples` before proposing a stronger
    statement;
-6. patch the registry after the investigation.
+6. patch the node's file in `claims/`, then `reindex` and `validate`.
+
+Never hand-edit a generated index (`claims/INDEX.md`,
+`COUNTEREXAMPLES/INDEX.md`, `LITERATURE/BIBLIOGRAPHY.md`).
 
 ## Unit of work
 

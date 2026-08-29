@@ -10,6 +10,6 @@ full-D / in-bin \(D_s\) / projected efficient-score distinction, and why a
 finite \(D_s\) optimum is not automatically deployable while a terminal D
 exchange solution is. Do not repeat this ritual on subsequent sessions.
 
-Before selecting a target, use `CLAIMS.json` as a dependency graph and list
+Before selecting a target, use the claim graph (`py/registry.py show <ID> --deps`) and list
 the unresolved nodes blocking it. Do not attempt a theorem outside a work
 packet without recording one in `WORK/active/`.

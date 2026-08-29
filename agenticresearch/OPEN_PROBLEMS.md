@@ -1,7 +1,7 @@
 # Open problems — the research programme queue
 
-**Version:** 3.0 · 28 August 2026
-**Rule:** this file contains only genuinely unresolved questions. Results established in `KNOWN_RESULTS.md` are inputs, not open tasks.
+**Version:** 4.0 · 28 August 2026
+**Rule:** this file contains only genuinely unresolved questions. Results established in `KNOWN_RESULTS/` are inputs, not open tasks.
 
 This is the **single priority queue** of the project, organized as eight
 research programmes (the narrative and goal live in
@@ -17,7 +17,7 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
 *Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 28 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`). The conditional bridge theorem DS14 awaits its independent audit (`WORK/active/AUDIT-DS-POPULATION-BRIDGE.md`); the surviving mathematical gap is OP28.*
+*Status 28 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`). The conditional bridge theorem DS14 passed its independent adversarial audit on 28 Aug 2026 (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`, packet `WORK/completed/AUDIT-DS-POPULATION-BRIDGE.md`; all four verdicts verified). The surviving mathematical gap is OP28, drafted as `WORK/active/DS-MARGINS-AT-OPTIMA.md`.*
 
 ## OP28. Margins at finite \(D_s\) optima
 
@@ -269,7 +269,7 @@ For simple \(\lambda_{\min}\) separated by gap \(\gamma>0\), determine whether e
 
 Use second-order eigenvalue perturbation; search counterexamples before proof.
 The population-level companion question is `OPEN-E-COMMON-SUPERGRADIENT`
-(statement in `KNOWN_RESULTS.md` § E6).
+(statement in `KNOWN_RESULTS/06-e-optimality.md` § E6).
 
 ## OP11. Parameterized complexity
 
