@@ -254,7 +254,7 @@ What stays deliberately out of scope, and why, in one place:
 uv run ruff check .
 uv run ruff format --check .
 uv run ty check src
-JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
 uv build
 uv run mkdocs build --strict

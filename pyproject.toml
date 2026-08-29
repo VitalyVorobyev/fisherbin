@@ -54,6 +54,7 @@ dev = [
     "nbformat>=5.10",
     "py-spy>=0.4.2",
     "pytest>=8.3",
+    "pytest-xdist>=3.6",
     "pyyaml>=6",
     "ruff>=0.11",
     "ty>=0.0.70,<0.1",
@@ -67,6 +68,11 @@ build-backend = "uv_build"
 addopts = "-ra"
 pythonpath = ["."]
 testpaths = ["tests"]
+# Tiers, applied per module by `tests/conftest.py`. A bare `uv run pytest` runs
+# every tier; CI selects one with `-m`.
+markers = [
+    "docs_execution: executes published prose (documentation snippets, README fences, notebooks)",
+]
 
 [tool.ruff]
 line-length = 100
