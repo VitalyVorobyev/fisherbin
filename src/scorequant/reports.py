@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Literal
 
-import jax.numpy as jnp
+import numpy as np
 
 from ._json import json_ready
 from ._typing import JsonValue
@@ -27,16 +27,16 @@ if TYPE_CHECKING:
 class InformationReport:
     """Report supplied-score retention and per-bin diagnostics for one sample."""
 
-    fisher_unbinned: jnp.ndarray
-    fisher_binned: jnp.ndarray
-    retained_matrix: jnp.ndarray
-    retained_eigenvalues: jnp.ndarray
+    fisher_unbinned: np.ndarray
+    fisher_binned: np.ndarray
+    retained_matrix: np.ndarray
+    retained_eigenvalues: np.ndarray
     arithmetic_mean_retention: float
     geometric_mean_retention: float
     logdet_retention: float
-    bin_weights: jnp.ndarray
-    bin_counts: jnp.ndarray
-    bin_effective_sample_sizes: jnp.ndarray
+    bin_weights: np.ndarray
+    bin_counts: np.ndarray
+    bin_effective_sample_sizes: np.ndarray
     effective_rank: int
     rank_threshold: float
     psd_residual_min_eigenvalue: float
@@ -78,7 +78,7 @@ class RatioClosureReport:
         Largest absolute deviation of ``normalizers`` from one.
     """
 
-    normalizers: jnp.ndarray
+    normalizers: np.ndarray
     max_residual: float
 
     def to_dict(self) -> dict[str, JsonValue]:
@@ -92,10 +92,10 @@ class ProfiledInformationReport:
 
     interest: tuple[int, ...]
     nuisance: tuple[int, ...]
-    schur_unbinned: jnp.ndarray
-    schur_binned: jnp.ndarray
-    nuisance_unbinned: jnp.ndarray
-    nuisance_binned: jnp.ndarray
+    schur_unbinned: np.ndarray
+    schur_binned: np.ndarray
+    nuisance_unbinned: np.ndarray
+    nuisance_binned: np.ndarray
     objective: float
     logdet_retention: float
     geometric_mean_retention: float
@@ -242,7 +242,7 @@ class StabilityReport:
 class ProfiledGeometryReport:
     """Diagnose the finite efficient-semimetric gap of a profiled partition."""
 
-    metric: jnp.ndarray
+    metric: np.ndarray
     maximum_positive_violation: float
     maximum_theoretical_bound: float
     maximum_bound_residual: float
@@ -297,7 +297,7 @@ class PartitionCertificate:
 
     status: Literal["optimal", "budget_exhausted"]
     objective: float
-    labels: jnp.ndarray
+    labels: np.ndarray
     upper_bound: float
     gap: float
     nodes_explored: int
@@ -355,8 +355,8 @@ class EfficientScoreBound:
     """
 
     upper_bound: float
-    labels: jnp.ndarray
-    efficient_scores: jnp.ndarray
+    labels: np.ndarray
+    efficient_scores: np.ndarray
     n_bins: int
     interest: tuple[int, ...]
 

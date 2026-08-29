@@ -1,0 +1,1307 @@
+{
+  "api": [
+    {
+      "kind": "class",
+      "name": "CentralLogRatioScore",
+      "reference": "/reference/index/",
+      "signature": "CentralLogRatioScore(predict: Callable[[ArrayLike], ArrayLike], deltas: ArrayLike, class_priors: ArrayLike, *, description: str | None = None, metadata: Mapping[str, JsonValue] | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L267",
+      "summary": "Estimate central finite-difference scores from paired density ratios."
+    },
+    {
+      "kind": "class",
+      "name": "CertificationConfig",
+      "reference": "/reference/configuration/",
+      "signature": "CertificationConfig(max_nodes: int = 2000000, max_rows: int = 64, gain_tolerance: float = 1e-10)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L59",
+      "summary": "Configure explicit branch-and-bound certification of a D partition."
+    },
+    {
+      "kind": "class",
+      "name": "DExchangeConfig",
+      "reference": "/reference/configuration/",
+      "signature": "DExchangeConfig(rank_rtol: float | None = None, seed: int = 0, n_init: int = 8, max_scans: int | None = None, batch_moves: bool = True, n_restarts: int = 1, init: Literal['kmeans++', 'random'] = 'kmeans++', gain_tolerance: float = 1e-10, first_improvement: bool = False, collapse_duplicates: bool | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L215",
+      "summary": "Configure exact positive-gain D-optimal point exchange."
+    },
+    {
+      "kind": "class",
+      "name": "DOptimality",
+      "reference": "/reference/index/",
+      "signature": "DOptimality()",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L11",
+      "summary": "Maximize the log determinant in the informative score subspace."
+    },
+    {
+      "kind": "class",
+      "name": "DensityRatioScore",
+      "reference": "/reference/index/",
+      "signature": "DensityRatioScore(ratio: Callable[[ArrayLike], ArrayLike], parameterization: RatioParameterization, *, provenance: ScoreProvenance | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L127",
+      "summary": "Map observations to model density ratios and evaluate declared scores."
+    },
+    {
+      "kind": "class",
+      "name": "EfficientScoreBound",
+      "reference": "/reference/index/",
+      "signature": "EfficientScoreBound(upper_bound: float, labels: np.ndarray, efficient_scores: np.ndarray, n_bins: int, interest: tuple[int, ...])",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L311",
+      "summary": "Certify a ceiling on profiled information from the full-data efficient score."
+    },
+    {
+      "kind": "class",
+      "name": "ExecutionConfig",
+      "reference": "/reference/configuration/",
+      "signature": "ExecutionConfig(backend: BackendName = 'jax', precision: PrecisionPolicy = 'preserve', device: DeviceKind = 'default')",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L18",
+      "summary": "Select the numerical runtime without changing statistical semantics."
+    },
+    {
+      "kind": "class",
+      "name": "FisherTransform",
+      "reference": "/reference/index/",
+      "signature": "FisherTransform(matrix: np.ndarray, eigenvectors: np.ndarray, eigenvalues: np.ndarray, retained_eigenvalues: np.ndarray, rank_rtol: float, threshold: float, whiten: bool)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/transforms.py#L20",
+      "summary": "Projection onto informative Fisher directions, optionally whitened."
+    },
+    {
+      "kind": "class",
+      "name": "GaussLegendreConfig",
+      "reference": "/reference/configuration/",
+      "signature": "GaussLegendreConfig(order: int = 16, max_points: int = 1000000)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L151",
+      "summary": "Configure deterministic tensor-product Gauss-Legendre quadrature."
+    },
+    {
+      "kind": "class",
+      "name": "GeometryReport",
+      "reference": "/reference/index/",
+      "signature": "GeometryReport(maximum_voronoi_violation: float, guaranteed_violation_gain: float, maximum_violation_gain: float, maximum_separation_residual: float, violating_moves: int, evaluated_moves: int, voronoi_consistent: bool, separation_certified: bool, gain_tolerance: float)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L110",
+      "summary": "Certify the self-consistent Voronoi geometry of a finite D partition."
+    },
+    {
+      "kind": "class",
+      "name": "InformationReport",
+      "reference": "/reference/index/",
+      "signature": "InformationReport(fisher_unbinned: np.ndarray, fisher_binned: np.ndarray, retained_matrix: np.ndarray, retained_eigenvalues: np.ndarray, arithmetic_mean_retention: float, geometric_mean_retention: float, logdet_retention: float, bin_weights: np.ndarray, bin_counts: np.ndarray, bin_effective_sample_sizes: np.ndarray, effective_rank: int, rank_threshold: float, psd_residual_min_eigenvalue: float)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L26",
+      "summary": "Report supplied-score retention and per-bin diagnostics for one sample."
+    },
+    {
+      "kind": "class",
+      "name": "IntegrationSource",
+      "reference": "/reference/index/",
+      "signature": "IntegrationSource(bounds: ArrayLike, *, density: Callable[[ArrayLike], ArrayLike], quadrature: GaussLegendreConfig | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L170",
+      "summary": "A finite box, density, and deterministic quadrature reference measure."
+    },
+    {
+      "kind": "class",
+      "name": "IntensityParameterization",
+      "reference": "/reference/index/",
+      "signature": "IntensityParameterization(coefficients: ArrayLike)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L189",
+      "summary": "Declare an extended linear-intensity model over component ratios."
+    },
+    {
+      "kind": "class",
+      "name": "KMeansConfig",
+      "reference": "/reference/configuration/",
+      "signature": "KMeansConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, n_init: int = 8, max_iter: int = 100, tolerance: float = 1e-06, record_every: int = 1)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L99",
+      "summary": "Configure deterministic weighted score-space k-means."
+    },
+    {
+      "kind": "class",
+      "name": "LinearComponentScore",
+      "reference": "/reference/index/",
+      "signature": "LinearComponentScore(model: LinearComponents, provenance: ScoreProvenance = ScoreProvenance(kind='exact', description='linear-component event score'))",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L54",
+      "summary": "Evaluate a frozen linear-component model and return local scores."
+    },
+    {
+      "kind": "class",
+      "name": "LinearComponents",
+      "reference": "/reference/index/",
+      "signature": "LinearComponents(components: Mapping[str, ComponentFunction] | Sequence[ComponentFunction], coefficients: Mapping[str, float] | Sequence[float], *, variables: Sequence[str] | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/components.py#L201",
+      "summary": "Define vectorized linear-intensity components on physical variables."
+    },
+    {
+      "kind": "class",
+      "name": "LinearProblem",
+      "reference": "/reference/index/",
+      "signature": "LinearProblem(components: ArrayLike, coefficients: ArrayLike, weights: ArrayLike | None = None, component_names: Sequence[str] | None = None, variables: Sequence[str] | None = None, execution: ExecutionConfig | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/components.py#L101",
+      "summary": "Represent an evaluated linear intensity on an integration sample."
+    },
+    {
+      "kind": "class",
+      "name": "MahalanobisLloydConfig",
+      "reference": "/reference/configuration/",
+      "signature": "MahalanobisLloydConfig(rank_rtol: float | None = None, seed: int = 0, n_init: int = 8, max_iter: int = 100, guard: Literal['exchange', 'reject'] = 'exchange', gain_tolerance: float = 1e-10, collapse_duplicates: bool | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L304",
+      "summary": "Configure guarded batch Mahalanobis-Lloyd iteration."
+    },
+    {
+      "kind": "class",
+      "name": "MixtureParameterization",
+      "reference": "/reference/index/",
+      "signature": "MixtureParameterization(reference_fractions: ArrayLike, *, reference_component: int = -1)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L237",
+      "summary": "Declare a normalized mixture with one simplex-dependent component."
+    },
+    {
+      "kind": "class",
+      "name": "NormalizedTrace",
+      "reference": "/reference/index/",
+      "signature": "NormalizedTrace()",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L55",
+      "summary": "Minimize within-bin distortion after Fisher whitening."
+    },
+    {
+      "kind": "class",
+      "name": "ObservationSample",
+      "reference": "/reference/index/",
+      "signature": "ObservationSample(observations: ArrayLike, weights: ArrayLike | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L119",
+      "summary": "A finite weighted observation table requiring a score provider."
+    },
+    {
+      "kind": "class",
+      "name": "OptimizationTrace",
+      "reference": "/reference/index/",
+      "signature": "OptimizationTrace(steps: np.ndarray, centers: np.ndarray, objective: np.ndarray, bin_weights: np.ndarray, train_hard_retention: np.ndarray, objective_label: str, validation_hard_retention: np.ndarray | None = None, soft_retention: np.ndarray | None = None, temperatures: np.ndarray | None = None, gradient_norms: np.ndarray | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/result.py#L54",
+      "summary": "Store aggregate quantizer optimization history."
+    },
+    {
+      "kind": "class",
+      "name": "PartitionCertificate",
+      "reference": "/reference/index/",
+      "signature": "PartitionCertificate(status: Literal['optimal', 'budget_exhausted'], objective: float, labels: np.ndarray, upper_bound: float, gap: float, nodes_explored: int, incumbent_was_optimal: bool)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L258",
+      "summary": "Report what a bounded global D search actually proved."
+    },
+    {
+      "kind": "class",
+      "name": "PartitionResult",
+      "reference": "/reference/index/",
+      "signature": "PartitionResult(labels: np.ndarray, training_scores: np.ndarray, cell_weights: np.ndarray, cell_score_sums: np.ndarray, cell_score_means: np.ndarray, information_full: np.ndarray, information_partitioned: np.ndarray, objective: float, transform: FisherTransform, transformed_centers: np.ndarray | None, metric: np.ndarray | None, criterion: DOptimality | ProfiledDOptimality, config: PartitionConfig, execution: ExecutionConfig, train_report: InformationReport, provenance: ScoreProvenance, accepted_moves: int, scans: int, exchange_stable: bool, best_remaining_gain: float, objective_history: np.ndarray, positive_weight_mask: np.ndarray, lloyd_iterations: int = 0, accepted_lloyd_steps: int = 0, geometry: GeometryReport | None = None, profiled_report: ProfiledInformationReport | None = None, profiled_geometry: ProfiledGeometryReport | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/result.py#L204",
+      "summary": "Represent optimized labels of one fixed weighted score table."
+    },
+    {
+      "kind": "class",
+      "name": "ProfiledDOptimality",
+      "reference": "/reference/index/",
+      "signature": "ProfiledDOptimality(interest: tuple[int, ...])",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L22",
+      "summary": "Maximize profiled information for declared parameters of interest."
+    },
+    {
+      "kind": "class",
+      "name": "ProfiledGeometryReport",
+      "reference": "/reference/index/",
+      "signature": "ProfiledGeometryReport(metric: np.ndarray, maximum_positive_violation: float, maximum_theoretical_bound: float, maximum_bound_residual: float, violating_moves: int, evaluated_moves: int, bound_certified: bool)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L241",
+      "summary": "Diagnose the finite efficient-semimetric gap of a profiled partition."
+    },
+    {
+      "kind": "class",
+      "name": "ProfiledInformationReport",
+      "reference": "/reference/index/",
+      "signature": "ProfiledInformationReport(interest: tuple[int, ...], nuisance: tuple[int, ...], schur_unbinned: np.ndarray, schur_binned: np.ndarray, nuisance_unbinned: np.ndarray, nuisance_binned: np.ndarray, objective: float, logdet_retention: float, geometric_mean_retention: float, interest_rank: int, nuisance_rank: int)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L89",
+      "summary": "Report same-label profiled information for interest and nuisance blocks."
+    },
+    {
+      "kind": "class",
+      "name": "QuantizerResult",
+      "reference": "/reference/index/",
+      "signature": "QuantizerResult(centers: np.ndarray, metric: np.ndarray | None, transform: FisherTransform, criterion: Criterion, config: QuantizerConfig, execution: ExecutionConfig, trace: OptimizationTrace, labels: np.ndarray, train_report: InformationReport, validation_report: InformationReport | None, provenance: ScoreProvenance, hardening_gap: float | None = None, source_kind: str = 'score_sample', train_profiled_report: ProfiledInformationReport | None = None, validation_profiled_report: ProfiledInformationReport | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/result.py#L84",
+      "summary": "Represent a reusable hard rule on raw score vectors."
+    },
+    {
+      "kind": "class",
+      "name": "RatioClosureReport",
+      "reference": "/reference/index/",
+      "signature": "RatioClosureReport(normalizers: np.ndarray, max_residual: float)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L61",
+      "summary": "Report how far model density ratios are from unit normalization."
+    },
+    {
+      "kind": "class",
+      "name": "RatioProvenance",
+      "reference": "/reference/index/",
+      "signature": "RatioProvenance(estimator: str | None = None, parameterization: RatioParameterizationKind | None = None, coefficients: tuple[float, ...] | None = None, reference_fractions: tuple[float, ...] | None = None, reference_component: int | None = None, training_priors: tuple[float, ...] | tuple[tuple[float, float], ...] | None = None, calibration: str | None = None, deltas: tuple[float, ...] | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L27",
+      "summary": "Describe how a model density-ratio representation was obtained."
+    },
+    {
+      "kind": "class",
+      "name": "ScalarDPConfig",
+      "reference": "/reference/configuration/",
+      "signature": "ScalarDPConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, max_rows: int = 20000)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L373",
+      "summary": "Configure exact interval dynamic programming for one score coordinate."
+    },
+    {
+      "kind": "class",
+      "name": "ScoreFunction",
+      "reference": "/reference/index/",
+      "signature": "ScoreFunction(function: Callable[[ArrayLike], ArrayLike], provenance: ScoreProvenance = ScoreProvenance())",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L25",
+      "summary": "Wrap an exact or estimated callable ``[N, D] -> [N, P]``."
+    },
+    {
+      "kind": "class",
+      "name": "ScoreProvenance",
+      "reference": "/reference/index/",
+      "signature": "ScoreProvenance(kind: ScoreKind = 'unknown', description: str | None = None, reference_point: tuple[float, ...] | None = None, metadata: Mapping[str, JsonValue] = dict(), ratio: RatioProvenance | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L63",
+      "summary": "Describe where supplied score coordinates came from."
+    },
+    {
+      "kind": "class",
+      "name": "ScoreSample",
+      "reference": "/reference/index/",
+      "signature": "ScoreSample(scores: ArrayLike, weights: ArrayLike | None = None, *, provenance: ScoreProvenance | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L98",
+      "summary": "A finite weighted score table representing an empirical score law."
+    },
+    {
+      "kind": "class",
+      "name": "SoftVoronoiConfig",
+      "reference": "/reference/configuration/",
+      "signature": "SoftVoronoiConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, n_init: int = 8, kmeans_max_iter: int = 100, tolerance: float = 1e-06, max_steps: int = 1000, learning_rate: float = 0.01, gradient_clip: float = 10.0, temperature_end_ratio: float = 0.05, record_every: int = 10)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L148",
+      "summary": "Configure differentiable D-optimal soft Voronoi fitting."
+    },
+    {
+      "kind": "class",
+      "name": "StabilityReport",
+      "reference": "/reference/index/",
+      "signature": "StabilityReport(stable: bool, best_gain: float, best_move: tuple[int, int] | None, objective: float, n_bins: int, criterion: DOptimality | ProfiledDOptimality, gain_tolerance: float)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L193",
+      "summary": "Certify that no single-row relocation improves one supplied labeling."
+    },
+    {
+      "kind": "function",
+      "name": "binned_fisher_information",
+      "reference": "/reference/index/",
+      "signature": "binned_fisher_information(scores: ArrayLike, assignments: ArrayLike, weights: ArrayLike | None = None, *, n_bins: int | None = None, execution: ExecutionConfig | None = None) -> np.ndarray",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L133",
+      "summary": "Estimate Fisher information retained by hard bin counts."
+    },
+    {
+      "kind": "function",
+      "name": "certify_partition",
+      "reference": "/reference/index/",
+      "signature": "certify_partition(scores: ArrayLike, *, weights: ArrayLike | None = None, n_bins: int, incumbent: ArrayLike | None = None, criterion: DOptimality | ProfiledDOptimality | None = None, rank_rtol: float | None = None, config: CertificationConfig | None = None, execution: ExecutionConfig | None = None) -> PartitionCertificate",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L99",
+      "summary": "Prove or bound the global optimality of a finite D partition."
+    },
+    {
+      "kind": "function",
+      "name": "efficient_score_bound",
+      "reference": "/reference/index/",
+      "signature": "efficient_score_bound(scores: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, n_bins: int, config: ScalarDPConfig | None = None, execution: ExecutionConfig | None = None) -> EfficientScoreBound",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L482",
+      "summary": "Certify a ceiling on profiled information by quantizing the efficient score."
+    },
+    {
+      "kind": "function",
+      "name": "efficient_scores",
+      "reference": "/reference/index/",
+      "signature": "efficient_scores(scores: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, execution: ExecutionConfig | None = None) -> np.ndarray",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L427",
+      "summary": "Project scores with the full-information nuisance regression."
+    },
+    {
+      "kind": "function",
+      "name": "exchange_stability_report",
+      "reference": "/reference/index/",
+      "signature": "exchange_stability_report(scores: ArrayLike, labels: ArrayLike, *, weights: ArrayLike | None = None, criterion: DOptimality | ProfiledDOptimality | None = None, rank_rtol: float | None = None, gain_tolerance: float = 1e-10, execution: ExecutionConfig | None = None) -> StabilityReport",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/partition.py#L547",
+      "summary": "Certify one supplied labeling against every single-row relocation."
+    },
+    {
+      "kind": "function",
+      "name": "fisher_information",
+      "reference": "/reference/index/",
+      "signature": "fisher_information(scores: ArrayLike, weights: ArrayLike | None = None, *, execution: ExecutionConfig | None = None) -> np.ndarray",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L34",
+      "summary": "Estimate unbinned Fisher information."
+    },
+    {
+      "kind": "function",
+      "name": "fit_quantizer",
+      "reference": "/reference/index/",
+      "signature": "fit_quantizer(source: Source, *, score: ScoreProvider | None = None, validation: Source | None = None, n_bins: int, criterion: Criterion | None = None, config: QuantizerConfig | None = None, diagnostics: DiagnosticsMode = 'endpoints', execution: ExecutionConfig | None = None) -> QuantizerResult",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L244",
+      "summary": "Fit a reusable hard rule from an empirical or bounded score law."
+    },
+    {
+      "kind": "function",
+      "name": "fractional_fisher_information",
+      "reference": "/reference/index/",
+      "signature": "fractional_fisher_information(scores: ArrayLike, responsibilities: ArrayLike, weights: ArrayLike | None = None, *, execution: ExecutionConfig | None = None) -> np.ndarray",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L168",
+      "summary": "Estimate Fisher information retained by fractional assignments."
+    },
+    {
+      "kind": "function",
+      "name": "information_report",
+      "reference": "/reference/index/",
+      "signature": "information_report(scores: ArrayLike, assignments: ArrayLike, weights: ArrayLike | None = None, *, n_bins: int | None = None, rank_rtol: float | None = None, execution: ExecutionConfig | None = None) -> InformationReport",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L250",
+      "summary": "Build retained-information and occupancy diagnostics for hard bins."
+    },
+    {
+      "kind": "function",
+      "name": "mixture_scores_from_ratios",
+      "reference": "/reference/index/",
+      "signature": "mixture_scores_from_ratios(ratios: ArrayLike, reference_fractions: ArrayLike, *, reference_component: int = -1, execution: ExecutionConfig | None = None) -> np.ndarray",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L121",
+      "summary": "Construct normalized-mixture scores from component density ratios."
+    },
+    {
+      "kind": "function",
+      "name": "optimize_partition",
+      "reference": "/reference/index/",
+      "signature": "optimize_partition(scores: ArrayLike, *, weights: ArrayLike | None = None, n_bins: int, criterion: DOptimality | ProfiledDOptimality | None = None, config: PartitionConfig | None = None, provenance: ScoreProvenance | None = None, initial_labels: ArrayLike | None = None, execution: ExecutionConfig | None = None) -> PartitionResult",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L181",
+      "summary": "Optimize labels of one fixed score table without prediction semantics."
+    },
+    {
+      "kind": "function",
+      "name": "plot_information",
+      "reference": "/reference/index/",
+      "signature": "plot_information(report: InformationReport) -> Figure",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L163",
+      "summary": "Plot retained information, its spectrum, and bin occupancy."
+    },
+    {
+      "kind": "function",
+      "name": "plot_optimization",
+      "reference": "/reference/index/",
+      "signature": "plot_optimization(trace: OptimizationTrace) -> Figure",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L24",
+      "summary": "Plot objective, hard retention, occupancies, and center motion."
+    },
+    {
+      "kind": "function",
+      "name": "plot_partition",
+      "reference": "/reference/index/",
+      "signature": "plot_partition(result: QuantizerResult, scores: ArrayLike, weights: ArrayLike | None = None) -> Figure",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L92",
+      "summary": "Plot observations in the fitted informative coordinate system."
+    },
+    {
+      "kind": "function",
+      "name": "plot_summary",
+      "reference": "/reference/index/",
+      "signature": "plot_summary(result: QuantizerResult, scores: ArrayLike, weights: ArrayLike | None = None) -> Figure",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L194",
+      "summary": "Create a compact final-partition and optimization summary."
+    },
+    {
+      "kind": "function",
+      "name": "profiled_information_report",
+      "reference": "/reference/index/",
+      "signature": "profiled_information_report(scores: ArrayLike, assignments: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, n_bins: int | None = None, execution: ExecutionConfig | None = None) -> ProfiledInformationReport",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L357",
+      "summary": "Build same-label profiled-\\(D_s\\) diagnostics without regularization."
+    },
+    {
+      "kind": "function",
+      "name": "ratio_closure_report",
+      "reference": "/reference/index/",
+      "signature": "ratio_closure_report(ratios: ArrayLike, weights: ArrayLike, *, execution: ExecutionConfig | None = None) -> RatioClosureReport",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L293",
+      "summary": "Check that density ratios integrate to one under the declared measure."
+    },
+    {
+      "kind": "function",
+      "name": "ratios_from_posteriors",
+      "reference": "/reference/index/",
+      "signature": "ratios_from_posteriors(posteriors: ArrayLike, class_priors: ArrayLike, *, execution: ExecutionConfig | None = None) -> np.ndarray",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L58",
+      "summary": "Convert calibrated class posteriors into model density ratios."
+    },
+    {
+      "kind": "function",
+      "name": "scores_from_components",
+      "reference": "/reference/index/",
+      "signature": "scores_from_components(components: ArrayLike, coefficients: ArrayLike, *, execution: ExecutionConfig | None = None) -> np.ndarray",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/components.py#L38",
+      "summary": "Construct scores for a linear intensity model."
+    }
+  ],
+  "benchmarks": {
+    "environment": {
+      "jax_default_backend": "cpu",
+      "jax_enable_x64": "1",
+      "jax_version": "0.11.1",
+      "platform_machine": "arm64",
+      "platform_system": "Darwin",
+      "python_version": "3.13.12"
+    },
+    "runs": [
+      {
+        "bins": 3,
+        "dims": 2,
+        "elapsed_seconds": 0.22631816600915045,
+        "peak_rss_megabytes": 296.46875,
+        "quality": -0.9370290762828994,
+        "quality_label": "certified_logdet_objective",
+        "rows": 24,
+        "scenario": "certify"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 1.664608541992493,
+        "peak_rss_megabytes": 386.84375,
+        "quality": -1.305883873804814,
+        "quality_label": "logdet_objective",
+        "rows": 20000,
+        "scenario": "d_exchange"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 3.1923926250310615,
+        "peak_rss_megabytes": 392.0625,
+        "quality": -1.3058822668807863,
+        "quality_label": "logdet_objective",
+        "rows": 20000,
+        "scenario": "d_exchange_nobatch"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 0.4018947920994833,
+        "peak_rss_megabytes": 394.8125,
+        "quality": -1.3054193398297413,
+        "quality_label": "logdet_objective",
+        "rows": 20000,
+        "scenario": "lloyd"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 0.5074122080113739,
+        "peak_rss_megabytes": 417.0625,
+        "quality": 0.6465641122605803,
+        "quality_label": "geometric_mean_retention",
+        "rows": 20000,
+        "scenario": "kmeans"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 0.7462688750820234,
+        "peak_rss_megabytes": 457.234375,
+        "quality": 0.6467363765806038,
+        "quality_label": "geometric_mean_retention",
+        "rows": 20000,
+        "scenario": "soft"
+      },
+      {
+        "bins": 8,
+        "dims": 1,
+        "elapsed_seconds": 11.029668749892153,
+        "peak_rss_megabytes": 1026.84375,
+        "quality": 0.9653424222627103,
+        "quality_label": "geometric_mean_retention",
+        "rows": 20000,
+        "scenario": "scalar_dp"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 4.2942670829361305,
+        "peak_rss_megabytes": 1026.84375,
+        "quality": 9.873990113674012,
+        "quality_label": "profiled_logdet_objective",
+        "rows": 20000,
+        "scenario": "profiled_exchange"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 0.0003957500448450446,
+        "peak_rss_megabytes": 1026.84375,
+        "quality": 0.6434860514869526,
+        "quality_label": "held_out_geometric_mean_retention",
+        "rows": 20000,
+        "scenario": "predict"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 0.04666899994481355,
+        "peak_rss_megabytes": 1026.84375,
+        "quality": 0.643629940651137,
+        "quality_label": "held_out_geometric_mean_retention",
+        "rows": 20000,
+        "scenario": "compile"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 2.066359000047669,
+        "peak_rss_megabytes": 1033.234375,
+        "quality": -1.318254798476379,
+        "quality_label": "logdet_objective",
+        "rows": 100000,
+        "scenario": "d_exchange"
+      },
+      {
+        "bins": 8,
+        "dims": 3,
+        "elapsed_seconds": 0.8519177499692887,
+        "peak_rss_megabytes": 1033.25,
+        "quality": 0.6439532942120401,
+        "quality_label": "geometric_mean_retention",
+        "rows": 100000,
+        "scenario": "kmeans"
+      }
+    ]
+  },
+  "content": {
+    "chapters": [
+      {
+        "excerpt": "A great many measurement pipelines end the same way. Millions of events arrive, each one a rich object \u2014 a waveform, a track, a cell, a spectrum \u2014 and the analysis that finally estimates a physical or biological parameter looks at a handful of integers. How many events fell in this category, and how many in that one. E",
+        "reference": "/book/ch01-why-bin/",
+        "slug": "ch01-why-bin",
+        "title": "1. Why bin at all"
+      },
+      {
+        "excerpt": "Before any of this becomes a matrix problem, it is worth solving the smallest interesting case completely, with a pencil. One parameter, one score coordinate, two cells. The answer is a number you can remember \u2014 \\ 2/\\pi\\ \u2014 and the way it is derived contains, in miniature, every structural idea the rest of the book gene",
+        "reference": "/book/ch02-one-dimension/",
+        "slug": "ch02-one-dimension",
+        "title": "2. One dimension by hand"
+      },
+      {
+        "excerpt": "Chapter 2 ch02-one-dimension.md found the best two-cell rule for a Gaussian by symmetry, and the best \\ K\\ -cell rule by iterating a midpoint condition to a fixed point. That is a satisfying answer for a well-behaved law and a dangerous one in general: a fixed point of a local condition is a local optimum, and nothing ",
+        "reference": "/book/ch03-exact-1d/",
+        "slug": "ch03-exact-1d",
+        "title": "3. Exact 1D binning by dynamic programming"
+      },
+      {
+        "excerpt": "The first three chapters treated the score as if it were simply the data. For the Gaussian location model that was literally true \u2014 \\ s x =x\\ \u2014 which is why the arithmetic stayed transparent. This chapter pays that debt. What is a score, why is it the right thing to bin, and where does one actually come from when the m",
+        "reference": "/book/ch04-scores-and-doors/",
+        "slug": "ch04-scores-and-doors",
+        "title": "4. Scores, score laws, and the three doors"
+      },
+      {
+        "excerpt": "From here the score is a vector. Chapter 4 ch04-scores-and-doors.md closed with a weighted table of score rows, whatever door produced it, and the promise that the table is all that matters. This chapter cashes that promise: given the table and a rule that sorts its rows into \\ K\\ cells, exactly how much Fisher informa",
+        "reference": "/book/ch05-information-after-binning/",
+        "slug": "ch05-information-after-binning",
+        "title": "5. Information after hard labels"
+      },
+      {
+        "excerpt": "Suppose you have run everything in Chapter 5 ch05-information-after-binning.md on a score table and you are holding a good set of labels. Tomorrow a new event arrives. Which cell does it belong to?",
+        "reference": "/book/ch06-two-tasks/",
+        "slug": "ch06-two-tasks",
+        "title": "6. Two tasks and three optimization levels"
+      },
+      {
+        "excerpt": "Chapter 5 ch05-information-after-binning.md left a matrix on the table, and Chapter 6 ch06-two-tasks.md settled which task you are doing. What remains is to turn \\ I q\\ into a single number to maximize. The cheapest summary is the trace: add up the diagonal and be done.",
+        "reference": "/book/ch07-trace-kmeans/",
+        "slug": "ch07-trace-kmeans",
+        "title": "7. The trace criterion and whitened k-means"
+      },
+      {
+        "excerpt": "Chapter 7 ch07-trace-kmeans.md ended by showing that the trace and the determinant of \\ I q\\ pick different partitions. This chapter takes the determinant seriously.",
+        "reference": "/book/ch08-d-optimality/",
+        "slug": "ch08-d-optimality",
+        "title": "8. D-optimality and exact exchange"
+      },
+      {
+        "excerpt": "Chapter 8 ch08-d-optimality.md ended with a theorem that practically begs to be turned into an algorithm. A terminal D partition is a Mahalanobis Voronoi diagram in the metric \\ I q^{-1}\\ . So: compute the metric, assign every row to its nearest cell mean in that metric, recompute the means and the metric, repeat. One ",
+        "reference": "/book/ch09-mahalanobis-lloyd/",
+        "slug": "ch09-mahalanobis-lloyd",
+        "title": "9. Mahalanobis geometry and guarded Lloyd"
+      },
+      {
+        "excerpt": "Almost no real measurement is about every parameter in its own model. A cross-section is measured together with a luminosity and a dozen calibration constants; a rate is measured together with a background normalization and a shape systematic. The parameters you report and the parameters you must estimate are different",
+        "reference": "/book/ch10-profiled-ds/",
+        "slug": "ch10-profiled-ds",
+        "title": "10. Nuisance parameters and profiled \\(D_s\\)"
+      },
+      {
+        "excerpt": "There is one more classical criterion worth naming, and this chapter is about why the library does not implement it.",
+        "reference": "/book/ch11-e-optimality/",
+        "slug": "ch11-e-optimality",
+        "title": "11. E-optimality: why not"
+      },
+      {
+        "excerpt": "Chapter 6 ch06-two-tasks.md named a problem and postponed it. On a finite sample the hard objective \\ F I {P n} q \\eta \\ is piecewise constant in the rule's parameters: nudge a boundary and, until some training score crosses it, every label and every cell moment is exactly what it was. The gradient is zero almost every",
+        "reference": "/book/ch12-soft-rules/",
+        "slug": "ch12-soft-rules",
+        "title": "12. Soft rules, purification, and consistency"
+      },
+      {
+        "excerpt": "Every guarantee in Chapters 5 to 12 is a guarantee about the score vectors you hand the optimizer. The exact relocation identity, Theorem 3, the certificates, the efficient-score bound \u2014 all of them are exact statements about a weighted table of numbers, and all of them are silent about where those numbers came from.",
+        "reference": "/book/ch13-estimated-scores/",
+        "slug": "ch13-estimated-scores",
+        "title": "13. Estimated density ratios and scores"
+      },
+      {
+        "excerpt": "Thirteen chapters have produced a lot of machinery, and the natural last question is which part of it to use. That question is less open than it looks. Most of the choices this library asks you to make are already made by your problem \u2014 whether the dataset is final, whether you can evaluate the likelihood, whether some",
+        "reference": "/book/ch14-choosing-a-method/",
+        "slug": "ch14-choosing-a-method",
+        "title": "14. Diagnostics and choosing a method"
+      }
+    ],
+    "examples": [
+      {
+        "excerpt": "This page walks both public tasks \u2014 sample partitioning optimize partition and space quantization fit quantizer \u2014 through Door 1 ../three-doors.md : you already have event, score rows and their weights, so no provider is needed. It replaces the old \"first analytic partition\" tutorial and answers a question that comes u",
+        "reference": "/examples/door1-score-events/",
+        "slug": "door1-score-events",
+        "tags": [
+          "scores",
+          "D",
+          "browser"
+        ],
+        "title": "Door 1: precomputed score events"
+      },
+      {
+        "excerpt": "This page solves space quantization fit quantizer through Door 2 ../three-doors.md : a linear-component model built from exact component pdfs. It absorbs the old \"linear components\" tutorial, and goes one step further: it fits from a bounded IntegrationSource end to end with two score columns, then measures what binnin",
+        "reference": "/examples/door2-mixture-densities/",
+        "slug": "door2-mixture-densities",
+        "tags": [
+          "densities",
+          "mixture",
+          "browser"
+        ],
+        "title": "Door 2: mixture densities to a binned fraction measurement"
+      },
+      {
+        "excerpt": "This page solves space quantization fit quantizer through Door 3 ../three-doors.md : density ratios estimated by a trained scikit-learn classifier, standing in for a likelihood ScoreQuant cannot evaluate. The classifier is one ratio backend among several \u2014 its calibrated posteriors over the training priors are the comp",
+        "reference": "/examples/door3-classifier/",
+        "slug": "door3-classifier",
+        "tags": [
+          "ratios",
+          "classifier"
+        ],
+        "title": "Door 3: classifier-estimated density ratios, and what they honestly buy you"
+      },
+      {
+        "excerpt": "This page runs both tasks \u2014 sample partitioning optimize partition and space quantization fit quantizer \u2014 through Door 1 ../three-doors.md : a precomputed table of observation, score events. One two-parameter problem, every solver the library dispatches, and the three canonical baselines, scored the same way on the sam",
+        "reference": "/examples/solver-shootout/",
+        "slug": "solver-shootout",
+        "tags": [
+          "benchmark",
+          "all-solvers"
+        ],
+        "title": "Solver shootout: every method on one problem"
+      },
+      {
+        "excerpt": "This page is mostly about sample partitioning optimize partition , with space quantization fit quantizer brought in at the end to supply a held-out column. It enters through Door 1 ../three-doors.md , a precomputed table of observation, score events \u2014 although the scores here come from an exact component model, so Door",
+        "reference": "/examples/nuisance-profiled-ds/",
+        "slug": "nuisance-profiled-ds",
+        "tags": [
+          "theory",
+          "profiled-D"
+        ],
+        "title": "Nuisance parameters: plain D against profiled \\(D_s\\)"
+      },
+      {
+        "excerpt": "This page is about sample partitioning optimize partition and the one question a partition cannot answer about itself: is this the best labeling of these rows, or only a labeling no single relocation improves? It enters through Door 2 door2-mixture-densities.md \u2014 exact component densities converted to scores \u2014 and its ",
+        "reference": "/examples/global-certification/",
+        "slug": "global-certification",
+        "tags": [
+          "certificate",
+          "finite-assignment"
+        ],
+        "title": "Certificates, and what restarts are worth"
+      }
+    ]
+  },
+  "research": [
+    {
+      "dependencies": [],
+      "id": "FI-QUANT-IDENTITY",
+      "level": "universal",
+      "statement": "For Z=q(S), the categorical score is E[S|Z] and I_q=Var(E[S|Z])=\u03a3_b W_b \u03bc_b \u03bc_b^T=\u03a3_b m_b m_b^T/W_b.",
+      "status": "literature",
+      "title": "Quantized Fisher-information identity"
+    },
+    {
+      "dependencies": [
+        "FI-QUANT-IDENTITY"
+      ],
+      "id": "FI-LOSS-DECOMPOSITION",
+      "level": "information_accounting",
+      "statement": "I_full-I_q=E[Cov(S|Z)] is positive semidefinite; hard quantization cannot increase Fisher information.",
+      "status": "bridge",
+      "title": "Exact Fisher-information loss decomposition"
+    },
+    {
+      "dependencies": [
+        "FI-QUANT-IDENTITY"
+      ],
+      "id": "TRACE-WHITENED-KMEANS",
+      "level": "population_quantizer",
+      "statement": "d-tr(I_full^{-1}I_q)=E||z-E[z|Z]||^2 for z=I_full^{-1/2}s; maximizing retained normalized trace is weighted k-means.",
+      "status": "bridge",
+      "title": "Normalized trace equals Fisher-whitened k-means"
+    },
+    {
+      "dependencies": [
+        "FI-QUANT-IDENTITY"
+      ],
+      "id": "D-LEVERAGE",
+      "level": "finite_assignment",
+      "statement": "For every centroid \u03bc_c, \u03bc_c^T I^{-1}\u03bc_c<=1/W_c, and for \u03b4=\u03bc_a-\u03bc_b, \u03b4^T I^{-1}\u03b4<=1/W_a+1/W_b.",
+      "status": "bridge",
+      "title": "D leverage inequality"
+    },
+    {
+      "dependencies": [
+        "D-LEVERAGE"
+      ],
+      "id": "D-EXCHANGE-IMPLIES-VORONOI",
+      "level": "finite_assignment",
+      "statement": "For distinct positive-weight score atoms obtained by merging duplicate rows, positive-definite retained information, exactly K nonempty cells, no move constraints beyond preserving nonempty cells, and zero-tolerance exact stability, every tied-or-worse nearest-centroid comparison from a non-singleton source has strictly positive exact D gain. Stability forces distinct centroids; singleton rows are then strictly nearest to their own centroids. Hence one-point exchange stability implies strict self-consistent D-Voronoi geometry.",
+      "status": "project_proved",
+      "title": "Finite D exchange stability implies strict self-consistent Voronoi"
+    }
+  ],
+  "schemaVersion": 1,
+  "scoreSpace": {
+    "points": [
+      [
+        -1.6568767842740453,
+        -0.05796546626551939
+      ],
+      [
+        -1.2470187813486333,
+        -0.2677487843053933
+      ],
+      [
+        -1.0276382131575121,
+        0.19708148643124368
+      ],
+      [
+        -1.1545221744651202,
+        -0.47784189976580005
+      ],
+      [
+        -0.9780338479612913,
+        -0.24736614057864367
+      ],
+      [
+        -0.7316472716547842,
+        -0.20752098044223324
+      ],
+      [
+        -0.853843768279301,
+        -0.471983936376739
+      ],
+      [
+        -0.4312013773241549,
+        -0.35753739453010885
+      ],
+      [
+        -1.391235163141213,
+        0.013025827560815306
+      ],
+      [
+        -0.1669025126949463,
+        -0.12095100688029337
+      ],
+      [
+        -1.0593101034256809,
+        -0.8172513792902195
+      ],
+      [
+        -0.7650607762096248,
+        -0.19899673504082005
+      ],
+      [
+        -0.8615023596990049,
+        0.4567211598116233
+      ],
+      [
+        -1.848189663778454,
+        -0.20788786665971118
+      ],
+      [
+        -0.6392009971334466,
+        0.3484125627661208
+      ],
+      [
+        -0.9925060705920399,
+        -0.41659751422847335
+      ],
+      [
+        -1.4909429318211347,
+        -0.339750787179918
+      ],
+      [
+        -1.058268632902639,
+        0.05784774075249828
+      ],
+      [
+        -1.0756842829019462,
+        -0.051289923981464834
+      ],
+      [
+        -0.9995809943968966,
+        -0.35262424576930773
+      ],
+      [
+        -1.1373408548087065,
+        -0.7428451245696465
+      ],
+      [
+        -1.5043944987981923,
+        0.14297106135226315
+      ],
+      [
+        1.043831334473641,
+        0.9113967353156612
+      ],
+      [
+        0.0006644490170047979,
+        0.727688823210241
+      ],
+      [
+        0.27426880857001834,
+        0.6946328317086923
+      ],
+      [
+        -0.2133928299221579,
+        0.174607774045658
+      ],
+      [
+        0.6150795779589342,
+        -0.1563440579691353
+      ],
+      [
+        0.2751950862883086,
+        1.1485837484695967
+      ],
+      [
+        1.3112467419335574,
+        0.579405923977904
+      ],
+      [
+        0.5903091306701053,
+        0.27227730266223765
+      ],
+      [
+        0.557046499429074,
+        1.3585734112058485
+      ],
+      [
+        1.0401493780232434,
+        0.7189545666312455
+      ],
+      [
+        0.5961027855275308,
+        0.4873527821784491
+      ],
+      [
+        1.0904676785360734,
+        0.33663058923332784
+      ],
+      [
+        0.8938132699556183,
+        0.42336687881513496
+      ],
+      [
+        0.7419341071749048,
+        0.2410435919260722
+      ],
+      [
+        1.1088579169080637,
+        0.466541239508286
+      ],
+      [
+        1.2924196641947665,
+        0.5875905938602708
+      ],
+      [
+        0.36989782170776864,
+        0.5958471019683159
+      ],
+      [
+        0.9901976149354195,
+        0.8684632230626831
+      ],
+      [
+        0.9413804484549039,
+        0.628686935568277
+      ],
+      [
+        1.4997456034199415,
+        0.843972486368852
+      ],
+      [
+        0.7349093543729684,
+        1.044253243156964
+      ],
+      [
+        0.6935942616592885,
+        0.4180848128633802
+      ],
+      [
+        0.45839710321816074,
+        -0.7396825953340747
+      ],
+      [
+        -0.4336136055112108,
+        -0.7446713362861911
+      ],
+      [
+        0.16828580049971834,
+        -0.3602475191464277
+      ],
+      [
+        -0.04681756906437498,
+        -1.0282356903271632
+      ],
+      [
+        0.5390213392282531,
+        -0.6651289151684536
+      ],
+      [
+        0.4624349086795803,
+        -0.7313609847190907
+      ],
+      [
+        0.1461075103647591,
+        -0.7089826026760366
+      ],
+      [
+        0.11255134732626274,
+        -0.8984158355231797
+      ],
+      [
+        0.32787720457803465,
+        -0.9554300712348791
+      ],
+      [
+        -0.26693452674993295,
+        -0.788298313445707
+      ],
+      [
+        0.782826964899062,
+        -1.4236427939004974
+      ],
+      [
+        -0.2780538386013093,
+        -1.2988773588355023
+      ]
+    ],
+    "scenarios": {
+      "3": {
+        "centers": [
+          [
+            0.19231553103890492,
+            -0.8235192551017414
+          ],
+          [
+            0.8119146242098644,
+            0.6648295783942879
+          ],
+          [
+            -1.008335424298476,
+            -0.16822738367271522
+          ]
+        ],
+        "labels": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          2,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "objective": -0.5308685384997954,
+        "retention": 0.7668728483565728
+      },
+      "4": {
+        "centers": [
+          [
+            0.1400859144462338,
+            -0.7704394660537975
+          ],
+          [
+            -1.008335424298476,
+            -0.16822738367271522
+          ],
+          [
+            0.8119146242098644,
+            0.6648295783942879
+          ],
+          [
+            0.782826964899062,
+            -1.4236427939004974
+          ]
+        ],
+        "labels": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          2,
+          1,
+          0,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3,
+          0
+        ],
+        "objective": -0.4620137413048634,
+        "retention": 0.7937340125459851
+      },
+      "5": {
+        "centers": [
+          [
+            0.1400859144462338,
+            -0.7704394660537975
+          ],
+          [
+            -1.008335424298476,
+            -0.16822738367271522
+          ],
+          [
+            0.3824204201490943,
+            0.9298051844330967
+          ],
+          [
+            0.782826964899062,
+            -1.4236427939004974
+          ],
+          [
+            0.9892173101425695,
+            0.5554430343777836
+          ]
+        ],
+        "labels": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          4,
+          2,
+          2,
+          1,
+          0,
+          2,
+          4,
+          4,
+          2,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          2,
+          4,
+          4,
+          4,
+          2,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3,
+          0
+        ],
+        "objective": -0.3369506543012825,
+        "retention": 0.8449521105378954
+      }
+    },
+    "weights": [
+      0.7,
+      0.7109090909090908,
+      0.7218181818181818,
+      0.7327272727272727,
+      0.7436363636363637,
+      0.7545454545454545,
+      0.7654545454545454,
+      0.7763636363636364,
+      0.7872727272727272,
+      0.7981818181818181,
+      0.8090909090909091,
+      0.82,
+      0.8309090909090908,
+      0.8418181818181818,
+      0.8527272727272727,
+      0.8636363636363635,
+      0.8745454545454545,
+      0.8854545454545455,
+      0.8963636363636364,
+      0.9072727272727272,
+      0.9181818181818182,
+      0.9290909090909091,
+      0.94,
+      0.9509090909090909,
+      0.9618181818181818,
+      0.9727272727272727,
+      0.9836363636363636,
+      0.9945454545454545,
+      1.0054545454545454,
+      1.0163636363636364,
+      1.0272727272727273,
+      1.038181818181818,
+      1.049090909090909,
+      1.06,
+      1.0709090909090908,
+      1.0818181818181818,
+      1.0927272727272728,
+      1.1036363636363635,
+      1.1145454545454545,
+      1.1254545454545455,
+      1.1363636363636362,
+      1.1472727272727272,
+      1.1581818181818182,
+      1.169090909090909,
+      1.18,
+      1.190909090909091,
+      1.2018181818181817,
+      1.2127272727272729,
+      1.2236363636363636,
+      1.2345454545454544,
+      1.2454545454545456,
+      1.2563636363636363,
+      1.2672727272727273,
+      1.2781818181818183,
+      1.289090909090909,
+      1.3
+    ]
+  }
+}

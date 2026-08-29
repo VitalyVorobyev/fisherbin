@@ -19,8 +19,9 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-    "jax>=0.7",
-    "optax>=0.2",
+    "jax>=0.7 ; sys_platform != 'emscripten'",
+    "numpy>=2.0",
+    "optax>=0.2 ; sys_platform != 'emscripten'",
 ]
 
 [project.urls]
@@ -59,6 +60,10 @@ dev = [
     "ruff>=0.11",
     "ty>=0.0.70,<0.1",
 ]
+portal = [
+    "griffe>=1.14,<2",
+    "marimo>=0.17,<1",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]
@@ -94,3 +99,4 @@ convention = "numpy"
 "benchmarks/**" = ["D"]
 "examples/**" = ["D"]
 "tests/**" = ["D"]
+"website/lessons/**" = ["ANN001", "ANN202", "B018"]

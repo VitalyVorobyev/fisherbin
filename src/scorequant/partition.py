@@ -21,15 +21,25 @@ any origin can be checked before it is trusted.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import partial
 from typing import Protocol
 
-import jax
-import jax.numpy as jnp
 import numpy as np
 
 from ._binstats import scatter_bin_statistics
 from ._chunking import assignment_chunk_rows
+from ._execution import (
+    backend_jit,
+    canonicalize_public,
+    current_execution,
+    execution_scope,
+    random_permutation,
+    scatter_add,
+    scatter_block_add,
+    scatter_set,
+)
+from ._execution import (
+    xp as jnp,
+)
 from ._typing import ArrayLike
 from ._validation import (
     _ValidatedSample,
@@ -38,7 +48,13 @@ from ._validation import (
     validate_n_bins,
     validate_sample,
 )
-from .config import DExchangeConfig, KMeansConfig, MahalanobisLloydConfig, PartitionConfig
+from .config import (
+    DExchangeConfig,
+    ExecutionConfig,
+    KMeansConfig,
+    MahalanobisLloydConfig,
+    PartitionConfig,
+)
 from .criteria import DOptimality, ProfiledDOptimality
 from .information import (
     _nuisance_information,
@@ -373,7 +389,7 @@ def optimize_d_partition(
     all_coordinates = prepared.transform.apply(sample.scores)
     compiled_labels = jnp.asarray(_assign_nearest(all_coordinates, state.means, state.inverse))
     effective_labels = run.labels[prepared.inverse_rows]
-    compiled_labels = compiled_labels.at[sample.positive_weight_mask].set(effective_labels)
+    compiled_labels = scatter_set(compiled_labels, sample.positive_weight_mask, effective_labels)
     if run.exchange_stable:
         geometric = _assign_nearest(prepared.coordinates, state.means, state.inverse)
         disagreement = _voronoi_disagreement_gain(
@@ -500,7 +516,7 @@ def optimize_profiled_d_partition(
         _assign_nearest(all_coordinates, prepared.transform.apply(state.means), None)
     )
     effective_labels = run.labels[prepared.inverse_rows]
-    compiled_labels = extension_labels.at[sample.positive_weight_mask].set(effective_labels)
+    compiled_labels = scatter_set(extension_labels, sample.positive_weight_mask, effective_labels)
     return _partition_result(
         prepared,
         run,
@@ -528,6 +544,7 @@ def optimize_profiled_d_partition(
     )
 
 
+@execution_scope
 def exchange_stability_report(
     scores: ArrayLike,
     labels: ArrayLike,
@@ -536,6 +553,7 @@ def exchange_stability_report(
     criterion: DOptimality | ProfiledDOptimality | None = None,
     rank_rtol: float | None = None,
     gain_tolerance: float = 1e-10,
+    execution: ExecutionConfig | None = None,
 ) -> StabilityReport:
     """Certify one supplied labeling against every single-row relocation.
 
@@ -578,6 +596,7 @@ def exchange_stability_report(
         Stability verdict at ``gain_tolerance``, exact objective, best remaining
         gain, and the improving move in original row indexing when one exists.
     """
+    del execution
     resolved = DOptimality() if criterion is None else criterion
     if not isinstance(resolved, (DOptimality, ProfiledDOptimality)):
         raise TypeError("exchange stability supports DOptimality or ProfiledDOptimality")
@@ -603,14 +622,16 @@ def exchange_stability_report(
     if not stable and outcome.best is not None:
         rows = np.flatnonzero(np.asarray(sample.positive_weight_mask))
         best_move = (int(rows[outcome.best.row]), int(outcome.best.destination))
-    return StabilityReport(
-        stable=stable,
-        best_gain=best_gain,
-        best_move=best_move,
-        objective=state.objective,
-        n_bins=n_bins,
-        criterion=resolved,
-        gain_tolerance=gain_tolerance,
+    return canonicalize_public(
+        StabilityReport(
+            stable=stable,
+            best_gain=best_gain,
+            best_move=best_move,
+            objective=state.objective,
+            n_bins=n_bins,
+            criterion=resolved,
+            gain_tolerance=gain_tolerance,
+        )
     )
 
 
@@ -700,6 +721,7 @@ def _partition_result(
         metric=metric,
         criterion=criterion,
         config=config,
+        execution=current_execution(),
         train_report=information_report(
             sample.scores,
             compiled_labels,
@@ -886,7 +908,7 @@ def _initial_labels(
     seed = config.seed + restart
     if config.init == "random":
         # A permuted balanced labeling keeps every requested cell nonempty.
-        permutation = jax.random.permutation(jax.random.PRNGKey(seed), coordinates.shape[0])
+        permutation = random_permutation(seed, coordinates.shape[0])
         return (jnp.arange(coordinates.shape[0]) % n_bins).astype(jnp.int32)[permutation]
     return _kmeans_labels(
         coordinates,
@@ -1342,7 +1364,7 @@ def _cell_statistics(
     return _CellStatistics(weights=statistics.weights, sums=statistics.sums, means=statistics.means)
 
 
-@jax.jit
+@backend_jit
 def _cell_information_matrices(
     cell_weights: jnp.ndarray, cell_means: jnp.ndarray
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
@@ -1397,7 +1419,7 @@ def _determinant_ratios(
     ) + chunk.alpha[:, None] * chunk.beta * q_cross**2
 
 
-@jax.jit
+@backend_jit
 def _d_chunk_gains(
     points: jnp.ndarray,
     weights: jnp.ndarray,
@@ -1418,10 +1440,11 @@ def _d_chunk_gains(
     ratios = _determinant_ratios(
         chunk, chunk.source_residuals, chunk.destination_residuals, inverse
     )
-    return jnp.where(chunk.admissible & (ratios > 0), jnp.log(ratios), -jnp.inf)
+    valid = chunk.admissible & (ratios > 0)
+    return jnp.where(valid, jnp.log(jnp.where(valid, ratios, 1)), -jnp.inf)
 
 
-@partial(jax.jit, static_argnames=("nuisance",))
+@backend_jit(static_argnames=("nuisance",))
 def _profiled_chunk_gains(
     points: jnp.ndarray,
     weights: jnp.ndarray,
@@ -1448,9 +1471,10 @@ def _profiled_chunk_gains(
         chunk.destination_residuals[:, :, indices],
         nuisance_inverse,
     )
+    valid = chunk.admissible & (full_ratios > 0) & (nuisance_ratios > 0)
     return jnp.where(
-        chunk.admissible & (full_ratios > 0) & (nuisance_ratios > 0),
-        jnp.log(full_ratios) - jnp.log(nuisance_ratios),
+        valid,
+        jnp.log(jnp.where(valid, full_ratios, 1)) - jnp.log(jnp.where(valid, nuisance_ratios, 1)),
         -jnp.inf,
     )
 
@@ -1482,14 +1506,13 @@ def _relocation(
 
 def _relocate_cells(cells: _CellStatistics, relocation: _Relocation) -> _CellStatistics:
     weight = relocation.point_weight
-    cell_weights = (
-        cells.weights.at[relocation.source].add(-weight).at[relocation.destination].add(weight)
-    )
-    sums = (
-        cells.sums.at[relocation.source]
-        .add(-weight * relocation.point)
-        .at[relocation.destination]
-        .add(weight * relocation.point)
+    cell_weights = scatter_add(cells.weights, relocation.source, -weight)
+    cell_weights = scatter_add(cell_weights, relocation.destination, weight)
+    sums = scatter_add(cells.sums, relocation.source, -weight * relocation.point)
+    sums = scatter_add(
+        sums,
+        relocation.destination,
+        weight * relocation.point,
     )
     return _CellStatistics(weights=cell_weights, sums=sums, means=sums / cell_weights[:, None])
 
@@ -1567,8 +1590,10 @@ def _rank_two_inverse_update(
 def _profiled_semimetric(state: _ExchangeState, nuisance: tuple[int, ...]) -> jnp.ndarray:
     r"""Return \(G_s=L^\top S^{-1}L\) of one profiled state, with \(L=[I,-BC^{-1}]\)."""
     indices = jnp.asarray(nuisance)
-    metric = state.inverse.at[jnp.ix_(indices, indices)].add(
-        -_require_nuisance(state.nuisance_inverse)
+    metric = scatter_block_add(
+        state.inverse,
+        indices,
+        -_require_nuisance(state.nuisance_inverse),
     )
     return 0.5 * (metric + metric.T)
 

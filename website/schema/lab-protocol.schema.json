@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scorequant.dev/schema/lab-protocol.v1.json",
+  "title": "LabProtocol",
+  "description": "Versioned backend-neutral request and event contract for the ScoreQuant browser lab.",
+  "oneOf": [
+    {"$ref": "#/$defs/LabRunRequest"},
+    {"$ref": "#/$defs/LabEvent"}
+  ],
+  "$defs": {
+    "LabRunRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocolVersion", "type", "runId", "runner", "problem"],
+      "properties": {
+        "protocolVersion": {"const": 1},
+        "type": {"const": "run"},
+        "runId": {"type": "string", "minLength": 1},
+        "runner": {"enum": ["fixture", "pyodide-numpy", "remote-jax", "remote-pytorch"]},
+        "problem": {"$ref": "#/$defs/LabProblem"}
+      }
+    },
+    "LabProblem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scores", "weights", "nBins", "solver", "seed"],
+      "properties": {
+        "scores": {"type": "array", "maxItems": 5000, "items": {"$ref": "#/$defs/ScoreRow"}},
+        "weights": {"type": "array", "maxItems": 5000, "items": {"type": "number", "minimum": 0}},
+        "nBins": {"type": "integer", "minimum": 1, "maximum": 16},
+        "solver": {"enum": ["d_exchange", "mahalanobis_lloyd", "kmeans", "scalar_dp", "soft_voronoi"]},
+        "seed": {"type": "integer", "minimum": 0},
+        "maxSteps": {"type": "integer", "minimum": 1, "maximum": 500},
+        "maxScans": {"type": "integer", "minimum": 1, "maximum": 500}
+      }
+    },
+    "ScoreRow": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {"type": "number"}
+    },
+    "LabResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["labels", "centers", "retention", "objective", "execution"],
+      "properties": {
+        "labels": {"type": "array", "items": {"type": "integer", "minimum": 0}},
+        "centers": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}},
+        "retention": {"type": "number", "minimum": 0},
+        "objective": {"type": "number"},
+        "execution": {"type": "string"}
+      }
+    },
+    "LabEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocolVersion", "runId", "type"],
+      "properties": {
+        "protocolVersion": {"const": 1},
+        "runId": {"type": "string"},
+        "type": {"enum": ["ready", "progress", "result", "error", "cancelled"]},
+        "stage": {"type": "string"},
+        "progress": {"type": "number", "minimum": 0, "maximum": 1},
+        "result": {"$ref": "#/$defs/LabResult"},
+        "message": {"type": "string"}
+      }
+    }
+  }
+}

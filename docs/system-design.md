@@ -55,6 +55,47 @@ a stable common contract. A profiled finite partition never compiles into a quan
 profiled rule is canonical away from the training rows. See
 [ADR 0014](adr/0014-unified-exchange-and-certificates.md).
 
+## Execution architecture and quality audit
+
+The browser lab is the approved second-runtime use case from
+[ADR 0018](adr/0018-explicit-multi-backend-execution.md). The target dependency direction is:
+
+```text
+domain contracts/config/results (canonical NumPy arrays)
+        ↓
+private execution protocol + JAX/NumPy adapters
+        ↓
+shared Fisher/geometry/objective kernels
+        ↓
+solver orchestration and stopping rules
+        ↓
+public task API
+```
+
+The pre-refactor audit found five structural liabilities that are now explicit gates:
+
+| Finding | Risk | Required resolution |
+| --- | --- | --- |
+| JAX imports in sources, reports, results, JSON conversion, and providers | backend types leak through stable contracts and importing without JAX fails | domain modules use NumPy only; execution imports stay private |
+| partition and quantizer modules combine dispatch, geometry, exchange, Lloyd, k-means, DP, soft optimization, and diagnostics | oversized functions accumulate hidden coupling | split by stable responsibility after the backend seam is green |
+| scatter, random, JIT, and optimizer choices are embedded in equations | NumPy parity would require conditionals or copied mathematics | adapters own primitives; kernels and solver flow contain no backend-name branches |
+| result/config/report state is constructed in multiple paths | serialization and backend provenance can drift | each public state type has one definition and canonicalization path |
+| JAX-only tests are organized by implementation module | a second suite would duplicate coverage | parameterize one capability-driven conformance suite over backends |
+
+Import-boundary tests enforce that domain, execution, kernels, solvers, public API,
+visualization, and `website/` cannot reverse the declared direction. Architecture review is an
+exit gate after the JAX extraction and again after complete NumPy parity. Optimized backend
+kernels are permitted only behind an adapter and must match the shared reference implementation.
+
+Both reviews are now recorded. The extraction review found no direct JAX/Optax import outside
+`_execution.py`, no backend tensor in recursively inspected public results, and no frontend concern
+inside `src/`. The parity review runs every declared partition and quantizer solver family through
+one backend-parameterized matrix and compares their partitions up to bin relabeling, checks the
+shared analytic soft gradient against JAX autodiff and finite differences, holds the default JAX
+path to the committed benchmark quality baselines, and imports the package in a subprocess that
+actively blocks JAX and Optax -- with a companion test asserting that the blocker really blocks, so
+the claim cannot pass vacuously.
+
 ## Module ownership
 
 - `information.py`: Fisher and retained-information algebra.
@@ -65,7 +106,11 @@ profiled rule is canonical away from the training rows. See
 - `certify.py`: explicit bounded branch-and-bound global certification of D partitions. Its tree
   search is sequential NumPy in float64: per-node JAX dispatch would dominate a search whose nodes
   are one small log determinant each.
-- `quantizers.py`: private weighted k-means and soft-D numerical kernels.
+- `_execution.py`: the only backend resolver and the private JAX/NumPy primitive adapters.
+- `solvers/common.py`: shared assignment, distance, trace, and solver result contracts;
+  `solvers/kmeans.py`, `solvers/scalar.py`, and `solvers/soft.py`: responsibility-specific shared
+  solver orchestration. `quantizers.py` is now only a thin compatibility façade for established
+  private test seams.
 - `sources.py`: empirical and quadrature measures plus provenance (`ScoreProvenance` and the
   nested `RatioProvenance`).
 - `providers.py`: framework-neutral observation-to-score adapters, including the ratio-backed
@@ -77,7 +122,8 @@ profiled rule is canonical away from the training rows. See
   `ProfiledInformationReport`, `GeometryReport`, `ProfiledGeometryReport`, `StabilityReport`,
   `PartitionCertificate`, `EfficientScoreBound`). It depends on nothing that depends back on it,
   which is what lets `result.py` and `information.py` both build on it without importing each other.
-- `criteria.py`, `config.py`, `result.py`, `api.py`: public contracts and orchestration. `api.py`
+- `criteria.py`, `config.py`, `result.py`: backend-free public contracts. `api.py`: public
+  orchestration. `api.py`
   validates every `(config, criterion, task)` combination against one declarative table instead of
   scattered isinstance chains.
 - `_binstats.py`, `_chunking.py`, `_validation.py`, `_json.py`, `_typing.py`: private helpers shared
@@ -88,10 +134,21 @@ profiled rule is canonical away from the training rows. See
   lazily so the core package carries no hard visualization dependency.
 - `examples/`, tests, and `research/`: datasets, tuning, counterexample search, and application logic.
 
-JAX is the sole numerical kernel implementation and Optax supplies gradient optimization. Optional
-visualization imports remain lazy. Research exploration is provenance and is excluded from the
-product Ruff gate; every relied-upon identity or counterexample is copied into a deterministic
-regression test.
+JAX is the default execution backend and Optax supplies its soft-optimizer updates. NumPy is the
+portable CPU backend and supplies every declared solver, including an analytic-gradient soft
+optimizer with a private Adam state. Mathematical kernels are shared. Optional visualization and
+both execution stacks remain lazy at their public boundaries. Research exploration is provenance
+and is excluded from the product Ruff gate; every relied-upon identity or counterexample is copied
+into a deterministic regression test.
+
+## Learning and reference sites
+
+Per [ADR 0019](adr/0019-react-learning-portal.md), MkDocs remains the exhaustive Python,
+developer, and ADR reference. `website/` is an isolated Docusaurus/React learning portal owning
+curated journeys, theory reading, examples, benchmark exploration, public research storytelling,
+and the browser Lab. Source adapters read canonical Markdown, Griffe API data, benchmark JSON, and
+an explicit research-publication allowlist. Browser schemas, workers, plotting, and marimo embeds
+never enter `src/scorequant`.
 
 ## Source/provider rules
 

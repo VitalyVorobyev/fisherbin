@@ -16,12 +16,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import jax.numpy as jnp
 import numpy as np
 
+from ._execution import canonical_array, canonicalize_public, execution_scope
+from ._execution import xp as jnp
 from ._typing import ArrayLike
 from ._validation import promote_low_precision
 from .components import scores_from_components
+from .config import ExecutionConfig
 from .reports import RatioClosureReport
 
 _SIMPLEX_RTOL = 1e-5
@@ -53,7 +55,13 @@ def _validate_ratio_matrix(ratios: ArrayLike, name: str = "ratios") -> jnp.ndarr
     return values
 
 
-def ratios_from_posteriors(posteriors: ArrayLike, class_priors: ArrayLike) -> jnp.ndarray:
+@execution_scope
+def ratios_from_posteriors(
+    posteriors: ArrayLike,
+    class_priors: ArrayLike,
+    *,
+    execution: ExecutionConfig | None = None,
+) -> np.ndarray:
     """Convert calibrated class posteriors into model density ratios.
 
     Parameters
@@ -67,7 +75,7 @@ def ratios_from_posteriors(posteriors: ArrayLike, class_priors: ArrayLike) -> jn
 
     Returns
     -------
-    jax.Array
+    numpy.ndarray
         Ratio matrix ``r_k(x) = posteriors_k(x) / class_priors_k`` with shape
         ``[N, K]``: the component density ratios ``phi_k(x) / p_train(x)``,
         where ``p_train`` is the training mixture. The common event-wise
@@ -90,6 +98,7 @@ def ratios_from_posteriors(posteriors: ArrayLike, class_priors: ArrayLike) -> jn
     Those operations change the implied density ratios and belong to the
     upstream ratio-estimation workflow.
     """
+    del execution
     values = jnp.asarray(posteriors)
     if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] < 2:
         raise ValueError("posteriors must have non-empty shape [N, K] with K >= 2")
@@ -106,15 +115,17 @@ def ratios_from_posteriors(posteriors: ArrayLike, class_priors: ArrayLike) -> jn
         raise ValueError("posterior rows must sum to one")
     priors = jnp.asarray(class_priors, dtype=values.dtype)
     _validate_simplex_vector(priors, "class_priors", values.shape[1])
-    return values / priors[None, :]
+    return canonical_array(values / priors[None, :])
 
 
+@execution_scope
 def mixture_scores_from_ratios(
     ratios: ArrayLike,
     reference_fractions: ArrayLike,
     *,
     reference_component: int = -1,
-) -> jnp.ndarray:
+    execution: ExecutionConfig | None = None,
+) -> np.ndarray:
     """Construct normalized-mixture scores from component density ratios.
 
     Parameters
@@ -132,7 +143,7 @@ def mixture_scores_from_ratios(
 
     Returns
     -------
-    jax.Array
+    numpy.ndarray
         Score matrix ``(r_k - r_ref) / sum_j reference_fractions[j] * r_j``
         with shape ``[N, K - 1]``. Columns follow the original component
         order with ``reference_component`` omitted.
@@ -155,6 +166,7 @@ def mixture_scores_from_ratios(
     ``(r_k - 1) / sum_j theta_j r_j``), relative to the training mixture, or
     relative to the reference density itself.
     """
+    del execution
     values = _validate_ratio_matrix(ratios)
     n_components = values.shape[1]
     fractions = jnp.asarray(reference_fractions, dtype=values.dtype)
@@ -171,7 +183,7 @@ def mixture_scores_from_ratios(
     scores = (values[:, kept_components] - values[:, resolved_reference, None]) / density[:, None]
     if not bool(np.asarray(jnp.all(jnp.isfinite(scores)))):
         raise ValueError("mixture score construction produced non-finite values")
-    return scores
+    return canonical_array(scores)
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -196,14 +208,20 @@ class IntensityParameterization:
             raise ValueError("coefficients must have shape [K] with K >= 2")
         if not bool(np.asarray(jnp.all(jnp.isfinite(array)))):
             raise ValueError("coefficients must be finite")
-        object.__setattr__(self, "coefficients", array)
+        object.__setattr__(self, "coefficients", canonical_array(array))
 
     @property
     def n_components(self) -> int:
         """Number of ratio columns the parameterization consumes."""
         return int(self.coefficients.shape[0])
 
-    def scores(self, ratios: ArrayLike) -> jnp.ndarray:
+    @execution_scope
+    def scores(
+        self,
+        ratios: ArrayLike,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> np.ndarray:
         """Return the ``[N, K]`` intensity scores ``r_k / sum_j theta_j r_j``.
 
         Because ``scores_from_components`` is invariant under a common
@@ -213,7 +231,7 @@ class IntensityParameterization:
         values = _validate_ratio_matrix(ratios)
         if values.shape[1] != self.n_components:
             raise ValueError(f"ratios must have shape [N, {self.n_components}]")
-        return scores_from_components(values, self.coefficients)
+        return scores_from_components(values, self.coefficients, execution=execution)
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -245,7 +263,7 @@ class MixtureParameterization:
             raise TypeError("reference_component must be an integer")
         if not -array.shape[0] <= reference_component < array.shape[0]:
             raise ValueError("reference_component is outside the component range")
-        object.__setattr__(self, "reference_fractions", array)
+        object.__setattr__(self, "reference_fractions", canonical_array(array))
         object.__setattr__(self, "reference_component", reference_component)
 
     @property
@@ -253,19 +271,32 @@ class MixtureParameterization:
         """Number of ratio columns the parameterization consumes."""
         return int(self.reference_fractions.shape[0])
 
-    def scores(self, ratios: ArrayLike) -> jnp.ndarray:
+    @execution_scope
+    def scores(
+        self,
+        ratios: ArrayLike,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> np.ndarray:
         """Return the ``[N, K - 1]`` constrained-mixture scores."""
         return mixture_scores_from_ratios(
             ratios,
             self.reference_fractions,
             reference_component=self.reference_component,
+            execution=execution,
         )
 
 
 type RatioParameterization = IntensityParameterization | MixtureParameterization
 
 
-def ratio_closure_report(ratios: ArrayLike, weights: ArrayLike) -> RatioClosureReport:
+@execution_scope
+def ratio_closure_report(
+    ratios: ArrayLike,
+    weights: ArrayLike,
+    *,
+    execution: ExecutionConfig | None = None,
+) -> RatioClosureReport:
     """Check that density ratios integrate to one under the declared measure.
 
     Parameters
@@ -298,6 +329,7 @@ def ratio_closure_report(ratios: ArrayLike, weights: ArrayLike) -> RatioClosureR
     is necessary but not sufficient — closure never justifies upgrading
     estimated provenance to exact.
     """
+    del execution
     values = _validate_ratio_matrix(ratios)
     weight_array = jnp.asarray(weights, dtype=values.dtype)
     if weight_array.shape != (values.shape[0],):
@@ -310,4 +342,6 @@ def ratio_closure_report(ratios: ArrayLike, weights: ArrayLike) -> RatioClosureR
         raise ValueError("at least one weight must be positive")
     normalizers = (weight_array @ values) / jnp.sum(weight_array)
     max_residual = float(jnp.max(jnp.abs(normalizers - 1.0)))
-    return RatioClosureReport(normalizers=normalizers, max_residual=max_residual)
+    return canonicalize_public(
+        RatioClosureReport(normalizers=normalizers, max_residual=max_residual)
+    )

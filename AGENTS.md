@@ -16,7 +16,10 @@ Source + (densities | density ratios | scores) -> ScoreProvider -> score law -> 
 - Model density ratios enter through providers; importance ratios are source weights. The two
   never share an argument, and estimated ratios never claim exact Fisher semantics.
 
-Use JAX for numerical kernels and Optax for gradient optimization. Do not add PyTorch, a parallel NumPy implementation, global JAX configuration at import time, or a backend abstraction without an approved roadmap change and a concrete second backend.
+JAX remains the default runtime and Optax owns its gradient updates. NumPy is the approved portable
+runtime from roadmap M9 and must implement the same shared mathematics, never a copied solver tree.
+Do not add PyTorch or mutate global JAX configuration. Backend primitives stay private; there is no
+public registry or provisional backend class.
 
 ## Numerical invariants
 
@@ -30,7 +33,12 @@ Use JAX for numerical kernels and Optax for gradient optimization. Do not add Py
 
 ## Code placement and API discipline
 
-- Keep Fisher statistics in `information.py`, transforms in `transforms.py`, private optimizers in `quantizers.py`, linear-model adapters in `components.py`, density-ratio algebra in `ratios.py`, and public orchestration/results/configuration in their existing modules.
+- Keep backend-free domain contracts separate from private execution adapters, shared mathematical
+  kernels, solver orchestration, and the public task API. Fisher statistics remain in
+  `information.py`, transforms in `transforms.py`, linear-model adapters in `components.py`, and
+  density-ratio algebra in `ratios.py`; split oversized solver modules by stable responsibility.
+- Keep backend-name branches inside execution resolution and adapters. Maintain one capability
+  table and one conformance suite instead of per-backend task logic or duplicated tests.
 - Keep dataset generators, comparisons, tuning, custom figure layouts, and exploratory logic in `examples/`, tests, or benchmarks.
 - Add public concepts only when they are reusable, stable, documented, and non-duplicative. Prefer private helpers over provisional public APIs.
 - Avoid aliases and overlapping entry points. Document intentional compatibility breaks and update the API guide, examples, and an ADR when the decision is durable.
@@ -46,7 +54,9 @@ Use JAX for numerical kernels and Optax for gradient optimization. Do not add Py
 
 ## Tooling: use uv
 
-`uv` is the only supported environment, dependency, build, and command runner. Do not introduce pip, Conda, Poetry, or manually edit `uv.lock`.
+`uv` is the only supported Python environment, dependency, build, and command runner. Do not
+introduce pip, Conda, Poetry, or manually edit `uv.lock`. The isolated `website/` workspace uses
+its pinned Node and pnpm versions.
 
 ```bash
 uv sync --all-extras --all-groups --locked
@@ -90,7 +100,9 @@ Use `uv add`, `uv remove`, and `uv lock` for dependency changes. Run commands th
 - Do not commit caches, local environments, build output, or `site/`. Commit gallery images only when intentionally regenerated and visually inspected.
 - Do not push, merge, tag, publish, or deploy unless the user authorizes that action.
 
-Persistence, services, frontends, multiple numerical backends, signed weights, and advanced statistical objectives remain deferred to the roadmap.
+Persistence, services, remote execution, PyTorch, signed weights, and advanced statistical
+objectives remain deferred to the roadmap. The static React portal and NumPy backend are approved
+by M9/M10 and ADRs 0018/0019.
 
 ## Completion checklist
 

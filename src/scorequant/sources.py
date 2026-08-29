@@ -6,12 +6,12 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Literal
 
-import jax.numpy as jnp
 import numpy as np
 
+from ._execution import canonical_array
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
-from ._validation import validate_sample
+from ._validation import canonical_sample
 
 type ScoreKind = Literal[
     "unknown",
@@ -99,8 +99,8 @@ class ScoreProvenance:
 class ScoreSample:
     """A finite weighted score table representing an empirical score law."""
 
-    scores: jnp.ndarray
-    weights: jnp.ndarray
+    scores: np.ndarray
+    weights: np.ndarray
     provenance: ScoreProvenance
 
     def __init__(
@@ -110,9 +110,9 @@ class ScoreSample:
         *,
         provenance: ScoreProvenance | None = None,
     ) -> None:
-        sample = validate_sample(scores, weights)
-        object.__setattr__(self, "scores", sample.scores)
-        object.__setattr__(self, "weights", sample.weights)
+        sample = canonical_sample(scores, weights)
+        object.__setattr__(self, "scores", canonical_array(sample.scores))
+        object.__setattr__(self, "weights", canonical_array(sample.weights))
         object.__setattr__(self, "provenance", provenance or ScoreProvenance())
 
 
@@ -120,32 +120,32 @@ class ScoreSample:
 class ObservationSample:
     """A finite weighted observation table requiring a score provider."""
 
-    observations: jnp.ndarray
-    weights: jnp.ndarray
+    observations: np.ndarray
+    weights: np.ndarray
 
     def __init__(self, observations: ArrayLike, weights: ArrayLike | None = None) -> None:
-        array = jnp.asarray(observations)
+        array = np.asarray(observations)
         if array.ndim != 2 or array.shape[0] == 0 or array.shape[1] == 0:
             raise ValueError("observations must have non-empty shape [N, D]")
-        if not jnp.issubdtype(array.dtype, jnp.inexact):
-            array = array.astype(jnp.float32)
-        if not bool(np.asarray(jnp.all(jnp.isfinite(array)))):
+        if not np.issubdtype(array.dtype, np.inexact):
+            array = array.astype(np.float32)
+        if not bool(np.all(np.isfinite(array))):
             raise ValueError("observations must be finite")
         weight_array = (
-            jnp.ones(array.shape[0], dtype=array.dtype)
+            np.ones(array.shape[0], dtype=array.dtype)
             if weights is None
-            else jnp.asarray(weights, dtype=array.dtype)
+            else np.asarray(weights, dtype=array.dtype)
         )
         if weight_array.shape != (array.shape[0],):
             raise ValueError(f"weights must have shape [{array.shape[0]}]")
-        if not bool(np.asarray(jnp.all(jnp.isfinite(weight_array)))):
+        if not bool(np.all(np.isfinite(weight_array))):
             raise ValueError("weights must be finite")
-        if bool(np.asarray(jnp.any(weight_array < 0))):
+        if bool(np.any(weight_array < 0)):
             raise ValueError("weights must be nonnegative")
-        if not bool(np.asarray(jnp.any(weight_array > 0))):
+        if not bool(np.any(weight_array > 0)):
             raise ValueError("at least one weight must be positive")
-        object.__setattr__(self, "observations", array)
-        object.__setattr__(self, "weights", weight_array)
+        object.__setattr__(self, "observations", canonical_array(array))
+        object.__setattr__(self, "weights", canonical_array(weight_array))
 
 
 @dataclass(frozen=True, slots=True)
@@ -176,7 +176,7 @@ class IntegrationSource:
     statistical measure.
     """
 
-    bounds: jnp.ndarray
+    bounds: np.ndarray
     density: Callable[[ArrayLike], ArrayLike]
     quadrature: GaussLegendreConfig
 
@@ -187,18 +187,18 @@ class IntegrationSource:
         density: Callable[[ArrayLike], ArrayLike],
         quadrature: GaussLegendreConfig | None = None,
     ) -> None:
-        array = jnp.asarray(bounds)
+        array = np.asarray(bounds)
         if array.ndim != 2 or array.shape[1] != 2 or array.shape[0] == 0:
             raise ValueError("bounds must have shape [D, 2]")
-        if not jnp.issubdtype(array.dtype, jnp.inexact):
-            array = array.astype(jnp.float32)
-        if not bool(np.asarray(jnp.all(jnp.isfinite(array)))):
+        if not np.issubdtype(array.dtype, np.inexact):
+            array = array.astype(np.float32)
+        if not bool(np.all(np.isfinite(array))):
             raise ValueError("bounds must be finite")
-        if not bool(np.asarray(jnp.all(array[:, 1] > array[:, 0]))):
+        if not bool(np.all(array[:, 1] > array[:, 0])):
             raise ValueError("every upper bound must be greater than its lower bound")
         if not callable(density):
             raise TypeError("density must be callable")
-        object.__setattr__(self, "bounds", array)
+        object.__setattr__(self, "bounds", canonical_array(array))
         object.__setattr__(self, "density", density)
         object.__setattr__(self, "quadrature", quadrature or GaussLegendreConfig())
 
@@ -225,14 +225,14 @@ class IntegrationSource:
         quadrature_weights = np.prod(
             np.stack([axis.reshape(-1) for axis in weight_mesh], axis=1), axis=1
         )
-        density_values = jnp.asarray(self.density(observations))
+        density_values = np.asarray(self.density(observations))
         if density_values.shape != (point_count,):
             raise ValueError(f"density must return shape [{point_count}]")
-        if not bool(np.asarray(jnp.all(jnp.isfinite(density_values)))):
+        if not bool(np.all(np.isfinite(density_values))):
             raise ValueError("density values must be finite")
-        if bool(np.asarray(jnp.any(density_values < 0))):
+        if bool(np.any(density_values < 0)):
             raise ValueError("density values must be nonnegative")
-        weights = density_values * jnp.asarray(quadrature_weights, dtype=density_values.dtype)
+        weights = density_values * np.asarray(quadrature_weights, dtype=density_values.dtype)
         return ObservationSample(observations, weights)
 
 

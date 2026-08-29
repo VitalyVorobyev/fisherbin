@@ -1,0 +1,63 @@
+{
+  "name": "@scorequant/learning-portal",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.0.9",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": "11.0.9"
+  },
+  "scripts": {
+    "start": "pnpm generate && docusaurus start",
+    "generate": "pnpm generate:protocol && pnpm generate:data",
+    "generate:protocol": "node scripts/generate-protocol.mjs",
+    "generate:data": "cd .. && uv run python website/scripts/generate_data.py",
+    "export:lessons": "cd .. && uv run marimo check website/lessons/score_space.py --select MW && uv run marimo export html-wasm website/lessons/score_space.py -o website/static/lessons/score-space --mode run --no-show-code --no-execute",
+    "prepare:runtime": "node scripts/prepare-runtime.mjs",
+    "assemble:preview": "node scripts/assemble-preview.mjs",
+    "build:site": "docusaurus build",
+    "build:content": "pnpm generate && pnpm export:lessons && pnpm build:site && pagefind --site build",
+    "build": "pnpm prepare:runtime && pnpm build:content",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "validate": "pnpm generate && pnpm export:lessons && pnpm typecheck && pnpm lint && pnpm test && pnpm build:site"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.10.2",
+    "@docusaurus/preset-classic": "3.10.2",
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/space-grotesk": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@mdx-js/react": "3.1.1",
+    "clsx": "2.1.1",
+    "prism-react-renderer": "2.4.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.11.0",
+    "@docusaurus/module-type-aliases": "3.10.2",
+    "@docusaurus/tsconfig": "3.10.2",
+    "@docusaurus/types": "3.10.2",
+    "@eslint/js": "9.35.0",
+    "@playwright/test": "1.62.1",
+    "@testing-library/jest-dom": "6.8.0",
+    "@testing-library/react": "16.3.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "@vitejs/plugin-react": "6.1.1",
+    "@vitest/coverage-v8": "4.1.11",
+    "ajv": "8.20.0",
+    "eslint": "9.35.0",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "globals": "16.4.0",
+    "jsdom": "30.0.1",
+    "json-schema-to-typescript": "16.0.0",
+    "pagefind": "1.5.2",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.42.0",
+    "vitest": "4.1.11"
+  }
+}

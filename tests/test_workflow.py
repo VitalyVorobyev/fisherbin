@@ -145,9 +145,9 @@ def test_component_and_model_failures_are_explicit() -> None:
         sq.LinearComponentScore(object())  # type: ignore[arg-type]
 
 
-def test_linear_problem_arrays_are_jax_compatible() -> None:
+def test_linear_problem_arrays_are_canonical_numpy() -> None:
     problem = sq.LinearProblem(
         components=jnp.asarray([[1.0, 0.2], [0.5, 1.0]]),
         coefficients=jnp.asarray([1.0, 0.3]),
     )
-    assert isinstance(problem.scores, jnp.ndarray)
+    assert isinstance(problem.scores, np.ndarray)

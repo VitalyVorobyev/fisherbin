@@ -3,13 +3,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import partial
 
-import jax
-import jax.numpy as jnp
 import numpy as np
 
 from ._binstats import scatter_bin_statistics
+from ._execution import (
+    backend_jit,
+    canonical_array,
+    canonicalize_public,
+    execution_scope,
+    scatter_add,
+    scatter_set,
+)
+from ._execution import (
+    xp as jnp,
+)
 from ._typing import ArrayLike
 from ._validation import (
     _ValidatedSample,
@@ -17,13 +25,19 @@ from ._validation import (
     validate_n_bins,
     validate_sample,
 )
-from .config import ScalarDPConfig
+from .config import ExecutionConfig, ScalarDPConfig
 from .quantizers import chunked_hard_assign, scalar_interval_dp
 from .reports import EfficientScoreBound, InformationReport, ProfiledInformationReport
 from .transforms import fisher_transform
 
 
-def fisher_information(scores: ArrayLike, weights: ArrayLike | None = None) -> jnp.ndarray:
+@execution_scope
+def fisher_information(
+    scores: ArrayLike,
+    weights: ArrayLike | None = None,
+    *,
+    execution: ExecutionConfig | None = None,
+) -> np.ndarray:
     """Estimate unbinned Fisher information.
 
     Parameters
@@ -35,11 +49,12 @@ def fisher_information(scores: ArrayLike, weights: ArrayLike | None = None) -> j
 
     Returns
     -------
-    jax.Array
+    numpy.ndarray
         Matrix ``sum_i w_i s_i s_i.T`` with shape ``[P, P]``.
     """
     sample = validate_sample(scores, weights)
-    return _unbinned_fisher(sample)
+    del execution
+    return canonical_array(_unbinned_fisher(sample))
 
 
 def _unbinned_fisher(sample: _ValidatedSample) -> jnp.ndarray:
@@ -104,8 +119,8 @@ def _hard_bin_statistics(
 ) -> _HardBinStatistics:
     fisher, bin_weights = _hard_binned_fisher(sample, labels, n_bins)
     weights = sample.effective_weights
-    bin_counts = jnp.zeros(n_bins, dtype=jnp.int32).at[labels].add(1)
-    squared_weights = jnp.zeros(n_bins, dtype=weights.dtype).at[labels].add(weights**2)
+    bin_counts = scatter_add(jnp.zeros(n_bins, dtype=jnp.int32), labels, 1)
+    squared_weights = scatter_add(jnp.zeros(n_bins, dtype=weights.dtype), labels, weights**2)
     effective = jnp.where(squared_weights > 0, bin_weights**2 / squared_weights, 0)
     return _HardBinStatistics(
         fisher=fisher,
@@ -115,13 +130,15 @@ def _hard_bin_statistics(
     )
 
 
+@execution_scope
 def binned_fisher_information(
     scores: ArrayLike,
     assignments: ArrayLike,
     weights: ArrayLike | None = None,
     *,
     n_bins: int | None = None,
-) -> jnp.ndarray:
+    execution: ExecutionConfig | None = None,
+) -> np.ndarray:
     """Estimate Fisher information retained by hard bin counts.
 
     Parameters
@@ -138,20 +155,24 @@ def binned_fisher_information(
 
     Returns
     -------
-    jax.Array
+    numpy.ndarray
         Hard-binned Fisher matrix with shape ``[P, P]``.
     """
+    del execution
     sample = validate_sample(scores, weights)
     labels, resolved_n_bins = _validate_hard_assignments(sample, assignments, n_bins)
     fisher, _ = _hard_binned_fisher(sample, labels, resolved_n_bins)
-    return fisher
+    return canonical_array(fisher)
 
 
+@execution_scope
 def fractional_fisher_information(
     scores: ArrayLike,
     responsibilities: ArrayLike,
     weights: ArrayLike | None = None,
-) -> jnp.ndarray:
+    *,
+    execution: ExecutionConfig | None = None,
+) -> np.ndarray:
     """Estimate Fisher information retained by fractional assignments.
 
     Parameters
@@ -166,9 +187,10 @@ def fractional_fisher_information(
 
     Returns
     -------
-    jax.Array
+    numpy.ndarray
         Fractionally binned Fisher matrix with shape ``[P, P]``.
     """
+    del execution
     sample = validate_sample(scores, weights)
     resp = jnp.asarray(responsibilities, dtype=sample.scores.dtype)
     if resp.ndim != 2 or resp.shape[0] != sample.scores.shape[0] or resp.shape[1] == 0:
@@ -183,7 +205,7 @@ def fractional_fisher_information(
     bin_score_sums = weighted_resp.T @ sample.effective_scores
     safe_weights = jnp.where(bin_weights > 0, bin_weights, 1)
     means = bin_score_sums / safe_weights[:, None]
-    return jnp.einsum("b,bp,bq->pq", bin_weights, means, means)
+    return canonical_array(jnp.einsum("b,bp,bq->pq", bin_weights, means, means))
 
 
 def _report_from_fishers(
@@ -225,6 +247,7 @@ def _report_from_fishers(
     )
 
 
+@execution_scope
 def information_report(
     scores: ArrayLike,
     assignments: ArrayLike,
@@ -232,6 +255,7 @@ def information_report(
     *,
     n_bins: int | None = None,
     rank_rtol: float | None = None,
+    execution: ExecutionConfig | None = None,
 ) -> InformationReport:
     """Build retained-information and occupancy diagnostics for hard bins.
 
@@ -261,20 +285,23 @@ def information_report(
     report measures ``Var(E[s_hat | q])``, not ``Var(E[s | q])``, and is a
     surrogate for the model's own Fisher information.
     """
+    del execution
     sample = validate_sample(scores, weights)
     labels, resolved_n_bins = _validate_hard_assignments(sample, assignments, n_bins)
     statistics = _hard_bin_statistics(sample, labels, resolved_n_bins)
-    return _report_from_fishers(
-        _unbinned_fisher(sample),
-        statistics.fisher,
-        statistics.weights,
-        statistics.counts,
-        statistics.effective_sample_sizes,
-        rank_rtol=rank_rtol,
+    return canonicalize_public(
+        _report_from_fishers(
+            _unbinned_fisher(sample),
+            statistics.fisher,
+            statistics.weights,
+            statistics.counts,
+            statistics.effective_sample_sizes,
+            rank_rtol=rank_rtol,
+        )
     )
 
 
-@partial(jax.jit, static_argnames=("nuisance",))
+@backend_jit(static_argnames=("nuisance",))
 def _nuisance_block_slogdet(
     information: jnp.ndarray, nuisance: tuple[int, ...]
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
@@ -327,6 +354,7 @@ def _profiled_blocks(
     return 0.5 * (schur + schur.T), nuisance_block, nuisance
 
 
+@execution_scope
 def profiled_information_report(
     scores: ArrayLike,
     assignments: ArrayLike,
@@ -334,6 +362,7 @@ def profiled_information_report(
     interest: tuple[int, ...],
     weights: ArrayLike | None = None,
     n_bins: int | None = None,
+    execution: ExecutionConfig | None = None,
 ) -> ProfiledInformationReport:
     r"""Build same-label profiled-\(D_s\) diagnostics without regularization.
 
@@ -355,6 +384,7 @@ def profiled_information_report(
     ProfiledInformationReport
         Full-data and same-label Schur information plus determinant retention.
     """
+    del execution
     if not interest or len(set(interest)) != len(interest) or any(index < 0 for index in interest):
         raise ValueError("interest must contain unique nonnegative indices")
     sample = validate_sample(scores, weights)
@@ -377,27 +407,31 @@ def profiled_information_report(
         objective = float(np.asarray(binned_logdet))
         logdet_retention = objective - float(np.asarray(unbinned_logdet))
         retention = float(np.exp(logdet_retention / len(interest)))
-    return ProfiledInformationReport(
-        interest=interest,
-        nuisance=nuisance,
-        schur_unbinned=schur_unbinned,
-        schur_binned=schur_binned,
-        nuisance_unbinned=nuisance_unbinned,
-        nuisance_binned=nuisance_binned,
-        objective=objective,
-        logdet_retention=logdet_retention,
-        geometric_mean_retention=retention,
-        interest_rank=interest_rank,
-        nuisance_rank=nuisance_rank,
+    return canonicalize_public(
+        ProfiledInformationReport(
+            interest=interest,
+            nuisance=nuisance,
+            schur_unbinned=schur_unbinned,
+            schur_binned=schur_binned,
+            nuisance_unbinned=nuisance_unbinned,
+            nuisance_binned=nuisance_binned,
+            objective=objective,
+            logdet_retention=logdet_retention,
+            geometric_mean_retention=retention,
+            interest_rank=interest_rank,
+            nuisance_rank=nuisance_rank,
+        )
     )
 
 
+@execution_scope
 def efficient_scores(
     scores: ArrayLike,
     *,
     interest: tuple[int, ...],
     weights: ArrayLike | None = None,
-) -> jnp.ndarray:
+    execution: ExecutionConfig | None = None,
+) -> np.ndarray:
     """Project scores with the full-information nuisance regression.
 
     This constructs the explicit lower-dimensional upper problem for profiled
@@ -416,9 +450,10 @@ def efficient_scores(
 
     Returns
     -------
-    jax.Array
+    numpy.ndarray
         Full-information efficient scores with shape ``[N, len(interest)]``.
     """
+    del execution
     if not interest or len(set(interest)) != len(interest) or any(index < 0 for index in interest):
         raise ValueError("interest must contain unique nonnegative indices")
     sample = validate_sample(scores, weights)
@@ -438,12 +473,13 @@ def efficient_scores(
     if float(np.asarray(sign)) <= 0:
         raise ValueError("efficient-score projection requires nonsingular nuisance information")
     nuisance_coefficients = jnp.linalg.solve(nuisance_information, cross.T)
-    return (
+    return canonical_array(
         sample.scores[:, interest_indices]
         - sample.scores[:, nuisance_indices] @ nuisance_coefficients
     )
 
 
+@execution_scope
 def efficient_score_bound(
     scores: ArrayLike,
     *,
@@ -451,6 +487,7 @@ def efficient_score_bound(
     weights: ArrayLike | None = None,
     n_bins: int,
     config: ScalarDPConfig | None = None,
+    execution: ExecutionConfig | None = None,
 ) -> EfficientScoreBound:
     r"""Certify a ceiling on profiled information by quantizing the efficient score.
 
@@ -508,6 +545,7 @@ def efficient_score_bound(
     score-space origin. This matches ``PartitionResult.objective`` for the
     profiled criterion exactly, which is what makes the reported gap meaningful.
     """
+    del execution
     if not interest or len(set(interest)) != len(interest) or any(index < 0 for index in interest):
         raise ValueError("interest must contain unique nonnegative indices")
     if len(interest) > 1:
@@ -559,11 +597,13 @@ def efficient_score_bound(
     # Zero-weight rows carry no measure; the interval rule still labels them.
     centers = scatter_bin_statistics(label_array, atom_weights, coordinates, n_bins).means
     labels = chunked_hard_assign(transform.apply(efficient), centers)
-    labels = labels.at[sample.positive_weight_mask].set(label_array[inverse_rows])
-    return EfficientScoreBound(
-        upper_bound=float(np.log(between)),
-        labels=labels,
-        efficient_scores=efficient,
-        n_bins=n_bins,
-        interest=interest,
+    labels = scatter_set(labels, sample.positive_weight_mask, label_array[inverse_rows])
+    return canonicalize_public(
+        EfficientScoreBound(
+            upper_bound=float(np.log(between)),
+            labels=labels,
+            efficient_scores=efficient,
+            n_bins=n_bins,
+            interest=interest,
+        )
     )

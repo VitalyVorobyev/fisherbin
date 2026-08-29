@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "claims": [
+    "FI-QUANT-IDENTITY",
+    "FI-LOSS-DECOMPOSITION",
+    "TRACE-WHITENED-KMEANS",
+    "D-LEVERAGE",
+    "D-EXCHANGE-IMPLIES-VORONOI"
+  ]
+}

@@ -5,8 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Literal
 
-import jax.numpy as jnp
-
+from ._execution import (
+    canonicalize_public,
+    current_execution,
+    execution_scope,
+)
+from ._execution import (
+    xp as jnp,
+)
 from ._typing import ArrayLike
 from ._validation import (
     _ValidatedSample,
@@ -15,7 +21,9 @@ from ._validation import (
     validate_sample,
 )
 from .config import (
+    BackendName,
     DExchangeConfig,
+    ExecutionConfig,
     KMeansConfig,
     MahalanobisLloydConfig,
     PartitionConfig,
@@ -95,6 +103,7 @@ class _SolverSpec:
 
     partition_criteria: tuple[type[Criterion], ...] = ()
     quantizer_criteria: tuple[type[Criterion], ...] = ()
+    backends: tuple[BackendName, ...] = ("jax", "numpy")
 
 
 # The single source of truth for which (config type, criterion type) pairs
@@ -162,8 +171,14 @@ def _validate_solver(config: object, criterion: Criterion, task: str) -> None:
     if not isinstance(criterion, allowed):
         names = " or ".join(sorted(t.__name__ for t in allowed))
         raise ValueError(f"{type(config).__name__} implements only {names} for {task}")
+    backend = current_execution().backend
+    if spec is None or backend not in spec.backends:
+        raise ValueError(
+            f"{type(config).__name__} is unavailable for backend {backend!r} in {task}"
+        )
 
 
+@execution_scope
 def optimize_partition(
     scores: ArrayLike,
     *,
@@ -173,6 +188,7 @@ def optimize_partition(
     config: PartitionConfig | None = None,
     provenance: ScoreProvenance | None = None,
     initial_labels: ArrayLike | None = None,
+    execution: ExecutionConfig | None = None,
 ) -> PartitionResult:
     """Optimize labels of one fixed score table without prediction semantics.
 
@@ -195,11 +211,13 @@ def optimize_partition(
         ``init`` and ``n_init`` still govern any further restart; the guarded
         Mahalanobis-Lloyd solver starts from them directly.
     """
+    del execution
+    resolved_execution = current_execution()
     resolved_criterion = DOptimality() if criterion is None else criterion
     resolved_config = DExchangeConfig() if config is None else config
     _validate_solver(resolved_config, resolved_criterion, "optimize_partition")
     if isinstance(resolved_criterion, DOptimality):
-        return optimize_d_partition(
+        result = optimize_d_partition(
             scores,
             weights=weights,
             n_bins=n_bins,
@@ -207,19 +225,23 @@ def optimize_partition(
             provenance=provenance or ScoreProvenance(),
             initial_labels=initial_labels,
         )
-    # ``_validate_solver`` accepted the pair, and the only other criterion it
-    # can have accepted for this task is ProfiledDOptimality.
-    return optimize_profiled_d_partition(
-        scores,
-        weights=weights,
-        n_bins=n_bins,
-        criterion=resolved_criterion,
-        config=resolved_config,
-        provenance=provenance or ScoreProvenance(),
-        initial_labels=initial_labels,
-    )
+    else:
+        # ``_validate_solver`` accepted the pair, and the only other criterion it
+        # can have accepted for this task is ProfiledDOptimality.
+        result = optimize_profiled_d_partition(
+            scores,
+            weights=weights,
+            n_bins=n_bins,
+            criterion=resolved_criterion,
+            config=resolved_config,
+            provenance=provenance or ScoreProvenance(),
+            initial_labels=initial_labels,
+        )
+    object.__setattr__(result, "execution", resolved_execution)
+    return canonicalize_public(result)
 
 
+@execution_scope
 def fit_quantizer(
     source: Source,
     *,
@@ -229,6 +251,7 @@ def fit_quantizer(
     criterion: Criterion | None = None,
     config: QuantizerConfig | None = None,
     diagnostics: DiagnosticsMode = "endpoints",
+    execution: ExecutionConfig | None = None,
 ) -> QuantizerResult:
     """Fit a reusable hard rule from an empirical or bounded score law.
 
@@ -248,6 +271,8 @@ def fit_quantizer(
         This only affects diagnostic reporting; it never changes ``centers``,
         ``labels``, or either report.
     """
+    del execution
+    resolved_execution = current_execution()
     train, source_kind = _materialize_source(source, score)
     validation_sample = None
     if validation is not None:
@@ -277,10 +302,13 @@ def fit_quantizer(
             if validation_sample is None
             else result.evaluate_scores(validation_sample.scores, validation_sample.weights)
         )
-        return replace(
-            result,
-            validation_report=validation_report,
-            source_kind=source_kind,
+        return canonicalize_public(
+            replace(
+                result,
+                validation_report=validation_report,
+                source_kind=source_kind,
+                execution=resolved_execution,
+            )
         )
 
     prepared = _prepare_score_fit(
@@ -316,21 +344,24 @@ def fit_quantizer(
     hardening_gap = None
     if run.soft_retention_history:
         hardening_gap = run.soft_retention_history[-1] - hard_retention
-    return QuantizerResult(
-        centers=run.centers,
-        metric=None,
-        transform=prepared.transform,
-        criterion=resolved_criterion,
-        config=resolved_config,
-        trace=_build_optimization_trace(run, fit_diagnostics),
-        labels=fit_diagnostics.labels,
-        train_report=fit_diagnostics.train_report,
-        validation_report=fit_diagnostics.validation_report,
-        provenance=train.provenance,
-        hardening_gap=hardening_gap,
-        source_kind=source_kind,
-        train_profiled_report=train_profiled_report,
-        validation_profiled_report=validation_profiled_report,
+    return canonicalize_public(
+        QuantizerResult(
+            centers=run.centers,
+            metric=None,
+            transform=prepared.transform,
+            criterion=resolved_criterion,
+            config=resolved_config,
+            execution=resolved_execution,
+            trace=_build_optimization_trace(run, fit_diagnostics),
+            labels=fit_diagnostics.labels,
+            train_report=fit_diagnostics.train_report,
+            validation_report=fit_diagnostics.validation_report,
+            provenance=train.provenance,
+            hardening_gap=hardening_gap,
+            source_kind=source_kind,
+            train_profiled_report=train_profiled_report,
+            validation_profiled_report=validation_profiled_report,
+        )
     )
 
 

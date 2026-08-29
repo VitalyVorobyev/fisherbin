@@ -6,7 +6,6 @@ from collections.abc import Mapping
 from dataclasses import asdict, is_dataclass
 from typing import overload
 
-import jax
 import numpy as np
 
 from ._typing import JsonValue
@@ -37,7 +36,11 @@ def json_ready(value: object) -> JsonValue:
         return {str(key): json_ready(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
         return [json_ready(item) for item in value]
-    if isinstance(value, (jax.Array, np.ndarray)):
+    if isinstance(value, np.ndarray) or (
+        type(value).__module__.startswith("jax")
+        and hasattr(value, "shape")
+        and hasattr(value, "dtype")
+    ):
         return json_ready(np.asarray(value).tolist())
     if isinstance(value, np.generic):
         return json_ready(value.item())
