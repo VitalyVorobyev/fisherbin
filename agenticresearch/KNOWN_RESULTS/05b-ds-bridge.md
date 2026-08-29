@@ -685,7 +685,7 @@ unstable at optima.
 **Measured (N-DS-MARGINS-TREND, N-DS-SCALAR-MASS, N-DS-MARGINS-EXACT-ANCHOR).**
 Fine-grid (\(1/2^{16}\), atomless-emulating) exact-optimum suite, 6 laws,
 \(N=8\)–\(18\), 3 reps (+ \(N=20\) extension): the sandwich and tax identity
-verified exactly on every instance (108/108); **zero** exact ties (the
+verified exactly on every instance (112/112, including four at \(N=20\)); **zero** exact ties (the
 31-fold tie was an atomic-grid artifact); the optimum is always within 0–3
 points of the best efficient-score interval labeling, with relative value gap
 medians 0.3–6%; gauss06's binned nuisance block declines (median 0.23 at
