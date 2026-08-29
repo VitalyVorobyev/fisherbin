@@ -17,33 +17,28 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
 *Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 28 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`). The conditional bridge theorem DS14 passed its independent adversarial audit on 28 Aug 2026 (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`, packet `WORK/completed/AUDIT-DS-POPULATION-BRIDGE.md`; all four verdicts verified). The surviving mathematical gap is OP28, drafted as `WORK/active/DS-MARGINS-AT-OPTIMA.md`.*
+*Status 29 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 (margins at finite \(D_s\) optima) is resolved for conditionally centered laws at \(d_\psi=1\) by the DS15 margins dichotomy (`KNOWN_RESULTS/05b-ds-bridge.md` DS15; packet `WORK/completed/DS-MARGINS-AT-OPTIMA.md`): (M2) is automatic at global optima, (M3) provably fails there — free optima converge to the nuisance-degenerate efficient-score interval quantizer — so profiled compilation routes through the projected efficient-score rule rather than a DS14 margin certificate. The surviving gaps are OP29 and OP7.*
 
-## OP28. Margins at finite \(D_s\) optima
+## OP29. Margins beyond conditional centering
 
-The conditional bridge DS14 assumes, along the sequence of empirical
-solutions: a cell-mass margin, a conditioning margin, and a
-projected-centroid separation margin.
+DS15 settles the margin behaviour of exact global finite \(D_s\) optima for
+\(d_\psi=1\) and conditionally centered laws (\(E[S_\lambda\mid\hat s]=0\):
+Gaussian, elliptical). Everything outside that class is open:
 
-**Question.** For light-tailed atomless laws, do global (or exchange-stable)
-finite \(D_s\) optima satisfy these margins asymptotically, almost surely?
-Sub-questions:
+- **Non-centered laws** (\(E[S_\lambda\mid\hat s]\ne0\)): the projection tax
+  has a \(\Theta(1)\) population component on efficient-score intervals, so
+  the unrestricted supremum may be attained at *nondegenerate* quantizers and
+  the DS14 margins may hold at optima — prove or refute for a stated class.
+  Measured: mix3/tiny\_cluster optima keep macroscopic binned nuisance blocks
+  through \(N=18\) while the Gaussian blocks collapse (N-DS-MARGINS-TREND).
+- **\(d_\psi>1\)**: the DS15 reduction identifies the degenerate attainers,
+  but the dichotomy needs uniqueness/rigidity for the vector D problem on the
+  efficient score (ties into OP8/C2).
+- **Exchange-stable non-global sequences**: DS15 asserts nothing about them;
+  do stable local solutions retain margins, and at what information cost
+  relative to \(v_K\)?
 
-- Singleton cells persist at exact global optima through \(N=18\)
-  (`NUMERICAL_EVIDENCE.md` N-DS-BRIDGE-TREND); the extreme-cell information
-  heuristic (\(\sim2\log N/N\)) suggests they die out for Gaussian-tailed
-  laws — prove or refute.
-- Exact degenerate global ties exist (`CE-DS-DEGENERATE-GLOBAL-TIE-001`):
-  characterize the laws/sample events for which the separation margin fails,
-  and whether the merged-rule bridge conclusion is the best possible there.
-- Does the margin-compatible geometric optimum \(v^*\) of DS14 equal the
-  unrestricted population supremum over all measurable quantizers (ties into
-  C2 attainment)?
-- How does efficient-score-domination equality (DS11(a)) behave at global
-  optima?
-
-A positive resolution upgrades DS14 from conditional to unconditional for the
-covered laws and unlocks an audited `compile_quantizer` for profiled criteria.
+Target claim: `OPEN-DS-MARGINS-NONCENTERED`.
 
 ## OP7. Best practical \(D_s\) solver with theorem-backed certificate
 

@@ -38,9 +38,13 @@ only screen the enumeration and render display columns.  Setting: d=2,
 d_psi=1 (POI first), K=3, equal weights, scores centered by the exact sample
 mean (convention of CE-DS-GLOBAL-GEOMETRY-001/-002).
 
+4. ``anchor`` — fully exact enumeration (all canonical set partitions, no
+   float screen, no top-k cut) versus the screened optimum at small N.
+
 Run:  uv run python agenticresearch/py/ds_margins_at_optima.py trend
       uv run python agenticresearch/py/ds_margins_at_optima.py scalar
       uv run python agenticresearch/py/ds_margins_at_optima.py popref
+      uv run python agenticresearch/py/ds_margins_at_optima.py anchor
 """
 
 from __future__ import annotations
@@ -354,6 +358,62 @@ def run_popref(bins: list[int]) -> None:
         )
 
 
+# ------------------------------------------------------------------ anchor
+
+
+def canonical_partitions(n: int, k: int):
+    """Restricted-growth enumeration of all set partitions into k nonempty cells."""
+    labels = [0] * n
+
+    def rec(i: int, used: int):
+        if i == n:
+            if used == k:
+                yield list(labels)
+            return
+        for c in range(min(used + 1, k)):
+            labels[i] = c
+            yield from rec(i + 1, max(used, c + 1))
+
+    yield from rec(0, 0)
+
+
+def run_anchor(laws: list[str], n: int, reps: int) -> None:
+    """Fully exact enumeration anchor for the float screen at small N.
+
+    For each fine-grid instance, enumerate ALL canonical K-cell set partitions
+    in exact rationals (no float screen, no top-k cut) and compare the global
+    optimum with the screened + exactly re-ranked one.
+    """
+    for law in laws:
+        for rep in range(reps):
+            digest = hashlib.md5(f"margins-{law}-{n}-{rep}".encode()).digest()
+            seed = 20260829 + int.from_bytes(digest[:4], "big")
+            rng = np.random.default_rng(seed)
+            scores_exact = round_center_fine(sample_law(law, n, rng))
+            best: Fraction | None = None
+            n_feasible = 0
+            for labels in canonical_partitions(n, K):
+                obj = exact_objective(scores_exact, labels)
+                if obj is None:
+                    continue
+                n_feasible += 1
+                if best is None or obj > best:
+                    best = obj
+            scores = np.array([[float(v) for v in row] for row in scores_exact])
+            screened = max(
+                obj
+                for labs in screen_global(scores)
+                if (obj := exact_objective(scores_exact, [int(v) for v in labs])) is not None
+            )
+            assert best is not None
+            print(
+                f"{law} N={n} rep={rep}: feasible={n_feasible} "
+                f"exact_opt={float(best):.6f} screened_opt={float(screened):.6f} "
+                f"MATCH={screened == best}",
+                flush=True,
+            )
+
+
 # -------------------------------------------------------------------- main
 
 
@@ -397,7 +457,13 @@ def main() -> None:
         bins = [int(v) for v in sys.argv[2].split(",")] if len(sys.argv) > 2 else [3, 4, 6]
         run_popref(bins)
         return
-    raise SystemExit(f"unknown mode {mode!r}; use trend | scalar | popref")
+    if mode == "anchor":
+        laws = sys.argv[2].split(",") if len(sys.argv) > 2 else ["gauss06", "gauss09", "mix3"]
+        n = int(sys.argv[3]) if len(sys.argv) > 3 else 12
+        reps = int(sys.argv[4]) if len(sys.argv) > 4 else 2
+        run_anchor(laws, n, reps)
+        return
+    raise SystemExit(f"unknown mode {mode!r}; use trend | scalar | popref | anchor")
 
 
 if __name__ == "__main__":

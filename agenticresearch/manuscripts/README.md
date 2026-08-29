@@ -73,6 +73,24 @@ canonical.
   `(A1)`–`(A5)` until the labels were found to collide with the A-optimality
   results A1–A4.
 
+### Added 29 August 2026 (the DS-margins session)
+
+- **DS15 is absent and reframes the \(D_s\) story.** For conditionally
+  centered laws (\(E[S_\lambda\mid\hat s]=0\); Gaussian/elliptical) at
+  \(d_\psi=1\), global finite \(D_s\) optima converge in value to the
+  *unrestricted* population supremum, attained only by the nuisance-degenerate
+  efficient-score interval quantizer: (M2) is automatic, (M3) provably fails,
+  and the compile target for profiled criteria is the projected
+  efficient-score rule, not a margin-certified in-bin quantizer
+  (`KNOWN_RESULTS/05b-ds-bridge.md` DS15). Any manuscript treatment of DS14
+  must carry this qualification, and the "singleton cells persist" reading of
+  the \(N\le18\) evidence is now known to be pre-asymptotic
+  (N-DS-SCALAR-MASS).
+- **New prior-art constellation.** Kieffer-1983 / Graf-Luschgy-2000 /
+  Levrard-2015 / Silvey-1978 / Wang-Yang-Stufken-2019 enter the bibliography;
+  the distortion-vs-determinant "two camps" frame (topics/01, topics/04) is
+  the natural related-work skeleton for the margins discussion.
+
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of
 `protocols/audit.md`. It had no updater before workspace v4.0, which is why the

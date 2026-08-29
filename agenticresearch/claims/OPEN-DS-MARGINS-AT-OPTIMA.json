@@ -1,20 +1,42 @@
 {
   "id": "OPEN-DS-MARGINS-AT-OPTIMA",
-  "title": "Are the bridge margins automatic at finite Ds optima?",
+  "title": "Margins dichotomy at global finite Ds optima (conditionally centered laws)",
   "criterion": [
     "Ds"
   ],
   "level": "empirical_to_population",
-  "status": "open",
-  "publication_status": "open",
-  "statement": "Determine whether global/exchange-stable finite Ds optima under light-tailed atomless laws asymptotically satisfy the DS14 margins (cell mass, conditioning, projected-centroid separation), whether the margin-compatible geometric optimum equals the unrestricted population supremum, and how efficient-score-domination equality behaves at optima. Measured: singleton cells persist at exact global optima through N=18 and one exact degenerate tie exists (N-DS-BRIDGE-TREND).",
+  "status": "project_proved",
+  "publication_status": "internal",
+  "statement": "For d_psi=1 and score laws with conditionally centered nuisance (E[S_lam|shat]=0: Gaussian, elliptical), atomless efficient-score marginal with a unique optimal scalar K-quantizer (log-concave suffices) and swap-rich nuisance conditionals, almost surely along exact global finite Ds optima: (i) the value converges to the unrestricted population supremum v_K over all measurable K-cell quantizers, attained only by the optimal efficient-score interval quantizer, which is fully nuisance-degenerate and DS9-infeasible; (ii) cell masses converge to the positive population masses - the mass margin (M2) is automatic and singleton cells die out (the N<=18 singleton evidence is pre-asymptotic); (iii) the binned nuisance and cross blocks vanish, so lambda_min(I_N) -> 0: the conditioning margin (M3) FAILS for every kappa>0 and every law in the class - the optimizer sheds binned nuisance information by design; (iv) the margin-compatible optimum v*(kappa) is strictly below v_K, so DS14 governs margin-certified (necessarily suboptimal by delta(kappa)>0) solutions, never free global optima, on this class; (v) DS11(a) efficient-score domination becomes an equality at optima. The (M5) projected-centroid object rides on a 0/0 slope and degenerates with the metric; the meaningful reduced geometry is the scalar J* geometry with distinct centroids.",
+  "assumptions": [
+    "d_psi = 1 (general d_psi reduces to the open vector-D uniqueness/rigidity theory on the efficient score)",
+    "(L) conditional centering: E[S_lam | shat] = 0 a.s. (Gaussian, elliptical with finite second moments)",
+    "(S) atomless efficient-score marginal, positive density near the optimal boundaries, unique optimal scalar K-quantizer (log-concave suffices: Kieffer-1983, Graf-Luschgy-2000 Thm 5.1)",
+    "(R) swap richness: both nuisance signs available with bounded magnitude conditionally near the optimal boundaries (automatic for Gaussian)",
+    "E S = 0, E||S||^2 < oo, nonsingular full information; i.i.d. equal weights; exact empirical centering",
+    "global finite optima over feasible labelings (nonsingular binned nuisance block); K >= 3"
+  ],
   "dependencies": [
-    "OPEN-DS-FINITE-POP-BRIDGE",
+    "DS-PROFILED-VARIATIONAL",
+    "OPEN-DS-DOMINATION-EQUALITY",
     "DS-GLOBAL-TIE-DEGENERACY"
   ],
+  "implies": [
+    "OPEN-DS-MARGINS-NONCENTERED"
+  ],
+  "literature": [
+    "Pollard-1981",
+    "Kieffer-1983",
+    "Graf-Luschgy-2000",
+    "Levrard-2015",
+    "Silvey-1978"
+  ],
+  "literature_search_status": "search_gap",
   "proof_location": {
-    "file": "OPEN_PROBLEMS.md",
-    "section": "OP28. Margins at finite \\(D_s\\) optima"
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS15. Margins dichotomy at global finite \\(D_s\\) optima"
   },
-  "programme": "P1"
+  "programme": "P1",
+  "role": "resolves OP28 for the conditionally centered class; redirects profiled-criterion compilation to the projected efficient-score rule",
+  "warning": "Not yet independently audited. The (M3) failure is at FREE global optima: margin-certified exchange-stable labelings remain governed by DS14 at a quantified information cost delta(kappa) = v_K - v*(kappa) > 0. Class (L) and d_psi=1 only; the complement is OPEN-DS-MARGINS-NONCENTERED (OP29). Measured support: N-DS-MARGINS-TREND (fine-grid exact optima, sandwich verified exactly on every instance), N-DS-SCALAR-MASS, N-DS-MARGINS-EXACT-ANCHOR."
 }

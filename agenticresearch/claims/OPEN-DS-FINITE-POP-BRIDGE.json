@@ -26,7 +26,7 @@
     "conditioning margin lambda_min(I_q) >= kappa > 0 along the sequence",
     "projected-centroid separation >= gamma > 0 (dropped in the merged-rule variant)",
     "Lambda := 2 E||S||^2 bounds lambda_max(S_psi(I_N)) eventually a.s. (derived from (M1), not an extra assumption)",
-    "margins are assumed, not derived: see OPEN-DS-MARGINS-AT-OPTIMA"
+    "margins are assumed, not derived - and DS15 proves (M3) provably FAILS at free global optima for conditionally centered laws with d_psi=1, so on that class the theorem governs margin-certified solutions at information cost delta(kappa) = v_K - v*(kappa) > 0 (OPEN-DS-MARGINS-AT-OPTIMA)"
   ],
   "boundary_counterexamples": [
     "CE-DS-DEGENERATE-GLOBAL-TIE-001"
@@ -35,7 +35,7 @@
     "OPEN-DS-MARGINS-AT-OPTIMA",
     "AUDIT-DS-POPULATION-BRIDGE"
   ],
-  "warning": "Conditional theorem: the margin assumptions are not automatic at finite optima (singleton cells and exact degenerate ties occur; see OPEN-DS-MARGINS-AT-OPTIMA and N-DS-BRIDGE-TREND). Passed the publication-grade audit (AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md), which supplied the fixed-class slab Glivenko-Cantelli step, the derived Lambda, the explicit compact parameter set, and the merged-variant value identification.",
+  "warning": "Conditional theorem. DS15 (OPEN-DS-MARGINS-AT-OPTIMA, 29 Aug 2026) settles the margin question on the conditionally centered d_psi=1 class: (M2) is automatic at global optima, but (M3) fails there for every kappa>0 - free global optima converge to the nuisance-degenerate efficient-score interval quantizer, so the bridge's hypothesis set is empty along them and DS14 governs margin-CERTIFIED (delta(kappa)-suboptimal) solutions instead. Beyond that class the margins remain open (OPEN-DS-MARGINS-NONCENTERED). Passed the publication-grade audit (AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md), which supplied the fixed-class slab Glivenko-Cantelli step, the derived Lambda, the explicit compact parameter set, and the merged-variant value identification.",
   "role": "the compile bridge candidate for profiled criteria",
   "audit": "AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md",
   "literature_search_status": "search_gap"
