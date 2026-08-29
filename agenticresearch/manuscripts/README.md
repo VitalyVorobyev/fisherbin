@@ -8,10 +8,17 @@ a manuscript revision only when a publication decision is taken (see
 `research-plan-proposal.md` — the paper is a by-product of the ledger, not a
 driver). Never treat a manuscript statement as more current than the registry.
 
-**Do not load the `.html`/`.md` article bodies into an agent context.** They
-are ~400 KB each, mostly base64-inlined figures. Use the crosswalk below plus
-the registry instead; open a manuscript only in a dedicated
-manuscript-revision task.
+**Prefer the crosswalk below plus the registry over the article bodies.** The
+v8 article is ~58 KB of prose (`.md`) / ~68 KB (`.html`) — greppable and
+section-readable, but still an order of magnitude more than a claim lookup, so
+open it only in a dedicated manuscript-revision task.
+
+**Figures live in `figures/`, never inlined.** The six assets were base64
+`data:` URIs until 29 Aug 2026, which made the article a 407 KB blob with
+single lines over 100 KB: undiffable by git, unsearchable by grep, unloadable
+by an agent. `py/registry.py validate` now fails on any `data:image/` payload
+in the workspace, so this cannot regress. The `.html` needs its sibling
+`figures/` directory to render — it is no longer a self-contained single file.
 
 ## Files
 

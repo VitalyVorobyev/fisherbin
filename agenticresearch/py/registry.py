@@ -344,6 +344,26 @@ def _check_label_collisions(workspace: Path, out: list[str]) -> None:
             )
 
 
+def _check_inlined_assets(workspace: Path, out: list[str]) -> None:
+    """No tracked text file carries a base64 ``data:`` payload.
+
+    Inlined figures made the v8 manuscript a 407 KB single line-blob: unreadable
+    by an agent, undiffable by git, and unsearchable by grep. Figures live in
+    ``manuscripts/figures/`` and are referenced by relative path.
+    """
+    for suffix in ("*.md", "*.html", "*.json"):
+        for path in sorted(workspace.rglob(suffix)):
+            if "archive" in path.parts:
+                continue
+            count = path.read_text(errors="replace").count("data:image/")
+            if count:
+                rel = path.relative_to(workspace)
+                out.append(
+                    f"{rel}: {count} inlined base64 asset(s); extract them to a "
+                    "sibling figures/ directory and reference by relative path"
+                )
+
+
 def _check_index_current(registry: dict, workspace: Path, out: list[str]) -> None:
     path = workspace / "claims" / "INDEX.md"
     if not path.is_dir() and (workspace / "claims").is_dir():
@@ -370,6 +390,7 @@ def validate(workspace: Path = WORKSPACE) -> list[str]:
     _check_known_results_backlinks(index, workspace, out)
     _check_programmes(registry, workspace, out)
     _check_label_collisions(workspace, out)
+    _check_inlined_assets(workspace, out)
     _check_index_current(registry, workspace, out)
     return out
 
