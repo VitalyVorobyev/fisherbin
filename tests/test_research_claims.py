@@ -564,9 +564,7 @@ def test_ds15_profiled_value_is_bounded_by_the_efficient_score_interval_optimum(
     scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
     n_rows, n_bins = len(scores), 3
     weight = Fraction(1, n_rows)
-    full = [
-        [sum(weight * row[a] * row[b] for row in scores) for b in range(2)] for a in range(2)
-    ]
+    full = [[sum(weight * row[a] * row[b] for row in scores) for b in range(2)] for a in range(2)]
     slope = full[0][1] / full[1][1]
     shat = [row[0] - slope * row[1] for row in scores]
     assert sum(weight * shat[row] * scores[row][1] for row in range(n_rows)) == 0
