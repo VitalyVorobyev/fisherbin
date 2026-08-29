@@ -16,13 +16,34 @@ The core dependencies are JAX and Optax. Matplotlib, notebook tooling, and the d
 uv run ruff check .
 uv run ruff format --check .
 uv run ty check src
-JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
 uv build
 uv run mkdocs build --strict
 ```
 
 X64 is an explicit application and CI choice. The package never changes global JAX configuration during import.
+
+## Test tiers and parallelism
+
+The suite is tiered by what a test is for rather than by how long it takes, so a
+bare `uv run pytest` still runs everything. `tests/conftest.py` marks the modules
+that execute published prose -- documentation snippets, README fences, and the
+notebooks -- with `docs_execution`; they re-run the same `examples/` generators
+the library tier already asserts against, so what they catch is presentation
+drift rather than a numerical regression. CI runs the two tiers as parallel jobs:
+
+```bash
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto -m "not docs_execution"
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto -m docs_execution
+```
+
+Use `-n auto` for a full run and omit it when running one test. Under
+`pytest-xdist`, `tests/conftest.py` pins each worker to a single compute thread
+before anything imports JAX: XLA sizes its thread pool from the host core count,
+so unpinned workers each try to claim the whole machine and spend their time
+descheduling one another. The benchmark harness deliberately runs unpinned and
+single-process, because that is how `benchmarks/baselines.json` was measured.
 
 Ruff enforces complete function annotations and bans importing `typing.Any`. `ty` then checks those annotations across `src/`; public conversion boundaries use `numpy.typing.ArrayLike` rather than leaking JAX-specific types.
 

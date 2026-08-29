@@ -16,7 +16,11 @@ os.environ.setdefault("MPLBACKEND", "Agg")
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOKS = sorted((REPO_ROOT / "examples" / "notebooks").glob("*.ipynb"))
-NOTEBOOK_TIMEOUT_SECONDS = 180
+# A hang guard, not a budget. Under xdist each worker is pinned to one
+# compute thread (see `tests/conftest.py`), so a notebook's wall clock grows
+# even as the tier's total shrinks; 180s left no margin for the heaviest one
+# on a shared runner.
+NOTEBOOK_TIMEOUT_SECONDS = 600
 
 if not NOTEBOOKS:
     raise RuntimeError(f"no notebooks discovered under {REPO_ROOT / 'examples' / 'notebooks'}")

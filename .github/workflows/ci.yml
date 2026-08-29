@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    # Monday 05:17 UTC: the interpreter and OS legs a pull request skips.
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   quality:
@@ -21,16 +29,16 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run ty check src
 
+  # A pull request runs one interpreter on one OS; `main`, the weekly cron, and
+  # a manual dispatch run the full matrix. Version- and platform-specific
+  # breakage is real but rare here and never urgent, so it is worth a slower
+  # feedback loop rather than triple wall clock on every push.
   test:
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            python-version: "3.12"
-          - os: ubuntu-latest
-            python-version: "3.13"
-          - os: macos-latest
-            python-version: "3.13"
+        # Only the github, needs, vars and inputs contexts are available in
+        # `strategy`, so the leg lists are inlined rather than hoisted to env.
+        include: ${{ fromJSON(github.event_name == 'pull_request' && '[{"os":"ubuntu-latest","python-version":"3.13"}]' || '[{"os":"ubuntu-latest","python-version":"3.12"},{"os":"ubuntu-latest","python-version":"3.13"},{"os":"macos-latest","python-version":"3.13"}]') }}
     runs-on: ${{ matrix.os }}
     env:
       JAX_ENABLE_X64: "1"
@@ -43,9 +51,30 @@ jobs:
           enable-cache: true
       - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --all-extras --dev --locked
-      - run: uv run pytest
-      - if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
-        run: uv build
+      # `tests/conftest.py` pins each xdist worker to one compute thread; without
+      # that the workers oversubscribe the runner and parallelism costs time.
+      - run: uv run pytest -n auto -m "not docs_execution"
+
+  # The published prose -- documentation snippets, README fences, notebooks --
+  # re-runs the same `examples/` generators the library tier already asserts
+  # against, so it detects presentation drift rather than numerical regressions.
+  # Splitting it off keeps it beside the critical path instead of on it, and
+  # makes a red build say which of the two broke. One interpreter is enough:
+  # this is prose, not portability.
+  docs-execution:
+    runs-on: ubuntu-latest
+    env:
+      JAX_ENABLE_X64: "1"
+      MPLBACKEND: Agg
+      UV_PYTHON: "3.13"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+      - run: uv python install 3.13
+      - run: uv sync --all-extras --dev --locked
+      - run: uv run pytest -n auto -m docs_execution
 
   float32-smoke:
     runs-on: ubuntu-latest
@@ -56,12 +85,31 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
       - run: uv python install 3.13
       - run: uv sync --dev --locked
       - run: uv run pytest tests/test_float32.py
 
+  build:
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.13"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+      - run: uv python install 3.13
+      - run: uv build
+
   benchmarks:
-    needs: [quality, test]
+    # `quality` only, deliberately. This is a wall-clock and objective-value
+    # guard against its own committed baselines; gating it behind the test
+    # matrix put a 90-second job at the end of a 19-minute queue without making
+    # its result any more trustworthy. It also runs unpinned and single-process
+    # on purpose -- baselines.json was measured that way.
+    needs: [quality]
     runs-on: ubuntu-latest
     env:
       JAX_ENABLE_X64: "1"

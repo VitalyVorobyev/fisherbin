@@ -15,14 +15,17 @@ uv sync --all-extras --all-groups --locked   # set up environment
 uv run ruff check .
 uv run ruff format --check .
 uv run ty check src                          # type checking (src only)
-JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest                          # full test suite
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto                  # full test suite
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto -m "not docs_execution"  # library tier
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py    # float32 path
-JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_fit.py -k name  # single test
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_fit.py -k name  # single test (no -n)
 uv build
 uv run mkdocs build --strict                 # docs must build strictly (broken links fail)
 ```
 
 Before handoff, run the full set above. X64 is an explicit CI/application choice — the package must never set global JAX config at import time.
+
+The suite is tiered by role, not duration: `tests/conftest.py` marks the modules that execute published prose (`test_docs_snippets`, `test_notebooks`, `test_readme`) as `docs_execution`, and CI runs that tier as its own parallel job. A bare `uv run pytest` still runs every tier. Use `-n auto` for full runs and omit it for targeted ones; under xdist the conftest pins each worker to one compute thread, without which the workers oversubscribe the host and parallelism costs time.
 
 ## Architecture
 

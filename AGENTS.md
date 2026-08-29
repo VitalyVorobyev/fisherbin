@@ -53,11 +53,27 @@ uv sync --all-extras --all-groups --locked
 uv run ruff check .
 uv run ruff format --check .
 uv run ty check src
-JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
 uv build
 uv run mkdocs build --strict
 ```
+
+`pytest` is tiered by what a test is for, not by how long it takes, so a bare
+`uv run pytest` still runs everything. `tests/conftest.py` marks the modules
+that execute published prose -- documentation snippets, README fences,
+notebooks -- as `docs_execution`, and CI runs the two tiers as parallel jobs:
+
+```bash
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto -m "not docs_execution"  # library
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto -m docs_execution        # prose
+```
+
+Add `-n auto` for a full run and leave it off for a targeted one. Under xdist,
+`tests/conftest.py` pins each worker to a single compute thread: XLA sizes its
+pool from the host core count, so unpinned workers oversubscribe the machine
+and parallelism becomes a net loss. Benchmarks deliberately run unpinned and
+single-process, because that is how `benchmarks/baselines.json` was measured.
 
 Use `uv add`, `uv remove`, and `uv lock` for dependency changes. Run commands through `uv run` so local and CI environments stay aligned.
 
