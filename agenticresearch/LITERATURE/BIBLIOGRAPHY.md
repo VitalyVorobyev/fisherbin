@@ -14,18 +14,27 @@ and the claims that cite it.
 | `Dulek-2023` | On the Optimality of Sufficient Statistics-Based Quantizers | `LITERATURE/topics/02-fisher-quantization.md` — Dülek (2023) | `TRACE-WHITENED-KMEANS` |
 | `Farias-Brossier-2013` | Optimal Scalar Quantization for Parameter Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Farias & Brossier (2013/2014) | — |
 | `Friedman-Rubin-1967` | On Some Invariant Criteria for Grouping Data | `LITERATURE/topics/03-determinant-clustering.md` — Friedman & Rubin (1967) | — |
+| `Garcia-Escudero-Gordaliza-1999` | Robustness Properties of k Means and Trimmed k Means | `LITERATURE/topics/04-vector-quantization.md` — Outlier and singleton cells at exact clustering optima | — |
+| `Graf-Luschgy-2000` | Foundations of Quantization for Probability Distributions | `LITERATURE/topics/04-vector-quantization.md` — Graf & Luschgy (2000, 2002) | — |
+| `Hennig-2004` | Breakdown points for maximum likelihood estimators of location-scale mixtures | `LITERATURE/topics/04-vector-quantization.md` — Outlier and singleton cells at exact clustering optima | — |
 | `Jiang-et-al-2026` | Direct target localization in USNs with hybrid quantized multi-snapshot measurements: A geometric structure-aided approach | `LITERATURE/topics/02-fisher-quantization.md` — Domain-specific D-optimal threshold quantizers | — |
 | `Kiefer-1974` | General Equivalence Theory for Optimum Designs (Approximate Theory) | `LITERATURE/topics/01-optimal-design.md` — Kiefer (1974) — general equivalence theory | `DS-CLASSICAL-DESIGN-THEORY` |
 | `Kiefer-Wolfowitz-1960` | The Equivalence of Two Extremum Problems | `LITERATURE/topics/01-optimal-design.md` — Kiefer & Wolfowitz (1960) — D-equivalence theorem | — |
+| `Kieffer-1983` | Uniqueness of locally optimal quantizer for log-concave density and convex error weighting function | `LITERATURE/topics/04-vector-quantization.md` — Scalar quantizer uniqueness (log-concave laws) | — |
+| `Levrard-2015` | Nonasymptotic bounds for vector quantization in Hilbert spaces | `LITERATURE/topics/04-vector-quantization.md` — Margin conditions in quantization | — |
 | `Li-Mathias-2000` | Extremal Characterizations of the Schur Complement and Resulting Inequalities | `LITERATURE/audits/DS-POPULATION-BRIDGE-28-August-2026.md` — Targeted audit for the DS-POPULATION-BRIDGE claims — 28 August 2026 | `AUDIT-DS-POPULATION-BRIDGE`, `DS-PROFILED-VARIATIONAL` |
+| `Liu-Pages-2020` | Convergence rate of optimal quantization and application to the clustering performance of the empirical measure | `LITERATURE/topics/04-vector-quantization.md` — Scalar quantizer uniqueness (log-concave laws) | — |
 | `Nather-Reinsch-1981` | D_s-optimality and Whittle's equivalence theorem | `LITERATURE/topics/01-optimal-design.md` — Näther & Reinsch (1981) — \(D_s\) equivalence | `DS-CLASSICAL-DESIGN-THEORY`, `DS-SCHUR` |
 | `Pollard-1981` | Strong Consistency of K-Means Clustering | `LITERATURE/topics/04-vector-quantization.md` — Pollard (1981, 1982) and the k-means consistency cluster | — |
 | `Richter-Alexa-2015` | Mahalanobis centroidal Voronoi tessellations | `LITERATURE/topics/04-vector-quantization.md` — Richter & Alexa (2015) | — |
 | `Scott-Symons-1971` | Clustering Methods Based on Likelihood Ratio Criteria | `LITERATURE/topics/03-determinant-clustering.md` — Scott & Symons (1971) | — |
+| `Sibson-Kenny-1975` | Coefficients in D-Optimal Experimental Design | `LITERATURE/topics/01-optimal-design.md` — Design-side margins: weight bounds, singular \(D_s\) designs, extreme-point selection (29 Aug 2026) | — |
+| `Silvey-1978` | Optimal design measures with singular information matrices | `LITERATURE/topics/01-optimal-design.md` — Design-side margins: weight bounds, singular \(D_s\) designs, extreme-point selection (29 Aug 2026) | — |
 | `Spaeth-1977` | Computational experiences with the exchange method: Applied to four commonly used partitioning cluster analysis criteria | `LITERATURE/topics/03-determinant-clustering.md` — Späth (1977) | — |
 | `Spaeth-1985` | Cluster Dissection and Analysis: Theory, FORTRAN Programs, Examples | `LITERATURE/topics/03-determinant-clustering.md` — Späth (1985) | — |
 | `Valassi-2020` | Optimising HEP parameter fits via Monte Carlo weight derivative regression | `LITERATURE/topics/05-hep-inference-aware.md` — Valassi (2020) — weight-derivative regression | `FI-QUANT-IDENTITY`, `INFO-D-EFFICIENCY` |
 | `Venkitasubramaniam-Tong-Swami-2006` | Score-Function Quantization for Distributed Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Venkitasubramaniam, Tong & Swami (2006) | `FI-QUANT-IDENTITY`, `TRACE-WHITENED-KMEANS` |
+| `Wang-Yang-Stufken-2019` | Information-Based Optimal Subdata Selection for Big Data Linear Regression | `LITERATURE/topics/01-optimal-design.md` — Design-side margins: weight bounds, singular \(D_s\) designs, extreme-point selection (29 Aug 2026) | — |
 | `Whittle-1973` | Some General Points in the Theory of Optimal Experimental Design | `LITERATURE/topics/01-optimal-design.md` — Whittle (1973) — general concave criteria | `DS-CLASSICAL-DESIGN-THEORY` |
 | `Wynn-1970` | The Sequential Generation of D-Optimum Experimental Designs | `LITERATURE/topics/01-optimal-design.md` — Wynn (1970) — sequential D-optimal design construction | — |
 | `Wynn-1972` | Results in the Theory and Construction of D-Optimum Experimental Designs | `LITERATURE/topics/01-optimal-design.md` — Wynn (1972) — D and \(D_s\) construction | `DS-CLASSICAL-DESIGN-THEORY`, `DS-SCHUR` |

@@ -95,3 +95,31 @@
 - PDF: https://www.cambridge.org/core/services/aop-cambridge-core/content/view/38BBD0DC1A0386FDF306B6C0167DF7D9/S0962492924000023a.pdf/optimal-experimental-design-formulations-and-computations.pdf
 
 ---
+
+## Design-side margins: weight bounds, singular \(D_s\) designs, extreme-point selection (29 Aug 2026)
+
+**Key:** Sibson-Kenny-1975, Silvey-1978, Wang-Yang-Stufken-2019
+
+**Papers:** Sibson & Kenny (1975, JRSS-B 37:288–292): in a D-optimal design,
+either the support is saturated with equal weights \(1/k\), or every weight
+is strictly below \(1/k\) (Atwood's inequality) — the design-side mass bound
+runs **upward**; no published lower bound on D/\(D_s\)-optimal support
+weights was found (OP28 audit). Silvey (1978, Biometrika 65:553–559,
+secondary-verified): \(D_s\)-optimal design measures can carry **singular**
+full information matrices, handled by generalized-inverse equivalence
+theory — the design-side analogue of DS15's (M3) failure at \(D_s\)-optimal
+partitions, and independent support for the project-don't-ridge invariant.
+Wang, Yang & Stufken (2019, JASA 114): the D-determinant over an i.i.d.
+sample is maximized by extreme order statistics, with per-point information
+scale \(2\log n\) for normal covariates (Thm 2, 6) — the undiluted-mass side
+of the extreme-cell heuristic.
+
+**Use:** prior-art frame for DS15: determinant criteria reward extremes and
+tolerate singular information at optima, in contrast to distortion criteria
+(topic 4), which penalize both. The binning problem sits in the intersection:
+mass dilution (\(W_b\mu_b\mu_b^\top/W_b\)-structure) restores the distortion
+side's (M2) while keeping the design side's (M3) failure.
+
+**Does not transfer:** design measures are free of the conditional-mean
+coupling; exact-design theory has no equivalence theorem; nothing controls
+the partition-restricted optimum.
