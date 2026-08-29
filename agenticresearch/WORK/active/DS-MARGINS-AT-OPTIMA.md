@@ -25,6 +25,14 @@ hard-refuses `compile_quantizer` for profiled criteria; a positive resolution
 is what lifts that refusal with a theorem behind it, which is the largest
 math-gated library feature in the queue.
 
+The deployability argument is not hypothetical. CMS's SANNT training
+(`CMS-2025`, `LITERATURE/topics/05-hep-inference-aware.md`) minimises
+\((F^{-1})_{r_sr_s}\) over one parameter of interest and 224 nuisance
+parameters — the profiled objective at \(s=1\) — and names the binning itself
+as its open issue: the loss "introduces an ambiguous choice of binning" and the
+binned likelihood "is not differentiable at its bin edges". That is a
+production-scale analysis asking for exactly the guarantee this packet gates.
+
 It also comes before P2 for a mathematical reason, not just a queue reason:
 `WORK/active/SCORE-ORACLE-ROBUSTNESS.md` records that any perturbation bound
 "needs a boundary-margin condition, and margins are data-dependent". DS14's
