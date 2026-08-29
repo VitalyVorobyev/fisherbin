@@ -60,6 +60,11 @@ exact global finite \(D_s\) optima, almost surely:
   contrast (Gaussian nuisance blocks collapse; mix3/tiny_cluster blocks stay
   macroscopic) already recorded.
 
+`PROBLEM.md` assumptions are unchanged (protocol completion item 4): DS15
+narrows *where* the in-bin profiled optimum lives, not what the canonical
+problem is; the DS9 in-bin/external-projection separation is reaffirmed, not
+revised.
+
 Falsification discipline: the finite half of DS15 (the exact sandwich
 \(\hat\Phi_s(z)\le\mathrm{btw}(\hat s_N;z)\le\hat v_K\) and the
 projection-tax identity) was verified in exact rational arithmetic on every
