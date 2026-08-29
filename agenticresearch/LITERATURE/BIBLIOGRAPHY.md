@@ -8,6 +8,7 @@ and the claims that cite it.
 | Key | Title | Annotated in | Cited by |
 |---|---|---|---|
 | `Barnes-Han-Ozgur-2018` | A Geometric Characterization of Fisher Information from Quantized Samples with Applications to Distributed Statistical Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Barnes, Han & Özgür (2018) | `FI-QUANT-IDENTITY`, `TRACE-WHITENED-KMEANS` |
+| `CMS-2025` | Development of systematic uncertainty-aware neural network trainings for binned-likelihood analyses at the LHC | `LITERATURE/topics/05-hep-inference-aware.md` — CMS Collaboration (2025) — SANNT | — |
 | `Coleman-et-al-1999` | Some computational issues in cluster analysis with no a priori metric | `LITERATURE/topics/03-determinant-clustering.md` — Coleman, Dong, Hardin, Rocke & Woodruff (1999) | — |
 | `Du-Faber-Gunzburger-1999` | Centroidal Voronoi Tessellations: Applications and Algorithms | `LITERATURE/topics/04-vector-quantization.md` — Du, Faber & Gunzburger (1999) | — |
 | `Dulek-2023` | On the Optimality of Sufficient Statistics-Based Quantizers | `LITERATURE/topics/02-fisher-quantization.md` — Dülek (2023) | `TRACE-WHITENED-KMEANS` |
@@ -23,6 +24,7 @@ and the claims that cite it.
 | `Scott-Symons-1971` | Clustering Methods Based on Likelihood Ratio Criteria | `LITERATURE/topics/03-determinant-clustering.md` — Scott & Symons (1971) | — |
 | `Spaeth-1977` | Computational experiences with the exchange method: Applied to four commonly used partitioning cluster analysis criteria | `LITERATURE/topics/03-determinant-clustering.md` — Späth (1977) | — |
 | `Spaeth-1985` | Cluster Dissection and Analysis: Theory, FORTRAN Programs, Examples | `LITERATURE/topics/03-determinant-clustering.md` — Späth (1985) | — |
+| `Valassi-2020` | Optimising HEP parameter fits via Monte Carlo weight derivative regression | `LITERATURE/topics/05-hep-inference-aware.md` — Valassi (2020) — weight-derivative regression | `FI-QUANT-IDENTITY`, `INFO-D-EFFICIENCY` |
 | `Venkitasubramaniam-Tong-Swami-2006` | Score-Function Quantization for Distributed Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Venkitasubramaniam, Tong & Swami (2006) | `FI-QUANT-IDENTITY`, `TRACE-WHITENED-KMEANS` |
 | `Whittle-1973` | Some General Points in the Theory of Optimal Experimental Design | `LITERATURE/topics/01-optimal-design.md` — Whittle (1973) — general concave criteria | `DS-CLASSICAL-DESIGN-THEORY` |
 | `Wynn-1970` | The Sequential Generation of D-Optimum Experimental Designs | `LITERATURE/topics/01-optimal-design.md` — Wynn (1970) — sequential D-optimal design construction | — |

@@ -30,6 +30,8 @@ the graphs should eventually connect.
 - Cranmer, Pavez, Louppe — calibrated classifiers for likelihood ratios
 - Matchev, Shyamsundar — optimal event categorization
 - Erdmann et al. (2026) — learning to bin
+- Valassi (2020) — weight-derivative regression; event-by-event sensitivity as the partitioning variable
+- CMS Collaboration (2025) — SANNT; profiled-Fisher loss for binned-likelihood analyses
 
 ## Score compression / density ratios
 - Alsing, Wandelt — MOPED/score compression

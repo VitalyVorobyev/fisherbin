@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0",
   "project": "ScoreQuant",
-  "updated": "2026-08-28",
+  "updated": "2026-08-29",
   "canonical_problem_file": "PROBLEM.md",
   "human_readable_ledger": "KNOWN_RESULTS/",
   "open_problem_ledger": "OPEN_PROBLEMS.md",
@@ -150,6 +150,18 @@
       "title": "Extremal Characterizations of the Schur Complement and Resulting Inequalities",
       "doi": "10.1137/S0036144599337290",
       "note": "SIAM Review 42(2):233-246. Theorem 2.2 is the DS11 identity (Loewner-minimal generalized Schur complement with exact attainment set); attributed to M. G. Krein (1947) and Anderson's shorted operator (1971)."
+    },
+    "Valassi-2020": {
+      "title": "Optimising HEP parameter fits via Monte Carlo weight derivative regression",
+      "arxiv": "2003.12853",
+      "pdf": "https://arxiv.org/pdf/2003.12853",
+      "note": "CHEP2019 proceedings (EPJ Web of Conferences). Local copy: papers/valassi_2020_weight_derivative_regression_arXiv2003.12853.pdf"
+    },
+    "CMS-2025": {
+      "title": "Development of systematic uncertainty-aware neural network trainings for binned-likelihood analyses at the LHC",
+      "arxiv": "2502.13047",
+      "doi": "10.1140/epjc/s10052-025-14713-w",
+      "note": "CMS-MLG-23-005. Local copy: papers/cms_2025_systematic_aware_nn_training_arXiv2502.13047.pdf"
     }
   },
   "agent_usage": {

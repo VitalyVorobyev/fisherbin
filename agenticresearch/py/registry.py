@@ -33,6 +33,8 @@ RESULT_LABEL_PREFIXES = ("U", "T", "G", "DS", "D", "E", "A", "S", "C", "O", "I")
 
 _RESULT_HEADING = re.compile(r"^##\s+([A-Z]+\d+)\.\s", re.MULTILINE)
 _CLAIMS_LINE = re.compile(r"^\*\*Claims:\*\*\s*(.+?)\s*$", re.MULTILINE)
+#: An actual inlined payload -- not prose naming one, which the docs must be free to do.
+_DATA_URI = re.compile(r"data:image/[a-z+]+;base64,[A-Za-z0-9+/=]{32,}")
 
 
 # --------------------------------------------------------------------------- #
@@ -355,7 +357,7 @@ def _check_inlined_assets(workspace: Path, out: list[str]) -> None:
         for path in sorted(workspace.rglob(suffix)):
             if "archive" in path.parts:
                 continue
-            count = path.read_text(errors="replace").count("data:image/")
+            count = len(_DATA_URI.findall(path.read_text(errors="replace")))
             if count:
                 rel = path.relative_to(workspace)
                 out.append(
