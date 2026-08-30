@@ -156,6 +156,16 @@
       "doi": "10.1214/aos/1176345339",
       "pdf": "https://www.stat.yale.edu/~pollard/Papers/Pollard81AS.pdf"
     },
+    "Rakhlin-Caponnetto-2006": {
+      "title": "Stability of K-Means Clustering",
+      "pdf": "https://proceedings.neurips.cc/paper_files/paper/2006/file/58191d2a914c6dae66371c9dcdc91b41-Paper.pdf",
+      "note": "NeurIPS 19. For bounded sources and nearest-center squared-error codebooks, uniqueness of the population minimizer forces the population almost-minimizer set to shrink; a covering-number uniform law transfers this to empirical stability. Direct prior art for DS16.1's codebook-rigidity ingredient, but not for arbitrary groupings or nuisance moments."
+    },
+    "Telgarsky-Vattani-2010": {
+      "title": "Hartigan's Method: k-means Clustering without Voronoi",
+      "pdf": "https://proceedings.mlr.press/v9/telgarsky10a/telgarsky10a.pdf",
+      "note": "AISTATS 2010, PMLR 9:820-827. Finite one-point relocation geometry and separation from the induced Voronoi partition for ordinary k-means; no profiled-Fisher or population-funnel result."
+    },
     "Zador-1982": {
       "title": "Asymptotic Quantization Error of Continuous Signals and the Quantization Dimension",
       "doi": "10.1109/TIT.1982.1056490"
