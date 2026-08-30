@@ -918,3 +918,209 @@ def test_ds15_projection_tax_identity_survives_ties_duplicates_and_unequal_weigh
             n_feasible += 1
             assert i_pp - i_pl**2 / i_ll == between - cross**2 / i_ll
         assert (n_feasible, n_singular) == (expected_feasible, expected_singular)
+
+
+def test_ds16_exchange_stable_state_can_retain_macroscopic_margins() -> None:
+    """One-point exchange stability does not force the DS15 degeneracy.
+
+    A non-global one-point exchange-stable profiled-Ds labeling - all 16
+    admissible one-point moves have exact profiled gain <= 0 - carries a
+    macroscopic nuisance block, conditioning bound, minimum cell mass, and
+    projected-centroid separation, at a price below the exact efficient-score
+    interval optimum v_K. The global optimum's nuisance block is four times
+    smaller than the witness's: the value ranking is anti-aligned with the
+    conditioning margin. Exchange stability does not preclude the DS14
+    margins; it prices them (CE-DS-STABLE-MARGIN-RETAINING-001).
+    """
+    fixture = json.loads(
+        (
+            RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-STABLE-MARGIN-RETAINING-001.json"
+        ).read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    n_rows, n_bins = len(scores), 3
+    labels = tuple(fixture["labels_before"])
+    exact = fixture["exact_quantities"]
+
+    def profiled(candidate: tuple[int, ...]) -> Fraction | None:
+        info = _exact_binned_information(scores, candidate, n_bins)
+        if info[1][1] == 0:
+            return None
+        return info[0][0] - info[0][1] * info[1][0] / info[1][1]
+
+    witness_value = profiled(labels)
+    assert witness_value == Fraction(exact["witness_profiled_value"])
+
+    info = _exact_binned_information(scores, labels, n_bins)
+    masses, moments = _exact_ds_cells(scores, labels, n_bins)
+    assert info[1][1] == Fraction(exact["witness_nuisance_block_I11"])
+    assert min(masses) == Fraction(exact["witness_min_cell_mass"])
+
+    slope = info[0][1] / info[1][1]
+    projected = [
+        moments[b][0] / masses[b] - slope * moments[b][1] / masses[b] for b in range(n_bins)
+    ]
+    separation = min(
+        abs(projected[b] - projected[c]) for b in range(n_bins) for c in range(b + 1, n_bins)
+    )
+    assert separation == Fraction(exact["witness_projected_centroid_separation"])
+
+    determinant = info[0][0] * info[1][1] - info[0][1] * info[1][0]
+    trace = info[0][0] + info[1][1]
+    assert determinant / trace == Fraction(exact["witness_lambda_min_lower_bound_det_over_trace"])
+
+    # Every admissible one-point move (source cell has >= 2 rows) has exact
+    # nonpositive profiled gain: this is one-point exchange stability.
+    gains: list[Fraction] = []
+    for row in range(n_rows):
+        source = labels[row]
+        if sum(1 for label in labels if label == source) < 2:
+            continue
+        for target in range(n_bins):
+            if target == source:
+                continue
+            moved = list(labels)
+            moved[row] = target
+            moved_value = profiled(tuple(moved))
+            assert moved_value is not None
+            gains.append(moved_value - witness_value)
+    assert len(gains) == 16
+    assert all(gain <= 0 for gain in gains)
+    assert max(gains) == Fraction(exact["witness_max_residual_move_gain"])
+
+    # The witness is exchange-stable but not the exact global optimum, and the
+    # global optimum's nuisance block is markedly smaller than the witness's.
+    best_value: Fraction | None = None
+    best_labels: tuple[int, ...] | None = None
+    for candidate in _canonical_partitions(n_rows, n_bins):
+        value = profiled(candidate)
+        if value is None:
+            continue
+        if best_value is None or value > best_value:
+            best_value, best_labels = value, candidate
+    assert best_labels is not None
+    assert best_value == Fraction(exact["global_optimum_value"])
+    assert best_value > witness_value
+    assert "".join(str(label) for label in best_labels) == exact["global_optimum_labels"]
+
+    global_info = _exact_binned_information(scores, best_labels, n_bins)
+    assert global_info[1][1] == Fraction(exact["global_optimum_nuisance_block_I11"])
+    assert global_info[1][1] < info[1][1]
+
+    # The efficient-score interval optimum v_K strictly exceeds the witness,
+    # by the recorded exact gap.
+    weight = Fraction(1, n_rows)
+    full = [[sum(weight * row[a] * row[b] for row in scores) for b in range(2)] for a in range(2)]
+    bhat = full[0][1] / full[1][1]
+    assert bhat == Fraction(exact["full_sample_regression_slope_Bhat"])
+    shat = [row[0] - bhat * row[1] for row in scores]
+
+    order = sorted(range(n_rows), key=shat.__getitem__)
+    interval_optimum = Fraction(0)
+    for first_cut in range(1, n_rows - 1):
+        for second_cut in range(first_cut + 1, n_rows):
+            cell_masses = [Fraction(0)] * n_bins
+            cell_sums = [Fraction(0)] * n_bins
+            for position, row in enumerate(order):
+                cell = 0 if position < first_cut else (1 if position < second_cut else 2)
+                cell_masses[cell] += weight
+                cell_sums[cell] += weight * shat[row]
+            interval_optimum = max(
+                interval_optimum,
+                sum(
+                    cell_sums[b] ** 2 / cell_masses[b] for b in range(n_bins) if cell_masses[b] > 0
+                ),
+            )
+    assert interval_optimum == Fraction(exact["efficient_score_interval_optimum_v_K"])
+    assert witness_value < interval_optimum
+    assert interval_optimum - witness_value == Fraction(exact["value_gap_v_K_minus_witness"])
+
+
+def test_ds16_efficient_score_interval_seed_is_not_exchange_stable() -> None:
+    """The efficient-score interval labeling is not one-point exchange-stable.
+
+    The exact interval optimum of the full-sample efficient score shat - the
+    documented profiled initializer, and the finite analogue of DS15's
+    degenerate attainer J* - admits an improving one-point move: relocating
+    row 7 raises the profiled value by an exact positive gain while growing
+    the binned nuisance block 27-fold, buying back nuisance information, the
+    finite mechanism behind DS15 Proposition 6's steering
+    (CE-DS-INTERVAL-SEED-UNSTABLE-001).
+    """
+    fixture = json.loads(
+        (
+            RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-INTERVAL-SEED-UNSTABLE-001.json"
+        ).read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    n_rows, n_bins = len(scores), 3
+    exact = fixture["exact_quantities"]
+    weight = Fraction(1, n_rows)
+
+    full = [[sum(weight * row[a] * row[b] for row in scores) for b in range(2)] for a in range(2)]
+    bhat = full[0][1] / full[1][1]
+    assert bhat == Fraction(exact["full_sample_regression_slope_Bhat"])
+    shat = [row[0] - bhat * row[1] for row in scores]
+
+    # Enumerate the C(7, 2) contiguous cut placements over the sorted shat
+    # order and keep the best-scoring interval grouping.
+    order = sorted(range(n_rows), key=shat.__getitem__)
+    interval_optimum = Fraction(0)
+    interval_labels: tuple[int, ...] | None = None
+    for first_cut in range(1, n_rows - 1):
+        for second_cut in range(first_cut + 1, n_rows):
+            labeling = [0] * n_rows
+            for position, row in enumerate(order):
+                labeling[row] = 0 if position < first_cut else (1 if position < second_cut else 2)
+            cell_masses = [Fraction(0)] * n_bins
+            cell_sums = [Fraction(0)] * n_bins
+            for row in range(n_rows):
+                cell_masses[labeling[row]] += weight
+                cell_sums[labeling[row]] += weight * shat[row]
+            value = sum(
+                cell_sums[b] ** 2 / cell_masses[b] for b in range(n_bins) if cell_masses[b] > 0
+            )
+            if value > interval_optimum:
+                interval_optimum = value
+                interval_labels = tuple(labeling)
+    assert interval_labels is not None
+    assert interval_optimum == Fraction(exact["interval_value_v_K"])
+
+    def canonicalize(labeling: tuple[int, ...]) -> tuple[int, ...]:
+        seen: dict[int, int] = {}
+        canonical = []
+        for label in labeling:
+            if label not in seen:
+                seen[label] = len(seen)
+            canonical.append(seen[label])
+        return tuple(canonical)
+
+    labels_before = canonicalize(interval_labels)
+    assert labels_before == tuple(fixture["labels_before"])
+
+    def profiled(candidate: tuple[int, ...]) -> Fraction | None:
+        info = _exact_binned_information(scores, candidate, n_bins)
+        if info[1][1] == 0:
+            return None
+        return info[0][0] - info[0][1] * info[1][0] / info[1][1]
+
+    value_before = profiled(labels_before)
+    assert value_before == Fraction(exact["interval_labeling_profiled_value"])
+    info_before = _exact_binned_information(scores, labels_before, n_bins)
+    assert info_before[1][1] == Fraction(exact["interval_labeling_nuisance_block_I11"])
+
+    move = exact["improving_move"]
+    assert labels_before[move["row"]] == move["from_cell"]
+    labels_after = list(labels_before)
+    labels_after[move["row"]] = move["to_cell"]
+    labels_after = tuple(labels_after)
+    assert labels_after == tuple(fixture["labels_after_or_optimum"])
+
+    value_after = profiled(labels_after)
+    gain = value_after - value_before
+    assert gain == Fraction(exact["exact_gain"])
+    assert gain > 0
+
+    info_after = _exact_binned_information(scores, labels_after, n_bins)
+    assert info_after[1][1] == Fraction(exact["post_move_nuisance_block_I11"])
+    assert info_after[1][1] > info_before[1][1]

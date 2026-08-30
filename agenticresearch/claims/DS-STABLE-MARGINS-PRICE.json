@@ -1,0 +1,43 @@
+{
+  "id": "DS-STABLE-MARGINS-PRICE",
+  "title": "Margin price and value funnel at arbitrary finite Ds labelings",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "empirical_to_population",
+  "status": "project_proved",
+  "publication_status": "internal",
+  "statement": "For d_psi = d_lambda = 1, conditionally centered laws (L) with scalar regularity (S), equal weights, exact empirical centering, K >= 3: almost surely (1) PRICE - for every kappa > 0 there is delta(kappa) > 0 with limsup_N sup{Phi_s_hat(z) : z feasible, I_hat_lambdalambda(z) >= kappa} <= v_K - delta(kappa); since lambda_min(I_hat) <= I_hat_lambdalambda, the DS14 conditioning margin (M3) at level kappa forces the same cap, for EVERY labeling sequence - stability, optimality, and seeding are irrelevant; (2) FUNNEL - any feasible sequence with Phi_s_hat -> v_K (any asymptotically value-optimal solver output) has cells converging in sample measure to J*, min cell mass -> min_b w*_b > 0 ((M2) holds, singletons die), and I_hat_lambdalambda, I_hat_psilambda -> 0, lambda_min -> 0 ((M3) fails): DS15's conclusions (2)-(3) are value-topological, not properties of exact global optimality; (3) FLOOR - induced labelings of any fixed quantizer q with I_q_lambdalambda > kappa achieve the margin with Phi_s_hat -> Phi(q), so the sup in (1) is asymptotically >= v*+(kappa) = sup{Phi(q) : I_q_lambdalambda > kappa} and v*+(kappa) <= v_K - delta(kappa). (R) is not needed; it enters only when DS15 conclusion (1) is imported to compare against free optima. Proof: exact Proposition 4 sandwich + an empirical grouping-rigidity lemma (DS15 Lemma 3's architecture run uniformly on the empirical scalar sample, closing the grouping-vs-measurable-partition gap via the nearest-centroid SSE comparison) + weighted VC Glivenko-Cantelli over tilted half-planes with (L).",
+  "assumptions": [
+    "d_psi = d_lambda = 1; K >= 3 = d_psi + d_lambda + 1 (centered-sample cardinality; the general mechanism is sum_b m_b = mu_hat, so a centered sample needs n_bins > dimension - commit 891bbf3)",
+    "(L) conditional centering E[S_lambda | shat] = 0 a.s.; (S) atomless efficient-score marginal with unique optimal scalar K-quantizer; E S = 0, E||S||^2 < oo, I > 0",
+    "i.i.d. equal weights, exact empirical centering; exact scores (estimated scores are P2)",
+    "feasible labelings: nonsingular binned nuisance block; the margin hypothesis is I_hat_lambdalambda >= kappa (weaker than lambda_min >= kappa)",
+    "(R) swap richness NOT assumed; imported only where DS15 conclusion (1) provides the v_K comparison point"
+  ],
+  "dependencies": [
+    "OPEN-DS-MARGINS-AT-OPTIMA",
+    "DS-PROFILED-VARIATIONAL",
+    "DS-SCALAR-EFFICIENT-DP"
+  ],
+  "implies": [
+    "OPEN-DS-MARGINS-NONCENTERED",
+    "DS-PROFILED-COMPILE-CERTIFICATE"
+  ],
+  "boundary_counterexamples": [
+    "CE-DS-STABLE-MARGIN-RETAINING-001"
+  ],
+  "literature": [
+    "Pollard-1981",
+    "Graf-Luschgy-2000",
+    "Silvey-1978"
+  ],
+  "literature_search_status": "search_gap",
+  "proof_location": {
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS16. Margin price at arbitrary labelings, the value funnel, and the profiled compile verdict"
+  },
+  "programme": "P1",
+  "role": "resolves OP29's deployment half: prices every margin-certified state and extends DS15's degeneracy from global optima to all value-convergent sequences",
+  "warning": "The cap is over ALL labelings, so it does not need and does not deliver existence of margin-carrying exchange-stable sequences; that inhabitation question is OPEN-DS-STABLE-BASINS (OP30). Class (L)+(S), d_psi = d_lambda = 1, equal weights, exact scores only. Measured support: N-DS-STABLE-CENSUS (grid laws - atomic emulations, evidence only), N-DS-STABLE-LIBRARY."
+}

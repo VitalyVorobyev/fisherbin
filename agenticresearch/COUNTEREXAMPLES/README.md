@@ -291,3 +291,68 @@ margin \(\approx 0.068\).
 **Next step:** test the stronger common-supergradient conjecture (`OPEN-E-COMMON-SUPERGRADIENT`).
 
 ---
+
+## CE-DS-STABLE-MARGIN-RETAINING-001 — a non-global exchange-stable profiled-\(D_s\) labeling can retain macroscopic DS14 margins
+
+**Status:** exact rational counterexample.
+
+**Claim falsified:**
+
+> One-point exchange stability forces the DS15 degeneracy on conditionally
+> centered laws: every exchange-stable feasible profiled-\(D_s\) labeling is
+> near the efficient-score interval supremum with a collapsing binned
+> nuisance block, so the DS14 margin triple can never hold at a stable state.
+
+An exactly centered \(N=8\), \(K=3\), \(d=2\) sample from the centered06 grid
+law, equal weights \(1/8\), exact rational arithmetic throughout. The witness
+labeling is one-point exchange-stable — all 16 admissible relocations have
+exact profiled gain \(\le0\) — yet carries a macroscopic nuisance block
+(\(I_{11}\approx0.523\)), conditioning lower bound
+\(\det I/\operatorname{tr}I\ge0.1397\), minimum cell mass \(1/4\), and
+projected-centroid separation \(\approx0.325\), at a \(7.7\%\) relative price
+below the exact scalar efficient-score interval optimum \(v_K\). The exact
+global optimum has a strictly larger profiled value but a nuisance block
+(\(\approx0.131\)) four times smaller than the witness's: the optimizer's
+value ranking is anti-aligned with the conditioning margin, the DS16 price
+mechanism in exact form. Margin-retaining exchange-stable states exist at a
+\(\Theta(1)\) information price, so the DS14 bridge's hypothesis set is
+inhabited by non-global stable states and a margin-certified compile path is
+not vacuous at finite \(N\); exchange stability does not preclude the DS14
+margins, it prices them (DS16). Theory: `KNOWN_RESULTS/05b-ds-bridge.md`
+DS16.
+
+**Fixture:** `CE-DS-STABLE-MARGIN-RETAINING-001.json`.
+**Regression:** `tests/test_research_claims.py::test_ds16_exchange_stable_state_can_retain_macroscopic_margins`.
+
+---
+
+## CE-DS-INTERVAL-SEED-UNSTABLE-001 — the efficient-score interval seed is not exchange-stable
+
+**Status:** exact rational counterexample.
+
+**Claim falsified:**
+
+> The exact efficient-score interval labeling — the DP optimum of the
+> full-sample efficient score, the documented initializer for profiled
+> exchange and the finite analogue of DS15's degenerate attainer \(J^*\) —
+> is itself one-point exchange-stable for the in-bin profiled-\(D_s\)
+> objective.
+
+An exactly centered \(N=8\), \(K=3\), \(d=2\) sample from the centered06 grid
+law, equal weights \(1/8\), exact rational arithmetic throughout. Relocating
+row 7 from the interval labeling's cell to cell 1 raises the profiled value
+by exactly \(2335473863255583/5219865952157696\approx0.447\); the improving
+move works by growing the binned nuisance block 27-fold
+(\(1742559/419430400\approx0.0042\) to
+\(46347881/419430400\approx0.111\)). Near the interval seed the projection
+tax is the dominant term, so the profiled objective climbs by buying back
+nuisance information — the finite mechanism behind DS15 Proposition 6's
+steering. The documented profiled initializer is therefore generally not a
+terminal state: seeding inside the DS15 degeneracy does not mean returning
+it, so the optimizer's output is a genuinely different object from the
+projected rule. Theory: `KNOWN_RESULTS/05b-ds-bridge.md` DS16.
+
+**Fixture:** `CE-DS-INTERVAL-SEED-UNSTABLE-001.json`.
+**Regression:** `tests/test_research_claims.py::test_ds16_efficient_score_interval_seed_is_not_exchange_stable`.
+
+---

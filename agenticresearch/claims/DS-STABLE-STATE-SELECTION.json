@@ -1,0 +1,38 @@
+{
+  "id": "DS-STABLE-STATE-SELECTION",
+  "title": "Exchange-stable Ds states span both margin regimes; ascent selects the funnel at scale",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "finite_assignment",
+  "status": "measured",
+  "publication_status": "internal",
+  "statement": "Exact full-lattice census (N = 10..14, K = 3, centered06 + mix3 grid laws, integer-exact stability classification selftested against an independent from-scratch oracle): one-point exchange-stable profiled-Ds states are plentiful (18-944 per instance) and overwhelmingly non-global; on the centered law their nuisance blocks span 1e-5 to 0.57 with value gap and nuisance block anti-correlated (-0.27 to -0.83 per instance), margin-retaining non-global stable states exist in every instance at a Theta(1) price, and stable states with nearly coincident projected centroids occur (min separation 5.5e-4), so (M5) must be checked, never assumed. The efficient-score DP interval labeling - the documented profiled initializer - is exchange-UNSTABLE in 7/10 centered-law instances (already at N = 8, exact gain 0.447, the improving move growing the nuisance block 27-fold) while stable in 9/10 mix3 instances. Exact best-gain ascent terminals at N <= 14 are strongly seed-dependent. At library scale (N = 100/300/1000, optimize_partition + ProfiledDOptimality + DExchangeConfig), EVERY seeding (efficient-score labels, k-means++, random) terminates on the centered law with the nuisance block collapsing at the K/N scale (N * I11 median 0.5-3.0) and near-optimal value (log-gap 0.004-0.046 to the certified DP ceiling) - the DS16 funnel in action, seed-independently - while on mix3 every seeding keeps lambda_min ~ 1.7 = Theta(1) with log-gaps <= 2e-4.",
+  "assumptions": [
+    "grid-law emulations (atomic), deterministic seeds 20260830 + 1000N + rep; library runs float64 with gain_tolerance 1e-10",
+    "measured, never theorem authority; the asymptotic selection law is open (OPEN-DS-STABLE-BASINS)"
+  ],
+  "dependencies": [
+    "DS-EXCHANGE-TERMINATES",
+    "DS-EXCHANGE-LEVERAGE-BOUND",
+    "DS-STABLE-MARGINS-PRICE"
+  ],
+  "implies": [
+    "OPEN-DS-STABLE-BASINS",
+    "DS-PROFILED-COMPILE-CERTIFICATE"
+  ],
+  "counterexamples": [
+    "CE-DS-INTERVAL-SEED-UNSTABLE-001"
+  ],
+  "proof_location": {
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS16. Margin price at arbitrary labelings, the value funnel, and the profiled compile verdict"
+  },
+  "artifact": "WORK/artifacts/DS-STABLE-MARGINS-COMPILE/census-summary.json",
+  "literature": [
+    "Silvey-Titterington-Torsney-1978"
+  ],
+  "literature_search_status": "search_gap",
+  "programme": "P1",
+  "role": "the selection-effects evidence separating properties of stable states from properties of the seeding (packet blocker 5)"
+}
