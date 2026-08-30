@@ -43,6 +43,17 @@ exactly that rule — and refuses when the partition is unstable or geometricall
 `provider.score(X)` call. Observation-to-score conversion never hides inside fitting or prediction.
 [Three doors](three-doors.md) treats each regime in full.
 
+## Install
+
+```bash
+uv add scorequant
+```
+
+or, outside a `uv` project, `pip install scorequant`. Python 3.12 or newer. JAX and Optax are the
+required numerical dependencies; NumPy is a supported portable runtime, which is what lets a saved
+rule predict where JAX is absent. ScoreQuant never sets global JAX configuration at import, so
+64-bit precision stays your application's call (`JAX_ENABLE_X64=1`).
+
 ## Quickstart
 
 A Gaussian location model \(x\sim\mathcal N(\mu, I_2)\) has score \(s(x)=x-\mu_0\), so at

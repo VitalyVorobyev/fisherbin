@@ -285,13 +285,11 @@ estimates, and the distinction matters when reading a retained-information numbe
 
 ## Install
 
-There is no PyPI release yet. Install from source:
-
 ```bash
-uv add "scorequant @ git+https://github.com/VitalyVorobyev/scorequant.git"
+uv add scorequant
 ```
 
-Or to work on a checkout:
+or, outside a `uv` project, `pip install scorequant`. To work on a checkout instead:
 
 ```bash
 git clone https://github.com/VitalyVorobyev/scorequant.git

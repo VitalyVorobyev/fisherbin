@@ -3,6 +3,8 @@
 Four questions decide a ScoreQuant call: which task, which door, which criterion, which solver.
 This page answers them in that order. Every snippet runs, and they share one namespace.
 
+Install with `uv add scorequant`, or `pip install scorequant` outside a `uv` project.
+
 ```python
 import numpy as np
 

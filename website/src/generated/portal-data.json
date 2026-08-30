@@ -568,7 +568,7 @@
       {
         "bins": 8,
         "dims": 3,
-        "elapsed_seconds": 0.04666899994481355,
+        "elapsed_seconds": 0.000990750006167218,
         "peak_rss_megabytes": 1026.84375,
         "quality": 0.643629940651137,
         "quality_label": "held_out_geometric_mean_retention",
