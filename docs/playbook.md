@@ -11,24 +11,24 @@ This page is not published to the documentation site.
 | Tool | Version | Pinned by | Used for |
 | --- | --- | --- | --- |
 | `uv` | any recent | — | every Python environment, command, build and lock |
-| Node | **24.19.0** | `website/.node-version`, `website/package.json` `engines` | the React portal only |
+| Node | **>=20**, CI builds 24.19.0 | `website/package.json` `engines`, `website/.node-version` | the React portal only |
 | pnpm | **11.0.9** | `website/package.json` `packageManager` | the React portal only |
 
 Python is managed entirely by `uv`; you never create a virtualenv by hand and never run `pip`.
 
-**Node is the version to get right first.** The portal declares `>=24 <25`. An older Node does not
-hard-fail — pnpm prints
+**Node has two numbers and they mean different things.** `engines` in `package.json` is the real
+requirement, `>=20` — inherited from Docusaurus 3, which declares `>=20.0`. `.node-version` is
+`24.19.0`, the single version CI builds on and therefore the one to develop against when a build
+difference would matter.
 
-```text
-[WARN] Unsupported engine: wanted: {"node":">=24 <25"} (current: {"node":"v22.20.0", ...})
-```
-
-and runs the command anyway. That is worse than a failure, because CI builds on 24 and a local run
-on 22 is not the same run. Install the pinned version:
+Do not read a `[WARN] Unsupported engine` line as a failure. pnpm prints it and then runs the
+command anyway, so an engine mismatch is a warning you will scroll past rather than a stop. That
+is the argument for keeping `engines` honest: a bound nothing enforces and nothing needs only
+trains you to ignore the warning that would matter.
 
 ```bash
 fnm install 24.19.0 && fnm use 24.19.0     # or: nvm install 24.19.0 && nvm use
-node --version                             # must print v24.19.0
+node --version                             # v24.19.0 matches CI; >=20 will build
 ```
 
 pnpm comes from `corepack`, which ships with Node — you do not install pnpm separately. Always
@@ -186,8 +186,8 @@ deliberately given a loose tolerance because CI machines differ.
 Nothing publishes automatically. `release.yml` triggers on a `v*` tag, so publication is a
 deliberate push.
 
-**Once, before the first release**, create the trusted publishers in the web UI. This is the only
-step that cannot be done from here, and it is what removes the need for an API token anywhere:
+The trusted publisher is configured on pypi.org, which is what removes the need for an API token
+anywhere. All four fields have to keep matching the workflow or the OIDC exchange is refused:
 
 | Field | Value |
 | --- | --- |
@@ -195,17 +195,20 @@ step that cannot be done from here, and it is what removes the need for an API t
 | Owner | `VitalyVorobyev` |
 | Repository | `scorequant` |
 | Workflow | `release.yml` |
-| Environment | `pypi` (and `testpypi` on test.pypi.org) |
+| Environment | `pypi` |
 
-Then rehearse on TestPyPI — run the `Release` workflow manually with target `testpypi`, and install
-what it produced into a scratch environment:
+There is no TestPyPI rehearsal. A version number on PyPI is spent the moment it is published and
+cannot be reused, so the rehearsal that matters is local — build the artifact, install it into a
+scratch environment away from the source tree, and check it imports and runs:
 
 ```bash
-uv venv /tmp/sq && uv pip install --python /tmp/sq/bin/python   --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ scorequant
-/tmp/sq/bin/python -c "import scorequant as sq; print(sq.__version__)"
+uv build
+uv venv /tmp/sq && uv pip install --python /tmp/sq/bin/python dist/scorequant-*.whl
+cd /tmp && /tmp/sq/bin/python -c "import scorequant as sq; print(sq.__version__)"
 ```
 
-Then publish for real:
+`cd /tmp` matters: run from the repository root and the import resolves to `src/` rather than to
+the wheel, and the check proves nothing. Then publish:
 
 ```bash
 git tag -a v0.1.0 -m "ScoreQuant 0.1.0"

@@ -275,8 +275,8 @@ has to be traced to a commit rather than a version.
    `pyproject.toml` stays the only place a version is written.
 2. `CHANGELOG.md`, and `Homepage`/`Changelog` project URLs.
 3. `release.yml`: tag-triggered, gated on the full handoff gate, publishing through PyPI Trusted
-   Publishing so no API token exists. `workflow_dispatch` publishes the same build to TestPyPI, so
-   a release can be rehearsed without consuming a version on the real index.
+   Publishing so no API token exists. `workflow_dispatch` runs the same gate and build without
+   publishing, so an artifact can be inspected before a tag exists.
 4. Two guards that cannot be fixed after publication: the git tag must match the packaged version,
    and `twine check` must pass so the README does not render as raw text on the project page.
 

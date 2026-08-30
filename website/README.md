@@ -11,8 +11,9 @@ corepack pnpm start        # http://localhost:3000/scorequant/portal/
 
 Two things that are not obvious and will stop a first run:
 
-- **Node must be 24.19.0** (`.node-version`, and `engines` in `package.json`). An older Node fails
-  `install` with `ERR_PNPM_UNSUPPORTED_ENGINE`.
+- **Node >= 20** (`engines` in `package.json`); `.node-version` pins `24.19.0`, which is what CI
+  builds on. A mismatch is not a hard failure — pnpm prints `[WARN] Unsupported engine` and runs
+  the command anyway — so match `.node-version` when a build difference would matter.
 - **`start` shells back into `uv`.** It runs `generate` first, which executes
   `uv run python website/scripts/generate_data.py` from the repository root and needs the `portal`
   dependency group. Run `uv sync --all-extras --all-groups --locked` at the root first.
