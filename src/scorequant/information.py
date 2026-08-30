@@ -28,7 +28,7 @@ from ._validation import (
 from .config import ExecutionConfig, ScalarDPConfig
 from .quantizers import chunked_hard_assign, scalar_interval_dp
 from .reports import EfficientScoreBound, InformationReport, ProfiledInformationReport
-from .transforms import fisher_transform
+from .transforms import _default_rank_rtol, fisher_transform
 
 
 @execution_scope
@@ -316,6 +316,50 @@ def _nuisance_block_slogdet(
     block = information[jnp.ix_(indices, indices)]
     sign, logdet = jnp.linalg.slogdet(block)
     return block, sign, logdet
+
+
+PROFILED_RANK_ADVICE = (
+    "Binned information has rank at most n_bins, and at most n_bins - 1 when the "
+    "weighted score mean is zero, so raise n_bins above the score dimension; on a "
+    "centered sample no sample size helps."
+)
+"""Shared tail of every profiled rank-deficiency refusal.
+
+Both public tasks can reach the same degenerate state and must name the same
+cause for it, so the explanation is written once here rather than paraphrased
+at each raise site.
+"""
+
+
+def binned_information_is_degenerate(information: jnp.ndarray) -> bool:
+    """Return whether binned information is too rank deficient to profile.
+
+    Uses the library's relative eigenvalue threshold rather than the sign of a
+    log determinant. On a matrix that the rank ceiling makes exactly deficient,
+    the smallest eigenvalue is pure rounding noise, so a ``slogdet`` sign is
+    decided by its last bits: it can come back positive on one machine and
+    non-positive on another, and the two callers then blame different causes
+    for one state. The eigenvalue ratio is scale free and agrees everywhere
+    because the gap it measures is many orders of magnitude wide - over every
+    onto labeling of CE-DS-MARGINS-RANK-VACUITY-001 the largest ratio reached
+    is 1.3e-16, against a 1e-10 float64 threshold.
+
+    Parameters
+    ----------
+    information
+        Symmetric binned Fisher information, shape ``[P, P]``.
+
+    Returns
+    -------
+    bool
+        True when the matrix has no usable profiled value.
+    """
+    eigenvalues = jnp.linalg.eigvalsh(information)
+    maximum = float(np.asarray(jnp.max(eigenvalues)))
+    if maximum <= 0:
+        return True
+    threshold = _default_rank_rtol(information.dtype) * maximum
+    return bool(np.asarray(jnp.min(eigenvalues) <= threshold))
 
 
 def _nuisance_information(

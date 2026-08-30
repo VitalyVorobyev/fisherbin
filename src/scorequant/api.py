@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, replace
 from typing import Literal
 
@@ -33,7 +32,12 @@ from .config import (
     SoftVoronoiConfig,
 )
 from .criteria import Criterion, DOptimality, NormalizedTrace, ProfiledDOptimality
-from .information import information_report, profiled_information_report
+from .information import (
+    PROFILED_RANK_ADVICE,
+    binned_information_is_degenerate,
+    information_report,
+    profiled_information_report,
+)
 from .partition import optimize_d_partition, optimize_profiled_d_partition
 from .providers import ScoreProvider
 from .quantizers import (
@@ -326,6 +330,22 @@ def fit_quantizer(
     validation_profiled_report = None
     hard_retention = fit_diagnostics.train_report.geometric_mean_retention
     if isinstance(resolved_criterion, ProfiledDOptimality):
+        # Refuse before reporting. A report describes a labeling and does not
+        # judge it, so profiled_information_report would hand back a rule that
+        # answers every profiled question with zero - and on a state this
+        # degenerate it may instead raise from its nuisance-block guard, blaming
+        # the parameterization for what is a bin-budget fact. Testing the whole
+        # binned matrix here decides the cause once, in the same terms
+        # optimize_partition uses at its initial labeling. This is reachable
+        # because the soft solver checks n_bins only against the Fisher rank,
+        # which the vacuous configuration of CE-DS-MARGINS-RANK-VACUITY-001
+        # satisfies.
+        if binned_information_is_degenerate(fit_diagnostics.train_report.fisher_binned):
+            raise ValueError(
+                f"profiled-D fit is degenerate: {n_bins} bins cannot generate "
+                f"nonsingular {prepared.train_sample.scores.shape[1]}-dimensional binned "
+                f"information. {PROFILED_RANK_ADVICE}"
+            )
         train_profiled_report = profiled_information_report(
             prepared.train_sample.scores,
             fit_diagnostics.labels,
@@ -334,23 +354,6 @@ def fit_quantizer(
             n_bins=n_bins,
         )
         hard_retention = train_profiled_report.geometric_mean_retention
-        # A singular binned Schur complement is reported, not raised, by
-        # profiled_information_report: a report describes a labeling and does not
-        # judge it. A fitted rule is a different contract - returning one whose
-        # profiled information is degenerate would hand back a quantizer that
-        # answers every profiled question with zero. optimize_partition already
-        # refuses this state at its initial labeling; this is the fit-task half
-        # of the same refusal, and it is reachable because the soft solver only
-        # checks n_bins against the Fisher rank, which the vacuous configuration
-        # of CE-DS-MARGINS-RANK-VACUITY-001 satisfies.
-        if not math.isfinite(train_profiled_report.objective):
-            raise ValueError(
-                f"profiled-D fit is degenerate: {n_bins} bins cannot generate "
-                f"nonsingular {prepared.train_sample.scores.shape[1]}-dimensional binned "
-                "information. Binned information has rank at most n_bins, and at most "
-                "n_bins - 1 when the weighted score mean is zero, so raise n_bins above "
-                "the score dimension; on a centered sample no sample size helps."
-            )
         if prepared.validation_sample is not None and prepared.validation_coordinates is not None:
             validation_profiled_report = profiled_information_report(
                 prepared.validation_sample.scores,

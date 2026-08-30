@@ -10,6 +10,8 @@ import pytest
 
 import scorequant as sq
 
+from scorequant.information import binned_information_is_degenerate
+
 from ._oracles import _exhaustive_d_oracle
 
 # The research workspace holding the counterexample bank; if it moves, update
@@ -688,6 +690,50 @@ def test_ds15_rank_deficiency_zeroes_every_feasible_profiled_value() -> None:
             )
     assert interval_best == Fraction(81, 50)
     assert schur(full) == Fraction(9, 5)
+
+
+def test_ds15_rank_vacuity_diagnosis_does_not_depend_on_the_labeling() -> None:
+    """Every onto labeling is degenerate by a wide margin, so the message is stable.
+
+    Two guards can refuse this configuration: the whole-matrix rank test, which
+    names the bin budget, and the nuisance-block test, which names the
+    parameterization. Only the first is the true cause. The library orders the
+    rank test first, but that ordering is only worth something if the rank test
+    fires for *every* labeling a solver might land on - otherwise the surviving
+    message would be decided by whichever state the platform's linear algebra
+    happened to produce, which is exactly how this was first observed to differ
+    between macOS and Linux CI.
+
+    The theorem supplies that guarantee: at K = d_lambda + 1 on a centered
+    sample the binned information is rank deficient for every feasible labeling.
+    This checks the numerical version of it, with the margin, so a future change
+    to the rank tolerance cannot silently reopen the platform split.
+    """
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-MARGINS-RANK-VACUITY-001.json").read_text()
+    )
+    scores = np.array([[float(Fraction(v)) for v in row] for row in fixture["scores"]])
+    weights = np.array([float(Fraction(w)) for w in fixture["weights"]])
+    n_bins = int(fixture["K"])
+
+    worst_ratio = 0.0
+    labelings = 0
+    for labels in product(range(n_bins), repeat=scores.shape[0]):
+        if len(set(labels)) != n_bins:
+            continue
+        labelings += 1
+        binned = sq.information_report(
+            scores, np.array(labels), weights=weights, n_bins=n_bins
+        ).fisher_binned
+        assert binned_information_is_degenerate(binned)
+        eigenvalues = np.linalg.eigvalsh(np.asarray(binned))
+        worst_ratio = max(worst_ratio, float(eigenvalues.min() / eigenvalues.max()))
+
+    assert labelings > 0
+    # Six orders of magnitude below the float64 threshold of 1e-10. The smallest
+    # eigenvalue is rounding noise, which is why the sign of a log determinant -
+    # the test this replaced - was not reproducible across platforms.
+    assert worst_ratio < 1e-14
 
 
 def test_ds15_rank_vacuity_is_refused_by_both_public_tasks() -> None:
