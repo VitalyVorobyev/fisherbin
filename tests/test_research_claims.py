@@ -9,7 +9,6 @@ import numpy as np
 import pytest
 
 import scorequant as sq
-
 from scorequant.information import binned_information_is_degenerate
 
 from ._oracles import _exhaustive_d_oracle
