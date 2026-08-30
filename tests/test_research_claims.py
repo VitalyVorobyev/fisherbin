@@ -543,3 +543,72 @@ def test_ds13_leverage_bound_at_every_stable_state_with_vector_nuisance() -> Non
     assert (feasible, stable, checked) == (258, 17, 212)
     assert degenerate_destinations == 14
     assert max_ratio == Fraction(4, 15)
+
+
+def test_ds15_profiled_value_is_bounded_by_the_efficient_score_interval_optimum() -> None:
+    """DS15's finite half: exact projection-tax identity and sandwich.
+
+    For every feasible labeling z of an exactly centered sample, with the
+    efficient scores shat built from the full-sample empirical regression,
+
+        profiled(z) = between(shat; z) - cross(z)^2 / I_ll(z)
+                    <= between(shat; z) <= scalar interval optimum of shat,
+
+    all in exact rationals, and the scalar optimum over arbitrary groupings is
+    attained by interval groupings (1-D contiguity). The global profiled
+    optimum sits strictly below the interval optimum on this sample.
+    """
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-GLOBAL-GEOMETRY-001.json").read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    n_rows, n_bins = len(scores), 3
+    weight = Fraction(1, n_rows)
+    full = [[sum(weight * row[a] * row[b] for row in scores) for b in range(2)] for a in range(2)]
+    slope = full[0][1] / full[1][1]
+    shat = [row[0] - slope * row[1] for row in scores]
+    assert sum(weight * shat[row] * scores[row][1] for row in range(n_rows)) == 0
+
+    def between(labels: tuple[int, ...]) -> Fraction:
+        masses = [Fraction(0)] * n_bins
+        sums = [Fraction(0)] * n_bins
+        for row, label in enumerate(labels):
+            masses[label] += weight
+            sums[label] += weight * shat[row]
+        return sum(sums[b] ** 2 / masses[b] for b in range(n_bins) if masses[b] > 0)
+
+    order = sorted(range(n_rows), key=shat.__getitem__)
+    interval_best = Fraction(0)
+    for first_cut in range(1, n_rows - 1):
+        for second_cut in range(first_cut + 1, n_rows):
+            labels = [0] * n_rows
+            for position, row in enumerate(order):
+                labels[row] = 0 if position < first_cut else (1 if position < second_cut else 2)
+            interval_best = max(interval_best, between(tuple(labels)))
+
+    n_feasible = 0
+    best_profiled = Fraction(0)
+    grouping_best = Fraction(0)
+    for labels in _canonical_partitions(n_rows, n_bins):
+        masses, moments = _exact_ds_cells(scores, labels, n_bins)
+        info = _exact_binned_information(scores, labels, n_bins)
+        cell_between = between(labels)
+        grouping_best = max(grouping_best, cell_between)
+        assert cell_between <= interval_best
+        if info[1][1] == 0:
+            continue
+        n_feasible += 1
+        profiled = info[0][0] - info[0][1] * info[1][0] / info[1][1]
+        cross = sum(
+            (moments[b][0] - slope * moments[b][1]) * moments[b][1] / masses[b]
+            for b in range(n_bins)
+        )
+        assert profiled == cell_between - cross**2 / info[1][1]
+        assert profiled <= cell_between
+        best_profiled = max(best_profiled, profiled)
+
+    assert n_feasible == 966
+    assert grouping_best == interval_best
+    assert best_profiled == Fraction(6241, 984)
+    assert interval_best == Fraction(135987641, 19993584)
+    assert best_profiled < interval_best

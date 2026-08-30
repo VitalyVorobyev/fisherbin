@@ -423,15 +423,279 @@ geometric rules with positive masses, distinct centroids, and nonsingular
 information — the margins bind only through the hypotheses on \(z^{(N)}\).
 
 **What is deliberately not claimed.** (i) The margins (M2)/(M3)/(M5) are
-**not** automatic at finite optima: exhaustively verified global optima at
-\(N\le18\) regularly carry singleton cells (the audit's own fully exact
-\(N=10\) scan reproduces this), and the tie fixture has exactly
-coincident projected centroids (OP28 records the conjecture that the margins
-hold asymptotically for light-tailed atomless laws; the measured suite is
-N-DS-BRIDGE-TREND). (ii) \(v^*\) is the optimum over the margin-compatible
-geometric class; whether it equals the unrestricted population supremum over
-all measurable quantizers (and whether that supremum is attained) remains open
-in C2. (iii) Everything is for exact scores; estimated-score robustness is the
-P2 programme.
+**not** automatic at finite optima — and DS15 (29 Aug 2026) settles how, for
+conditionally centered laws at \(d_\psi=1\): (M2) *is* automatic
+asymptotically (the \(N\le18\) singleton evidence is pre-asymptotic), but
+(M3) provably **fails** at free global optima, whose limits are
+nuisance-degenerate efficient-score interval quantizers. On that class DS14
+therefore governs margin-certified solutions — necessarily suboptimal by
+\(\delta(\kappa)=v_K-v^*(\kappa)>0\) — never free global optima; beyond the
+class the margins remain open (OP29). (ii) \(v^*\) is the optimum over the
+margin-compatible geometric class; DS15 shows it sits *strictly below* the
+unrestricted population supremum \(v_K\) on the conditionally centered class,
+where \(v_K\) is attained only degenerately; the general attainment question
+remains C2. (iii) Everything is for exact scores; estimated-score robustness
+is the P2 programme.
 
 ---
+## DS15. Margins dichotomy at global finite \(D_s\) optima — [PROJECT-PROVED for conditionally centered laws]
+
+**Claims:** OPEN-DS-MARGINS-AT-OPTIMA
+
+Setting: \(S=(S_\psi,S_\lambda)\sim P\) on \(\mathbb R^{1+d_\lambda}\)
+(\(d_\psi=1\); general \(d_\psi\) discussed at the end), \(E S=0\),
+\(E\|S\|^2<\infty\), full information \(I=E[SS^\top]\succ0\). Efficient score
+\(\hat s=S_\psi-B^*S_\lambda\), \(B^*=I_{\psi\lambda}I_{\lambda\lambda}^{-1}\),
+\(\sigma_s^2=E[\hat s^2]=S_\psi(I)\). All second moments are uncentered about
+the origin (empirical scores exactly centered, as everywhere in this chapter).
+
+**Law class.**
+
+- **(L) conditional centering:** \(E[S_\lambda\mid\hat s]=0\) a.s. Since
+  \(\operatorname{Cov}(\hat s,S_\lambda)=0\) always, (L) upgrades
+  uncorrelatedness to mean-independence. It holds for jointly Gaussian scores,
+  for every elliptical law with finite second moments (conditional means are
+  linear), and more generally whenever the regression of the nuisance score on
+  the efficient score vanishes.
+- **(S) scalar regularity:** \(\operatorname{law}(\hat s)\) is atomless with a
+  positive density near the optimal cell boundaries, and the optimal \(K\)-point
+  quantizer of \(\operatorname{law}(\hat s)\) under squared error is unique
+  (strict log-concavity suffices — Gaussian in particular; see the OP28
+  literature audit for the uniqueness citations).
+- **(R) swap richness:** for some \(0<\ell<L\),
+  \(P(S_\lambda\in[\ell,L]\mid \hat s)\) and \(P(S_\lambda\in[-L,-\ell]\mid\hat s)\)
+  are bounded below near the optimal boundaries (automatic for Gaussian, where
+  \(S_\lambda\perp\hat s\)).
+
+Scalar quantities: \(W_K\) = optimal \(K\)-cell SSE of
+\(\operatorname{law}(\hat s)\), \(v_K=\sigma_s^2-W_K\), \(J^*\) its optimal
+interval partition, with masses \(w_b^*>0\) and distinct centroids \(c_b^*\).
+
+For a quantizer \(q\) (or finite labeling \(z\)): \(W_b\), moments
+\(m_b=E[S1_{q=b}]\), \(I_q=\sum_b m_bm_b^\top/W_b\), profiled value
+\(\Phi(q)=S_\psi^+(I_q)\) in the DS11 pseudo-inverse extension
+(\(=\) the in-bin Schur value whenever \(I_{q,\lambda\lambda}\succ0\)).
+
+### Theorem (dichotomy)
+
+Let \(z^{(N)}\) be exact global finite \(D_s\) optima of i.i.d. samples from
+\(P\) satisfying (L)+(S)+(R), over feasible \(K\)-cell labelings
+(\(K\ge3\), equal weights, nonsingular binned nuisance block). Then, almost
+surely:
+
+1. **(Value; unrestricted supremum.)**
+   \(\hat\Phi_s(z^{(N)})\to v_K=\sup_q S_\psi^+(I_q)\), the supremum over
+   *all* measurable \(K\)-cell quantizers. The supremum is attained exactly at
+   the optimal \(\hat s\)-interval quantizer \(J^*\) — and at nothing else —
+   and \(J^*\) is fully nuisance-degenerate: \(m_\lambda(J^*_b)=0\) for every
+   \(b\), so \(I_{J^*}\) has zero nuisance row and block,
+   \(\lambda_{\min}(I_{J^*})=0\), and \(J^*\) is DS9-infeasible (the binned
+   model carries no nuisance information).
+2. **((M2) holds.)** \(\min_b\hat W_b(z^{(N)})\to\min_b w_b^*>0\): the
+   cell-mass margin is automatic asymptotically; singleton cells die out. The
+   \(N\le18\) singleton evidence is pre-asymptotic.
+3. **((M3) fails.)** \(\hat I_{\lambda\lambda}(z^{(N)})\to0\),
+   \(\hat I_{\psi\lambda}(z^{(N)})\to0\), hence
+   \(\lambda_{\min}(\hat I_N(z^{(N)}))\to0\): for every \(\kappa>0\) the
+   conditioning margin fails eventually, for **every** law in the class. The
+   optimizer sheds binned nuisance information by design.
+4. **(Margin-compatible optimum is strictly suboptimal.)** For every
+   \(\kappa>0\), \(v^*(\kappa):=\sup\{\Phi(q):\lambda_{\min}(I_q)\ge\kappa\}
+   <v_K\). DS14's margin hypothesis set is empty along free global-optimum
+   sequences: the conditional bridge governs margin-*certified* (necessarily
+   \(\delta(\kappa)\)-suboptimal) solutions, never free global optima, on this
+   law class.
+5. **(Domination equality at optima.)** The DS11(a) gap at \(z^{(N)}\) —
+   \((\hat B^*_N-\hat B_{z})\hat I^z_{\lambda\lambda}(\cdot)^\top\) — tends to
+   \(0\): efficient-score domination becomes an equality along global optima
+   (answering the fourth OP28 sub-question).
+
+### Proof
+
+**Lemma 1 (scalar reduction; any \(P\) with finite second moments).** For every
+measurable \(K\)-cell \(q\): \(\Phi(q)\le\sum_bW_bE[\hat s\mid b]^2\le v_K\).
+*Proof.* The DS11 variational form gives
+\(\Phi(q)=\min_B\sum_bW_b(\mu_{\psi,b}-B\mu_{\lambda,b})^2
+\le\sum_bW_bE[\hat s\mid b]^2\) at \(B=B^*\). For the second inequality,
+\(\sum_bW_bE[\hat s\mid b]^2=E\hat s^2-\sum_bE[(\hat s-E[\hat s\mid b])^21_b]\),
+and reassigning every point to the nearest of the \(K\) conditional means
+decreases the SSE term while producing an \(\hat s\)-measurable partition, so
+the SSE is at least \(W_K\). ∎
+
+**Lemma 2 (attainment iff degenerate; (L)).** Under (L), every
+\(\hat s\)-measurable partition has
+\(m_{\lambda,b}=E[E[S_\lambda\mid\hat s]1_{\hat s\in J_b}]=0\); its variational
+form is \(B\)-independent and equals \(\sum_bW_bE[\hat s\mid b]^2\) (as
+\(\mu_{\psi,b}=E[\hat s\mid b]\)). At \(J^*\) this is \(v_K\), matching
+Lemma 1's bound: \(\sup_q\Phi=v_K\). Equality analysis: equality in Lemma 1's
+SSE step forces the cells to be nearest-centroid in \(\hat s\) up to null sets
+with an optimal centroid set; under (S) the optimum is unique, so any attainer
+is \(J^*\) a.e. ∎
+
+**Lemma 3 (rigidity).** Under (L)+(S), for every \(\varepsilon>0\) there is
+\(\delta>0\): any \(K\)-cell \(q\) with
+\(\sum_bW_bE[\hat s\mid b]^2\ge v_K-\delta\) has (after relabeling)
+\(\max_bP(A_b\,\Delta\,\{\hat s\in J^*_b\})\le\varepsilon\), and all masses
+\(\ge\eta(\delta)>0\). Consequently \(|m_{\lambda,b}|\le
+\|S_\lambda\|_2\sqrt\varepsilon\) (Cauchy–Schwarz over the symmetric
+difference, using \(E[S_\lambda1_{J^*_b}]=0\)) and
+\(\|I_{q,\lambda\lambda}\|\le C\varepsilon\). In particular
+\(v^*(\kappa)<v_K\) for every \(\kappa>0\).
+*Proof.* (i) *Effective cells.* For \(\eta>0\) call \(b\) active if
+\(W_b\ge\eta\); inactive cells contribute at most
+\(\sup_{P(B)\le K\eta}E[\hat s^21_B]=:\tau(K\eta)\to0\) to the between-value
+(Cauchy–Schwarz then uniform integrability). (ii) *Deletion comparison.*
+Assigning inactive mass to the active centroid closest to the origin (bounded
+by \(\sigma_s\sqrt{K/(1-K\eta)}\)) shows the active centroid set \(C_a\)
+satisfies \(E[\min_{c\in C_a}(\hat s-c)^2]\le W_K+\delta+\rho(\eta)\) with
+\(\rho(\eta)\to0\). (iii) *Full support.* Strict monotonicity
+\(W_{K-1}>W_K\) (atomless law, infinite support) forces all \(K\) cells active
+once \(\delta+\rho(\eta)<W_{K-1}-W_K\): the mass bound. (iv) *Centroid
+convergence.* Compactify: a centroid escaping to infinity has vanishing
+Voronoi mass, contradicting (iii)'s budget via \(W_{K-1}>W_K\); so along any
+sequence of \(\delta_m\)-near-optimal partitions the centroid sets converge to
+the unique optimal \(C^*\) (continuity + uniqueness). (v) *Partition
+convergence.* The excess of \(q\) over its own centroids' nearest-point rule
+bounds the misassigned mass at distance \(\ge t\) from the \(C^*\)-midpoints;
+boundary \(t\)-slabs have small mass (atomlessness); diagonalize. ∎
+
+**Proposition 4 (exact empirical sandwich; finite algebra).** For every sample
+and every feasible labeling \(z\): with \(\hat s_N\) built from the
+*full-sample* empirical regression \(\hat B^*_N\) (normal equations:
+\(\sum_iw\hat s_{N,i}s_{\lambda,i}=0\)),
+\[
+\hat\Phi_s(z)\;=\;\mathrm{btw}(\hat s_N;z)-
+\hat c(z)^\top\hat I^{z\,-1}_{\lambda\lambda}\hat c(z)
+\;\le\;\mathrm{btw}(\hat s_N;z)\;\le\;\hat v_K,
+\]
+where \(\mathrm{btw}(x;z)=\sum_b(\sum_{i\in b}wx_i)^2/\hat W_b\),
+\(\hat c(z)=\) the binned \((\hat s,\lambda)\) cross-moment vector, and
+\(\hat v_K\) is the exact optimal \(K\)-grouping value of the \(\hat s_N\)
+sample — attained by intervals of sorted \(\hat s_N\) (1-D contiguity), hence
+computable exactly by enumeration/DP. Both inequalities are verified in exact
+rational arithmetic for every optimum in the N-DS-MARGINS-TREND suite.
+
+**Proposition 5 (bracket limits).** A.s. \(\hat v_K(\hat s_N)\to v_K\):
+value convergence of empirical scalar quantization (uniform SLLN over interval
+classes; Pollard 1981 — value convergence needs no uniqueness), plus a
+uniform-in-labelings Lipschitz bound in the tilt (between-values are quadratic
+in \(B\) with moment coefficients) to absorb \(\hat B^*_N\to B^*\) and the
+exact centering.
+
+**Proposition 6 (achievability by steering).** Under (L)+(S)+(R), a.s. there
+are feasible labelings \(z'_N\) with
+\(\hat\Phi_s(z'_N)\ge\hat v_K-O(N^{-3/4})\).
+*Proof sketch (the tax obstruction and its resolution).* Write
+\(x_b=m_{\hat s,b}/\hat W_b^{1/2}\), \(y_b=m_{\lambda,b}/\hat W_b^{1/2}\)
+(\(d_\lambda=1\)); Proposition 4 reads
+\(\hat\Phi_s(z)=|x|^2-\langle x,y\rangle^2/|y|^2\): the profiled value pays the
+squared *projection* of \(x\) onto the direction of \(y\). At the DP-optimal
+interval labeling \(z_0\) of \(\hat s_N\), both \(\langle x,y\rangle\)
+(\(=-\)within-cell cross-moment, mean zero under (L)) and \(|y|\) fluctuate at
+the \(N^{-1/2}\) scale, so the tax is a \(\Theta_p(1)\) random *ratio* — the
+plain interval labeling does **not** prove achievability, and one-dimensional
+cancellations (tilting the slope; greedily shrinking \(|\langle x,y\rangle|\))
+leave the ratio \(\Theta_p(1)\). The resolution is to steer the vector \(y\)
+itself: single-point swaps between \(\hat s\)-adjacent cells, using points
+inside boundary slabs of width \(N^{-1/4}\) with \(\lambda\)-magnitude in
+\([\ell,L]\) and chosen sign (available in ample number by (R) and the LLN),
+move \(y\) in two independent directions of its constraint plane
+\(\{\sum_b\hat W_b^{1/2}y_b=0\}\) with increments \(\Theta([\ell,L]/N)\) and
+individual between-cost \(\le2\Delta t/N+O(N^{-2})\). Steer \(y\) to within
+\(O(L/N)\) of a target \(y^*\) with \(\langle x,y^*\rangle=0\) and
+\(|y^*|=N^{-1/2}\) (the intersection of the constraint plane with
+\(x^\perp\) is nonempty for \(K\ge3\)): then \(|\langle x,y\rangle|=O(1/N)\)
+while \(\hat I^z_{\lambda\lambda}=|y|^2=N^{-1}(1+o(1))\) is *constructed*, not
+random — no small-ball event needed — so the tax is \(O(1/N)\), the
+between-value loss from \(O(N^{1/2})\) swaps is \(O(N^{-3/4})\), and
+feasibility \(\hat I_{\lambda\lambda}>0\) holds by construction. ∎
+
+**Proof of the theorem.** (1) Upper: Propositions 4–5. Lower: global
+optimality against Proposition 6. Attainment/uniqueness: Lemma 2.
+(2)–(3): the sandwich squeezes
+\(\mathrm{btw}(\hat s_N;z^{(N)})\to v_K\); Lemma 3 applied along the empirical
+scalar problem (Pollard's argmin-continuity carries the uniqueness/compactness
+argument to \(\hat\mu_N(\hat s_N)\Rightarrow\operatorname{law}(\hat s)\))
+forces the optimum's cells to converge in sample measure to \(J^*\): masses
+converge to \(w^*\) (conclusion 2), and the empirical cell nuisance moments
+converge to \(E[S_\lambda1_{J^*_b}]=0\) (empirical Cauchy–Schwarz over the
+symmetric differences plus the LLN on the fixed sets \(J^*_b\), with the
+data-dependent slope absorbed by the fixed-slab Glivenko–Cantelli class of
+audit §8): \(\hat I_{\lambda\lambda},\hat I_{\psi\lambda}\to0\), and
+\(\lambda_{\min}\le\hat I_{\lambda\lambda}\) (conclusion 3).
+(4): if \(\Phi(q_m)\to v_K\) with \(\lambda_{\min}(I_{q_m})\ge\kappa\), Lemma 1
+gives \(\mathrm{btw}\to v_K\), Lemma 3 gives
+\(I_{q_m,\lambda\lambda}\to0<\kappa\) — contradiction.
+(5): the gap equals the tax \(\hat c^\top\hat I_{\lambda\lambda}^{-1}\hat c=
+\mathrm{btw}-\hat\Phi_s\to v_K-v_K=0\). ∎
+
+### Interpretation: the in-bin optimum escapes to the projected formulation
+
+The theorem says the free \(D_s\) optimizer *sheds the in-bin formulation's own
+feasibility margin*: its limit \(J^*\) is exactly the optimal binning of the
+**projected full-data efficient score** (the external-projection problem,
+DS-PROJECTED-K-REQUIREMENT), which is DS9-infeasible as an in-bin profiled
+model. The two formulations, kept deliberately separate by invariant 3, merge
+at the optimum — and that merger is *why* the margins fail. This is the
+asymptotic form of the tie fixture's finite phenomenon (pseudo-inverse value
+\(1191/4096\) above the feasible optimum \(1083/4096\)), and the partition-side
+analogue of the design-theory fact that \(D_s\)-optimal designs can carry
+singular information matrices (Silvey 1978).
+
+### Deployability
+
+For conditionally centered (in particular Gaussian/elliptical — the linear
+template fit) score laws with \(d_\psi=1\):
+
+- The correct compile target for the profiled criterion is the **scalar
+  efficient-score interval rule**: estimate \(\hat B^*_N\) from the full
+  sample, bin \(\hat s\) by the exact DP. Certify (a) slope stability and
+  (b) the scalar quantizer's own 1-D margins (mass, boundary separation) —
+  all easy — instead of the DS14 (M3) certificate, which this theorem proves
+  can never hold at free global optima.
+- A margin-certified in-bin quantizer (audit §11 flow) is legitimate but costs
+  at least \(\delta(\kappa)=v_K-v^*(\kappa)>0\) of profiled information — the
+  certificate has a quantified price (information-loss implication:
+  \(\eta_{D_s}\)-retention strictly below the unrestricted optimum).
+- The binned model at the compile target deliberately carries no nuisance
+  information (DS9): the report must state that nuisance estimation stays
+  unbinned/full-sample — matching the CMS-2025 use pattern (profile at the
+  full-likelihood level, bin for the POI).
+
+### What is deliberately not claimed
+
+(i) Nothing beyond class (L): if \(E[S_\lambda\mid\hat s]\ne0\), the tax has a
+\(\Theta(1)\) population component on \(\hat s\)-intervals and the supremum may
+be attained at nondegenerate quantizers — the margins may then hold; this is
+OP29 (`OPEN-DS-MARGINS-NONCENTERED`). (ii) \(d_\psi>1\): Lemma 2's reduction
+(via the Loewner form of DS11(a)) identifies the degenerate attainers, but the
+uniqueness/rigidity theory of the vector between-matrix problem is open —
+the dichotomy transfers exactly when that theory does. (iii) Local/
+exchange-stable non-global sequences: DS14 continues to govern them under
+certified margins; nothing here says local optima degenerate. (iv) Estimated
+scores: P2. (v) (M5): at optima the projected-centroid *object*
+\(\hat e_b=\hat\mu_{\psi,b}-\hat B_z\hat\mu_{\lambda,b}\) rides on
+\(\hat B_z=\hat I_{\psi\lambda}/\hat I_{\lambda\lambda}\to0/0\); the
+meaningful reduced geometry is the scalar \(J^*\) geometry (distinct
+centroids). Measured: the optimum's own regression slope keeps an
+\(O(1)\)-scale distance from the full-sample slope with no decline through
+\(N=20\) (median per-law gaps \(0.01\)–\(0.6\)) — the (M5) object is indeed
+unstable at optima.
+
+**Measured (N-DS-MARGINS-TREND, N-DS-SCALAR-MASS, N-DS-MARGINS-EXACT-ANCHOR).**
+Fine-grid (\(1/2^{16}\), atomless-emulating) exact-optimum suite, 6 laws,
+\(N=8\)–\(18\), 3 reps (+ \(N=20\) extension): the sandwich and tax identity
+verified exactly on every instance (112/112, including four at \(N=20\)); **zero** exact ties (the
+31-fold tie was an atomic-grid artifact); the optimum is always within 0–3
+points of the best efficient-score interval labeling, with relative value gap
+medians 0.3–6%; gauss06's binned nuisance block declines (median 0.23 at
+\(N=8\) to 0.02 at \(N=18\), the predicted \(K/N\) scale) while the
+non-centered mix3's stays macroscopic (median 0.30–0.68 through \(N=16\)) —
+the class boundary is visible. Singletons still occur at these tiny \(N\) but
+thin out for the Gaussian laws; the scalar suite settles their fate: exact
+optimal \(K\)-interval partitions of Gaussian/Laplace/uniform samples at
+\(N=100\)–\(20{,}000\) (12 reps each) have min cell mass rising to the
+population values (Gaussian \(K=3\): 0.259–0.268 at \(N=20{,}000\) vs 0.2703;
+\(K=6\): 0.063–0.071 vs 0.0740) with no singleton beyond \(N=100\).
+The float screen is anchored by fully exact enumeration (all 86,526 canonical
+partitions per instance) at \(N=12\): 6/6 optima match exactly.

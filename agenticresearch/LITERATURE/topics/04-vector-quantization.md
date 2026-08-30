@@ -33,6 +33,8 @@ log-det analogue.
 
 ## Graf & Luschgy (2000, 2002)
 
+**Key:** Graf-Luschgy-2000
+
 **Papers:** *Foundations of Quantization for Probability Distributions*
 (Springer LNM 1730; Ch. 4 existence/stationarity of optimal quantizers under
 moment conditions); *Rates of convergence for the empirical quantization
@@ -41,7 +43,12 @@ Voronoi-cell indicator classes).
 
 **Use:** nearest published instance of a uniform LLN over Voronoi-type
 partition classes (DS14 Step 3 companion to C1) and of
-existence/stationarity machinery for population quantizers.
+existence/stationarity machinery for population quantizers. Thm 4.1/4.2
+(secondary-verified via Levrard and Liu–Pagès): every cell of an optimal
+quantizer carries positive mass with null overlaps — the population (M2)
+analogue on the distortion side, and the deletion-vs-\(W_{K-1}\) mechanism
+reused in DS15's rigidity lemma. Thm 5.1: scalar log-concave uniqueness (the
+book anchor for DS15's assumption (S)).
 
 **Does not transfer:** the whole framework is additive per-point distortion;
 no result covers a global nonlinear matrix functional of cell moments.
@@ -78,16 +85,76 @@ partition classes — those come from C1/Graf–Luschgy-style VC arguments.
 
 ## Margin conditions in quantization
 
+**Key:** Levrard-2015
+
 **Sources:** Levrard (2015, Ann. Statist. 43:592–619, k-means margin
 condition bounding mass near optimal cell boundaries, fast rates; survey
 2018 J. SFdS 159:1–48); Mammen & Tsybakov (1999, Ann. Statist.
 27:1808–1829); Antos, Györfi & György (2005, individual rates).
 
 **Use:** conceptual template for the DS14 slab-margin assumption (M4) and
-for a future fast-rate refinement of the bridge.
+for a future fast-rate refinement of the bridge. Levrard's \(p_{\min}\)
+(mass) and \(B\) (separation) are the published codification of what
+(M2)/(M5) buy; their positivity at population optima is inherited from
+Graf–Luschgy, never assumed of empirical optima.
 
 **Does not transfer:** fast-rate mechanics rely on a Pythagorean identity for
-squared Euclidean distortion with no known log-det/Schur analogue.
+squared Euclidean distortion with no known log-det/Schur analogue; the
+margin condition is a hypothesis on the law, never proven automatic.
+
+## Scalar quantizer uniqueness (log-concave laws)
+
+**Key:** Kieffer-1983, Liu-Pages-2020
+
+**Sources:** Kieffer (1983, IEEE IT 29:42–47): log-concave density + convex,
+strictly increasing, \(C^1\) error weight ⟹ the locally optimal \(K\)-level
+scalar quantizer is unique, hence globally optimal, and Lloyd iterations
+converge to it (secondary-verified via Kazıklı–Sarıtaş–Gezici–Linder–Yüksel,
+arXiv:2012.08265, Thm 3, and Liu & Pagès, JMLR 21(86), Lemma 10). Fleischer
+(1964, IEEE Conv. Rec. 12:104–111, verbatim): strict log-concavity ⟹ unique
+stationary point of the \(N\)-level MSE quantizer; Gaussian, Laplacian,
+Rayleigh covered explicitly. Trushkin (1982, IEEE IT 28:187–198): convex
+error weights (hypotheses unverified, cited by Liu–Pagès). Liu & Pagès
+Prop 11: strictly log-concave density ⟹ positive-definite distortion Hessian
+at the optimum — a published population-level conditioning statement at the
+scalar optimum.
+
+**Use:** DS15's assumption (S) — uniqueness of the optimal efficient-score
+interval quantizer — holds for Gaussian efficient scores by any of these;
+with Pollard (1981) this makes the population→empirical transfer of the
+scalar optimum fully rigorous in one dimension.
+
+**Does not transfer:** one-dimensional and distortion-side only; uniqueness
+for \(d_\psi>1\) fails in general (rotational symmetry), which is exactly why
+DS15 is stated for \(d_\psi=1\).
+
+## Outlier and singleton cells at exact clustering optima
+
+**Key:** Garcia-Escudero-Gordaliza-1999, Hennig-2004
+
+**Sources:** García-Escudero & Gordaliza (1999, JASA 94:956–969): generalized
+\(k\)-means are non-robust — contamination drives a cluster to chase an
+outlier; trimming repairs it. Hennig (2004, Ann. Statist. 32:1313–1340;
+restated verbatim in arXiv:2308.14478): adding a single far-enough point to a
+fixed-\(K\) ML clustering makes the exact optimum give the outlier a
+one-point cluster and merge two original clusters. Georgogiannis (NeurIPS
+2016): universal breakdown points 1/n–2/n for robust \(k\)-means variants.
+
+**Use:** the published record of the finite-sample singleton phenomenon at
+exact optima — the qualitative shape of the \(N\le18\) evidence
+(N-DS-BRIDGE-TREND). Hennig also supplies the normative point that one-point
+clusters are a modeling choice, not an invalidity.
+
+**Does not transfer:** all statements are adversarial-contamination
+("there exists a modification"), not i.i.d. extreme-value asymptotics; none
+quantifies when the sample's own maximum earns a singleton, and for
+distortion criteria the singleton is a failure mode where for \(D_s\) it is
+objective-rewarded. The i.i.d. extreme-cell question itself is a confirmed
+search gap (29 Aug 2026, OP28 audit): no published result addresses whether
+exact optimal partitions of an i.i.d. sample isolate extreme points, under
+any criterion. Resolved for \(D_s\) by DS15: they do not, asymptotically —
+min cell mass at exact scalar optima converges to the positive population
+masses (N-DS-SCALAR-MASS).
 
 ## Determinant-criterion consistency — confirmed search gap (28 Aug 2026)
 

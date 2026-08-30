@@ -162,6 +162,52 @@
       "arxiv": "2502.13047",
       "doi": "10.1140/epjc/s10052-025-14713-w",
       "note": "CMS-MLG-23-005. Local copy: papers/cms_2025_systematic_aware_nn_training_arXiv2502.13047.pdf"
+    },
+    "Graf-Luschgy-2000": {
+      "title": "Foundations of Quantization for Probability Distributions",
+      "doi": "10.1007/BFb0103945",
+      "note": "Springer LNM 1730. Thm 4.1/4.2: every cell of an optimal quantizer has positive mass, null overlaps; Thm 5.1: uniqueness of the scalar log-concave K-quantizer."
+    },
+    "Levrard-2015": {
+      "title": "Nonasymptotic bounds for vector quantization in Hilbert spaces",
+      "doi": "10.1214/14-AOS1293",
+      "arxiv": "1310.7138",
+      "note": "Defines the mass margin p_min, separation B, and the boundary-mass margin condition; fast rates with constants polynomial in their inverses."
+    },
+    "Kieffer-1983": {
+      "title": "Uniqueness of locally optimal quantizer for log-concave density and convex error weighting function",
+      "doi": "10.1109/TIT.1983.1056622",
+      "note": "IEEE Trans. IT 29:42-47. Log-concave source + convex strictly increasing C1 error weight: unique locally optimal scalar quantizer (hence globally optimal); Gaussian covered. Secondary-verified via Kazikli et al. arXiv:2012.08265 Thm 3 and Liu-Pages-2020 Lemma 10."
+    },
+    "Liu-Pages-2020": {
+      "title": "Convergence rate of optimal quantization and application to the clustering performance of the empirical measure",
+      "pdf": "https://www.jmlr.org/papers/volume21/18-804/18-804.pdf",
+      "note": "JMLR 21(86):1-36. Lemma 10: strongly unimodal law has a unique stationary (hence optimal) scalar K-quantizer; Prop 11: positive-definite distortion Hessian at the optimum under strict log-concavity."
+    },
+    "Garcia-Escudero-Gordaliza-1999": {
+      "title": "Robustness Properties of k Means and Trimmed k Means",
+      "doi": "10.1080/01621459.1999.10474200",
+      "note": "JASA 94:956-969. k-means non-robustness: contamination drives a cluster to chase an outlier; trimming repairs it."
+    },
+    "Hennig-2004": {
+      "title": "Breakdown points for maximum likelihood estimators of location-scale mixtures",
+      "note": "Ann. Statist. 32:1313-1340. A far-enough added point forms a one-point cluster at the exact fixed-K clustering optimum (secondary-verified via Hennig arXiv:2308.14478)."
+    },
+    "Wang-Yang-Stufken-2019": {
+      "title": "Information-Based Optimal Subdata Selection for Big Data Linear Regression",
+      "doi": "10.1080/01621459.2017.1408468",
+      "arxiv": "1710.10382",
+      "note": "D-determinant over an i.i.d. sample is maximized by extreme order statistics; per-point information scale 2 log n for normal covariates (Thm 2, 6)."
+    },
+    "Sibson-Kenny-1975": {
+      "title": "Coefficients in D-Optimal Experimental Design",
+      "doi": "10.1111/j.2517-6161.1975.tb01545.x",
+      "note": "JRSS-B 37:288-292. With Atwood's inequality: D-optimal design weights are bounded ABOVE by 1/k; no published lower bound found."
+    },
+    "Silvey-1978": {
+      "title": "Optimal design measures with singular information matrices",
+      "doi": "10.1093/biomet/65.3.553",
+      "note": "Biometrika 65:553-559 (secondary-verified). Ds-optimal designs can carry singular full information matrices - the design-side analogue of the (M3) failure at Ds-optimal partitions (DS15)."
     }
   },
   "agent_usage": {
@@ -181,49 +227,49 @@
   },
   "programmes": {
     "P1": {
-      "title": "DS-POPULATION-BRIDGE \u2014 finish practical Ds theory",
+      "title": "DS-POPULATION-BRIDGE — finish practical Ds theory",
       "rank": 1,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P2": {
-      "title": "SCORE-ORACLE-ROBUSTNESS \u2014 estimated scores and classifiers",
+      "title": "SCORE-ORACLE-ROBUSTNESS — estimated scores and classifiers",
       "rank": 2,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P3": {
-      "title": "INFORMATION-BUDGET \u2014 how many bins does a target need",
+      "title": "INFORMATION-BUDGET — how many bins does a target need",
       "rank": 3,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P4": {
-      "title": "DEPLOYMENT-ROBUSTNESS \u2014 away from the reference point, with error bars",
+      "title": "DEPLOYMENT-ROBUSTNESS — away from the reference point, with error bars",
       "rank": 4,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P5": {
-      "title": "HEP-SPECIALIZATION \u2014 template fits made mathematically explicit",
+      "title": "HEP-SPECIALIZATION — template fits made mathematically explicit",
       "rank": 5,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P6": {
-      "title": "D-CORE-COMPLETION \u2014 the paper's remaining spine",
+      "title": "D-CORE-COMPLETION — the paper's remaining spine",
       "rank": 6,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P7": {
-      "title": "FOUNDATIONS \u2014 why D is special, complexity, randomization",
+      "title": "FOUNDATIONS — why D is special, complexity, randomization",
       "rank": 7,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P8": {
-      "title": "LITERATURE-GRAPH \u2014 coverage you can defend",
+      "title": "LITERATURE-GRAPH — coverage you can defend",
       "rank": 8,
       "readiness": "ready",
       "kind": "infrastructure"

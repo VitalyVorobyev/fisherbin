@@ -29,7 +29,7 @@ Status vocabulary (mirrors `registry.json` `status_definitions`):
 | 3. Generic first-order and finite screening results | `03-screening.md` | G1, G2 |
 | 4. Full D-optimality | `04-d-optimality.md` | D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12 |
 | 5. \(D_s\)-optimality | `05a-ds-core.md` | DS0, DS1, DS2, DS3, DS4, DS5, DS6, DS7, DS8, DS9, DS10 |
-| 5. \(D_s\)-optimality — finite-to-population bridge | `05b-ds-bridge.md` | DS11, DS12, DS13, DS14 |
+| 5. \(D_s\)-optimality — finite-to-population bridge | `05b-ds-bridge.md` | DS11, DS12, DS13, DS14, DS15 |
 | 6. E-optimality control theory | `06-e-optimality.md` | E1, E2, E3, E4, E5, E6 |
 | 7. A-optimality control theory | `07-a-optimality.md` | A1, A2, A3, A4 |
 | 8. Randomized/soft quantizers and empirical geometric optimization | `08-soft.md` | S1, S2, S3, S4, S5, S6 |
