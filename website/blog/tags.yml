@@ -1,0 +1,12 @@
+research:
+  label: Research
+  description: Results from the project's mathematical research programme.
+library:
+  label: Library
+  description: Changes to the Python package and its public contracts.
+negative-result:
+  label: Negative result
+  description: Things we proved impossible, and what we build instead.
+profiled-ds:
+  label: Profiled Ds
+  description: Estimating one parameter while a nuisance parameter is estimated alongside it.

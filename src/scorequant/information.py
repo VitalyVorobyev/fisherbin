@@ -28,7 +28,7 @@ from ._validation import (
 from .config import ExecutionConfig, ScalarDPConfig
 from .quantizers import chunked_hard_assign, scalar_interval_dp
 from .reports import EfficientScoreBound, InformationReport, ProfiledInformationReport
-from .transforms import fisher_transform
+from .transforms import _default_rank_rtol, fisher_transform
 
 
 @execution_scope
@@ -318,6 +318,62 @@ def _nuisance_block_slogdet(
     return block, sign, logdet
 
 
+PROFILED_RANK_ADVICE = (
+    "Binned information has rank at most n_bins, and at most n_bins - 1 when the "
+    "weighted score mean is zero, so raise n_bins above the score dimension; on a "
+    "centered sample no sample size helps."
+)
+"""Shared tail of every profiled rank-deficiency refusal.
+
+Both public tasks can reach the same degenerate state and must name the same
+cause for it, so the explanation is written once here rather than paraphrased
+at each raise site.
+"""
+
+
+def binned_information_is_degenerate(information: jnp.ndarray) -> bool:
+    """Return whether binned information is too rank deficient to profile.
+
+    Uses the library's relative eigenvalue threshold rather than the sign of a
+    log determinant. On a matrix that the rank ceiling makes exactly deficient,
+    the smallest eigenvalue is pure rounding noise, so a ``slogdet`` sign is
+    decided by its last bits: it can come back positive on one machine and
+    non-positive on another, and the two callers then blame different causes
+    for one state. The eigenvalue ratio is scale free and agrees everywhere
+    because the gap it measures is many orders of magnitude wide - over every
+    onto labeling of CE-DS-MARGINS-RANK-VACUITY-001 the largest ratio reached
+    is 1.3e-16, against a 1e-10 float64 threshold.
+
+    Parameters
+    ----------
+    information
+        Symmetric binned Fisher information, shape ``[P, P]``.
+
+    Returns
+    -------
+    bool
+        True when the matrix has no usable profiled value.
+    """
+    return _is_numerically_singular(information)
+
+
+def _is_numerically_singular(matrix: jnp.ndarray) -> bool:
+    """Return whether a symmetric matrix is rank deficient at the library threshold.
+
+    Shared by every profiled guard so that one state cannot be called singular
+    on one platform and regular on another. A ``slogdet`` sign cannot do this
+    job: on an exactly deficient matrix the smallest eigenvalue is rounding
+    noise, and its sign is a property of the host LAPACK rather than of the
+    data.
+    """
+    eigenvalues = jnp.linalg.eigvalsh(matrix)
+    maximum = float(np.asarray(jnp.max(eigenvalues)))
+    if maximum <= 0:
+        return True
+    threshold = _default_rank_rtol(matrix.dtype) * maximum
+    return bool(np.asarray(jnp.min(eigenvalues) <= threshold))
+
+
 def _nuisance_information(
     information: jnp.ndarray, interest: tuple[int, ...]
 ) -> tuple[jnp.ndarray, jnp.ndarray, tuple[int, ...]]:
@@ -336,8 +392,13 @@ def _nuisance_information(
     nuisance = tuple(index for index in range(dimension) if index not in set(interest))
     if not nuisance:
         raise ValueError("profiled D requires at least one nuisance score column; use DOptimality")
-    nuisance_block, nuisance_sign, nuisance_logdet = _nuisance_block_slogdet(information, nuisance)
-    if float(np.asarray(nuisance_sign)) <= 0:
+    nuisance_block, _nuisance_sign, nuisance_logdet = _nuisance_block_slogdet(information, nuisance)
+    # Decided by the scale-free rank test, not by the log determinant's sign.
+    # The sign is unreliable exactly where this guard matters: on a block the
+    # bin-budget ceiling makes deficient it is set by the last bits of the
+    # factorization, so it can refuse on one machine and pass on another, and
+    # a caller that would have blamed the bin budget then never runs.
+    if _is_numerically_singular(nuisance_block):
         raise ValueError("profiled D requires nonsingular nuisance information")
     return nuisance_block, nuisance_logdet, nuisance
 

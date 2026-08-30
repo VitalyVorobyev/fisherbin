@@ -57,7 +57,9 @@ from .config import (
 )
 from .criteria import DOptimality, ProfiledDOptimality
 from .information import (
+    PROFILED_RANK_ADVICE,
     _nuisance_information,
+    binned_information_is_degenerate,
     information_report,
     profiled_information_report,
 )
@@ -288,19 +290,31 @@ class _ProfiledDObjective:
 
     def init_state(self, cells: _CellStatistics) -> _ExchangeState:
         """Build full and nuisance information with the guarded block algebra."""
-        information, inverse, full_sign, full_logdet = _cell_information_matrices(
+        information, inverse, _full_sign, full_logdet = _cell_information_matrices(
             cells.weights, cells.means
         )
+        # The whole-matrix rank verdict comes first, before the nuisance block is
+        # touched. Bin means satisfy sum_b w_b m_b = mu, the overall weighted
+        # mean, so the information they generate has rank at most n_bins - and at
+        # most n_bins - 1 when mu is zero, because the means are then linearly
+        # dependent. A profiled value is positive only at full rank, so on an
+        # exactly centered sample every labeling into n_bins <= dimension cells is
+        # degenerate no matter how large the sample
+        # (CE-DS-MARGINS-RANK-VACUITY-001). Such a state also tends to leave the
+        # nuisance sub-block borderline, and _nuisance_information would then
+        # blame the nuisance parameterization for what is a bin-budget fact -
+        # a message that sends users looking for a data problem that is not there.
+        if binned_information_is_degenerate(information):
+            raise ValueError(
+                f"initial profiled-D partition is singular: {int(cells.means.shape[0])} "
+                f"bins cannot generate nonsingular {int(information.shape[0])}-dimensional "
+                f"binned information. {PROFILED_RANK_ADVICE}"
+            )
         # information._nuisance_information owns the nonsingular-nuisance guard
         # and the index bookkeeping. The Schur block is deliberately not built:
         # the exchange gains telescope with the difference of the two log
         # determinants, so a rebuild on this hot path never needs it.
         nuisance_information, nuisance_logdet, _ = _nuisance_information(information, self.interest)
-        if float(np.asarray(full_sign)) <= 0:
-            raise ValueError(
-                "initial profiled-D partition is singular; increase n_bins or use a "
-                "different sample"
-            )
         return _ExchangeState(
             cells=cells,
             information=information,
@@ -496,6 +510,15 @@ def optimize_profiled_d_partition(
             "profiled D requires full-rank supplied-score information in the declared "
             "interest/nuisance parameterization"
         )
+    # This bound is centering-agnostic and is the right one here. Binned
+    # information has rank at most n_bins, so n_bins >= dimension is necessary
+    # for any sample. An exactly centered sample needs one more bin than that,
+    # because sum_b w_b m_b = 0 makes the bin means dependent and drops the
+    # ceiling to n_bins - 1 (CE-DS-MARGINS-RANK-VACUITY-001, which is the
+    # d_psi = 1 case of it). That extra bin is deliberately not required here:
+    # scores away from the true reference point have a nonzero mean, and for
+    # them n_bins == dimension is feasible and not vacuous. The centered case
+    # is refused where it is detectable - at the singular initial state.
     if n_bins < dimension:
         raise ValueError("profiled D requires at least as many bins as score dimensions")
     objective = _ProfiledDObjective(interest=criterion.interest, nuisance=nuisance)
