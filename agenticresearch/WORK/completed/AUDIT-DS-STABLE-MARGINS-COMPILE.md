@@ -1,6 +1,6 @@
 # AUDIT-DS-STABLE-MARGINS-COMPILE — adversarial audit of DS16
 
-**Programme:** P1 · **Opened:** 30 August 2026 · **Status:** active
+**Programme:** P1 · **Opened:** 30 August 2026 · **Closed:** 30 August 2026 · **Status:** completed
 **Source:** `research-ds-stable-margins-compile` at `1b58518`
 
 ## Goal
@@ -71,3 +71,32 @@ Close only after the audit report, independent numerical and literature
 artifacts, verdict-driven registry patches, generated indexes, manuscript
 staleness updates, and all required validation commands are green. Move this
 packet to `WORK/completed/` in the final audit commit.
+
+## Outcome
+
+- `DS-STABLE-MARGINS-PRICE`: **hardened**. PRICE/FUNNEL/FLOOR survive after
+  the compact tilt--codebook uniform-law repair, pathwise all-labelings event,
+  raw-label/centered-moment FLOOR convention, and explicit non-attainment
+  boundary for the constrained values.
+- `DS-PROFILED-COMPILE-CERTIFICATE`: **hardened**. The projected rule is the
+  only currently established unconditional registry path; DS14 is a theorem
+  for certified sequences, not a population guarantee from one finite
+  diagnostic. OP30 remains open.
+- `DS-STABLE-STATE-SELECTION`: **hardened** as measured evidence. The exact
+  census range is 5--944, and the researcher 0.004--0.046 library gap is an
+  aggregate summary rather than a per-run bound.
+
+Permanent report:
+`AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`. Independent artifacts:
+`AUDITS/artifacts/AUDIT-DS-STABLE-MARGINS-COMPILE-001/`.
+
+## Validation
+
+- `uv run python agenticresearch/py/registry.py reindex` — PASS
+- `uv run python agenticresearch/py/registry.py validate` — PASS
+- `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py tests/test_research_registry.py` — 21 PASS
+- `uv run ruff check .` — PASS
+- `uv run ruff format --check .` — 217 files formatted
+- `uv run ty check src` — PASS
+- `uv build` — sdist and wheel built
+- `uv run mkdocs build --strict` — PASS
