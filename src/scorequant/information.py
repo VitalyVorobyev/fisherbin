@@ -354,11 +354,23 @@ def binned_information_is_degenerate(information: jnp.ndarray) -> bool:
     bool
         True when the matrix has no usable profiled value.
     """
-    eigenvalues = jnp.linalg.eigvalsh(information)
+    return _is_numerically_singular(information)
+
+
+def _is_numerically_singular(matrix: jnp.ndarray) -> bool:
+    """Return whether a symmetric matrix is rank deficient at the library threshold.
+
+    Shared by every profiled guard so that one state cannot be called singular
+    on one platform and regular on another. A ``slogdet`` sign cannot do this
+    job: on an exactly deficient matrix the smallest eigenvalue is rounding
+    noise, and its sign is a property of the host LAPACK rather than of the
+    data.
+    """
+    eigenvalues = jnp.linalg.eigvalsh(matrix)
     maximum = float(np.asarray(jnp.max(eigenvalues)))
     if maximum <= 0:
         return True
-    threshold = _default_rank_rtol(information.dtype) * maximum
+    threshold = _default_rank_rtol(matrix.dtype) * maximum
     return bool(np.asarray(jnp.min(eigenvalues) <= threshold))
 
 
@@ -380,8 +392,13 @@ def _nuisance_information(
     nuisance = tuple(index for index in range(dimension) if index not in set(interest))
     if not nuisance:
         raise ValueError("profiled D requires at least one nuisance score column; use DOptimality")
-    nuisance_block, nuisance_sign, nuisance_logdet = _nuisance_block_slogdet(information, nuisance)
-    if float(np.asarray(nuisance_sign)) <= 0:
+    nuisance_block, _nuisance_sign, nuisance_logdet = _nuisance_block_slogdet(information, nuisance)
+    # Decided by the scale-free rank test, not by the log determinant's sign.
+    # The sign is unreliable exactly where this guard matters: on a block the
+    # bin-budget ceiling makes deficient it is set by the last bits of the
+    # factorization, so it can refuse on one machine and pass on another, and
+    # a caller that would have blamed the bin budget then never runs.
+    if _is_numerically_singular(nuisance_block):
         raise ValueError("profiled D requires nonsingular nuisance information")
     return nuisance_block, nuisance_logdet, nuisance
 

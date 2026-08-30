@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 
 import scorequant as sq
+from scorequant import api
 from scorequant.information import binned_information_is_degenerate
 
 from ._oracles import _exhaustive_d_oracle
@@ -735,7 +736,14 @@ def test_ds15_rank_vacuity_diagnosis_does_not_depend_on_the_labeling() -> None:
     assert worst_ratio < 1e-14
 
 
-def test_ds15_rank_vacuity_is_refused_by_both_public_tasks() -> None:
+def _refuse_to_report(*args: object, **kwargs: object) -> object:
+    """Stand in for the profiled report so that reaching it is a test failure."""
+    raise AssertionError("a degenerate profiled budget must be refused before anything is reported")
+
+
+def test_ds15_rank_vacuity_is_refused_by_both_public_tasks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """The library refuses the vacuous configuration instead of scoring it.
 
     The exact-arithmetic test above proves the profiled value is identically
@@ -781,6 +789,28 @@ def test_ds15_rank_vacuity_is_refused_by_both_public_tasks() -> None:
             criterion=criterion,
             config=sq.SoftVoronoiConfig(seed=0),
         )
+
+    # The refusal above is a claim about ordering, not only about wording. The
+    # fit builds a retention history by scoring recorded snapshots through
+    # profiled_information_report, whose own nuisance guard decides singularity
+    # from a factorization whose last bits are platform dependent. Whenever that
+    # guard fires first it blames the nuisance parameterization for what is a
+    # bin-budget fact, and the refusal below never runs - which is exactly how
+    # this regressed. So the invariant is stronger than the message: on a
+    # degenerate budget nothing profiled may be reported at all.
+    with monkeypatch.context() as patched:
+        patched.setattr(
+            api,
+            "profiled_information_report",
+            _refuse_to_report,
+        )
+        with pytest.raises(ValueError, match="profiled-D fit is degenerate"):
+            sq.fit_quantizer(
+                sample,
+                n_bins=vacuous_bins,
+                criterion=criterion,
+                config=sq.SoftVoronoiConfig(seed=0),
+            )
 
     # One more bin lifts the rank ceiling and the value becomes positive. All
     # four atoms are singletons there, which is the state the fixture priced.

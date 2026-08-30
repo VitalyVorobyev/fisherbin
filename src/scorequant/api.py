@@ -34,6 +34,7 @@ from .config import (
 from .criteria import Criterion, DOptimality, NormalizedTrace, ProfiledDOptimality
 from .information import (
     PROFILED_RANK_ADVICE,
+    binned_fisher_information,
     binned_information_is_degenerate,
     information_report,
     profiled_information_report,
@@ -323,29 +324,41 @@ def fit_quantizer(
         config=resolved_config,
     )
     run = _run_geometric_quantizer(prepared, n_bins, resolved_criterion)
-    fit_diagnostics = _build_fit_diagnostics(
-        prepared, run, n_bins, resolved_criterion, diagnostics=diagnostics
-    )
-    train_profiled_report = None
-    validation_profiled_report = None
-    hard_retention = fit_diagnostics.train_report.geometric_mean_retention
+    labels = chunked_hard_assign(prepared.all_train_coordinates, run.centers)
     if isinstance(resolved_criterion, ProfiledDOptimality):
-        # Refuse before reporting. A report describes a labeling and does not
-        # judge it, so profiled_information_report would hand back a rule that
-        # answers every profiled question with zero - and on a state this
-        # degenerate it may instead raise from its nuisance-block guard, blaming
-        # the parameterization for what is a bin-budget fact. Testing the whole
-        # binned matrix here decides the cause once, in the same terms
-        # optimize_partition uses at its initial labeling. This is reachable
-        # because the soft solver checks n_bins only against the Fisher rank,
-        # which the vacuous configuration of CE-DS-MARGINS-RANK-VACUITY-001
-        # satisfies.
-        if binned_information_is_degenerate(fit_diagnostics.train_report.fisher_binned):
+        # Refuse before anything else reads this labeling. A report describes a
+        # labeling and does not judge it, so profiled_information_report would
+        # hand back a rule that answers every profiled question with zero - and
+        # on a state this degenerate it raises from its nuisance-block guard
+        # instead, blaming the parameterization for what is a bin-budget fact.
+        # The refusal has to come before _build_fit_diagnostics, not after it:
+        # the retention history scores recorded snapshots through that same
+        # profiled report, so a check placed downstream never gets to run. The
+        # rank ceiling is a property of the bin budget, so if the final
+        # labeling is degenerate every snapshot of the same budget is too, and
+        # deciding here decides for all of them. This is reachable because the
+        # soft solver checks n_bins only against the Fisher rank, which the
+        # vacuous configuration of CE-DS-MARGINS-RANK-VACUITY-001 satisfies.
+        if binned_information_is_degenerate(
+            binned_fisher_information(
+                prepared.train_sample.scores,
+                labels,
+                prepared.train_sample.weights,
+                n_bins=n_bins,
+            )
+        ):
             raise ValueError(
                 f"profiled-D fit is degenerate: {n_bins} bins cannot generate "
                 f"nonsingular {prepared.train_sample.scores.shape[1]}-dimensional binned "
                 f"information. {PROFILED_RANK_ADVICE}"
             )
+    fit_diagnostics = _build_fit_diagnostics(
+        prepared, run, labels, n_bins, resolved_criterion, diagnostics=diagnostics
+    )
+    train_profiled_report = None
+    validation_profiled_report = None
+    hard_retention = fit_diagnostics.train_report.geometric_mean_retention
+    if isinstance(resolved_criterion, ProfiledDOptimality):
         train_profiled_report = profiled_information_report(
             prepared.train_sample.scores,
             fit_diagnostics.labels,
@@ -559,12 +572,12 @@ def _hard_retention_history(
 def _build_fit_diagnostics(
     prepared: _PreparedFit,
     run: QuantizerRun,
+    labels: jnp.ndarray,
     n_bins: int,
     criterion: Criterion,
     *,
     diagnostics: DiagnosticsMode,
 ) -> _FitDiagnostics:
-    labels = chunked_hard_assign(prepared.all_train_coordinates, run.centers)
     train_hard = _hard_retention_history(
         prepared.train_sample.scores,
         prepared.train_sample.weights,
