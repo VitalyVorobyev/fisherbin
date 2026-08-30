@@ -1,15 +1,16 @@
 {
   "id": "DS-PROFILED-COMPILE-CERTIFICATE",
-  "title": "Profiled compile verdict: projected rule unconditionally, DS14 companion rule only under a measured margin certificate at a reported price",
+  "title": "Profiled compile verdict: projected rule unconditionally, DS14 companion rule only along certified sequences",
   "criterion": [
     "Ds"
   ],
   "level": "empirical_inductive_quantizer",
   "status": "project_proved",
   "publication_status": "internal",
-  "statement": "On the conditionally centered class (d_psi = d_lambda = 1): (a) the projected efficient-score interval rule is the only UNCONDITIONAL theorem-backed compile path for profiled criteria - by the DS16 funnel, every asymptotically value-optimal run of the free optimizer (any seed, stable or not, global or not) is nuisance-degenerate in the limit with an unstable companion slope, so the free terminal state is not stably compilable and compile_quantizer's refusal is correct as the default; (b) a certificate-gated conditional path exists: if a terminal state passes the MEASURED DS14 triple (min mass >= c0, lambda_min(I_hat) >= kappa, projected-centroid separation >= gamma - else the DS11(d)/DS14 merged rule) together with exchange stability (DS13 as its finite certificate), the DS14 companion efficient-Voronoi rule rho_N built from the state's own projected centroids and profiled metric is theorem-backed (DS14 geometrization + population stationarity along certified sequences), and DS16(1) prices it intrinsically: such states sit at least delta(kappa) below v_K, so the exactly computable price v_hat_K - Phi_hat_s (the efficient_score_bound DP ceiling) must be reported, never hidden (invariant 7); (c) measured, the free optimizer does not return certified states at realistic N on the centered class, so the conditional path operationally requires margin-CONSTRAINED optimization (OP7 design; OP30 non-vacuity). Retention implication: margin-certified compile keeps at most v_K - delta(kappa) of the K-cell ceiling v_K; the projected rule attains the ceiling with nuisance estimated unbinned (DS9/DS15).",
+  "statement": "On the conditionally centered class (d_psi = d_lambda = 1): (a) the projected efficient-score interval rule is the only CURRENTLY ESTABLISHED unconditional compile path in the registered theory, not a mathematical uniqueness theorem. By the DS16 funnel, every asymptotically value-convergent free-optimizer sequence is nuisance-degenerate with an unstable companion slope, so refusal to compile a free profiled terminal state remains the safe default. (b) DS14 supplies a sequence-conditional companion-rule theorem: for exchange-stable sequences satisfying the law assumptions (M1)/(M4) and eventually uniform (M2)/(M3)/(M5), or the audited merged variant, its companion efficient-Voronoi rules geometrize and have population-stationary subsequential limits. One finite fit passing exchange stability plus measured mass, conditioning, and separation checks is only a diagnostic candidate; it does not establish those sequence hypotheses or a population guarantee. DS16 prices every finite state with lambda_min(I_hat) >= kappa pathwise, so report the observable finite gap v_hat_K - Phi_hat_s. The population delta(kappa) is existential and cannot be numerically reported without a law-specific lower bound. (c) certificate-branch inhabitation, constrained-solver existence, and attainment of the constrained population value remain OPEN-DS-STABLE-BASINS / OP7. The projected rule attains v_K only in the distinct formulation with nuisance information supplied externally or unbinned.",
   "assumptions": [
-    "class (L)+(S), d_psi = d_lambda = 1, equal weights, exact scores; the conditional path's asymptotic guarantee is DS14's and inherits DS14's hypotheses along sequences - the per-fit certificate is a measured triple at one N",
+    "class (L)+(S), d_psi = d_lambda = 1, equal weights, exact scores; the conditional path's asymptotic guarantee is DS14's and inherits (M1)-(M5), or the merged variant, along a sequence",
+    "a per-fit measured triple plus exact exchange stability is diagnostic only and is not a finite-sample population certificate",
     "beyond the class (non-centered laws): measured only (mix3 keeps lambda_min = Theta(1) at terminal states); OP29's mathematical branches remain open"
   ],
   "dependencies": [
@@ -28,7 +29,13 @@
     "file": "KNOWN_RESULTS/05b-ds-bridge.md",
     "section": "DS16. Margin price at arbitrary labelings, the value funnel, and the profiled compile verdict"
   },
+  "audit": "AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md",
+  "literature": [
+    "Alsing-Wandelt-2019",
+    "Rakhlin-Caponnetto-2006"
+  ],
+  "literature_search_status": "search_gap",
   "programme": "P1",
   "role": "the deployment verdict OP29's packet was opened for; the target of the independent adversarial audit that gates any compile_quantizer change",
-  "warning": "This is a guarantee the library would ship: no src/ change may embed it before an independent adversarial audit (PLAYBOOK section 2). The proposed surface is recorded in WORK/completed/DS-STABLE-MARGINS-COMPILE.md, not implemented."
+  "warning": "Audit-hardened. 'Only' means only currently established in this registry, not impossibility of any other compiler. DS14 is asymptotic and sequence-conditional; a single finite diagnostic does not imply population stationarity. Certificate-branch inhabitation and a constrained solver remain open, and delta(kappa) is existential. The proposed surface is not implemented; no src/ file changed."
 }

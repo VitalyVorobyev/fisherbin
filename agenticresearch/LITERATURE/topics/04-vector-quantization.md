@@ -52,6 +52,25 @@ log-det analogue.
 
 - DOI: https://doi.org/10.1214/aos/1176345339
 
+## Rakhlin & Caponnetto (2006): almost-minimizer rigidity
+
+**Key:** Rakhlin-Caponnetto-2006
+
+For bounded Euclidean sources and the nearest-center squared-error risk,
+Rakhlin & Caponnetto define population almost-minimizers and prove that their
+diameter shrinks when the population minimizer is unique. A covering-number
+uniform law transfers that geometry to empirical minimizers and stability
+under sample replacement.
+
+**Use:** direct prior art for the compact-codebook rigidity and uniform-law
+core of DS16.1. **What does not transfer:** their feasible objects are
+nearest-center codebooks, whereas DS16 starts from arbitrary sample
+groupings; they also do not handle unbounded finite-second-moment sources,
+signed nuisance moments, profiled Fisher information, or a nuisance-margin
+price.
+
+- Official PDF: https://proceedings.neurips.cc/paper_files/paper/2006/file/58191d2a914c6dae66371c9dcdc91b41-Paper.pdf
+
 ## Graf & Luschgy (2000, 2002)
 
 **Key:** Graf-Luschgy-2000
@@ -198,6 +217,19 @@ engage before any publication of the steering construction.
 scalar-distortion objective; DS15's margin fights the profiled criterion's
 own drive to nuisance degeneracy, and no published theorem provides
 swap-steering to a side constraint at \(\tilde O(N^{-3/4})\) cost.
+
+## Hartigan one-point terminal geometry (30 Aug 2026)
+
+**Key:** Telgarsky-Vattani-2010
+
+Telgarsky & Vattani study greedy one-point relocation for finite ordinary
+k-means, including strict descent and the geometry separating a terminal
+partition from its induced Voronoi partition. It is the nearest published
+precedent for the exchange-stability notion used in the DS16 measurements.
+
+**Does not transfer:** its objective is additive SSE. It gives no nuisance
+block, profiled criterion, information price, or population funnel, and in
+particular does not make an exchange-stable partition a Voronoi partition.
 
 ## Outlier and singleton cells at exact clustering optima
 

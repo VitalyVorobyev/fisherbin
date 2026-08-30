@@ -145,6 +145,15 @@ or rate-limited edges. Counts and source limitations are recorded in
 
 ### High-rate and vector quantization
 
+- **Rakhlin & Caponnetto (2006),** *Stability of K-Means Clustering*
+  (`Rakhlin-Caponnetto-2006`), is direct prior art for the
+  compact-codebook/almost-minimizer rigidity used in DS16.1. Its bounded-law,
+  nearest-center theorem does not cover arbitrary groupings, signed nuisance
+  moments, or the profiled-information price.
+- **Telgarsky & Vattani (2010),** *Hartigan's Method: k-means Clustering
+  without Voronoi* (`Telgarsky-Vattani-2010`), supplies the nearest finite
+  one-point-terminal geometry. It also reinforces that exchange stability is
+  not a Voronoi certificate; it has no population or nuisance conclusion.
 - **Zador (1982), Gersho (1979), and Bucklew & Wise (1982)** provide the
   classical high-rate scaling, cell-shape, and rigorous multidimensional
   additive-distortion templates now cited by `OPEN-D-HIGH-RATE`.

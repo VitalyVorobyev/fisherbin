@@ -7,9 +7,9 @@
   "level": "finite_assignment",
   "status": "measured",
   "publication_status": "internal",
-  "statement": "Exact full-lattice census (N = 10..14, K = 3, centered06 + mix3 grid laws, integer-exact stability classification selftested against an independent from-scratch oracle): one-point exchange-stable profiled-Ds states are plentiful (18-944 per instance) and overwhelmingly non-global; on the centered law their nuisance blocks span 1e-5 to 0.57 with value gap and nuisance block anti-correlated (-0.27 to -0.83 per instance), margin-retaining non-global stable states exist in every instance at a Theta(1) price, and stable states with nearly coincident projected centroids occur (min separation 5.5e-4), so (M5) must be checked, never assumed. The efficient-score DP interval labeling - the documented profiled initializer - is exchange-UNSTABLE in 7/10 centered-law instances (already at N = 8, exact gain 0.447, the improving move growing the nuisance block 27-fold) while stable in 9/10 mix3 instances. Exact best-gain ascent terminals at N <= 14 are strongly seed-dependent. At library scale (N = 100/300/1000, optimize_partition + ProfiledDOptimality + DExchangeConfig), EVERY seeding (efficient-score labels, k-means++, random) terminates on the centered law with the nuisance block collapsing at the K/N scale (N * I11 median 0.5-3.0) and near-optimal value (log-gap 0.004-0.046 to the certified DP ceiling) - the DS16 funnel in action, seed-independently - while on mix3 every seeding keeps lambda_min ~ 1.7 = Theta(1) with log-gaps <= 2e-4.",
+  "statement": "Exact full-lattice census (N = 10..14, K = 3, centered06 + mix3 grid laws) finds one-point exchange-stable profiled-Ds states plentiful (5-944 per instance, correcting the pre-audit 18-944 range) and overwhelmingly non-global. On the centered law their nuisance blocks span 1e-5 to 0.57 with value gap and nuisance block anti-correlated (-0.27 to -0.83 per instance); margin-retaining non-global stable states occur in every census instance at a Theta(1) price, and near-coincident projected centroids occur, so (M5) must be checked. The efficient-score DP interval labeling is unstable in 7/10 centered instances (already N = 8, exact gain 0.447) and stable in 9/10 mix3 instances. Small-N ascent is seed-dependent. In the researcher library runs at N = 100/300/1000 every tested seed on the centered law terminates with nuisance at K/N scale and near-optimal value; 0.004-0.046 is an aggregate reported gap summary, not a run-wise bound. An independent N = 100 run reproduced stability and collapse for all three seeds but observed a random-seed gap 0.075. On mix3 the independent runs retained lambda_min about 1.7 with gaps below 7e-5. These are measured observations, not an asymptotic selection theorem.",
   "assumptions": [
-    "grid-law emulations (atomic), deterministic seeds 20260830 + 1000N + rep; library runs float64 with gain_tolerance 1e-10",
+    "grid-law emulations (atomic), deterministic researcher seeds 20260830 + 1000N + rep; independent audit seeds and exact provenance are in AUDITS/artifacts/AUDIT-DS-STABLE-MARGINS-COMPILE-001",
     "measured, never theorem authority; the asymptotic selection law is open (OPEN-DS-STABLE-BASINS)"
   ],
   "dependencies": [
@@ -30,9 +30,12 @@
   },
   "artifact": "WORK/artifacts/DS-STABLE-MARGINS-COMPILE/census-summary.json",
   "literature": [
-    "Silvey-Titterington-Torsney-1978"
+    "Silvey-Titterington-Torsney-1978",
+    "Telgarsky-Vattani-2010"
   ],
   "literature_search_status": "search_gap",
   "programme": "P1",
-  "role": "the selection-effects evidence separating properties of stable states from properties of the seeding (packet blocker 5)"
+  "audit": "AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md",
+  "role": "the selection-effects evidence separating properties of stable states from properties of the seeding (packet blocker 5)",
+  "warning": "Audit-hardened measured claim. The stable-count range is 5-944. The 0.004-0.046 researcher gap range is aggregate, not a universal per-run range; an independent N=100 random seed produced 0.075. Atomic grid laws and finite optimizer runs do not prove asymptotic basin selection."
 }
