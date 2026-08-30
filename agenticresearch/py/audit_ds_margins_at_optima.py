@@ -737,13 +737,16 @@ def main():
     out_path = None
     if "--out" in args:
         out_path = Path(args[args.index("--out") + 1])
+    sizes = (12, 13)
+    if "--sizes" in args:
+        sizes = tuple(int(x) for x in args[args.index("--sizes") + 1].split(","))
     report = {}
     if mode in ("identities", "all"):
         report["identities"] = run_identities()
     if mode in ("vacuity", "all"):
         report["vacuity"] = run_vacuity()
     if mode in ("exhaustive", "all"):
-        report["exhaustive"] = run_exhaustive()
+        report["exhaustive"] = run_exhaustive(sizes=sizes)
     if mode in ("scalar", "all"):
         report["scalar"] = run_scalar()
     text = json.dumps(report, indent=2)

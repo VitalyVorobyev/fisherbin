@@ -1,0 +1,33 @@
+{
+  "id": "CE-DS-MARGINS-RANK-VACUITY-001",
+  "criterion": "Ds",
+  "level": "finite_assignment",
+  "claim_falsified": "DS15's margins dichotomy as first registered for general nuisance dimension under the bare cardinality assumption K >= 3: for d_lambda >= 2 with K = d_lambda + 1, conclusion (i) (value convergence to the positive unrestricted supremum v_K) is false, because exact centering forces rank(I_z) <= K - 1 = d_lambda, so by Schur-complement rank additivity EVERY feasible labeling (nonsingular binned nuisance block) has profiled value exactly 0 on every sample, while v_K > 0.",
+  "scores": [["3", "1", "0"], ["-1", "-2", "1"], ["-1", "1", "-2"], ["-1", "0", "1"]],
+  "weights": ["1/4", "1/4", "1/4", "1/4"],
+  "K": 3,
+  "poi_indices": [0],
+  "nuisance_indices": [1, 2],
+  "labels_before": [0, 0, 1, 2],
+  "labels_after_or_optimum": [0, 0, 1, 2],
+  "search_space": "all 6 unlabeled nonempty 3-partitions of the 4 exactly centered atoms; every one has a nonsingular 2x2 binned nuisance block (feasible)",
+  "exact_quantities": {
+    "profiled_value_every_feasible_labeling": "0",
+    "full_information_determinant_positive": true,
+    "efficient_score_interval_optimum_v_K": "81/50",
+    "k_equals_d_lambda_plus_2_all_singletons_value": "9/5",
+    "rank_mechanism": "sum_b m_b = 0 (exact centering) makes rank(I_z) <= K - 1; with I_z,lambda_lambda nonsingular of rank d_lambda = K - 1, Schur rank additivity rank(I_z) = rank(I_lambda_lambda) + rank(S_psi^+) forces S_psi^+ = 0"
+  },
+  "consequences": [
+    "the DS15 dichotomy needs K >= d_lambda + 2, not K >= 3; at d_lambda = 1 the two coincide, which is why the theorem's own K >= 3 is exactly right there",
+    "for d_lambda >= 2 with K >= d_lambda + 2 the dichotomy remains open: Proposition 6's steering construction is one-dimensional in the nuisance and (R) is stated for a scalar nuisance sign",
+    "the same rank ceiling shows the DS15 mechanism at K = 2, d_lambda = 1: the profiled value is identically zero there as well, so K >= 3 is load-bearing at d_lambda = 1 too"
+  ],
+  "verification": {
+    "method": "exact rational exhaustive enumeration of all canonical labelings in Fraction arithmetic",
+    "notes": "Hand-minimized integer witness with exact zero column sums (no centering arithmetic needed), nonsingular 3x3 full second-moment matrix (determinant > 0), and a strictly positive efficient-score interval optimum. Regression: tests/test_research_claims.py::test_ds15_rank_deficiency_zeroes_every_feasible_profiled_value. Independent scan: py/audit_ds_margins_at_optima.py vacuity (random N=6,7,8 instances all confirm).",
+    "vacuity_is_universal": "the zero value holds for EVERY sample and every feasible labeling at K = d_lambda + 1, by the rank argument; this fixture is the minimized exact witness, not an isolated instance"
+  },
+  "source": "py/audit_ds_margins_at_optima.py vacuity, AUDIT-DS-MARGINS-AT-OPTIMA packet",
+  "date": "2026-08-30"
+}
