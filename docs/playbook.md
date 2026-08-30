@@ -31,8 +31,16 @@ fnm install 24.19.0 && fnm use 24.19.0     # or: nvm install 24.19.0 && nvm use
 node --version                             # v24.19.0 matches CI; >=20 will build
 ```
 
-pnpm comes from `corepack`, which ships with Node — you do not install pnpm separately. Always
-invoke it as `corepack pnpm`, and always from inside `website/`: corepack resolves the
+pnpm comes from `corepack`, which reads the `packageManager` field and fetches exactly that pnpm,
+so the version is a property of the repository rather than of your machine. **Corepack is no longer
+bundled with Node.** It shipped with Node through 24 and was unbundled in 25, so on a current Node
+`corepack pnpm` fails with `command not found` until you install it once:
+
+```bash
+npm install -g corepack@latest    # only needed on Node >= 25
+```
+
+Always invoke it as `corepack pnpm`, and always from inside `website/`: corepack resolves the
 `packageManager` field from its own working directory, so `pnpm --dir website ...` picks the wrong
 version or none at all.
 

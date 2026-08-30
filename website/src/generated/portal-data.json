@@ -333,7 +333,7 @@
       "name": "efficient_score_bound",
       "reference": "/reference/index/",
       "signature": "efficient_score_bound(scores: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, n_bins: int, config: ScalarDPConfig | None = None, execution: ExecutionConfig | None = None) -> EfficientScoreBound",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L485",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L546",
       "summary": "Certify a ceiling on profiled information by quantizing the efficient score."
     },
     {
@@ -341,7 +341,7 @@
       "name": "efficient_scores",
       "reference": "/reference/index/",
       "signature": "efficient_scores(scores: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L430",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L491",
       "summary": "Project scores with the full-information nuisance regression."
     },
     {
@@ -349,7 +349,7 @@
       "name": "exchange_stability_report",
       "reference": "/reference/index/",
       "signature": "exchange_stability_report(scores: ArrayLike, labels: ArrayLike, *, weights: ArrayLike | None = None, criterion: DOptimality | ProfiledDOptimality | None = None, rank_rtol: float | None = None, gain_tolerance: float = 1e-10, execution: ExecutionConfig | None = None) -> StabilityReport",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/partition.py#L547",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/partition.py#L570",
       "summary": "Certify one supplied labeling against every single-row relocation."
     },
     {
@@ -365,7 +365,7 @@
       "name": "fit_quantizer",
       "reference": "/reference/index/",
       "signature": "fit_quantizer(source: Source, *, provider: ScoreProvider | None = None, validation: Source | None = None, n_bins: int, criterion: Criterion | None = None, config: QuantizerConfig | None = None, diagnostics: DiagnosticsMode = 'endpoints', execution: ExecutionConfig | None = None) -> QuantizerResult",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L267",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L273",
       "summary": "Fit a reusable hard rule from an empirical or bounded score law."
     },
     {
@@ -397,7 +397,7 @@
       "name": "optimize_partition",
       "reference": "/reference/index/",
       "signature": "optimize_partition(scores: ScoreSample | ArrayLike, *, weights: ArrayLike | None = None, n_bins: int, criterion: DOptimality | ProfiledDOptimality | None = None, config: PartitionConfig | None = None, provenance: ScoreProvenance | None = None, initial_labels: ArrayLike | None = None, execution: ExecutionConfig | None = None) -> PartitionResult",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L184",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L190",
       "summary": "Optimize labels of one fixed score table without prediction semantics."
     },
     {
@@ -437,7 +437,7 @@
       "name": "profiled_information_report",
       "reference": "/reference/index/",
       "signature": "profiled_information_report(scores: ArrayLike, assignments: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, n_bins: int | None = None, schema: ScoreSchema | None = None, execution: ExecutionConfig | None = None) -> ProfiledInformationReport",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L358",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L419",
       "summary": "Build same-label profiled-\\(D_s\\) diagnostics without regularization."
     },
     {

@@ -76,7 +76,12 @@ export function useLabRunner(): LabRunner {
       return;
     }
     setStage("Starting isolated browser worker");
-    const worker = new Worker(new URL("./lab.worker.ts", import.meta.url), {type: "module"});
+    // `name` is what gives the emitted chunk a stable name, which
+    // docusaurus.config.ts needs in order to target it. See the note there.
+    const worker = new Worker(new URL("./lab.worker.ts", import.meta.url), {
+      name: "lab-worker",
+      type: "module"
+    });
     workerRef.current = worker;
     worker.onmessage = (message: MessageEvent<unknown>): void => {
       if (!isLabEvent(message.data) || message.data.runId !== runIdRef.current) return;
@@ -100,8 +105,15 @@ export function useLabRunner(): LabRunner {
         terminate();
       }
     };
-    worker.onerror = (): void => {
-      setError("The local runtime could not start. The verified fixture remains available.");
+    // A worker that fails while its module is evaluated reports through
+    // onerror rather than through the protocol, so this is the only place the
+    // cause is ever visible. Discarding it leaves "could not start" as the
+    // whole diagnosis, which is indistinguishable from a missing runtime asset,
+    // a bad MIME type and a syntax error the bundler let through.
+    worker.onerror = (event: ErrorEvent): void => {
+      const where = event.filename === "" ? "" : ` (${event.filename}:${String(event.lineno)})`;
+      const cause = event.message === "" ? "" : ` ${event.message}${where}`;
+      setError(`The local runtime could not start.${cause} The verified fixture remains available.`);
       setState("error");
       terminate();
     };

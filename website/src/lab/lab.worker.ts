@@ -34,6 +34,33 @@ const portalRoot = "/scorequant/portal/";
  */
 let runtime: Promise<{run_lab: (payload: string) => string}> | null = null;
 
+/**
+ * Import a module the bundler must not look at.
+ *
+ * Pyodide is a pinned static asset of the assembled site, not a dependency of
+ * this bundle, and it has to stay out of the module graph. No form of
+ * `import()` expresses that here. `webpackIgnore` is honoured only on a string
+ * literal, and the client compile does honour it - but the server compile then
+ * tries to resolve that absolute path on disk and fails the build. Passing a
+ * variable instead makes webpack build a context module, which compiles to
+ * __webpack_require__ helpers; a worker chunk carries the webpack runtime only
+ * while it happens to own a copy, which is a property of the whole graph and
+ * not of this file. That is why it worked until the development blog was added
+ * and the worker began dying on `__webpack_require__ is not defined` before
+ * Pyodide was ever fetched.
+ *
+ * Constructing the importer puts the specifier beyond static reach, so nothing
+ * is emitted, nothing is resolved on the server, and no runtime is required.
+ * The rule this suppresses guards against evaluating attacker-influenced
+ * strings; the evaluated string is the constant below, and the URL it receives
+ * is built from this worker's own origin. Pyodide additionally cannot run in a
+ * context that forbids eval, so no policy permitting Pyodide forbids this line.
+ */
+// eslint-disable-next-line @typescript-eslint/no-implied-eval -- constant code, same-origin URL; see above
+const importAtRuntime = new Function("url", "return import(url);") as (
+  url: string
+) => Promise<unknown>;
+
 function emit(event: LabEvent): void {
   if (!isLabEvent(event)) throw new Error("Worker attempted to emit an invalid event.");
   scope.postMessage(event);
@@ -45,8 +72,9 @@ async function bootstrap(runId: string): Promise<{run_lab: (payload: string) => 
   if (!manifestResponse.ok) throw new Error("The pinned local runtime manifest is unavailable.");
   const manifest = (await manifestResponse.json()) as RuntimeManifest;
   emit({protocolVersion: PROTOCOL_VERSION, runId, type: "progress", stage: `Loading Pyodide ${manifest.pyodideVersion}`, progress: .12});
-  const pyodideModuleURL = "/scorequant/portal/runtime/pyodide/pyodide.mjs";
-  const pyodideModule = (await import(/* webpackIgnore: true */ pyodideModuleURL)) as PyodideModule;
+  const pyodideModule = (await importAtRuntime(
+    `${base}runtime/pyodide/pyodide.mjs`
+  )) as PyodideModule;
   const pyodide = await pyodideModule.loadPyodide({indexURL: new URL(manifest.indexURL, base).href});
   emit({protocolVersion: PROTOCOL_VERSION, runId, type: "progress", stage: "Installing the local ScoreQuant wheel", progress: .48});
   await pyodide.loadPackage(["micropip", "numpy"]);
