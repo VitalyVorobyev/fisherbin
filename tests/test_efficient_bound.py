@@ -46,7 +46,7 @@ def test_bound_dominates_the_achieved_profiled_objective(
         weights=weights,
         n_bins=n_bins,
         criterion=sq.ProfiledDOptimality(interest),
-        config=sq.DExchangeConfig(seed=3, n_init=8, n_restarts=2),
+        config=sq.DExchangeConfig(seed=3, initializer_restarts=8, solver_restarts=2),
     )
     assert bound.gap_to(result) >= -1e-9
     assert bound.labels.shape == (n_rows,)
@@ -84,7 +84,7 @@ def test_bound_is_tight_when_nuisance_is_orthogonal_and_interest_separates() -> 
         weights=weights,
         n_bins=5,
         criterion=sq.ProfiledDOptimality((0,)),
-        config=sq.DExchangeConfig(seed=1, n_init=8, n_restarts=3),
+        config=sq.DExchangeConfig(seed=1, initializer_restarts=8, solver_restarts=3),
     )
     gap = bound.gap_to(result)
     assert 0 <= gap < 0.1 * abs(bound.upper_bound)
@@ -96,7 +96,7 @@ def test_bound_labels_initialize_profiled_exchange() -> None:
     for seed, n_rows, n_columns, interest, weighted, n_bins in _PROBLEMS:
         scores, weights = _instance(seed, n_rows, n_columns, weighted)
         criterion = sq.ProfiledDOptimality(interest)
-        config = sq.DExchangeConfig(seed=7, n_init=4, n_restarts=1)
+        config = sq.DExchangeConfig(seed=7, initializer_restarts=4, solver_restarts=1)
         bound = sq.efficient_score_bound(scores, interest=interest, weights=weights, n_bins=n_bins)
         seeded = sq.optimize_partition(
             scores, weights=weights, n_bins=n_bins, criterion=criterion, config=config
@@ -125,7 +125,7 @@ def test_further_restarts_still_use_ordinary_seeding() -> None:
         weights=weights,
         n_bins=4,
         criterion=criterion,
-        config=sq.DExchangeConfig(seed=2, n_init=4, n_restarts=1),
+        config=sq.DExchangeConfig(seed=2, initializer_restarts=4, solver_restarts=1),
         initial_labels=bound.labels,
     )
     multiple = sq.optimize_partition(
@@ -133,7 +133,7 @@ def test_further_restarts_still_use_ordinary_seeding() -> None:
         weights=weights,
         n_bins=4,
         criterion=criterion,
-        config=sq.DExchangeConfig(seed=2, n_init=4, n_restarts=4),
+        config=sq.DExchangeConfig(seed=2, initializer_restarts=4, solver_restarts=4),
         initial_labels=bound.labels,
     )
     assert multiple.objective >= single.objective - 1e-12
@@ -180,7 +180,7 @@ def test_zero_weight_rows_do_not_constrain_the_initializer() -> None:
         weights=weights,
         n_bins=4,
         criterion=criterion,
-        config=sq.DExchangeConfig(seed=5, n_init=4),
+        config=sq.DExchangeConfig(seed=5, initializer_restarts=4),
         initial_labels=bound.labels,
     )
     assert bound.gap_to(result) >= -1e-9
@@ -241,7 +241,7 @@ def test_bound_also_certifies_a_coarser_partition() -> None:
         weights=weights,
         n_bins=4,
         criterion=sq.ProfiledDOptimality((0,)),
-        config=sq.DExchangeConfig(seed=2, n_init=8),
+        config=sq.DExchangeConfig(seed=2, initializer_restarts=8),
     )
     assert bound.gap_to(coarse) >= -1e-9
 

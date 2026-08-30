@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Literal
 
+import numpy as np
+
 from ._execution import (
     canonicalize_public,
     current_execution,
@@ -20,6 +22,7 @@ from ._validation import (
     validate_n_bins,
     validate_sample,
 )
+from .artifact import Quantizer
 from .config import (
     BackendName,
     DExchangeConfig,
@@ -224,7 +227,7 @@ def optimize_partition(
         before the solver runs and must therefore already agree on their bin,
         and every requested cell must remain nonempty afterwards. Supplied
         labels replace the seeding of the first exchange restart only, so
-        ``init`` and ``n_init`` still govern any further restart; the guarded
+        ``init`` and ``initializer_restarts`` still govern any further restart; the guarded
         Mahalanobis-Lloyd solver starts from them directly.
     """
     del execution
@@ -257,6 +260,13 @@ def optimize_partition(
         )
     object.__setattr__(result, "execution", resolved_execution)
     object.__setattr__(result, "schema", sample.schema)
+    if sample.schema is not None and result.profiled_report is not None:
+        # Attaching the schema is bookkeeping, not a second computation: the
+        # report already holds the columns, and the schema only lets it say
+        # their names.
+        object.__setattr__(
+            result, "profiled_report", replace(result.profiled_report, schema=sample.schema)
+        )
     return canonicalize_public(result)
 
 
@@ -323,19 +333,32 @@ def fit_quantizer(
             config=resolved_config,
             provenance=train.provenance,
         )
-        result = partition.compile_quantizer()
+        object.__setattr__(partition, "schema", train.schema)
+        rule = partition.compile_quantizer(execution=resolved_execution)
         validation_report = (
             None
             if validation_sample is None
-            else result.evaluate_scores(validation_sample.scores, validation_sample.weights)
+            else information_report(
+                validation_sample.scores,
+                rule.predict_scores(validation_sample.scores),
+                validation_sample.weights,
+                n_bins=n_bins,
+                rank_rtol=resolved_config.rank_rtol,
+            )
         )
         return canonicalize_public(
-            replace(
-                result,
-                validation_report=validation_report,
-                source_kind=source_kind,
+            QuantizerResult(
+                quantizer=rule,
+                criterion=partition.criterion,
+                config=resolved_config,
                 execution=resolved_execution,
-                schema=train.schema,
+                trace=_compiled_trace(partition),
+                labels=partition.labels,
+                train_report=partition.train_report,
+                validation_report=validation_report,
+                provenance=train.provenance,
+                hardening_gap=0.0,
+                source_kind=source_kind,
             )
         )
 
@@ -387,6 +410,7 @@ def fit_quantizer(
             interest=resolved_criterion.interest_indices,
             weights=prepared.train_sample.weights,
             n_bins=n_bins,
+            schema=train.schema,
         )
         hard_retention = train_profiled_report.geometric_mean_retention
         if prepared.validation_sample is not None and prepared.validation_coordinates is not None:
@@ -396,15 +420,22 @@ def fit_quantizer(
                 interest=resolved_criterion.interest_indices,
                 weights=prepared.validation_sample.weights,
                 n_bins=n_bins,
+                schema=train.schema,
             )
     hardening_gap = None
     if run.soft_retention_history:
         hardening_gap = run.soft_retention_history[-1] - hard_retention
     return canonicalize_public(
         QuantizerResult(
-            centers=run.centers,
-            metric=None,
-            transform=prepared.transform,
+            quantizer=Quantizer(
+                transform=prepared.transform,
+                centers=run.centers,
+                metric=None,
+                schema=train.schema,
+                provenance=train.provenance,
+                criterion=resolved_criterion,
+                execution=resolved_execution,
+            ),
             criterion=resolved_criterion,
             config=resolved_config,
             execution=resolved_execution,
@@ -417,8 +448,32 @@ def fit_quantizer(
             source_kind=source_kind,
             train_profiled_report=train_profiled_report,
             validation_profiled_report=validation_profiled_report,
-            schema=train.schema,
         )
+    )
+
+
+def _compiled_trace(partition: PartitionResult) -> OptimizationTrace:
+    """Describe a compiled partition as a quantizer trace.
+
+    Compilation is bookkeeping, not a second optimization, so the centers and
+    cell weights are constant across the trace; what varies is the finite
+    solver's own objective trajectory, reported here so a compiled rule and a
+    directly fitted one expose the same history shape.
+    """
+    if partition.transformed_centers is None:
+        raise ValueError("D compilation geometry is unavailable")
+    steps = partition.objective_history.shape[0]
+    return OptimizationTrace(
+        steps=np.arange(steps),
+        centers=np.repeat(partition.transformed_centers[None, :, :], steps, axis=0),
+        objective=partition.objective_history,
+        bin_weights=np.repeat(partition.cell_weights[None, :], steps, axis=0),
+        train_hard_retention=np.full(
+            partition.objective_history.shape,
+            partition.train_report.geometric_mean_retention,
+            dtype=partition.cell_weights.dtype,
+        ),
+        objective_label="logdet_retained",
     )
 
 

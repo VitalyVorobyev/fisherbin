@@ -47,10 +47,12 @@ table = rng.normal(size=(160, 3)) @ np.array([[1.0, 0.5, -0.2], [0.0, 1.1, 0.3],
 scalar = rng.normal(size=(160, 1))
 
 configs = {
-    "DExchangeConfig": sq.DExchangeConfig(seed=0, n_init=2),
-    "MahalanobisLloydConfig": sq.MahalanobisLloydConfig(seed=0, n_init=2),
-    "KMeansConfig": sq.KMeansConfig(seed=0, n_init=2),
-    "SoftVoronoiConfig": sq.SoftVoronoiConfig(seed=0, n_init=2, max_steps=20, record_every=20),
+    "DExchangeConfig": sq.DExchangeConfig(seed=0, initializer_restarts=2),
+    "MahalanobisLloydConfig": sq.MahalanobisLloydConfig(seed=0, initializer_restarts=2),
+    "KMeansConfig": sq.KMeansConfig(seed=0, solver_restarts=2),
+    "SoftVoronoiConfig": sq.SoftVoronoiConfig(
+        seed=0, initializer_restarts=2, max_steps=20, record_every=20
+    ),
     "ScalarDPConfig": sq.ScalarDPConfig(),
 }
 criteria = {
@@ -145,7 +147,7 @@ def compare(scores):
         sq.ScoreSample(scores),
         n_bins=4,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=0, n_init=8, whiten=False),
+        config=sq.KMeansConfig(seed=0, solver_restarts=8, whiten=False),
     )
     return (
         float(exchange.train_report.geometric_mean_retention),
@@ -316,7 +318,7 @@ profiled = sq.optimize_partition(
     three,
     n_bins=4,
     criterion=sq.ProfiledDOptimality((0,)),
-    config=sq.DExchangeConfig(seed=0, n_init=4),
+    config=sq.DExchangeConfig(seed=0, initializer_restarts=4),
     initial_labels=bound.labels,
 )
 assert bound.gap_to(profiled) >= 0.0

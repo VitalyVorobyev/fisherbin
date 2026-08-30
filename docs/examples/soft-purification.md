@@ -76,7 +76,7 @@ rule = sq.fit_quantizer(
     n_bins=n_bins,
     criterion=sq.DOptimality(),
     config=sq.SoftVoronoiConfig(
-        seed=3, n_init=4, max_steps=120, record_every=20, temperature_end_ratio=0.02
+        seed=3, initializer_restarts=4, max_steps=120, record_every=20, temperature_end_ratio=0.02
     ),
     diagnostics="full",
 )
@@ -126,7 +126,11 @@ for ratio in (0.5, 0.2, 0.05):
         n_bins=n_bins,
         criterion=sq.DOptimality(),
         config=sq.SoftVoronoiConfig(
-            seed=3, n_init=4, max_steps=120, record_every=120, temperature_end_ratio=ratio
+            seed=3,
+            initializer_restarts=4,
+            max_steps=120,
+            record_every=120,
+            temperature_end_ratio=ratio,
         ),
     )
     gaps.append(float(annealed.hardening_gap))

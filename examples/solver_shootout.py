@@ -239,7 +239,7 @@ def _quantizer_entries(
             "quantizer_whitened_kmeans",
             "Whitened k-means",
             sq.NormalizedTrace(),
-            sq.KMeansConfig(seed=SOLVER_SEED, n_init=8),
+            sq.KMeansConfig(seed=SOLVER_SEED, solver_restarts=8),
         ),
         (
             "quantizer_soft_voronoi",
@@ -247,7 +247,7 @@ def _quantizer_entries(
             sq.DOptimality(),
             sq.SoftVoronoiConfig(
                 seed=SOLVER_SEED,
-                n_init=8,
+                initializer_restarts=8,
                 max_steps=soft_steps,
                 record_every=max(soft_steps // 8, 1),
             ),
@@ -485,7 +485,7 @@ def whitening_probe(problem: SyntheticProblem) -> dict[str, float]:
             sq.ScoreSample(train.scores, train.weights),
             n_bins=problem.n_bins,
             criterion=sq.NormalizedTrace(),
-            config=sq.KMeansConfig(seed=SOLVER_SEED, n_init=8, whiten=whiten),
+            config=sq.KMeansConfig(seed=SOLVER_SEED, solver_restarts=8, whiten=whiten),
         )
         values[name] = retention(
             test.scores,
@@ -537,7 +537,7 @@ def scale_sensitivity(
             sq.ScoreSample(scaled_train, train.weights),
             n_bins=n_bins,
             criterion=sq.NormalizedTrace(),
-            config=sq.KMeansConfig(seed=SOLVER_SEED, n_init=8),
+            config=sq.KMeansConfig(seed=SOLVER_SEED, solver_restarts=8),
         )
         rows.append(
             {

@@ -85,7 +85,7 @@ inside each class. The bin budget is the study's operating point, eight.
 <!-- snippet: skip -->
 ```python
 interest = (4,)  # HSPCs
-config = sq.DExchangeConfig(seed=2026, n_init=8)
+config = sq.DExchangeConfig(seed=2026, initializer_restarts=8)
 
 plain = sq.optimize_partition(
     partition_scores,

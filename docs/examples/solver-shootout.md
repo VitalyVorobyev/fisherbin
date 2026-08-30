@@ -112,11 +112,15 @@ for name, criterion, config in [
         sq.DOptimality(),
         sq.MahalanobisLloydConfig(seed=7),
     ),
-    ("quantizer, whitened k-means", sq.NormalizedTrace(), sq.KMeansConfig(seed=7, n_init=8)),
+    (
+        "quantizer, whitened k-means",
+        sq.NormalizedTrace(),
+        sq.KMeansConfig(seed=7, solver_restarts=8),
+    ),
     (
         "quantizer, soft gradient descent",
         sq.DOptimality(),
-        sq.SoftVoronoiConfig(seed=7, n_init=8, max_steps=120, record_every=30),
+        sq.SoftVoronoiConfig(seed=7, initializer_restarts=8, max_steps=120, record_every=30),
     ),
 ]:
     rule = sq.fit_quantizer(source, n_bins=n_bins, criterion=criterion, config=config)
@@ -278,7 +282,7 @@ for label, whiten in (("whitened", True), ("unwhitened", False)):
         source,
         n_bins=n_bins,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=7, n_init=8, whiten=whiten),
+        config=sq.KMeansConfig(seed=7, solver_restarts=8, whiten=whiten),
     )
     whitening[label] = retention(
         test.scores, np.asarray(rule.predict_scores(test.scores)), test.weights, n_bins

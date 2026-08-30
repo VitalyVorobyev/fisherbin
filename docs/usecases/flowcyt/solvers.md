@@ -48,17 +48,17 @@ inputs = load_solver_inputs("flowcyt-results/solver_inputs_sample.npz")
 source = sq.ScoreSample(inputs.partition_scores, inputs.partition_weights)
 
 for name, criterion, config in [
-    ("Exact D exchange", sq.DOptimality(), sq.DExchangeConfig(seed=SEED, n_init=8)),
+    ("Exact D exchange", sq.DOptimality(), sq.DExchangeConfig(seed=SEED, initializer_restarts=8)),
     (
         "Guarded Mahalanobis-Lloyd",
         sq.DOptimality(),
-        sq.MahalanobisLloydConfig(seed=SEED, n_init=8),
+        sq.MahalanobisLloydConfig(seed=SEED, initializer_restarts=8),
     ),
-    ("Whitened k-means", sq.NormalizedTrace(), sq.KMeansConfig(seed=SEED, n_init=8)),
+    ("Whitened k-means", sq.NormalizedTrace(), sq.KMeansConfig(seed=SEED, solver_restarts=8)),
     (
         "Soft gradient descent",
         sq.DOptimality(),
-        sq.SoftVoronoiConfig(seed=SEED, n_init=8, max_steps=160, record_every=20),
+        sq.SoftVoronoiConfig(seed=SEED, initializer_restarts=8, max_steps=160, record_every=20),
     ),
 ]:
     rule = sq.fit_quantizer(source, n_bins=8, criterion=criterion, config=config)

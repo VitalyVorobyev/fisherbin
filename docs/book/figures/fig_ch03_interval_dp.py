@@ -137,7 +137,7 @@ def main() -> None:
                 sq.ScoreSample(scores),
                 n_bins=n_bins,
                 criterion=sq.NormalizedTrace(),
-                config=sq.KMeansConfig(seed=seed, n_init=1),
+                config=sq.KMeansConfig(seed=seed, solver_restarts=1),
             )
             restarts.append(retention(scores, lloyd.labels, n_bins))
         exact_curve.append(retention(scores, exact.labels, n_bins))

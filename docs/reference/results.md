@@ -4,6 +4,8 @@
 
 ::: scorequant.QuantizerResult
 
+::: scorequant.Quantizer
+
 ::: scorequant.InformationReport
 
 ::: scorequant.ProfiledInformationReport

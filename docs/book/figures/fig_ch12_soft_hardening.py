@@ -42,7 +42,11 @@ def main() -> None:
         n_bins=N_BINS,
         criterion=sq.DOptimality(),
         config=sq.SoftVoronoiConfig(
-            seed=0, n_init=4, max_steps=MAX_STEPS, record_every=10, temperature_end_ratio=0.05
+            seed=0,
+            initializer_restarts=4,
+            max_steps=MAX_STEPS,
+            record_every=10,
+            temperature_end_ratio=0.05,
         ),
         diagnostics="full",
     )
@@ -60,7 +64,7 @@ def main() -> None:
             criterion=sq.DOptimality(),
             config=sq.SoftVoronoiConfig(
                 seed=0,
-                n_init=4,
+                initializer_restarts=4,
                 max_steps=MAX_STEPS,
                 record_every=25,
                 temperature_end_ratio=ratio,

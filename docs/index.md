@@ -82,7 +82,7 @@ quantizer = sq.fit_quantizer(
     sq.ScoreSample(scores),
     n_bins=5,
     criterion=sq.NormalizedTrace(),
-    config=sq.KMeansConfig(seed=3, n_init=4),
+    config=sq.KMeansConfig(seed=3, solver_restarts=4),
 )
 future_bins = quantizer.predict_scores(rng.normal(loc=0.2, size=(500, 2)))
 ```

@@ -274,11 +274,12 @@ decision.
 
 What stays deliberately out of scope, and why, in one place:
 
-- **Population samplers, moment oracles, streaming aggregation, versioned persistence** — the
-  four capability gaps recorded in the pre-1.0 API audit (`docs/system-design.md`); no concrete
-  application is forcing any of them yet. In likely order: samplers/oracles, then streaming
-  aggregation and further exact-D factorization profiling, then a non-pickle
-  `save_quantizer`/`load_quantizer` artifact.
+- **Population samplers, moment oracles, streaming aggregation** — three of the four capability
+  gaps recorded in the pre-1.0 API audit (`docs/system-design.md`); no concrete application is
+  forcing any of them yet. In likely order: samplers/oracles, then streaming aggregation and
+  further exact-D factorization profiling. The fourth gap, a versioned non-pickle quantizer
+  artifact, is no longer deferred: the NumPy backend made "fit here, predict there" concrete, so
+  `Quantizer.save`/`Quantizer.load` landed with the deployable-rule split.
 - **E/A-optimality** — theory and a boundary counterexample only ([Chapter
   11](book/ch11-e-optimality.md)); no implementation milestone, public criterion, or solver API.
   Reconsidering needs a concrete application use case and a new roadmap decision (see "Explicitly

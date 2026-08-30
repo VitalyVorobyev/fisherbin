@@ -16,7 +16,7 @@ def test_observation_and_score_sources_are_equivalent() -> None:
     weights = np.linspace(1, 2, 60)
     provenance = sq.ScoreProvenance(kind="exact", reference_point=(0.0,))
     provider = sq.ScoreFunction(lambda values: np.asarray(values), provenance=provenance)
-    config = sq.KMeansConfig(seed=3, n_init=3)
+    config = sq.KMeansConfig(seed=3, solver_restarts=3)
     direct = sq.fit_quantizer(
         sq.ScoreSample(observations, weights, provenance=provenance),
         n_bins=3,
@@ -47,7 +47,7 @@ def test_precomputed_score_validation_accepts_observation_training() -> None:
         validation=sq.ScoreSample(observations[::3]),
         n_bins=3,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=3, n_init=3),
+        config=sq.KMeansConfig(seed=3, solver_restarts=3),
     )
     assert result.validation_report is not None
 
@@ -77,7 +77,7 @@ def test_bounded_quadrature_matches_symmetric_reference_law() -> None:
         source,
         provider=provider,
         n_bins=2,
-        config=sq.DExchangeConfig(seed=2, n_init=3, max_scans=200),
+        config=sq.DExchangeConfig(seed=2, initializer_restarts=3, max_scans=200),
     )
     labels = np.asarray(result.predict_scores([[-0.5], [0.5]]))
     assert labels[0] != labels[1]
@@ -131,7 +131,7 @@ def test_central_log_ratio_score_is_always_estimated() -> None:
         provider=provider,
         n_bins=2,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(n_init=2),
+        config=sq.KMeansConfig(solver_restarts=2),
     )
     assert result.information_kind == "supplied_score_surrogate"
     assert result.provenance.to_dict()["ratio"]["deltas"] == [0.1]
@@ -167,7 +167,7 @@ def test_classifier_derived_ratio_provider_records_full_provenance() -> None:
         provider=provider,
         n_bins=3,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=5, n_init=2),
+        config=sq.KMeansConfig(seed=5, solver_restarts=2),
     )
     assert result.information_kind == "supplied_score_surrogate"
     assert result.provenance.to_dict()["ratio"]["calibration"] == "temperature_oof"
@@ -296,7 +296,7 @@ def test_integration_source_end_to_end_with_two_score_columns() -> None:
         provider=provider,
         n_bins=problem.n_bins,
         criterion=sq.DOptimality(),
-        config=sq.DExchangeConfig(seed=50, n_init=4),
+        config=sq.DExchangeConfig(seed=50, initializer_restarts=4),
     )
     assert result.source_kind == "integration_source"
     assert result.transform.rank == 2

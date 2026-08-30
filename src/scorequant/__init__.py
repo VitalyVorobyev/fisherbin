@@ -1,6 +1,7 @@
 """Information-preserving hard quantization for statistical inference."""
 
 from .api import fit_quantizer, optimize_partition
+from .artifact import Quantizer
 from .certify import CertificationConfig, certify_partition
 from .components import (
     LinearComponents,
@@ -93,6 +94,7 @@ __all__ = [
     "ProfiledDOptimality",
     "ProfiledGeometryReport",
     "ProfiledInformationReport",
+    "Quantizer",
     "QuantizerResult",
     "RatioClosureReport",
     "RatioProvenance",

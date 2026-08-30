@@ -652,7 +652,7 @@ def budget_sweep(
     budgets: tuple[int, ...],
     interest_index: int,
     seed: int,
-    n_init: int,
+    initializer_restarts: int,
 ) -> list[BudgetRow]:
     """Sweep the bin budget under both criteria against the certified ceiling.
 
@@ -664,7 +664,7 @@ def budget_sweep(
         Bin budgets to evaluate.
     interest_index
         Score column of the parameter of interest.
-    seed, n_init
+    seed, initializer_restarts
         Exchange settings shared by every fit.
 
     Returns
@@ -674,7 +674,7 @@ def budget_sweep(
     """
     scores, weights = inputs.partition_scores, inputs.partition_weights
     criterion = sq.ProfiledDOptimality((interest_index,))
-    config = sq.DExchangeConfig(seed=seed, n_init=n_init)
+    config = sq.DExchangeConfig(seed=seed, initializer_restarts=initializer_restarts)
     dp_config = _scalar_dp_config(len(scores), seed=seed)
     unbinned = profiled_scalar(np.asarray(sq.fisher_information(scores, weights)), interest_index)
     rows: list[BudgetRow] = []
@@ -754,7 +754,7 @@ def interest_sweep(
     n_bins: int,
     plain_labels: np.ndarray,
     seed: int,
-    n_init: int,
+    initializer_restarts: int,
 ) -> list[InterestRow]:
     """Repeat the operating-point comparison for every declared fraction.
 
@@ -767,7 +767,7 @@ def interest_sweep(
     plain_labels
         Labels of the plain-D partition, which does not depend on the interest
         column and is therefore shared by every row.
-    seed, n_init
+    seed, initializer_restarts
         Exchange settings shared by every fit.
 
     Returns
@@ -776,7 +776,7 @@ def interest_sweep(
         One row per free fraction.
     """
     scores, weights = inputs.partition_scores, inputs.partition_weights
-    config = sq.DExchangeConfig(seed=seed, n_init=n_init)
+    config = sq.DExchangeConfig(seed=seed, initializer_restarts=initializer_restarts)
     dp_config = _scalar_dp_config(len(scores), seed=seed)
     information = np.asarray(sq.fisher_information(scores, weights))
     rows: list[InterestRow] = []
@@ -831,7 +831,7 @@ def reusable_rules(
     n_bins: int,
     interest_index: int,
     seed: int,
-    n_init: int,
+    initializer_restarts: int,
     soft_steps: int,
 ) -> list[RuleRow]:
     """Fit one reusable rule per criterion and carry both through the fit.
@@ -849,7 +849,7 @@ def reusable_rules(
         Bin budget shared by both fits.
     interest_index
         Score column of the parameter of interest.
-    seed, n_init, soft_steps
+    seed, initializer_restarts, soft_steps
         Solver settings.
 
     Returns
@@ -870,7 +870,7 @@ def reusable_rules(
             "DOptimality",
             "DExchangeConfig",
             sq.DOptimality(),
-            sq.DExchangeConfig(seed=seed, n_init=n_init),
+            sq.DExchangeConfig(seed=seed, initializer_restarts=initializer_restarts),
         ),
         (
             "ds_rule",
@@ -880,7 +880,7 @@ def reusable_rules(
             sq.ProfiledDOptimality((interest_index,)),
             sq.SoftVoronoiConfig(
                 seed=seed,
-                n_init=n_init,
+                initializer_restarts=initializer_restarts,
                 max_steps=soft_steps,
                 record_every=max(soft_steps // 8, 1),
             ),
@@ -980,12 +980,12 @@ def run_profiled_study(
         raise ValueError("interest_index must select one of the five free fractions")
     if n_bins not in budgets:
         raise ValueError("n_bins must appear in the swept budgets")
-    n_init = 3 if quick else 8
+    initializer_restarts = 3 if quick else 8
     soft_steps = 50 if quick else 160
     started = time.perf_counter()
 
     scores, weights = inputs.partition_scores, inputs.partition_weights
-    config = sq.DExchangeConfig(seed=seed, n_init=n_init)
+    config = sq.DExchangeConfig(seed=seed, initializer_restarts=initializer_restarts)
     criterion = sq.ProfiledDOptimality((interest_index,))
 
     bound_started = time.perf_counter()
@@ -1049,7 +1049,7 @@ def run_profiled_study(
         n_bins=n_bins,
         interest_index=interest_index,
         seed=seed,
-        n_init=n_init,
+        initializer_restarts=initializer_restarts,
         soft_steps=soft_steps,
     )
     budget_rows = budget_sweep(
@@ -1057,7 +1057,7 @@ def run_profiled_study(
         budgets=budgets,
         interest_index=interest_index,
         seed=seed,
-        n_init=n_init,
+        initializer_restarts=initializer_restarts,
     )
     interest_rows = (
         interest_sweep(
@@ -1065,7 +1065,7 @@ def run_profiled_study(
             n_bins=n_bins,
             plain_labels=np.asarray(plain.labels),
             seed=seed,
-            n_init=n_init,
+            initializer_restarts=initializer_restarts,
         )
         if sweep_interest
         else []
@@ -1097,7 +1097,7 @@ def run_profiled_study(
         "run": {
             "quick": quick,
             "seed": seed,
-            "n_init": n_init,
+            "initializer_restarts": initializer_restarts,
             "soft_steps": soft_steps,
             "rows": dict(inputs.rows),
             "provenance": dict(provenance or {}),

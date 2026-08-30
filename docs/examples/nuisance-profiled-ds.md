@@ -184,7 +184,7 @@ assert bound.gap_to(initialized) <= bound.gap_to(profiled) + 1e-12
 assert initialized.accepted_moves < profiled.accepted_moves
 ```
 
-Supplied labels replace the seeding of the first restart only, so `n_restarts` still
+Supplied labels replace the seeding of the first restart only, so `solver_restarts` still
 explores; this is a head start, not a cage.
 
 ### A held-out column needs two different solvers
@@ -222,7 +222,7 @@ ds_rule = sq.fit_quantizer(
     source,
     n_bins=n_bins,
     criterion=sq.ProfiledDOptimality(problem.interest),
-    config=sq.SoftVoronoiConfig(seed=11, n_init=4, max_steps=120, record_every=60),
+    config=sq.SoftVoronoiConfig(seed=11, initializer_restarts=4, max_steps=120, record_every=60),
 )
 
 held_out = {

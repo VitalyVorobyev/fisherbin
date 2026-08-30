@@ -22,7 +22,7 @@ def test_kmeans_fit_predict_evaluate_and_monotonic_trace() -> None:
     result = fit_test_quantizer(
         scores,
         n_bins=4,
-        config=scorequant.KMeansConfig(seed=4, n_init=3, max_iter=40),
+        config=scorequant.KMeansConfig(seed=4, solver_restarts=3, max_iter=40),
     )
     assert result.predict_scores(scores).shape == (scores.shape[0],)
     assert result.evaluate_scores(scores).geometric_mean_retention > 0.7
@@ -38,7 +38,7 @@ def test_zero_weights_are_ignored_but_rows_remain_predictable() -> None:
         scores,
         weights=weights,
         n_bins=2,
-        config=scorequant.KMeansConfig(n_init=2),
+        config=scorequant.KMeansConfig(solver_restarts=2),
     )
     assert result.predict_scores(scores).shape == (5,)
     assert int(np.asarray(result.train_report.bin_counts).sum()) == 4
@@ -46,7 +46,7 @@ def test_zero_weights_are_ignored_but_rows_remain_predictable() -> None:
 
 def test_validation_is_diagnostic_only() -> None:
     scores = _scores()
-    config = scorequant.KMeansConfig(seed=9, n_init=2)
+    config = scorequant.KMeansConfig(seed=9, solver_restarts=2)
     without = fit_test_quantizer(scores, n_bins=3, config=config)
     with_validation = fit_test_quantizer(
         scores,
@@ -61,7 +61,7 @@ def test_validation_is_diagnostic_only() -> None:
 
 def test_same_seed_reproduces_centers_and_trace() -> None:
     scores = _scores(240)
-    config = scorequant.KMeansConfig(seed=17, n_init=3)
+    config = scorequant.KMeansConfig(seed=17, solver_restarts=3)
     first = fit_test_quantizer(scores, n_bins=5, config=config)
     second = fit_test_quantizer(scores, n_bins=5, config=config)
     np.testing.assert_allclose(first.centers, second.centers)
@@ -75,7 +75,7 @@ def test_soft_voronoi_has_finite_trace_and_hard_result() -> None:
         n_bins=3,
         config=scorequant.SoftVoronoiConfig(
             seed=3,
-            n_init=2,
+            initializer_restarts=2,
             kmeans_max_iter=30,
             max_steps=30,
             record_every=5,
@@ -100,7 +100,7 @@ def test_whitened_partition_is_parameter_reparameterization_invariant() -> None:
     scores = _scores(300)
     change = jnp.asarray([[2.0, 0.3], [-0.4, 1.3]])
     transformed_scores = scores @ jnp.linalg.inv(change)
-    config = scorequant.KMeansConfig(seed=11, n_init=4)
+    config = scorequant.KMeansConfig(seed=11, solver_restarts=4)
     original = np.asarray(
         fit_test_quantizer(scores, n_bins=4, config=config).predict_scores(scores)
     )
@@ -119,7 +119,7 @@ def test_too_many_distinct_bins_fails() -> None:
 @pytest.mark.parametrize(
     ("factory", "message"),
     [
-        (lambda: scorequant.KMeansConfig(n_init=0), "n_init"),
+        (lambda: scorequant.KMeansConfig(solver_restarts=0), "solver_restarts"),
         (lambda: scorequant.KMeansConfig(seed=-1), "seed"),
         (lambda: scorequant.KMeansConfig(whiten=1), "whiten"),
         (lambda: scorequant.KMeansConfig(rank_rtol=True), "rank_rtol"),
@@ -156,7 +156,7 @@ def test_evaluate_reuses_fitted_rank_tolerance() -> None:
     result = fit_test_quantizer(
         scores,
         n_bins=2,
-        config=scorequant.KMeansConfig(rank_rtol=1e-3, n_init=2),
+        config=scorequant.KMeansConfig(rank_rtol=1e-3, solver_restarts=2),
     )
     assert result.transform.rank == 1
     assert result.evaluate_scores(scores).effective_rank == 1

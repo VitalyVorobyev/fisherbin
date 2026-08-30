@@ -61,7 +61,7 @@ def _soft_initial_centers(
         whiten=config.whiten,
         rank_rtol=config.rank_rtol,
         seed=config.seed,
-        n_init=config.n_init,
+        solver_restarts=config.initializer_restarts,
         max_iter=config.kmeans_max_iter,
         tolerance=config.tolerance,
         record_every=config.kmeans_max_iter,

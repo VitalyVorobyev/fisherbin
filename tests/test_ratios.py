@@ -111,7 +111,7 @@ def test_reference_component_changes_only_the_score_parameterization() -> None:
     ratios = sq.ratios_from_posteriors(posteriors, priors)
     last_scores = sq.mixture_scores_from_ratios(ratios, reference)
     first_scores = sq.mixture_scores_from_ratios(ratios, reference, reference_component=0)
-    config = sq.KMeansConfig(seed=7, n_init=4)
+    config = sq.KMeansConfig(seed=7, solver_restarts=4)
 
     last_labels = np.asarray(fit_test_quantizer(last_scores, n_bins=6, config=config).labels)
     first_labels = np.asarray(fit_test_quantizer(first_scores, n_bins=6, config=config).labels)

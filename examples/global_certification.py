@@ -181,7 +181,7 @@ class RestartRow:
 
     Attributes
     ----------
-    init, n_restarts, trials
+    init, solver_restarts, trials
         The seeding mode, the restarts each trial was allowed, and how many
         independent trials were run.
     hits, hit_rate
@@ -194,7 +194,7 @@ class RestartRow:
     """
 
     init: str
-    n_restarts: int
+    solver_restarts: int
     trials: int
     hits: int
     hit_rate: float
@@ -238,7 +238,7 @@ def restart_hit_rates(
     """Measure how often multi-restart exchange reaches the certified optimum.
 
     Every trial is a genuine `scorequant.optimize_partition` call with
-    ``n_restarts`` set, rather than a maximum reconstructed from single runs, so
+    ``solver_restarts`` set, rather than a maximum reconstructed from single runs, so
     the reported hit rate is the one a user would experience. Trial ``t`` uses
     base seed ``t * max(restarts)``, which keeps the restart seeds of different
     trials disjoint at every restart count.
@@ -270,7 +270,7 @@ def restart_hit_rates(
     rows: list[RestartRow] = []
     shortfalls: dict[str, list[float]] = {}
     for init in inits:
-        for n_restarts in restarts:
+        for solver_restarts in restarts:
             objectives: list[float] = []
             begin = time.perf_counter()
             for trial in range(trials):
@@ -280,8 +280,8 @@ def restart_hit_rates(
                     n_bins=n_bins,
                     config=sq.DExchangeConfig(
                         seed=trial * spacing,
-                        n_init=1,
-                        n_restarts=n_restarts,
+                        initializer_restarts=1,
+                        solver_restarts=solver_restarts,
                         init=init,  # type: ignore[arg-type]
                     ),
                 )
@@ -292,7 +292,7 @@ def restart_hit_rates(
             rows.append(
                 RestartRow(
                     init=init,
-                    n_restarts=n_restarts,
+                    solver_restarts=solver_restarts,
                     trials=trials,
                     hits=hits,
                     hit_rate=hits / trials,
@@ -300,7 +300,7 @@ def restart_hit_rates(
                     seconds_per_trial=elapsed / trials,
                 )
             )
-            if n_restarts == 1:
+            if solver_restarts == 1:
                 shortfalls[init] = [float(value) for value in np.maximum(deficits, 0.0)]
 
     return HitRateStudy(
@@ -524,7 +524,7 @@ def make_figure(study: Study) -> Figure:
     for init in dict.fromkeys(row.init for row in study_rates.rows):
         group = [row for row in study_rates.rows if row.init == init]
         axes[1].plot(
-            [row.n_restarts for row in group],
+            [row.solver_restarts for row in group],
             [row.hit_rate for row in group],
             marker="o",
             color=palette.get(init, "#666666"),

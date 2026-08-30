@@ -354,7 +354,7 @@ def _bench_predict(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
         sq.ScoreSample(train_scores, train_weights),
         n_bins=cfg.bins,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=cfg.seed, n_init=1, max_iter=20),
+        config=sq.KMeansConfig(seed=cfg.seed, solver_restarts=1, max_iter=20),
     )
     elapsed, labels = _run_timed(
         lambda: quantizer.predict_scores(held_out_scores),

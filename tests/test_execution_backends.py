@@ -60,7 +60,7 @@ def test_information_partition_and_prediction_conform(backend: str) -> None:
         scores,
         weights=weights,
         n_bins=3,
-        config=sq.DExchangeConfig(n_init=2),
+        config=sq.DExchangeConfig(initializer_restarts=2),
         execution=execution,
     )
     quantizer = partition.compile_quantizer()
@@ -77,16 +77,16 @@ def test_information_partition_and_prediction_conform(backend: str) -> None:
 @pytest.mark.parametrize(
     ("config", "criterion"),
     [
-        (sq.DExchangeConfig(n_init=2, max_scans=30), sq.DOptimality()),
+        (sq.DExchangeConfig(initializer_restarts=2, max_scans=30), sq.DOptimality()),
         (
-            sq.MahalanobisLloydConfig(n_init=2, max_iter=20),
+            sq.MahalanobisLloydConfig(initializer_restarts=2, max_iter=20),
             sq.DOptimality(),
         ),
-        (sq.KMeansConfig(n_init=2, max_iter=20), sq.NormalizedTrace()),
+        (sq.KMeansConfig(solver_restarts=2, max_iter=20), sq.NormalizedTrace()),
         (sq.ScalarDPConfig(max_rows=100), sq.DOptimality()),
         (
             sq.SoftVoronoiConfig(
-                n_init=1,
+                initializer_restarts=1,
                 kmeans_max_iter=12,
                 max_steps=12,
                 record_every=6,
@@ -95,7 +95,7 @@ def test_information_partition_and_prediction_conform(backend: str) -> None:
         ),
         (
             sq.SoftVoronoiConfig(
-                n_init=1,
+                initializer_restarts=1,
                 kmeans_max_iter=12,
                 max_steps=12,
                 record_every=6,
@@ -128,8 +128,8 @@ def test_quantizer_solver_matrix_runs(
 @pytest.mark.parametrize(
     "config",
     [
-        sq.DExchangeConfig(n_init=2, max_scans=30),
-        sq.MahalanobisLloydConfig(n_init=2, max_iter=20),
+        sq.DExchangeConfig(initializer_restarts=2, max_scans=30),
+        sq.MahalanobisLloydConfig(initializer_restarts=2, max_iter=20),
     ],
 )
 @pytest.mark.parametrize("criterion", [sq.DOptimality(), sq.ProfiledDOptimality((0,))])
@@ -160,7 +160,7 @@ def test_hard_backend_parity() -> None:
             scores,
             weights=weights,
             n_bins=3,
-            config=sq.DExchangeConfig(n_init=2),
+            config=sq.DExchangeConfig(initializer_restarts=2),
             execution=_execution(backend),
         )
         for backend in ("jax", "numpy")
@@ -266,16 +266,20 @@ def _cells(labels: np.ndarray) -> frozenset[frozenset[int]]:
 # that: `test_quantizer_solver_matrix_runs` above is a smoke test and cannot
 # catch a backend that silently converges somewhere else.
 _QUANTIZER_MATRIX: list[tuple[QuantizerConfig, Criterion]] = [
-    (sq.DExchangeConfig(n_init=2, max_scans=30), sq.DOptimality()),
-    (sq.MahalanobisLloydConfig(n_init=2, max_iter=20), sq.DOptimality()),
-    (sq.KMeansConfig(n_init=2, max_iter=20), sq.NormalizedTrace()),
+    (sq.DExchangeConfig(initializer_restarts=2, max_scans=30), sq.DOptimality()),
+    (sq.MahalanobisLloydConfig(initializer_restarts=2, max_iter=20), sq.DOptimality()),
+    (sq.KMeansConfig(solver_restarts=2, max_iter=20), sq.NormalizedTrace()),
     (sq.ScalarDPConfig(max_rows=100), sq.DOptimality()),
     (
-        sq.SoftVoronoiConfig(n_init=1, kmeans_max_iter=12, max_steps=12, record_every=6),
+        sq.SoftVoronoiConfig(
+            initializer_restarts=1, kmeans_max_iter=12, max_steps=12, record_every=6
+        ),
         sq.DOptimality(),
     ),
     (
-        sq.SoftVoronoiConfig(n_init=1, kmeans_max_iter=12, max_steps=12, record_every=6),
+        sq.SoftVoronoiConfig(
+            initializer_restarts=1, kmeans_max_iter=12, max_steps=12, record_every=6
+        ),
         sq.ProfiledDOptimality((0,)),
     ),
 ]
@@ -313,7 +317,10 @@ def test_quantizer_solver_matrix_backend_parity(
 
 @pytest.mark.parametrize(
     "config",
-    [sq.DExchangeConfig(n_init=2, max_scans=30), sq.MahalanobisLloydConfig(n_init=2, max_iter=20)],
+    [
+        sq.DExchangeConfig(initializer_restarts=2, max_scans=30),
+        sq.MahalanobisLloydConfig(initializer_restarts=2, max_iter=20),
+    ],
 )
 @pytest.mark.parametrize("criterion", [sq.DOptimality(), sq.ProfiledDOptimality((0,))])
 def test_partition_solver_matrix_backend_parity(
@@ -350,7 +357,7 @@ def test_certificate_backend_parity() -> None:
             scores[:12],
             weights=weights[:12],
             n_bins=3,
-            config=sq.DExchangeConfig(n_init=2),
+            config=sq.DExchangeConfig(initializer_restarts=2),
             execution=_execution(backend),
         )
         certificates[backend] = sq.certify_partition(

@@ -902,11 +902,11 @@ def _optimize_exchange(
     """Run every seeded exchange restart and keep the best exact objective.
 
     Supplied labels replace the seeding of the first restart only, so ``init``
-    and ``n_init`` still govern restarts one and above and an initializer can be
+    and ``initializer_restarts`` still govern restarts one and above and an initializer can be
     compared against ordinary seeding inside a single call.
     """
     best: _ExchangeRun | None = None
-    for restart in range(config.n_restarts):
+    for restart in range(config.solver_restarts):
         labels = (
             initial_labels
             if restart == 0 and initial_labels is not None
@@ -917,7 +917,7 @@ def _optimize_exchange(
         if best is None or run.state.objective > best.state.objective:
             best = run
     if best is None:
-        raise ValueError("n_restarts must be at least one")
+        raise ValueError("solver_restarts must be at least one")
     return best
 
 
@@ -939,7 +939,7 @@ def _initial_labels(
         n_bins,
         rank_rtol=config.rank_rtol,
         seed=seed,
-        n_init=config.n_init,
+        initializer_restarts=config.initializer_restarts,
     )
 
 
@@ -950,7 +950,7 @@ def _kmeans_labels(
     *,
     rank_rtol: float | None,
     seed: int,
-    n_init: int,
+    initializer_restarts: int,
 ) -> jnp.ndarray:
     """Seed one solver with deterministic weighted k-means++ labels."""
     initializer = weighted_kmeans(
@@ -961,7 +961,7 @@ def _kmeans_labels(
             whiten=False,
             rank_rtol=rank_rtol,
             seed=seed,
-            n_init=n_init,
+            solver_restarts=initializer_restarts,
             max_iter=100,
             tolerance=1e-8,
             record_every=100,
@@ -989,7 +989,7 @@ def _optimize_lloyd(
     monotone on its own. Iteration stops at the first non-improving or unchanged
     proposal, or at ``max_iter``; ``guard`` then decides whether the labels are
     handed to the exchange engine or merely certified by one final scan. Supplied
-    labels replace the k-means seeding, so ``n_init`` then governs only the
+    labels replace the k-means seeding, so ``initializer_restarts`` then governs only the
     exchange handoff.
     """
     seeded = (
@@ -999,7 +999,7 @@ def _optimize_lloyd(
             n_bins,
             rank_rtol=config.rank_rtol,
             seed=config.seed,
-            n_init=config.n_init,
+            initializer_restarts=config.initializer_restarts,
         )
         if initial_labels is None
         else initial_labels
@@ -1060,7 +1060,7 @@ def _settle_lloyd(
     exchange_config = DExchangeConfig(
         rank_rtol=config.rank_rtol,
         seed=config.seed,
-        n_init=config.n_init,
+        initializer_restarts=config.initializer_restarts,
         batch_moves=True,
         gain_tolerance=config.gain_tolerance,
     )

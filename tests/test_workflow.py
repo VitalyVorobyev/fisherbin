@@ -51,7 +51,7 @@ def test_score_component_and_observation_workflows_are_equivalent() -> None:
     weights = np.linspace(0.2, 1.8, len(values))
     model = _model()
     problem = model.evaluate(values, weights=weights)
-    config = sq.KMeansConfig(seed=9, n_init=3)
+    config = sq.KMeansConfig(seed=9, solver_restarts=3)
     common = {
         "n_bins": 5,
         "criterion": sq.NormalizedTrace(),

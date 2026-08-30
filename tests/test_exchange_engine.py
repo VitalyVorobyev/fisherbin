@@ -83,7 +83,7 @@ def test_batched_and_single_agree_with_the_exhaustive_oracle() -> None:
         result = sq.optimize_partition(
             scores,
             n_bins=3,
-            config=sq.DExchangeConfig(seed=8, n_init=12, batch_moves=batch_moves),
+            config=sq.DExchangeConfig(seed=8, initializer_restarts=12, batch_moves=batch_moves),
         )
         assert result.objective == pytest.approx(optimum, abs=1e-10)
 
@@ -126,7 +126,7 @@ def test_capped_scans_report_the_remaining_gain_and_refuse_compilation() -> None
 def test_restarts_are_deterministic_and_never_worse_than_one_restart() -> None:
     """Restart seeding is derived from the configured seed alone."""
     scores, weights = _seeded_scores(44, 600, 3, weighted=True)
-    config = sq.DExchangeConfig(seed=5, n_init=2, n_restarts=3)
+    config = sq.DExchangeConfig(seed=5, initializer_restarts=2, solver_restarts=3)
     first = sq.optimize_partition(scores, weights=weights, n_bins=6, config=config)
     second = sq.optimize_partition(scores, weights=weights, n_bins=6, config=config)
     assert np.array_equal(np.asarray(first.labels), np.asarray(second.labels))
@@ -136,7 +136,7 @@ def test_restarts_are_deterministic_and_never_worse_than_one_restart() -> None:
         scores,
         weights=weights,
         n_bins=6,
-        config=sq.DExchangeConfig(seed=5, n_init=2, n_restarts=1),
+        config=sq.DExchangeConfig(seed=5, initializer_restarts=2, solver_restarts=1),
     )
     assert first.objective >= single.objective - 1e-12
 
@@ -144,7 +144,7 @@ def test_restarts_are_deterministic_and_never_worse_than_one_restart() -> None:
 def test_random_initialization_is_deterministic_and_reaches_stability() -> None:
     """Balanced random labels are a supported, seeded starting point."""
     scores, weights = _seeded_scores(77, 500, 3, weighted=False)
-    config = sq.DExchangeConfig(seed=3, init="random", n_restarts=2)
+    config = sq.DExchangeConfig(seed=3, init="random", solver_restarts=2)
     first = sq.optimize_partition(scores, weights=weights, n_bins=4, config=config)
     second = sq.optimize_partition(scores, weights=weights, n_bins=4, config=config)
     assert first.exchange_stable is True
@@ -154,7 +154,9 @@ def test_random_initialization_is_deterministic_and_reaches_stability() -> None:
 def test_first_improvement_still_accepts_one_move_per_scan() -> None:
     """``first_improvement`` keeps its single-move contract and ignores batching."""
     scores, weights = _seeded_scores(19, 300, 2, weighted=True)
-    config = sq.DExchangeConfig(seed=6, n_init=2, first_improvement=True, batch_moves=True)
+    config = sq.DExchangeConfig(
+        seed=6, initializer_restarts=2, first_improvement=True, batch_moves=True
+    )
     result = sq.optimize_partition(scores, weights=weights, n_bins=4, config=config)
     assert result.exchange_stable is True
     assert result.scans == result.accepted_moves + 1
@@ -165,8 +167,8 @@ def test_configuration_rejects_invalid_engine_settings() -> None:
     """The exchange configuration validates its new fields at construction time."""
     with pytest.raises(ValueError, match="max_scans"):
         sq.DExchangeConfig(max_scans=0)
-    with pytest.raises(ValueError, match="n_restarts"):
-        sq.DExchangeConfig(n_restarts=0)
+    with pytest.raises(ValueError, match="solver_restarts"):
+        sq.DExchangeConfig(solver_restarts=0)
     with pytest.raises(ValueError, match="init must be"):
         sq.DExchangeConfig(init="lloyd")  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="batch_moves"):

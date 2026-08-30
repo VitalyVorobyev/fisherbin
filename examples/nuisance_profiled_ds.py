@@ -496,7 +496,7 @@ def reusable_rules(
                 criterion=sq.ProfiledDOptimality(problem.interest),
                 config=sq.SoftVoronoiConfig(
                     seed=SOLVER_SEED,
-                    n_init=8,
+                    initializer_restarts=8,
                     max_steps=soft_steps,
                     record_every=max(soft_steps // 8, 1),
                 ),

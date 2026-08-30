@@ -423,7 +423,7 @@ def _evaluate_bin_count(
     kmeans_result = sq.fit_quantizer(
         train_source,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=seed, n_init=3 if quick else 8),
+        config=sq.KMeansConfig(seed=seed, solver_restarts=3 if quick else 8),
         **common,
     )
     soft_result = sq.fit_quantizer(
@@ -431,7 +431,7 @@ def _evaluate_bin_count(
         criterion=sq.DOptimality(),
         config=sq.SoftVoronoiConfig(
             seed=seed,
-            n_init=3 if quick else 4,
+            initializer_restarts=3 if quick else 4,
             max_steps=50 if quick else 160,
             record_every=10,
         ),
@@ -465,7 +465,7 @@ def _evaluate_bin_count(
             criterion=sq.DOptimality(),
             config=sq.DExchangeConfig(
                 seed=seed,
-                n_init=3 if quick else 8,
+                initializer_restarts=3 if quick else 8,
             ),
             provenance=score_provenance,
         )

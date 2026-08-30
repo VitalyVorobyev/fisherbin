@@ -20,7 +20,7 @@ quantizer = sq.fit_quantizer(
     criterion=sq.DOptimality(),
     config=sq.SoftVoronoiConfig(
         seed=2026,
-        n_init=4,
+        initializer_restarts=4,
         max_steps=160,
     ),
 )

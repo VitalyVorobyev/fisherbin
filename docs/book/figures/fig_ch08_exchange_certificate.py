@@ -100,13 +100,17 @@ def main() -> None:
         run = sq.optimize_partition(
             small,
             n_bins=CERTIFIED_BINS,
-            config=sq.DExchangeConfig(seed=seed, init="random", batch_moves=False, n_init=1),
+            config=sq.DExchangeConfig(
+                seed=seed, init="random", batch_moves=False, initializer_restarts=1
+            ),
         )
         histories.append((f"random restart {seed}", np.asarray(run.objective_history)))
     seeded = sq.optimize_partition(
         small,
         n_bins=CERTIFIED_BINS,
-        config=sq.DExchangeConfig(seed=0, init="kmeans++", batch_moves=False, n_init=1),
+        config=sq.DExchangeConfig(
+            seed=0, init="kmeans++", batch_moves=False, initializer_restarts=1
+        ),
     )
     gaps = [certificate.objective - float(history[-1]) for _, history in histories]
     print(

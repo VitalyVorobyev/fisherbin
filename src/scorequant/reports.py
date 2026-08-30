@@ -18,6 +18,7 @@ import numpy as np
 from ._json import json_ready
 from ._typing import JsonValue
 from .criteria import DOptimality, ProfiledDOptimality
+from .sources import ScoreSchema
 
 if TYPE_CHECKING:
     from .result import PartitionResult
@@ -101,10 +102,39 @@ class ProfiledInformationReport:
     geometric_mean_retention: float
     interest_rank: int
     nuisance_rank: int
+    schema: ScoreSchema | None = None
+
+    @property
+    def interest_names(self) -> tuple[str, ...] | None:
+        """Return the names of the parameters of interest, when they were declared."""
+        return self._names(self.interest)
+
+    @property
+    def nuisance_names(self) -> tuple[str, ...] | None:
+        """Return the names of the profiled nuisance parameters, when declared."""
+        return self._names(self.nuisance)
+
+    def _names(self, columns: tuple[int, ...]) -> tuple[str, ...] | None:
+        if self.schema is None:
+            return None
+        return tuple(self.schema.parameters[index] for index in columns)
+
+    def describe(self) -> str:
+        """Summarize the profiling split in one line, by name when one is available.
+
+        ``interest: HSPCs`` says what was optimized; ``interest: (4,)`` requires
+        the reader to remember the column order.
+        """
+        interest = self.interest_names or tuple(str(index) for index in self.interest)
+        nuisance = self.nuisance_names or tuple(str(index) for index in self.nuisance)
+        return f"interest: {', '.join(interest)}\nnuisance: {', '.join(nuisance)}"
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible profiled-information representation."""
-        return json_ready(asdict(self))
+        facts = json_ready(asdict(self))
+        facts["interest_names"] = None if self.interest_names is None else list(self.interest_names)
+        facts["nuisance_names"] = None if self.nuisance_names is None else list(self.nuisance_names)
+        return facts
 
 
 @dataclass(frozen=True, slots=True)

@@ -142,7 +142,7 @@ fitted = sq.fit_quantizer(
     sq.ScoreSample(train),
     n_bins=4,
     criterion=sq.DOptimality(),
-    config=sq.SoftVoronoiConfig(seed=0, n_init=4, max_steps=300, record_every=25),
+    config=sq.SoftVoronoiConfig(seed=0, initializer_restarts=4, max_steps=300, record_every=25),
 )
 trace = fitted.trace
 
@@ -180,7 +180,11 @@ for ratio in (0.5, 0.2, 0.05, 0.01):
         n_bins=4,
         criterion=sq.DOptimality(),
         config=sq.SoftVoronoiConfig(
-            seed=0, n_init=4, max_steps=300, record_every=25, temperature_end_ratio=ratio
+            seed=0,
+            initializer_restarts=4,
+            max_steps=300,
+            record_every=25,
+            temperature_end_ratio=ratio,
         ),
     )
     gaps.append(float(annealed.hardening_gap))
@@ -233,7 +237,7 @@ kmeans = sq.fit_quantizer(
     sq.ScoreSample(train),
     n_bins=4,
     criterion=sq.NormalizedTrace(),
-    config=sq.KMeansConfig(seed=0, n_init=4),
+    config=sq.KMeansConfig(seed=0, solver_restarts=4),
 )
 
 assert exchange.train_report.geometric_mean_retention > fitted.train_report.geometric_mean_retention
@@ -266,7 +270,7 @@ profiled = sq.fit_quantizer(
     validation=sq.ScoreSample(holdout),
     n_bins=4,
     criterion=sq.ProfiledDOptimality((0,)),
-    config=sq.SoftVoronoiConfig(seed=0, n_init=2, max_steps=120, record_every=30),
+    config=sq.SoftVoronoiConfig(seed=0, initializer_restarts=2, max_steps=120, record_every=30),
 )
 
 assert profiled.trace.objective_label == "profiled_logdet"
@@ -389,7 +393,7 @@ for n_rows in (100, 400, 1600, 6400):
         validation=sq.ScoreSample(population),
         n_bins=4,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=0, n_init=4),
+        config=sq.KMeansConfig(seed=0, solver_restarts=4),
     )
     differences.append(
         float(checked.train_report.geometric_mean_retention)

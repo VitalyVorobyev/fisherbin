@@ -77,13 +77,13 @@ def evaluate(table: np.ndarray) -> list[float]:
         sq.ScoreSample(table),
         n_bins=N_BINS,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=0, n_init=8),
+        config=sq.KMeansConfig(seed=0, solver_restarts=8),
     )
     raw = sq.fit_quantizer(
         sq.ScoreSample(table),
         n_bins=N_BINS,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=0, n_init=8, whiten=False),
+        config=sq.KMeansConfig(seed=0, solver_restarts=8, whiten=False),
     )
     return [
         float(exchange.train_report.geometric_mean_retention),

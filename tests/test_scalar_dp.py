@@ -118,7 +118,7 @@ def test_dynamic_program_is_never_worse_than_whitened_kmeans(seed: int) -> None:
         scores,
         weights=weights,
         n_bins=6,
-        config=sq.KMeansConfig(seed=seed, n_init=8),
+        config=sq.KMeansConfig(seed=seed, solver_restarts=8),
     )
     assert (
         exact.train_report.geometric_mean_retention

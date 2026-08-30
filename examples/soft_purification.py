@@ -309,7 +309,7 @@ def schedule_trace(problem: LadderProblem, *, max_steps: int, record_every: int)
         criterion=sq.DOptimality(),
         config=sq.SoftVoronoiConfig(
             seed=SOLVER_SEED,
-            n_init=4,
+            initializer_restarts=4,
             max_steps=max_steps,
             record_every=record_every,
             temperature_end_ratio=0.02,
@@ -387,7 +387,7 @@ def hardening_ladder(
                 criterion=sq.DOptimality(),
                 config=sq.SoftVoronoiConfig(
                     seed=SOLVER_SEED,
-                    n_init=4,
+                    initializer_restarts=4,
                     max_steps=max_steps,
                     record_every=max_steps,
                     temperature_end_ratio=ratio,
@@ -471,7 +471,10 @@ def purification_probe(
             n_bins=problem.n_bins,
             criterion=sq.DOptimality(),
             config=sq.SoftVoronoiConfig(
-                seed=SOLVER_SEED, n_init=4, max_steps=max_steps, record_every=max_steps
+                seed=SOLVER_SEED,
+                initializer_restarts=4,
+                max_steps=max_steps,
+                record_every=max_steps,
             ),
         )
         coordinates = np.asarray(rule.transform.apply(problem.scores))
@@ -549,7 +552,10 @@ def soft_versus_exchange(ladder: list[LadderProblem], *, max_steps: int) -> list
             n_bins=problem.n_bins,
             criterion=sq.DOptimality(),
             config=sq.SoftVoronoiConfig(
-                seed=SOLVER_SEED, n_init=4, max_steps=max_steps, record_every=max_steps
+                seed=SOLVER_SEED,
+                initializer_restarts=4,
+                max_steps=max_steps,
+                record_every=max_steps,
             ),
         )
         soft_labels = np.asarray(rule.predict_scores(problem.scores))

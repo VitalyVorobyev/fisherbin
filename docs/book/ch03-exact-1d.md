@@ -128,7 +128,7 @@ restarts = [
             sq.ScoreSample(scores),
             n_bins=6,
             criterion=sq.NormalizedTrace(),
-            config=sq.KMeansConfig(seed=seed, n_init=1),
+            config=sq.KMeansConfig(seed=seed, solver_restarts=1),
         ).labels,
         6,
     )

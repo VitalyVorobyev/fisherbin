@@ -147,14 +147,14 @@ except ValueError as error:
 ### Restarts, measured against the certificate
 
 With the optimum in hand, "did the fit find it" becomes a measurable event rather than a
-hope. `DExchangeConfig` exposes both knobs that matter: `n_restarts` runs independent
+hope. `DExchangeConfig` exposes both knobs that matter: `solver_restarts` runs independent
 exchanges and keeps the best exact objective, and `init` chooses how each restart is seeded.
 
 ```python
 certificate = sq.certify_partition(split.scores, weights=split.weights, n_bins=5)
 
 
-def hits(n_restarts: int, init: str, trials: int = 16) -> int:
+def hits(solver_restarts: int, init: str, trials: int = 16) -> int:
     """Count trials whose terminal objective matches the certified optimum."""
     found = 0
     for trial in range(trials):
@@ -162,7 +162,9 @@ def hits(n_restarts: int, init: str, trials: int = 16) -> int:
             split.scores,
             weights=split.weights,
             n_bins=5,
-            config=sq.DExchangeConfig(seed=trial * 16, n_init=1, n_restarts=n_restarts, init=init),
+            config=sq.DExchangeConfig(
+                seed=trial * 16, initializer_restarts=1, solver_restarts=solver_restarts, init=init
+            ),
         )
         found += run.objective > certificate.objective - 1e-9
     return found
@@ -177,7 +179,7 @@ assert seeded_eight >= 12
 assert random_once <= seeded_eight
 ```
 
-Every trial is a real fit with `n_restarts` set, not a maximum reconstructed afterwards, and
+Every trial is a real fit with `solver_restarts` set, not a maximum reconstructed afterwards, and
 trial \(t\) uses base seed \(16t\) so that different trials never share a restart seed.
 
 ## Analysis
@@ -287,7 +289,7 @@ best_of_six = sq.optimize_partition(
     split.scores,
     weights=split.weights,
     n_bins=5,
-    config=sq.DExchangeConfig(seed=0, n_init=1, n_restarts=6),
+    config=sq.DExchangeConfig(seed=0, initializer_restarts=1, solver_restarts=6),
 )
 
 assert best_of_six.exchange_stable is True

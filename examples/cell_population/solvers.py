@@ -230,7 +230,7 @@ class MethodRow:
 
 
 def _finite_rows(
-    inputs: SolverInputs, *, n_bins: int, seed: int, n_init: int, timing_repeats: int
+    inputs: SolverInputs, *, n_bins: int, seed: int, initializer_restarts: int, timing_repeats: int
 ) -> list[MethodRow]:
     scores, weights = inputs.partition_scores, inputs.partition_weights
     test_scores = inputs.test_scores
@@ -241,13 +241,13 @@ def _finite_rows(
             "d_exchange",
             "Exact D exchange",
             "DExchangeConfig",
-            sq.DExchangeConfig(seed=seed, n_init=n_init),
+            sq.DExchangeConfig(seed=seed, initializer_restarts=initializer_restarts),
         ),
         (
             "mahalanobis_lloyd",
             "Guarded Mahalanobis-Lloyd",
             "MahalanobisLloydConfig",
-            sq.MahalanobisLloydConfig(seed=seed, n_init=n_init),
+            sq.MahalanobisLloydConfig(seed=seed, initializer_restarts=initializer_restarts),
         ),
     ]
     rows: list[MethodRow] = []
@@ -295,7 +295,7 @@ def _geometric_rows(
     *,
     n_bins: int,
     seed: int,
-    n_init: int,
+    initializer_restarts: int,
     soft_steps: int,
     timing_repeats: int,
 ) -> list[MethodRow]:
@@ -310,7 +310,7 @@ def _geometric_rows(
             source,
             n_bins=n_bins,
             criterion=sq.NormalizedTrace(),
-            config=sq.KMeansConfig(seed=seed, n_init=n_init),
+            config=sq.KMeansConfig(seed=seed, solver_restarts=initializer_restarts),
         )
 
     kmeans_rule = fit_kmeans()
@@ -345,7 +345,7 @@ def _geometric_rows(
             criterion=sq.DOptimality(),
             config=sq.SoftVoronoiConfig(
                 seed=seed,
-                n_init=n_init,
+                initializer_restarts=initializer_restarts,
                 max_steps=soft_steps,
                 record_every=max(soft_steps // 8, 1),
             ),
@@ -546,7 +546,7 @@ def run_solver_comparison(
         The metrics written to the committed JSON evidence, keyed exactly as
         `docs/usecases/flowcyt/solvers.md` asserts them.
     """
-    n_init = 3 if quick else 8
+    initializer_restarts = 3 if quick else 8
     soft_steps = 50 if quick else 160
     timing_repeats = 1 if quick else 3
     started = time.perf_counter()
@@ -556,13 +556,17 @@ def run_solver_comparison(
     )
     methods = [
         *_finite_rows(
-            inputs, n_bins=n_bins, seed=seed, n_init=n_init, timing_repeats=timing_repeats
+            inputs,
+            n_bins=n_bins,
+            seed=seed,
+            initializer_restarts=initializer_restarts,
+            timing_repeats=timing_repeats,
         ),
         *_geometric_rows(
             inputs,
             n_bins=n_bins,
             seed=seed,
-            n_init=n_init,
+            initializer_restarts=initializer_restarts,
             soft_steps=soft_steps,
             timing_repeats=timing_repeats,
         ),
@@ -583,7 +587,7 @@ def run_solver_comparison(
         "run": {
             "quick": quick,
             "seed": seed,
-            "n_init": n_init,
+            "initializer_restarts": initializer_restarts,
             "soft_steps": soft_steps,
             "timing_repeats": timing_repeats,
             "rows": dict(inputs.rows),

@@ -35,7 +35,7 @@ is how `efficient_score_bound(...).labels` is used as an initializer. Zero-weigh
 measure and their labels are ignored, identical score rows are merged before the solver runs and
 must therefore already agree on their bin, and every requested cell must remain nonempty
 afterwards. Supplied labels replace the seeding of the first exchange restart only, so `init` and
-`n_init` still govern any further restart and one call can compare both starts; the guarded
+`initializer_restarts` still govern any further restart and one call can compare both starts; the guarded
 Mahalanobis-Lloyd solver starts from them directly.
 
 ### `fit_quantizer`
@@ -220,6 +220,54 @@ guards both the node count and the number of distinct score atoms, refusing an o
 by name. Certification is `DOptimality` only: the refinement bound uses Loewner monotonicity of
 `logdet`, which the profiled Schur objective does not inherit, and a profiled criterion is rejected
 rather than approximated. Neither entry point ever runs implicitly during fitting.
+
+## The deployable rule
+
+A fit produces two different things and they now have two different types. `QuantizerResult` is
+the record of the fit — labels, reports, trace, solver diagnostics. `result.quantizer` is the rule
+itself:
+
+<!-- snippet: skip -->
+```python
+fit = sq.fit_quantizer(sample, n_bins=8)
+
+fit.train_report  # what the fit measured
+fit.trace  # how it got there
+
+rule = fit.quantizer  # what you deploy
+rule.predict_scores(future_scores)
+rule.save("flowcyt-8bins.sqz")
+```
+
+`Quantizer` carries the transform, centers, optional metric, score schema, provenance and
+criterion — and nothing about the training sample. `PartitionResult.compile_quantizer()` returns
+one too, under exactly the same theorem-backed conditions as before: compilation is bookkeeping on
+an exchange-stable D partition, not a second fit, so it hands back a rule rather than something
+that impersonates a new training result.
+
+`QuantizerResult.predict_scores` remains the one prediction verb and delegates to the rule;
+`centers`, `metric`, `transform` and `schema` read through to it.
+
+### The artifact format
+
+`Quantizer.save` writes a zip archive holding one `manifest.json` and one `.npy` member per array.
+
+- **Versioned.** The manifest declares a `format_version`, and a reader refuses a version it does
+  not know by name rather than interpreting a field it has never seen.
+- **Not a pickle.** Arrays are written with `allow_pickle=False`, so loading an artifact executes
+  no code from the file.
+- **Backend-free.** A rule fitted on the JAX backend loads and predicts in a process where JAX is
+  not importable, which is the other half of the NumPy backend: fit offline, deploy where the
+  fitting stack is not installed.
+
+<!-- snippet: skip -->
+```python
+rule = sq.Quantizer.load("flowcyt-8bins.sqz")
+bins = rule.predict_scores(scores, execution=sq.ExecutionConfig(backend="numpy"))
+```
+
+This is a durable format, unlike `to_dict()` on the result types, which stays JSON-ready
+diagnostic state.
 
 ## Result semantics
 

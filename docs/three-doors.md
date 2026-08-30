@@ -337,7 +337,7 @@ quantizer = sq.fit_quantizer(
     validation=sq.ScoreSample(holdout_scores),
     n_bins=5,
     criterion=sq.NormalizedTrace(),
-    config=sq.KMeansConfig(seed=4, n_init=4),
+    config=sq.KMeansConfig(seed=4, solver_restarts=4),
 )
 train_efficiency = float(quantizer.train_report.geometric_mean_retention)
 holdout_efficiency = float(quantizer.validation_report.geometric_mean_retention)
