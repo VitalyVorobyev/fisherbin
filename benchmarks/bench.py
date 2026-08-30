@@ -390,7 +390,10 @@ def _bench_compile(cfg: ScenarioConfig, repeats: int) -> RunOutcome:
     )
     elapsed, quantizer = _run_timed(
         partition.compile_quantizer,
-        lambda q: q.labels,
+        # Blocking on the centers rather than on labels: a compiled Quantizer is
+        # a rule, and a rule has no labels. Those belong to the fit over a
+        # particular sample, which is the distinction the artifact draws.
+        lambda q: q.centers,
         repeats,
     )
     held_out_report = quantizer.evaluate_scores(held_out_scores, held_out_weights)

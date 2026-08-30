@@ -393,6 +393,14 @@ def test_flowcyt_fixture_is_the_standard_end_to_end_use_case() -> None:
     np.testing.assert_allclose(np.sum(result.operating_bin_composition, axis=1), 1.0)
     assert "unbinned_classifier_ratio" in result.metrics
     assert "unbinned" not in result.metrics
+    # The compiled-rule path must be reachable from this test. It used to be
+    # gated on a literal 8 bins while this fixture runs 5, so nothing executed
+    # compile_quantizer here and a compiled rule that had lost an attribute
+    # still passed the whole suite.
+    compiled = result.metrics["finite_d_exchange:5"]
+    assert compiled["exchange_stable"] is True
+    assert compiled["compiled_training_labels_reproduced"] is True
+    assert 0 <= float(compiled["compiled_train_d_efficiency"]) <= 1
     closure = result.metrics["scientific_closure"]
     assert closure["reference_only"] is True
     assert closure["template_identifiability"]["soft_voronoi:5"]["full_rank"] is False

@@ -457,7 +457,11 @@ def _evaluate_bin_count(
         metrics[key] = values
         predicted_by_method[key] = predicted
 
-    if n_bins == operating_n_bins == 8:
+    # Runs at whatever the operating point is, not only at the default 8. The
+    # extra literal meant the compile path was unreachable from the fast fixture
+    # test, which runs a five-bin operating point - so a change that broke the
+    # compiled rule passed the whole suite and only failed in the benchmarks.
+    if n_bins == operating_n_bins:
         finite_d = sq.optimize_partition(
             context.reference_scores[context.partition_mask],
             weights=context.weights,
@@ -484,7 +488,14 @@ def _evaluate_bin_count(
         values.update(
             {
                 "finite_assignment_d_efficiency": finite_d.train_report.geometric_mean_retention,
-                "compiled_train_d_efficiency": compiled_d.train_report.geometric_mean_retention,
+                # The compiled rule carries no report: it is a rule, not a fit.
+                # Measuring it on the training scores is what this number always
+                # meant, and it now says so rather than reading a report that
+                # the partition happened to also own.
+                "compiled_train_d_efficiency": compiled_d.evaluate_scores(
+                    context.reference_scores[context.partition_mask],
+                    context.weights,
+                ).geometric_mean_retention,
                 "accepted_moves": finite_d.accepted_moves,
                 "exchange_stable": finite_d.exchange_stable,
                 "best_remaining_gain": finite_d.best_remaining_gain,

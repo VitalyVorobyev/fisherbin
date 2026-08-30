@@ -192,7 +192,7 @@
       "max_scans": null,
       "skipped": false,
       "skip_reason": null,
-      "elapsed_seconds": 0.04666899994481355,
+      "elapsed_seconds": 0.000990750006167218,
       "peak_rss_megabytes": 1026.84375,
       "quality_label": "held_out_geometric_mean_retention",
       "quality": 0.643629940651137,
