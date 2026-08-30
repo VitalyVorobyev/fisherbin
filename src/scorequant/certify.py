@@ -31,12 +31,13 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Literal
 
-import jax.numpy as jnp
 import numpy as np
 
+from ._execution import canonicalize_public, execution_scope, scatter_set
+from ._execution import xp as jnp
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
-from .config import DExchangeConfig, _validate_finite, _validate_integer
+from .config import DExchangeConfig, ExecutionConfig, _validate_finite, _validate_integer
 from .criteria import DOptimality, ProfiledDOptimality
 from .partition import (
     _cell_statistics,
@@ -95,6 +96,7 @@ class CertificationConfig:
         return json_ready(asdict(self))
 
 
+@execution_scope
 def certify_partition(
     scores: ArrayLike,
     *,
@@ -104,6 +106,7 @@ def certify_partition(
     criterion: DOptimality | ProfiledDOptimality | None = None,
     rank_rtol: float | None = None,
     config: CertificationConfig | None = None,
+    execution: ExecutionConfig | None = None,
 ) -> PartitionCertificate:
     """Prove or bound the global optimality of a finite D partition.
 
@@ -149,6 +152,7 @@ def certify_partition(
         When the criterion is profiled, when the instance exceeds ``max_rows``,
         or when the inputs cannot support a regular ``n_bins``-cell partition.
     """
+    del execution
     resolved_config = CertificationConfig() if config is None else config
     if not isinstance(resolved_config, CertificationConfig):
         raise TypeError("certify_partition requires CertificationConfig")
@@ -189,7 +193,7 @@ def certify_partition(
 
     certified = np.empty(n_atoms, dtype=np.int64)
     certified[order] = search.best_labels
-    return _certificate(prepared, search, certified, n_bins)
+    return canonicalize_public(_certificate(prepared, search, certified, n_bins))
 
 
 def _incumbent_labels(
@@ -232,8 +236,10 @@ def _certificate(
     )
     sample = prepared.sample
     labels = _metric_assign(prepared.transform.apply(sample.scores), state.means, state.inverse)
-    labels = labels.at[sample.positive_weight_mask].set(
-        jnp.asarray(certified)[prepared.inverse_rows]
+    labels = scatter_set(
+        labels,
+        sample.positive_weight_mask,
+        jnp.asarray(certified)[prepared.inverse_rows],
     )
     objective = search.best_objective
     upper_bound = max(objective, search.outstanding) if search.capped else objective

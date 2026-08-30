@@ -5,9 +5,9 @@ Only decisions that materially constrain future implementation are recorded here
 1. [ADR 0001 — Scores are the core data contract](0001-score-contract.md)
 2. [ADR 0002 — Start with a small Python/NumPy implementation](0002-python-numpy-first.md) — superseded
 3. [ADR 0003 — Keep optional concerns outside the core](0003-small-core.md)
-4. [ADR 0004 — Use a JAX-native core with an array-oriented boundary](0004-jax-first.md)
+4. [ADR 0004 — Use a JAX-native core with an array-oriented boundary](0004-jax-first.md) — superseded by ADR 0018
 5. [ADR 0005 — Make variables, components, and scores explicit API layers](0005-explicit-representations.md) — superseded
-6. [ADR 0006 — Publish generated documentation through GitHub Pages](0006-documentation-site.md)
+6. [ADR 0006 — Publish generated documentation through GitHub Pages](0006-documentation-site.md) — partially superseded by ADR 0019
 7. [ADR 0007 — Evolve the API around generic statistical contracts](0007-generic-api-evolution.md)
 8. [ADR 0008 — Expose only the mathematical classifier-posterior bridge](0008-classifier-posterior-bridge.md) — superseded in part
 9. [ADR 0009 — Separate finite partitions from quantizers](0009-partition-quantizer-separation.md)
@@ -19,3 +19,5 @@ Only decisions that materially constrain future implementation are recorded here
 15. [ADR 0015 — Efficient-score upper bound and solver initialization](0015-efficient-score-bound-and-initialization.md)
 16. [ADR 0016 — Verify partition geometry at the tolerance it was optimized at](0016-tolerance-consistent-geometry-verification.md) — refines ADR 0014
 17. [ADR 0017 — Density ratios are a first-class statistical representation](0017-density-ratio-representation.md) — partially supersedes ADR 0012
+18. [ADR 0018 — Use explicit JAX and NumPy execution behind one mathematical core](0018-explicit-multi-backend-execution.md) — supersedes ADR 0004
+19. [ADR 0019 — Add a React learning portal beside the engineering reference](0019-react-learning-portal.md) — partially supersedes ADR 0006

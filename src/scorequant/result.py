@@ -12,13 +12,14 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING
 
-import jax.numpy as jnp
 import numpy as np
 
 from ._chunking import assignment_chunk_rows
+from ._execution import backend_array, canonical_array, canonicalize_public, use_execution
+from ._execution import xp as jnp
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
-from .config import MahalanobisLloydConfig, PartitionConfig, QuantizerConfig
+from .config import ExecutionConfig, MahalanobisLloydConfig, PartitionConfig, QuantizerConfig
 from .criteria import Criterion, DOptimality, ProfiledDOptimality
 from .information import information_report
 from .reports import (
@@ -64,16 +65,16 @@ class OptimizationTrace:
         profiled log determinant. Never compare two traces across labels.
     """
 
-    steps: jnp.ndarray
-    centers: jnp.ndarray
-    objective: jnp.ndarray
-    bin_weights: jnp.ndarray
-    train_hard_retention: jnp.ndarray
+    steps: np.ndarray
+    centers: np.ndarray
+    objective: np.ndarray
+    bin_weights: np.ndarray
+    train_hard_retention: np.ndarray
     objective_label: str
-    validation_hard_retention: jnp.ndarray | None = None
-    soft_retention: jnp.ndarray | None = None
-    temperatures: jnp.ndarray | None = None
-    gradient_norms: jnp.ndarray | None = None
+    validation_hard_retention: np.ndarray | None = None
+    soft_retention: np.ndarray | None = None
+    temperatures: np.ndarray | None = None
+    gradient_norms: np.ndarray | None = None
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible representation."""
@@ -84,13 +85,14 @@ class OptimizationTrace:
 class QuantizerResult:
     """Represent a reusable hard rule on raw score vectors."""
 
-    centers: jnp.ndarray
-    metric: jnp.ndarray | None
+    centers: np.ndarray
+    metric: np.ndarray | None
     transform: FisherTransform
     criterion: Criterion
     config: QuantizerConfig
+    execution: ExecutionConfig
     trace: OptimizationTrace
-    labels: jnp.ndarray
+    labels: np.ndarray
     train_report: InformationReport
     validation_report: InformationReport | None
     provenance: ScoreProvenance
@@ -120,7 +122,12 @@ class QuantizerResult:
         """
         return "exact_fisher" if self.provenance.exact_fisher else "supplied_score_surrogate"
 
-    def predict_scores(self, scores: ArrayLike) -> jnp.ndarray:
+    def predict_scores(
+        self,
+        scores: ArrayLike,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> np.ndarray:
         """Assign raw score rows with the frozen score-space rule.
 
         Rows are assigned in memory-bounded chunks so that predicting on a
@@ -129,19 +136,25 @@ class QuantizerResult:
         argmin are independent of every other row, so chunking is
         bit-identical to the unchunked computation.
         """
-        coordinates = self.transform.apply(scores)
-        return _chunked_predict_labels(coordinates, self.centers, self.metric)
+        with use_execution(execution or self.execution):
+            coordinates = self.transform.apply(scores, execution=execution or self.execution)
+            return canonical_array(_chunked_predict_labels(coordinates, self.centers, self.metric))
 
     def evaluate_scores(
-        self, scores: ArrayLike, weights: ArrayLike | None = None
+        self,
+        scores: ArrayLike,
+        weights: ArrayLike | None = None,
+        *,
+        execution: ExecutionConfig | None = None,
     ) -> InformationReport:
         """Evaluate the frozen rule on a new weighted score sample."""
         return information_report(
             scores,
-            self.predict_scores(scores),
+            self.predict_scores(scores, execution=execution or self.execution),
             weights,
             n_bins=self.n_bins,
             rank_rtol=self.config.rank_rtol,
+            execution=execution or self.execution,
         )
 
     def report(self) -> InformationReport:
@@ -157,6 +170,7 @@ class QuantizerResult:
                 "transform": self.transform.to_dict(),
                 "criterion": self.criterion.to_dict(),
                 "config": self.config.to_dict(),
+                "execution": self.execution.to_dict(),
                 "trace": self.trace.to_dict(),
                 "labels": self.labels,
                 "train_report": self.train_report.to_dict(),
@@ -211,27 +225,28 @@ class PartitionResult:
     stricter one would reject partitions it legitimately converged on.
     """
 
-    labels: jnp.ndarray
-    training_scores: jnp.ndarray
-    cell_weights: jnp.ndarray
-    cell_score_sums: jnp.ndarray
-    cell_score_means: jnp.ndarray
-    information_full: jnp.ndarray
-    information_partitioned: jnp.ndarray
+    labels: np.ndarray
+    training_scores: np.ndarray
+    cell_weights: np.ndarray
+    cell_score_sums: np.ndarray
+    cell_score_means: np.ndarray
+    information_full: np.ndarray
+    information_partitioned: np.ndarray
     objective: float
     transform: FisherTransform
-    transformed_centers: jnp.ndarray | None
-    metric: jnp.ndarray | None
+    transformed_centers: np.ndarray | None
+    metric: np.ndarray | None
     criterion: DOptimality | ProfiledDOptimality
     config: PartitionConfig
+    execution: ExecutionConfig
     train_report: InformationReport
     provenance: ScoreProvenance
     accepted_moves: int
     scans: int
     exchange_stable: bool
     best_remaining_gain: float
-    objective_history: jnp.ndarray
-    positive_weight_mask: jnp.ndarray
+    objective_history: np.ndarray
+    positive_weight_mask: np.ndarray
     lloyd_iterations: int = 0
     accepted_lloyd_steps: int = 0
     geometry: GeometryReport | None = None
@@ -263,7 +278,11 @@ class PartitionResult:
         """Return supplied-score information for the fixed partition."""
         return self.train_report
 
-    def compile_quantizer(self) -> QuantizerResult:
+    def compile_quantizer(
+        self,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> QuantizerResult:
         r"""Compile an exchange-stable D partition into its canonical rule.
 
         Theorem 3 makes a one-point-exchange-stable, nonsingular D partition a
@@ -298,6 +317,7 @@ class PartitionResult:
             exchange-stable, when the compilation geometry is missing, or when
             the rule relabels a training row by more than ``gain_tolerance``.
         """
+        resolved_execution = execution or self.execution
         if not isinstance(self.criterion, DOptimality):
             raise ValueError(
                 "finite profiled-D labels have no canonical inductive compilation; "
@@ -315,8 +335,9 @@ class PartitionResult:
             )
         if self.transformed_centers is None or self.metric is None:
             raise ValueError("D compilation geometry is unavailable")
-        coordinates = self.transform.apply(self.training_scores)
-        predicted = _chunked_predict_labels(coordinates, self.transformed_centers, self.metric)
+        with use_execution(resolved_execution):
+            coordinates = self.transform.apply(self.training_scores, execution=resolved_execution)
+            predicted = _chunked_predict_labels(coordinates, self.transformed_centers, self.metric)
         positive = np.asarray(self.positive_weight_mask)
         if not np.array_equal(np.asarray(predicted)[positive], np.asarray(self.labels)[positive]):
             # Only the solver-side certificate can price a disagreement, because
@@ -328,34 +349,37 @@ class PartitionResult:
                     "inspect geometry.maximum_violation_gain"
                 )
         trace = OptimizationTrace(
-            steps=jnp.arange(self.objective_history.shape[0]),
-            centers=jnp.repeat(
+            steps=np.arange(self.objective_history.shape[0]),
+            centers=np.repeat(
                 self.transformed_centers[None, :, :], self.objective_history.shape[0], axis=0
             ),
             objective=self.objective_history,
-            bin_weights=jnp.repeat(
+            bin_weights=np.repeat(
                 self.cell_weights[None, :], self.objective_history.shape[0], axis=0
             ),
-            train_hard_retention=jnp.full(
+            train_hard_retention=np.full(
                 self.objective_history.shape,
                 self.train_report.geometric_mean_retention,
                 dtype=self.cell_weights.dtype,
             ),
             objective_label="logdet_retained",
         )
-        return QuantizerResult(
-            centers=self.transformed_centers,
-            metric=self.metric,
-            transform=self.transform,
-            criterion=self.criterion,
-            config=self.config,
-            trace=trace,
-            labels=self.labels,
-            train_report=self.train_report,
-            validation_report=None,
-            provenance=self.provenance,
-            hardening_gap=0.0,
-            source_kind="compiled_partition",
+        return canonicalize_public(
+            QuantizerResult(
+                centers=self.transformed_centers,
+                metric=self.metric,
+                transform=self.transform,
+                criterion=self.criterion,
+                config=self.config,
+                execution=resolved_execution,
+                trace=trace,
+                labels=self.labels,
+                train_report=self.train_report,
+                validation_report=None,
+                provenance=self.provenance,
+                hardening_gap=0.0,
+                source_kind="compiled_partition",
+            )
         )
 
     def to_dict(self) -> dict[str, JsonValue]:
@@ -374,6 +398,7 @@ class PartitionResult:
                 "metric": self.metric,
                 "criterion": self.criterion.to_dict(),
                 "config": self.config.to_dict(),
+                "execution": self.execution.to_dict(),
                 "train_report": self.train_report.to_dict(),
                 "provenance": self.provenance.to_dict(),
                 "information_kind": self.information_kind,
@@ -421,7 +446,17 @@ def _chunked_predict_labels(
     argmin are independent of every other row, so partitioning rows into
     chunks never materializes the full ``[n_rows, n_bins, rank]`` tensor and
     changes nothing about the arithmetic.
+
+    Public results store canonical NumPy arrays, so the stored centers and
+    metric are placed on the active backend once here. Without it the broadcast
+    difference and its square would be evaluated by NumPy on every chunk even
+    under the JAX backend, materializing host temporaries that the selected
+    runtime is supposed to own.
     """
+    coordinates = backend_array(coordinates)
+    centers = backend_array(centers)
+    if metric is not None:
+        metric = backend_array(metric)
     n_rows = int(coordinates.shape[0])
     chunk_rows = assignment_chunk_rows(
         coordinates.dtype, n_rows, int(centers.shape[0]), coordinates.shape[1]

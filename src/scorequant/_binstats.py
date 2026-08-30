@@ -37,7 +37,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import jax.numpy as jnp
+from ._execution import scatter_add
+from ._execution import xp as jnp
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,9 +77,12 @@ def scatter_bin_statistics(
         and ``means = sums / weights`` with the empty-bin policy documented on
         this module.
     """
-    bin_weights = jnp.zeros(n_bins, dtype=weights.dtype).at[labels].add(weights)
-    bin_sums = jnp.zeros((n_bins, values.shape[1]), dtype=values.dtype)
-    bin_sums = bin_sums.at[labels].add(weights[:, None] * values)
+    bin_weights = scatter_add(jnp.zeros(n_bins, dtype=weights.dtype), labels, weights)
+    bin_sums = scatter_add(
+        jnp.zeros((n_bins, values.shape[1]), dtype=values.dtype),
+        labels,
+        weights[:, None] * values,
+    )
     safe_weights = jnp.where(bin_weights > 0, bin_weights, 1)
     means = bin_sums / safe_weights[:, None]
     return BinStatistics(weights=bin_weights, sums=bin_sums, means=means)

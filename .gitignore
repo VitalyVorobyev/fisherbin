@@ -7,5 +7,15 @@ __pycache__/
 .ipynb_checkpoints/
 dist/
 site/
+.pages-preview/
+website/.docusaurus/
+website/build/
+website/node_modules/
+website/playwright-report/
+website/test-results/
+website/static/pagefind/
+website/static/lessons/
+website/static/runtime/pyodide/
+website/static/runtime/wheels/
 flowcyt-results/
 papers/VenkTongSwami_Quant_06CISS.pdf

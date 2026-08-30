@@ -48,13 +48,17 @@ Module ownership (keep code in its owning module):
 - `information.py` — Fisher and retained-information algebra
 - `transforms.py` — informative subspace and whitening
 - `partition.py` — exact D finite relocation
-- `quantizers.py` — private weighted k-means and soft-D numerical kernels
+- `solvers/` — private numerical kernels (`kmeans`, `soft`, `scalar`, `common`); `quantizers.py` is a
+  thin re-export façade over them
+- `_execution.py` — private backend seam: execution scope, namespace proxy, and JAX/NumPy adapters
 - `sources.py` — empirical/quadrature measures plus `ScoreProvenance`/`RatioProvenance`
 - `providers.py` — framework-neutral observation-to-score adapters (`DensityRatioScore`, etc.)
 - `ratios.py` — density-ratio algebra: prior correction, ratio-to-score maps, closure diagnostic
 - `components.py` — linear models and the intensity score adapter
 - `criteria.py`, `config.py`, `result.py`, `api.py` — public contracts and orchestration
 - `examples/`, `tests/`, `benchmarks/`, `agenticresearch/` — datasets, tuning, exploration (agenticresearch is excluded from the Ruff gate; anything relied upon gets copied into a deterministic regression test)
+
+Public arrays are always `numpy.ndarray`. Every public entry point takes `execution=` (an `ExecutionConfig`, default JAX); a result records the execution it was fitted under and reuses it for prediction unless overridden.
 
 Criterion/configuration pairs are a closed set (e.g. `DOptimality` + `DExchangeConfig`/`SoftVoronoiConfig`, `NormalizedTrace` + `KMeansConfig`); unsupported pairs fail before optimization. No generic criterion plugin system.
 
@@ -66,7 +70,10 @@ Criterion/configuration pairs are a closed set (e.g. `DOptimality` + `DExchangeC
 - Weights are nonnegative and finite with at least one positive; zero-weight rows remain predictable but contribute nothing.
 - Judge optimizers by the final hardened partition, with deterministic seeds.
 - Avoid `O(N^2)` work; histories store aggregate metrics and center snapshots, never per-observation responsibilities.
-- JAX only for numerical kernels, Optax for gradients. No PyTorch, no parallel NumPy implementation, no backend abstraction.
+- JAX is the default runtime and Optax owns its gradient updates. NumPy is the approved portable
+  runtime (roadmap M9, [ADR 0018](docs/adr/0018-explicit-multi-backend-execution.md)) and must run the
+  same shared mathematics, never a copied solver tree. No PyTorch; never mutate global JAX config.
+  Backend primitives stay private — no public registry, no backend base class.
 
 ## Conventions
 

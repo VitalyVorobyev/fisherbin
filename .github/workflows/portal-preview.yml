@@ -1,0 +1,61 @@
+name: Learning portal preview
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.13"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+      # `cache: pnpm` makes setup-node shell out to `pnpm store path`, so corepack
+      # has to be enabled on the runner's preinstalled Node first. It is enabled
+      # again afterwards to install shims for the Node version setup-node selects.
+      # Every pnpm step then runs from `website/`: corepack reads `packageManager`
+      # from the nearest package.json to its working directory, and invoking it
+      # from the repository root would silently fall back to corepack's own
+      # default pnpm, which `engines.pnpm` then rejects.
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: website/.node-version
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+      - run: corepack enable
+      - run: uv python install 3.13
+      - run: uv sync --all-extras --all-groups --locked
+      - run: corepack pnpm install --frozen-lockfile
+        working-directory: website
+      - run: uv run mkdocs build --strict
+      - run: corepack pnpm typecheck
+        working-directory: website
+      - run: corepack pnpm lint
+        working-directory: website
+      - run: corepack pnpm test
+        working-directory: website
+      - run: corepack pnpm build
+        working-directory: website
+      - run: corepack pnpm assemble:preview
+        working-directory: website
+      # `include-hidden-files` is required, not cosmetic: every path segment is
+      # tested for a leading dot, so with the default `false` the dot-prefixed
+      # preview root makes the whole tree count as hidden and the upload finds
+      # nothing. It also keeps the `.nojekyll` marker the static sites rely on.
+      - uses: actions/upload-artifact@v6
+        with:
+          name: scorequant-dual-site-preview
+          path: .pages-preview
+          if-no-files-found: error
+          include-hidden-files: true
+
+      # Deliberately no Pages deployment: promotion remains a separate,
+      # explicitly authorized migration step.

@@ -5,12 +5,14 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 
-import jax.numpy as jnp
 import numpy as np
 
+from ._execution import canonical_array, execution_scope
+from ._execution import xp as jnp
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
 from ._validation import promote_low_precision
+from .config import ExecutionConfig
 
 ComponentFunction = Callable[[np.ndarray], ArrayLike]
 
@@ -33,7 +35,13 @@ def _names(
     return resolved
 
 
-def scores_from_components(components: ArrayLike, coefficients: ArrayLike) -> jnp.ndarray:
+@execution_scope
+def scores_from_components(
+    components: ArrayLike,
+    coefficients: ArrayLike,
+    *,
+    execution: ExecutionConfig | None = None,
+) -> np.ndarray:
     """Construct scores for a linear intensity model.
 
     Parameters
@@ -45,7 +53,7 @@ def scores_from_components(components: ArrayLike, coefficients: ArrayLike) -> jn
 
     Returns
     -------
-    jax.Array
+    numpy.ndarray
         Score matrix ``components / (components @ coefficients)[:, None]``
         with shape ``[N, M]``.
 
@@ -67,6 +75,7 @@ def scores_from_components(components: ArrayLike, coefficients: ArrayLike) -> jn
     densities and component density *ratios* in any gauge therefore produce
     identical scores; absolute normalization is never required.
     """
+    del execution
     component_array = jnp.asarray(components)
     if component_array.ndim != 2 or min(component_array.shape) == 0:
         raise ValueError("components must have non-empty shape [N, M]")
@@ -86,7 +95,7 @@ def scores_from_components(components: ArrayLike, coefficients: ArrayLike) -> jn
         np.asarray(jnp.any(intensity <= 0))
     ):
         raise ValueError("reference intensity must be finite and strictly positive at every row")
-    return component_array / intensity[:, None]
+    return canonical_array(component_array / intensity[:, None])
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -114,6 +123,7 @@ class LinearProblem:
     component_names: tuple[str, ...]
     variables: tuple[str, ...] | None
 
+    @execution_scope
     def __init__(
         self,
         components: ArrayLike,
@@ -121,10 +131,15 @@ class LinearProblem:
         weights: ArrayLike | None = None,
         component_names: Sequence[str] | None = None,
         variables: Sequence[str] | None = None,
+        execution: ExecutionConfig | None = None,
     ) -> None:
         """Validate arrays and freeze their normalized representations."""
         component_array = jnp.asarray(components)
-        scores = scores_from_components(component_array, coefficients)
+        scores = scores_from_components(
+            component_array,
+            coefficients,
+            execution=execution,
+        )
         component_array = component_array.astype(scores.dtype)
         coefficient_array = jnp.asarray(coefficients, dtype=scores.dtype)
         if weights is None:
@@ -150,9 +165,13 @@ class LinearProblem:
         variables = (
             None if variables is None else _names(variables, len(variables), prefix="variable")
         )
-        object.__setattr__(self, "components", component_array)
-        object.__setattr__(self, "coefficients", coefficient_array)
-        object.__setattr__(self, "weights", weight_array)
+        object.__setattr__(self, "components", canonical_array(component_array))
+        object.__setattr__(self, "coefficients", canonical_array(coefficient_array))
+        object.__setattr__(
+            self,
+            "weights",
+            None if weight_array is None else canonical_array(weight_array),
+        )
         object.__setattr__(self, "component_names", component_names)
         object.__setattr__(self, "variables", variables)
 
@@ -252,7 +271,13 @@ class LinearComponents:
         object.__setattr__(self, "component_names", resolved_names)
         object.__setattr__(self, "variables", resolved_variables)
 
-    def evaluate_components(self, X: ArrayLike) -> jnp.ndarray:
+    @execution_scope
+    def evaluate_components(
+        self,
+        X: ArrayLike,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> np.ndarray:
         """Evaluate every component function.
 
         Parameters
@@ -262,9 +287,10 @@ class LinearComponents:
 
         Returns
         -------
-        jax.Array
+        numpy.ndarray
             Evaluated component matrix with shape ``[N, M]``.
         """
+        del execution
         observations = np.asarray(X)
         if observations.ndim != 2 or min(observations.shape) == 0:
             raise ValueError("X must have non-empty shape [N, K]")
@@ -285,9 +311,15 @@ class LinearComponents:
             if not bool(np.asarray(jnp.all(jnp.isfinite(values)))):
                 raise ValueError(f"component {name!r} returned a non-finite value")
             columns.append(values)
-        return jnp.stack(columns, axis=1)
+        return canonical_array(jnp.stack(columns, axis=1))
 
-    def evaluate(self, X: ArrayLike, *, weights: ArrayLike | None = None) -> LinearProblem:
+    def evaluate(
+        self,
+        X: ArrayLike,
+        *,
+        weights: ArrayLike | None = None,
+        execution: ExecutionConfig | None = None,
+    ) -> LinearProblem:
         """Create a reusable evaluated problem.
 
         Parameters
@@ -303,11 +335,12 @@ class LinearComponents:
             Validated components, coefficients, weights, and metadata.
         """
         return LinearProblem(
-            components=self.evaluate_components(X),
+            components=self.evaluate_components(X, execution=execution),
             coefficients=self.coefficients,
             weights=weights,
             component_names=self.component_names,
             variables=self.variables,
+            execution=execution,
         )
 
     def to_dict(self) -> dict[str, JsonValue]:

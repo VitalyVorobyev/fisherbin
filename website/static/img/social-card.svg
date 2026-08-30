@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#07152f"/>
+  <g opacity=".25" fill="none" stroke="#49a6ff">
+    <ellipse cx="910" cy="290" rx="260" ry="180"/><ellipse cx="910" cy="290" rx="210" ry="140"/><ellipse cx="910" cy="290" rx="150" ry="96"/>
+  </g>
+  <circle cx="810" cy="255" r="9" fill="#2c7cff"/><circle cx="980" cy="215" r="9" fill="#26c8bb"/><circle cx="940" cy="370" r="9" fill="#2c7cff"/>
+  <image href="mark.svg" x="90" y="110" width="118" height="118"/>
+  <text x="235" y="196" fill="#f7f9fd" font-family="sans-serif" font-size="76" font-weight="650">ScoreQuant</text>
+  <text x="92" y="340" fill="#f7f9fd" font-family="sans-serif" font-size="52">Preserve the information</text>
+  <text x="92" y="405" fill="#9fb2cf" font-family="sans-serif" font-size="52">that inference needs.</text>
+</svg>

@@ -8,7 +8,9 @@ ScoreQuant uses [uv](https://docs.astral.sh/uv/) for environments, dependencies,
 uv sync --all-extras --all-groups --locked
 ```
 
-The core dependencies are JAX and Optax. Matplotlib, notebook tooling, and the documentation stack are optional development concerns and remain outside the runtime dependency set.
+Normal CPython installs include JAX and Optax; Emscripten/Pyodide installs use the NumPy backend
+without them. Matplotlib, notebook tooling, and both documentation stacks remain optional
+development concerns.
 
 ## Validate changes
 
@@ -54,6 +56,27 @@ uv run mkdocs serve
 ```
 
 The generated API reference is collected from NumPy-style docstrings with mkdocstrings. Public API changes must update docstrings, the handwritten [API guide](api.md), examples, and an ADR when the decision is durable.
+
+## Develop the learning portal
+
+The React workspace is intentionally isolated from uv and Python packaging. Use the Node and pnpm
+versions pinned by `website/package.json`:
+
+```bash
+cd website
+corepack pnpm install --frozen-lockfile
+corepack pnpm start
+corepack pnpm validate
+corepack pnpm build
+corepack pnpm assemble:preview
+```
+
+Portal data generators invoke Python through `uv run` from the repository root; do not install a
+second Python environment under `website/`. MkDocs remains the engineering reference while the
+portal owns curated learning and the browser lab. The production `build` downloads and prunes the
+pinned Pyodide release to its 15 MB core/NumPy/micropip runtime, builds the local Emscripten-safe
+ScoreQuant wheel, exports the locked marimo lesson, and generates Pagefind. `assemble:preview`
+combines an existing strict MkDocs build at the root with React at `/portal/`; it does not deploy.
 
 ## Example fast mode
 

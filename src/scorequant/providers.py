@@ -5,11 +5,13 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 
-import jax.numpy as jnp
 import numpy as np
 
+from ._execution import canonical_array, execution_scope
+from ._execution import xp as jnp
 from ._typing import ArrayLike, JsonValue
 from .components import LinearComponents, scores_from_components
+from .config import ExecutionConfig
 from .ratios import (
     IntensityParameterization,
     MixtureParameterization,
@@ -32,14 +34,21 @@ class ScoreFunction:
         if not callable(self.function):
             raise TypeError("function must be callable")
 
-    def score(self, observations: ArrayLike) -> jnp.ndarray:
+    @execution_scope
+    def score(
+        self,
+        observations: ArrayLike,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> np.ndarray:
         """Evaluate and validate a finite score matrix."""
+        del execution
         values = jnp.asarray(self.function(observations))
         if values.ndim != 2 or values.shape[0] != jnp.asarray(observations).shape[0]:
             raise ValueError("score function must return shape [N, P]")
         if values.shape[1] == 0 or not bool(np.asarray(jnp.all(jnp.isfinite(values)))):
             raise ValueError("score function must return finite non-empty scores")
-        return values
+        return canonical_array(values)
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,10 +65,20 @@ class LinearComponentScore:
         if not isinstance(self.model, LinearComponents):
             raise TypeError("model must be LinearComponents")
 
-    def score(self, observations: ArrayLike) -> jnp.ndarray:
+    @execution_scope
+    def score(
+        self,
+        observations: ArrayLike,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> np.ndarray:
         """Evaluate components and their frozen reference score."""
-        components = self.model.evaluate_components(observations)
-        return scores_from_components(components, self.model.coefficients)
+        components = self.model.evaluate_components(observations, execution=execution)
+        return scores_from_components(
+            components,
+            self.model.coefficients,
+            execution=execution,
+        )
 
 
 def _parameterization_facts(parameterization: RatioParameterization) -> RatioProvenance:
@@ -226,7 +245,13 @@ class DensityRatioScore:
         )
         return cls(ratio, parameterization, provenance=provenance)
 
-    def score(self, observations: ArrayLike) -> jnp.ndarray:
+    @execution_scope
+    def score(
+        self,
+        observations: ArrayLike,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> np.ndarray:
         """Evaluate the ratio callback and apply the declared score map."""
         values = jnp.asarray(self.ratio(observations))
         if values.ndim != 2 or values.shape[0] != jnp.asarray(observations).shape[0]:
@@ -236,7 +261,7 @@ class DensityRatioScore:
             raise ValueError(
                 f"ratio callback must return {expected} components, got {values.shape[1]}"
             )
-        return self.parameterization.scores(values)
+        return self.parameterization.scores(values, execution=execution)
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -300,8 +325,8 @@ class CentralLogRatioScore:
             raise ValueError("class_priors must be finite and positive")
         priors = priors / jnp.sum(priors, axis=1, keepdims=True)
         object.__setattr__(self, "predict", predict)
-        object.__setattr__(self, "deltas", delta_array)
-        object.__setattr__(self, "class_priors", priors)
+        object.__setattr__(self, "deltas", canonical_array(delta_array))
+        object.__setattr__(self, "class_priors", canonical_array(priors))
         object.__setattr__(self, "description", description)
         object.__setattr__(self, "metadata", {} if metadata is None else metadata)
 
@@ -322,8 +347,15 @@ class CentralLogRatioScore:
             ),
         )
 
-    def score(self, observations: ArrayLike) -> jnp.ndarray:
+    @execution_scope
+    def score(
+        self,
+        observations: ArrayLike,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> np.ndarray:
         """Apply prior correction and divide central logits by ``2 * delta``."""
+        del execution
         values = jnp.asarray(self.predict(observations), dtype=self.deltas.dtype)
         if values.ndim == 2 and values.shape[1] == 2 and self.deltas.shape[0] == 1:
             values = values[:, None, :]
@@ -337,7 +369,7 @@ class CentralLogRatioScore:
             raise ValueError("classifier probability pairs must sum to one")
         log_ratio = jnp.log(values[:, :, 1] / values[:, :, 0])
         prior_log_ratio = jnp.log(self.class_priors[:, 1] / self.class_priors[:, 0])
-        return (log_ratio - prior_log_ratio[None, :]) / (2 * self.deltas[None, :])
+        return canonical_array((log_ratio - prior_log_ratio[None, :]) / (2 * self.deltas[None, :]))
 
 
 type ScoreProvider = ScoreFunction | LinearComponentScore | DensityRatioScore | CentralLogRatioScore

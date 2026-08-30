@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import jax.numpy as jnp
 import numpy as np
 
+from ._execution import canonical_array, canonicalize_public, execution_scope
+from ._execution import xp as jnp
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
+from .config import ExecutionConfig
 
 
 def _default_rank_rtol(dtype: jnp.dtype) -> float:
@@ -36,10 +38,10 @@ class FisherTransform:
         Whether retained directions are scaled by inverse square root eigenvalues.
     """
 
-    matrix: jnp.ndarray
-    eigenvectors: jnp.ndarray
-    eigenvalues: jnp.ndarray
-    retained_eigenvalues: jnp.ndarray
+    matrix: np.ndarray
+    eigenvectors: np.ndarray
+    eigenvalues: np.ndarray
+    retained_eigenvalues: np.ndarray
     rank_rtol: float
     threshold: float
     whiten: bool
@@ -59,14 +61,21 @@ class FisherTransform:
         """Return the number of projected-out score directions."""
         return self.input_dim - self.rank
 
-    def apply(self, scores: ArrayLike) -> jnp.ndarray:
+    @execution_scope
+    def apply(
+        self,
+        scores: ArrayLike,
+        *,
+        execution: ExecutionConfig | None = None,
+    ) -> np.ndarray:
         """Map raw scores into the fitted informative coordinate system."""
+        del execution
         array = jnp.asarray(scores, dtype=self.matrix.dtype)
         if array.ndim != 2 or array.shape[1] != self.input_dim:
             raise ValueError(f"scores must have shape [N, {self.input_dim}], got {array.shape}")
         if not bool(np.asarray(jnp.all(jnp.isfinite(array)))):
             raise ValueError("scores must be finite")
-        return array @ self.matrix
+        return canonical_array(array @ self.matrix)
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible representation."""
@@ -85,11 +94,13 @@ class FisherTransform:
         )
 
 
+@execution_scope
 def fisher_transform(
     fisher: ArrayLike,
     *,
     whiten: bool = True,
     rank_rtol: float | None = None,
+    execution: ExecutionConfig | None = None,
 ) -> FisherTransform:
     """Construct an informative-subspace transform from a Fisher matrix.
 
@@ -109,6 +120,7 @@ def fisher_transform(
         Projection metadata and the matrix mapping scores into optimization
         coordinates.
     """
+    del execution
     matrix = jnp.asarray(fisher)
     if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1] or matrix.shape[0] == 0:
         raise ValueError("fisher must be a non-empty square matrix")
@@ -129,12 +141,14 @@ def fisher_transform(
     basis = eigenvectors[:, keep]
     retained = eigenvalues[keep]
     transform_matrix = basis / jnp.sqrt(retained)[None, :] if whiten else basis
-    return FisherTransform(
-        matrix=transform_matrix,
-        eigenvectors=eigenvectors,
-        eigenvalues=eigenvalues,
-        retained_eigenvalues=retained,
-        rank_rtol=float(resolved_rtol),
-        threshold=float(threshold),
-        whiten=whiten,
+    return canonicalize_public(
+        FisherTransform(
+            matrix=transform_matrix,
+            eigenvectors=eigenvectors,
+            eigenvalues=eigenvalues,
+            retained_eigenvalues=retained,
+            rank_rtol=float(resolved_rtol),
+            threshold=float(threshold),
+            whiten=whiten,
+        )
     )

@@ -214,6 +214,52 @@ disjoint API homes (providers versus source weights).
   `CentralLogRatioTransform`, `mixture_scores_from_posteriors`) outside ADR history and this gate.
 - Reference pages and navigation cover the new surface; the full handoff gate passes.
 
+## M9 — Explicit multi-backend execution
+
+**Status:** implemented; parity and browser smoke gates pass.
+
+1. Architecture foundation: land ADR 0018, the code-quality audit, dependency rules, the
+   `ExecutionConfig` contract, and import-boundary checks.
+2. Backend-neutral JAX extraction: canonicalize public arrays as NumPy, move JAX imports behind a
+   private adapter, split solver responsibilities, and preserve the existing default path.
+3. NumPy parity: run every hard solver and certificate, implement one analytic soft objective and
+   gradient, apply it through Optax and a matching private NumPy Adam implementation, and build one
+   backend-parameterized conformance suite.
+4. Browser packaging: omit JAX/Optax on Emscripten, build a wheel, and pass a Pyodide smoke run.
+
+**Gate:** every declared task/configuration/criterion combination runs under JAX and NumPy and
+induces the same partition, compared up to bin relabeling; in float64 the retained information and
+objective agree at `rtol=1e-10, atol=1e-12`, and the annealed soft solver at `rtol=1e-4`. In float32
+only the *continuous* quantities are gated across backends (`rtol=1e-5, atol=1e-6`): a relocation
+gain can fall inside the float32 noise floor, so the discrete solvers may walk to different,
+individually exchange-stable optima, and each backend is gated on its own validity instead. Public
+arrays are NumPy; invalid execution requests fail before work; default JAX benchmarks have no
+unexplained quality regression; both architecture reviews pass.
+
+## M10 — React learning portal and browser Lab
+
+**Status:** initial vertical slice implemented; research expansion and root-site promotion remain
+future milestones.
+
+1. Product foundation: land ADR 0019, route/content manifests, design tokens, responsive
+   wireframes, the custom Docusaurus shell, Pagefind command palette, and generated data contracts.
+2. Polished vertical slice: ship Home, Docs, API, Examples, Theory, Benchmarks, Research, and Lab
+   routes using real fixtures and authoritative source adapters rather than placeholder science.
+3. Browser Lab: generate TypeScript from the versioned JSON Schema; lazily load Pyodide and the
+   local ScoreQuant wheel in a cancellable worker; synchronize controls, score-space graphics, and
+   diagnostics; include one locked lazy marimo lesson.
+4. Dual-site publication: assemble MkDocs at the existing root and React at `/portal/`; keep
+   deployment preview-only. Move React to the root only after content/link parity and a reviewed
+   redirect manifest.
+5. Research growth: expand the opt-in claim preview into history, implication, counterexample, and
+   evidence-provenance views without exposing private registry state.
+
+**Gate:** strict TypeScript, lint, unit/component tests, schema consistency, broken-link failure,
+desktop/mobile Playwright flows, automated accessibility plus keyboard/reduced-motion review,
+non-Lab Lighthouse LCP below 2.5 seconds and CLS below 0.1 on CI, no Pyodide/marimo requests on
+ordinary routes, representative manual visual inspection, and a seeded browser scenario agreeing
+with native NumPy in under ten seconds after warm-up.
+
 ## Explicitly outside the development plan
 
 An E-optimal solver is not planned. The E-optimality chapter and deterministic counterexample stay
@@ -253,8 +299,9 @@ What stays deliberately out of scope, and why, in one place:
   (`agenticresearch/claims/OPEN-DS-MARGINS-NONCENTERED.json`) resolves whether the
   exchange-stable, non-global solutions the library's optimizer actually returns retain the
   same margins.
-- **A second numerical backend, signed weights, advanced statistical objectives** — gated on an
-  approved roadmap change per `AGENTS.md`; none is planned.
+- **Signed weights and advanced statistical objectives** — remain gated on a new mathematical
+  contract and independent use case. NumPy is now the approved second backend in M9; PyTorch still
+  requires a concrete workload, complete capability mapping, conformance evidence, and benchmark.
 
 ## Full handoff gate
 

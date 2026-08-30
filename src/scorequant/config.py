@@ -10,6 +10,48 @@ import numpy as np
 from ._json import json_ready
 from ._typing import JsonValue
 
+type BackendName = Literal["jax", "numpy"]
+type PrecisionPolicy = Literal["preserve", "float32", "float64"]
+type DeviceKind = Literal["default", "cpu", "gpu", "tpu"]
+
+
+@dataclass(frozen=True, slots=True)
+class ExecutionConfig:
+    """Select the numerical runtime without changing statistical semantics.
+
+    Parameters
+    ----------
+    backend
+        Numerical implementation. ``"jax"`` remains the default; ``"numpy"``
+        is the portable CPU implementation used by Pyodide.
+    precision
+        Input precision policy. ``"preserve"`` retains float32/float64 inputs
+        while promoting integer and lower-precision inputs to float32.
+    device
+        Requested device family. NumPy accepts only ``"default"`` and
+        ``"cpu"``. JAX resolves the first available device of the requested
+        family and never changes global JAX configuration.
+    """
+
+    backend: BackendName = "jax"
+    precision: PrecisionPolicy = "preserve"
+    device: DeviceKind = "default"
+
+    def __post_init__(self) -> None:
+        """Validate backend, precision, and device compatibility eagerly."""
+        if self.backend not in ("jax", "numpy"):
+            raise ValueError("backend must be 'jax' or 'numpy'")
+        if self.precision not in ("preserve", "float32", "float64"):
+            raise ValueError("precision must be 'preserve', 'float32', or 'float64'")
+        if self.device not in ("default", "cpu", "gpu", "tpu"):
+            raise ValueError("device must be 'default', 'cpu', 'gpu', or 'tpu'")
+        if self.backend == "numpy" and self.device not in ("default", "cpu"):
+            raise ValueError("the NumPy backend supports only the default CPU device")
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return a JSON-compatible execution record."""
+        return json_ready(asdict(self))
+
 
 def _validate_bool(name: str, value: object) -> None:
     if not isinstance(value, bool):

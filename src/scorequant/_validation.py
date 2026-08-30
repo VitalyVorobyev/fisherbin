@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import jax.numpy as jnp
 import numpy as np
 
+from ._execution import apply_precision, use_execution
+from ._execution import xp as jnp
 from ._typing import ArrayLike
+from .config import ExecutionConfig
 
 # ``None`` means automatic: below this many effective rows, collapsing pays
 # for itself because its O(N log N) sort is negligible next to the O(N)
@@ -24,11 +26,7 @@ def promote_low_precision(array: jnp.ndarray) -> jnp.ndarray:
     conversion happens once, at a public validation boundary, never inside a
     JIT-compiled hot path.
     """
-    if not jnp.issubdtype(array.dtype, jnp.inexact):
-        return array.astype(jnp.float32)
-    if array.dtype in (jnp.float16, jnp.bfloat16):
-        return array.astype(jnp.float32)
-    return array
+    return apply_precision(array)
 
 
 def resolve_collapse_duplicates(collapse_duplicates: bool | None, n_rows: int) -> bool:
@@ -110,6 +108,17 @@ def validate_sample(
         weights=weight_array,
         positive_weight_mask=positive,
     )
+
+
+def canonical_sample(
+    scores: ArrayLike,
+    weights: ArrayLike | None = None,
+    *,
+    expected_features: int | None = None,
+) -> _ValidatedSample:
+    """Validate a public sample without requiring an optional execution backend."""
+    with use_execution(ExecutionConfig(backend="numpy")):
+        return validate_sample(scores, weights, expected_features=expected_features)
 
 
 def validate_n_bins(n_bins: int, n_observations: int) -> None:

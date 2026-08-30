@@ -9,6 +9,7 @@ from .components import (
 )
 from .config import (
     DExchangeConfig,
+    ExecutionConfig,
     KMeansConfig,
     MahalanobisLloydConfig,
     ScalarDPConfig,
@@ -66,6 +67,7 @@ __all__ = [
     "CentralLogRatioScore",
     "CertificationConfig",
     "DExchangeConfig",
+    "ExecutionConfig",
     "DOptimality",
     "DensityRatioScore",
     "EfficientScoreBound",
