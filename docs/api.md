@@ -1,5 +1,28 @@
 # API guide
 
+Almost every use of ScoreQuant is built from a dozen names. The rest of the surface is machinery
+you reach for when you have a specific question about a result.
+
+**Core.** The two tasks, `optimize_partition` and `fit_quantizer`; the inputs `ScoreSample`,
+`ObservationSample`, `IntegrationSource` and `ScoreSchema`; the objectives `DOptimality`,
+`ProfiledDOptimality` and `NormalizedTrace`; a solver configuration; a provider such as
+`ScoreFunction`, `LinearComponentScore` or `DensityRatioScore`; and `Quantizer`, the rule you
+deploy.
+
+**Advanced.** Certificates and bounds (`certify_partition`, `exchange_stability_report`,
+`efficient_score_bound`), the information algebra (`fisher_information`,
+`binned_fisher_information`, `information_report`, `profiled_information_report`), the ratio
+algebra (`ratios_from_posteriors`, `mixture_scores_from_ratios`, `ratio_closure_report`),
+`FisherTransform`, the report types, and the plotting helpers. Each answers a question you will
+know you have; none is needed to fit anything.
+
+The sections below follow that order. The generated [reference](reference/index.md) covers every
+public object.
+
+---
+
+# Core
+
 ## Top-level tasks
 
 ### `optimize_partition`
@@ -151,6 +174,58 @@ Ratio-derived scores carry a structured `ScoreProvenance.ratio` record (`RatioPr
 the estimator, parameterization, reference fractions or coefficients, reference component,
 training priors, calibration method, and finite-difference offsets.
 
+## The deployable rule
+
+A fit produces two different things and they now have two different types. `QuantizerResult` is
+the record of the fit — labels, reports, trace, solver diagnostics. `result.quantizer` is the rule
+itself:
+
+<!-- snippet: skip -->
+```python
+fit = sq.fit_quantizer(sample, n_bins=8)
+
+fit.train_report  # what the fit measured
+fit.trace  # how it got there
+
+rule = fit.quantizer  # what you deploy
+rule.predict_scores(future_scores)
+rule.save("flowcyt-8bins.sqz")
+```
+
+`Quantizer` carries the transform, centers, optional metric, score schema, provenance and
+criterion — and nothing about the training sample. `PartitionResult.compile_quantizer()` returns
+one too, under exactly the same theorem-backed conditions as before: compilation is bookkeeping on
+an exchange-stable D partition, not a second fit, so it hands back a rule rather than something
+that impersonates a new training result.
+
+`QuantizerResult.predict_scores` remains the one prediction verb and delegates to the rule;
+`centers`, `metric`, `transform` and `schema` read through to it.
+
+### The artifact format
+
+`Quantizer.save` writes a zip archive holding one `manifest.json` and one `.npy` member per array.
+
+- **Versioned.** The manifest declares a `format_version`, and a reader refuses a version it does
+  not know by name rather than interpreting a field it has never seen.
+- **Not a pickle.** Arrays are written with `allow_pickle=False`, so loading an artifact executes
+  no code from the file.
+- **Backend-free.** A rule fitted on the JAX backend loads and predicts in a process where JAX is
+  not importable, which is the other half of the NumPy backend: fit offline, deploy where the
+  fitting stack is not installed.
+
+<!-- snippet: skip -->
+```python
+rule = sq.Quantizer.load("flowcyt-8bins.sqz")
+bins = rule.predict_scores(scores, execution=sq.ExecutionConfig(backend="numpy"))
+```
+
+This is a durable format, unlike `to_dict()` on the result types, which stays JSON-ready
+diagnostic state.
+
+---
+
+# Advanced
+
 ## The efficient-score upper bound
 
 <!-- snippet: skip -->
@@ -220,54 +295,6 @@ guards both the node count and the number of distinct score atoms, refusing an o
 by name. Certification is `DOptimality` only: the refinement bound uses Loewner monotonicity of
 `logdet`, which the profiled Schur objective does not inherit, and a profiled criterion is rejected
 rather than approximated. Neither entry point ever runs implicitly during fitting.
-
-## The deployable rule
-
-A fit produces two different things and they now have two different types. `QuantizerResult` is
-the record of the fit — labels, reports, trace, solver diagnostics. `result.quantizer` is the rule
-itself:
-
-<!-- snippet: skip -->
-```python
-fit = sq.fit_quantizer(sample, n_bins=8)
-
-fit.train_report  # what the fit measured
-fit.trace  # how it got there
-
-rule = fit.quantizer  # what you deploy
-rule.predict_scores(future_scores)
-rule.save("flowcyt-8bins.sqz")
-```
-
-`Quantizer` carries the transform, centers, optional metric, score schema, provenance and
-criterion — and nothing about the training sample. `PartitionResult.compile_quantizer()` returns
-one too, under exactly the same theorem-backed conditions as before: compilation is bookkeeping on
-an exchange-stable D partition, not a second fit, so it hands back a rule rather than something
-that impersonates a new training result.
-
-`QuantizerResult.predict_scores` remains the one prediction verb and delegates to the rule;
-`centers`, `metric`, `transform` and `schema` read through to it.
-
-### The artifact format
-
-`Quantizer.save` writes a zip archive holding one `manifest.json` and one `.npy` member per array.
-
-- **Versioned.** The manifest declares a `format_version`, and a reader refuses a version it does
-  not know by name rather than interpreting a field it has never seen.
-- **Not a pickle.** Arrays are written with `allow_pickle=False`, so loading an artifact executes
-  no code from the file.
-- **Backend-free.** A rule fitted on the JAX backend loads and predicts in a process where JAX is
-  not importable, which is the other half of the NumPy backend: fit offline, deploy where the
-  fitting stack is not installed.
-
-<!-- snippet: skip -->
-```python
-rule = sq.Quantizer.load("flowcyt-8bins.sqz")
-bins = rule.predict_scores(scores, execution=sq.ExecutionConfig(backend="numpy"))
-```
-
-This is a durable format, unlike `to_dict()` on the result types, which stays JSON-ready
-diagnostic state.
 
 ## Result semantics
 
