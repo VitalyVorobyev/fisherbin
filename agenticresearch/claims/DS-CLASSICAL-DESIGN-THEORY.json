@@ -12,7 +12,8 @@
     "Wynn-1972",
     "Whittle-1973",
     "Nather-Reinsch-1981",
-    "Kiefer-1974"
+    "Kiefer-1974",
+    "Silvey-Titterington-1973"
   ],
   "proof_location": {
     "file": "KNOWN_RESULTS/05a-ds-core.md",

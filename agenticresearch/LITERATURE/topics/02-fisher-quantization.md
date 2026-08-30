@@ -39,8 +39,28 @@
 
 ## Barnes, Han & Özgür (later communication-constrained work)
 
-**Use:** Fisher-information budgets and lower bounds for distributed estimation/learning.  
-**Not a partition solver.**
+**Key:** Barnes-Han-Ozgur-2020
+
+**Paper:** *Lower Bounds for Learning Distributions under Communication Constraints via Fisher Information*
+**Use:** carries the quantized-Fisher geometry into minimax lower bounds for
+interactive communication protocols.
+**Not a partition solver:** the results constrain attainable information but
+do not construct a deterministic hard quantizer.
+
+- PDF: https://arxiv.org/pdf/1902.02890
+
+## Venkitasubramaniam, Tong & Swami (2007)
+
+**Key:** Venkitasubramaniam-Tong-Swami-2007
+
+**Paper:** *Quantization for Maximin ARE in Distributed Estimation*
+**Result:** optimizes the worst scalar asymptotic relative efficiency across
+parameter values using score-function threshold quantizers and an iterative
+design.
+**Boundary marker:** this is robust scalar Fisher quantization, not a
+multivariate determinant or profiled \(D_s\) partition theorem.
+
+- DOI: https://doi.org/10.1109/TSP.2007.894279
 
 ## Dülek (2023)
 
@@ -53,6 +73,8 @@
 - DOI: https://doi.org/10.1109/TPAMI.2022.3172282
 
 ## Zhang, Blum, Kaplan & Lu (2016/2018)
+
+**Key:** Zhang-Blum-Kaplan-Lu-2018
 
 **Paper:** *A Fundamental Limitation on Maximum Parameter Dimension for Accurate Estimation With Quantized Data*  
 **Result:** quantization-induced identifiability/FIM singularity limitations.  

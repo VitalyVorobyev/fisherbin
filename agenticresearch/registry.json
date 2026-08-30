@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0",
   "project": "ScoreQuant",
-  "updated": "2026-08-29",
+  "updated": "2026-08-30",
   "canonical_problem_file": "PROBLEM.md",
   "human_readable_ledger": "KNOWN_RESULTS/",
   "open_problem_ledger": "OPEN_PROBLEMS.md",
@@ -109,6 +109,28 @@
       "title": "On the Optimality of Sufficient Statistics-Based Quantizers",
       "doi": "10.1109/TPAMI.2022.3172282"
     },
+    "Venkitasubramaniam-Tong-Swami-2007": {
+      "title": "Quantization for Maximin ARE in Distributed Estimation",
+      "doi": "10.1109/TSP.2007.894279"
+    },
+    "Barnes-Han-Ozgur-2020": {
+      "title": "Lower Bounds for Learning Distributions under Communication Constraints via Fisher Information",
+      "arxiv": "1902.02890",
+      "pdf": "https://arxiv.org/pdf/1902.02890"
+    },
+    "Zhang-Blum-Kaplan-Lu-2018": {
+      "title": "A Fundamental Limitation on Maximum Parameter Dimension for Accurate Estimation With Quantized Data",
+      "doi": "10.1109/TIT.2018.2850968",
+      "arxiv": "1605.07679"
+    },
+    "Silvey-Titterington-1973": {
+      "title": "A Geometric Approach to Optimal Design Theory",
+      "doi": "10.1093/biomet/60.1.21"
+    },
+    "Silvey-Titterington-Torsney-1978": {
+      "title": "An Algorithm for Optimal Designs on a Design Space",
+      "doi": "10.1080/03610927808827719"
+    },
     "Friedman-Rubin-1967": {
       "title": "On Some Invariant Criteria for Grouping Data",
       "doi": "10.1080/01621459.1967.10500923"
@@ -133,6 +155,22 @@
       "title": "Strong Consistency of K-Means Clustering",
       "doi": "10.1214/aos/1176345339",
       "pdf": "https://www.stat.yale.edu/~pollard/Papers/Pollard81AS.pdf"
+    },
+    "Zador-1982": {
+      "title": "Asymptotic Quantization Error of Continuous Signals and the Quantization Dimension",
+      "doi": "10.1109/TIT.1982.1056490"
+    },
+    "Gersho-1979": {
+      "title": "Asymptotically Optimal Block Quantization",
+      "doi": "10.1109/TIT.1979.1056067"
+    },
+    "Bucklew-Wise-1982": {
+      "title": "Multidimensional Asymptotic Quantization Theory with rth Power Distortion Measures",
+      "doi": "10.1109/TIT.1982.1056486"
+    },
+    "Gupta-Hero-2003": {
+      "title": "High-Rate Vector Quantization for Detection",
+      "doi": "10.1109/TIT.2003.814482"
     },
     "Du-Faber-Gunzburger-1999": {
       "title": "Centroidal Voronoi Tessellations: Applications and Algorithms",
@@ -162,6 +200,16 @@
       "arxiv": "2502.13047",
       "doi": "10.1140/epjc/s10052-025-14713-w",
       "note": "CMS-MLG-23-005. Local copy: papers/cms_2025_systematic_aware_nn_training_arXiv2502.13047.pdf"
+    },
+    "Cranmer-Pavez-Louppe-2015": {
+      "title": "Approximating Likelihood Ratios with Calibrated Discriminative Classifiers",
+      "arxiv": "1506.02169",
+      "pdf": "https://arxiv.org/pdf/1506.02169"
+    },
+    "Alsing-Wandelt-2019": {
+      "title": "Nuisance Hardened Data Compression for Fast Likelihood-Free Inference",
+      "doi": "10.1093/mnras/stz1900",
+      "arxiv": "1903.01473"
     },
     "Graf-Luschgy-2000": {
       "title": "Foundations of Quantization for Probability Distributions",

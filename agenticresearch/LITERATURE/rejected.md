@@ -1,3 +1,58 @@
 # Rejected papers
 
 Screened and found irrelevant, with one-line reasons, so nobody re-screens them.
+
+## Snowballing round 2 — 30 August 2026
+
+- **Tsitsiklis (1993), “Extremal properties of likelihood-ratio quantizers”**
+  — hypothesis-testing/Ali–Silvey objective, not estimation Fisher D or
+  \(D_s\); assessed against `FI-QUANT-IDENTITY`.
+- **Barnes, Chen & Özgür (2020), “Fisher Information Under Local Differential
+  Privacy”** — randomized privacy channels and information upper bounds, not
+  deterministic hard-cell optimization; `FI-LOSS-DECOMPOSITION`,
+  `TRACE-WHITENED-KMEANS`.
+- **Lazebnik & Raginsky (2009), “Supervised Learning of Quantizer Codebooks by
+  Information Loss Minimization”** — class-label mutual information rather
+  than parameter-score Fisher information; `REPRESENTATION-QUANTIZATION-LOSS`.
+- **Amari (2011), “On Optimal Data Compression in Multiterminal Statistical
+  Inference”** — restricted multiterminal linear-threshold model, not a
+  general score-space partition theorem; `FI-QUANT-IDENTITY`.
+- **Zou et al. (2022), “Goal-Oriented Quantization”** — high-rate downstream
+  decision cost, not Fisher determinant or Schur loss; `OPEN-D-HIGH-RATE`.
+- **Bryant & Williamson (1978), “Asymptotic behaviour of classification
+  maximum likelihood estimates”** — class-assignment likelihood with biased
+  parameter limits, not consistency of the retained-information partition
+  functional; `OPEN-D-UNRESTRICTED-CONSISTENCY`.
+- **Bryant (1991), “Large-sample results for optimization-based clustering
+  methods”** — potentially adjacent consistency theory, but the objective and
+  assumptions could not be verified from primary text; it cannot close
+  `OPEN-D-UNRESTRICTED-CONSISTENCY` or `OPEN-D-EXCHANGE-CONSISTENCY`.
+- **Fukunaga & Koontz (1970), “A Criterion and an Algorithm for Grouping
+  Data”** — learned-transform grouping, principally for two classes, not the
+  retained-Fisher common-metric theorem; `D-POP-VORONOI`.
+- **Maronna & Jacovkis (1974), “Multivariate Clustering Procedures with
+  Variable Metrics”** — cluster-variable metrics without a conditional-score
+  objective or self-consistent \(I_q^{-1}\) metric; `D-POP-VORONOI`.
+- **Windham (1987), “Parameter modification for clustering criteria”** —
+  general partition/mixture/fuzzy reformulations, not ScoreQuant's rank-two
+  gain identity; `D-RANK2-MOVE`, `D-LOGDET-GAIN`.
+- **Banerjee et al. (2005), Bregman clustering** — additive,
+  source-independent Bregman distortion; no solution-dependent determinant or
+  Schur objective; `D-POP-VORONOI`, `D-GUARDED-LLOYD`.
+- **Kanungo et al. (2002), local-search approximation for k-means** —
+  Euclidean additive approximation/exchange mechanics do not transfer to
+  retained-Fisher logdet; `D-EXCHANGE-IMPLIES-VORONOI`,
+  `D-EXCHANGE-TERMINATES`.
+- **Wunsch et al. (2020), “Reducing the Dependence of the Neural Network
+  Function to Systematic Uncertainties”** — suppresses nuisance dependence
+  instead of optimizing profiled information; `OPEN-HEP-NUISANCE-SCALING`.
+- **OASIS (2021)** — optimizes simulation-sample allocation, not observation
+  partitioning; `FI-QUANT-IDENTITY`.
+- **“Parametrized classifiers for optimal EFT sensitivity” (2021)** —
+  unbinned classifier method without hard-category optimization or a Fisher
+  theorem; `CLASSIFIER-RATIO-ORACLE`,
+  `REPRESENTATION-QUANTIZATION-LOSS`.
+- **Diekmann, Eich & Erdmann (2024/2026), classifier-output clustering** —
+  ordinary Euclidean k-means in unwhitened classifier-output space, not D or
+  \(D_s\) score-Fisher optimization; `TRACE-WHITENED-KMEANS`,
+  `REPRESENTATION-QUANTIZATION-LOSS`.

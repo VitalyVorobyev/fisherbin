@@ -7,17 +7,23 @@ and the claims that cite it.
 
 | Key | Title | Annotated in | Cited by |
 |---|---|---|---|
+| `Alsing-Wandelt-2019` | Nuisance Hardened Data Compression for Fast Likelihood-Free Inference | `LITERATURE/topics/07-score-compression.md` — Alsing & Wandelt (2019) — nuisance-hardened compression | `DS-SCHUR` |
 | `Barnes-Han-Ozgur-2018` | A Geometric Characterization of Fisher Information from Quantized Samples with Applications to Distributed Statistical Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Barnes, Han & Özgür (2018) | `FI-QUANT-IDENTITY`, `TRACE-WHITENED-KMEANS` |
+| `Barnes-Han-Ozgur-2020` | Lower Bounds for Learning Distributions under Communication Constraints via Fisher Information | `LITERATURE/topics/02-fisher-quantization.md` — Barnes, Han & Özgür (later communication-constrained work) | — |
 | `Blanchard-Jaffe-Zhivotovskiy-2025` | Consistency and inconsistency in k-means clustering | `LITERATURE/topics/04-vector-quantization.md` — Constraint-restored consistency of empirical clustering (30 Aug 2026) | `AUDIT-DS-MARGINS-AT-OPTIMA` |
+| `Bucklew-Wise-1982` | Multidimensional Asymptotic Quantization Theory with rth Power Distortion Measures | `LITERATURE/topics/04-vector-quantization.md` — Zador, Gersho, Bucklew–Wise, and task-aware high-rate theory | `OPEN-D-HIGH-RATE` |
 | `CMS-2025` | Development of systematic uncertainty-aware neural network trainings for binned-likelihood analyses at the LHC | `LITERATURE/topics/05-hep-inference-aware.md` — CMS Collaboration (2025) — SANNT | — |
 | `Coleman-et-al-1999` | Some computational issues in cluster analysis with no a priori metric | `LITERATURE/topics/03-determinant-clustering.md` — Coleman, Dong, Hardin, Rocke & Woodruff (1999) | — |
+| `Cranmer-Pavez-Louppe-2015` | Approximating Likelihood Ratios with Calibrated Discriminative Classifiers | `LITERATURE/topics/07-score-compression.md` — Cranmer, Pavez & Louppe (2015) | `CLASSIFIER-RATIO-ORACLE` |
 | `Du-Faber-Gunzburger-1999` | Centroidal Voronoi Tessellations: Applications and Algorithms | `LITERATURE/topics/04-vector-quantization.md` — Du, Faber & Gunzburger (1999) | — |
 | `Dulek-2023` | On the Optimality of Sufficient Statistics-Based Quantizers | `LITERATURE/topics/02-fisher-quantization.md` — Dülek (2023) | `TRACE-WHITENED-KMEANS` |
 | `Farias-Brossier-2013` | Optimal Scalar Quantization for Parameter Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Farias & Brossier (2013/2014) | — |
 | `Fisher-1958` | On Grouping for Maximum Homogeneity | `LITERATURE/topics/04-vector-quantization.md` — Scalar grouping and 1-D contiguity (30 Aug 2026) | `AUDIT-DS-MARGINS-AT-OPTIMA`, `DS-SCALAR-EFFICIENT-DP`, `OPEN-DS-MARGINS-AT-OPTIMA` |
 | `Friedman-Rubin-1967` | On Some Invariant Criteria for Grouping Data | `LITERATURE/topics/03-determinant-clustering.md` — Friedman & Rubin (1967) | — |
 | `Garcia-Escudero-Gordaliza-1999` | Robustness Properties of k Means and Trimmed k Means | `LITERATURE/topics/04-vector-quantization.md` — Outlier and singleton cells at exact clustering optima | — |
+| `Gersho-1979` | Asymptotically Optimal Block Quantization | `LITERATURE/topics/04-vector-quantization.md` — Zador, Gersho, Bucklew–Wise, and task-aware high-rate theory | `OPEN-D-HIGH-RATE` |
 | `Graf-Luschgy-2000` | Foundations of Quantization for Probability Distributions | `LITERATURE/topics/04-vector-quantization.md` — Graf & Luschgy (2000, 2002) | `AUDIT-DS-MARGINS-AT-OPTIMA`, `OPEN-DS-MARGINS-AT-OPTIMA` |
+| `Gupta-Hero-2003` | High-Rate Vector Quantization for Detection | `LITERATURE/topics/04-vector-quantization.md` — Zador, Gersho, Bucklew–Wise, and task-aware high-rate theory | `OPEN-D-HIGH-RATE` |
 | `Hennig-2004` | Breakdown points for maximum likelihood estimators of location-scale mixtures | `LITERATURE/topics/04-vector-quantization.md` — Outlier and singleton cells at exact clustering optima | — |
 | `Jiang-et-al-2026` | Direct target localization in USNs with hybrid quantized multi-snapshot measurements: A geometric structure-aided approach | `LITERATURE/topics/02-fisher-quantization.md` — Domain-specific D-optimal threshold quantizers | — |
 | `Kiefer-1974` | General Equivalence Theory for Optimum Designs (Approximate Theory) | `LITERATURE/topics/01-optimal-design.md` — Kiefer (1974) — general equivalence theory | `DS-CLASSICAL-DESIGN-THEORY` |
@@ -33,11 +39,16 @@ and the claims that cite it.
 | `Scott-Symons-1971` | Clustering Methods Based on Likelihood Ratio Criteria | `LITERATURE/topics/03-determinant-clustering.md` — Scott & Symons (1971) | — |
 | `Sibson-Kenny-1975` | Coefficients in D-Optimal Experimental Design | `LITERATURE/topics/01-optimal-design.md` — Design-side margins: weight bounds, singular \(D_s\) designs, extreme-point selection (29 Aug 2026) | — |
 | `Silvey-1978` | Optimal design measures with singular information matrices | `LITERATURE/topics/01-optimal-design.md` — Design-side margins: weight bounds, singular \(D_s\) designs, extreme-point selection (29 Aug 2026) | `AUDIT-DS-MARGINS-AT-OPTIMA`, `OPEN-DS-MARGINS-AT-OPTIMA` |
+| `Silvey-Titterington-1973` | A Geometric Approach to Optimal Design Theory | `LITERATURE/topics/01-optimal-design.md` — Silvey & Titterington (1973) and Silvey, Titterington & Torsney (1978) | `DS-CLASSICAL-DESIGN-THEORY` |
+| `Silvey-Titterington-Torsney-1978` | An Algorithm for Optimal Designs on a Design Space | `LITERATURE/topics/01-optimal-design.md` — Silvey & Titterington (1973) and Silvey, Titterington & Torsney (1978) | — |
 | `Spaeth-1977` | Computational experiences with the exchange method: Applied to four commonly used partitioning cluster analysis criteria | `LITERATURE/topics/03-determinant-clustering.md` — Späth (1977) | — |
 | `Spaeth-1985` | Cluster Dissection and Analysis: Theory, FORTRAN Programs, Examples | `LITERATURE/topics/03-determinant-clustering.md` — Späth (1985) | — |
 | `Valassi-2020` | Optimising HEP parameter fits via Monte Carlo weight derivative regression | `LITERATURE/topics/05-hep-inference-aware.md` — Valassi (2020) — weight-derivative regression | `FI-QUANT-IDENTITY`, `INFO-D-EFFICIENCY` |
 | `Venkitasubramaniam-Tong-Swami-2006` | Score-Function Quantization for Distributed Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Venkitasubramaniam, Tong & Swami (2006) | `FI-QUANT-IDENTITY`, `TRACE-WHITENED-KMEANS` |
+| `Venkitasubramaniam-Tong-Swami-2007` | Quantization for Maximin ARE in Distributed Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Venkitasubramaniam, Tong & Swami (2007) | `TRACE-WHITENED-KMEANS` |
 | `Wang-Yang-Stufken-2019` | Information-Based Optimal Subdata Selection for Big Data Linear Regression | `LITERATURE/topics/01-optimal-design.md` — Design-side margins: weight bounds, singular \(D_s\) designs, extreme-point selection (29 Aug 2026) | — |
 | `Whittle-1973` | Some General Points in the Theory of Optimal Experimental Design | `LITERATURE/topics/01-optimal-design.md` — Whittle (1973) — general concave criteria | `DS-CLASSICAL-DESIGN-THEORY` |
 | `Wynn-1970` | The Sequential Generation of D-Optimum Experimental Designs | `LITERATURE/topics/01-optimal-design.md` — Wynn (1970) — sequential D-optimal design construction | — |
 | `Wynn-1972` | Results in the Theory and Construction of D-Optimum Experimental Designs | `LITERATURE/topics/01-optimal-design.md` — Wynn (1972) — D and \(D_s\) construction | `DS-CLASSICAL-DESIGN-THEORY`, `DS-SCHUR` |
+| `Zador-1982` | Asymptotic Quantization Error of Continuous Signals and the Quantization Dimension | `LITERATURE/topics/04-vector-quantization.md` — Zador, Gersho, Bucklew–Wise, and task-aware high-rate theory | `OPEN-D-HIGH-RATE` |
+| `Zhang-Blum-Kaplan-Lu-2018` | A Fundamental Limitation on Maximum Parameter Dimension for Accurate Estimation With Quantized Data | `LITERATURE/topics/02-fisher-quantization.md` — Zhang, Blum, Kaplan & Lu (2016/2018) | `FI-RANK-CEILING` |
