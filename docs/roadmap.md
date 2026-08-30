@@ -253,6 +253,9 @@ future milestones.
    redirect manifest.
 5. Research growth: expand the opt-in claim preview into history, implication, counterexample, and
    evidence-provenance views without exposing private registry state.
+6. Development blog (ADR 0020): the Docusaurus blog at `/blog`, rendered through the ScoreQuant
+   shell, with one plain-English post per merged research or feature arc — negative results
+   included — and a selective backfill of the arcs that changed direction.
 
 **Gate:** strict TypeScript, lint, unit/component tests, schema consistency, broken-link failure,
 desktop/mobile Playwright flows, automated accessibility plus keyboard/reduced-motion review,

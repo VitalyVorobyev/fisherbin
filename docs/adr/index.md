@@ -21,3 +21,4 @@ Only decisions that materially constrain future implementation are recorded here
 17. [ADR 0017 — Density ratios are a first-class statistical representation](0017-density-ratio-representation.md) — partially supersedes ADR 0012
 18. [ADR 0018 — Use explicit JAX and NumPy execution behind one mathematical core](0018-explicit-multi-backend-execution.md) — supersedes ADR 0004
 19. [ADR 0019 — Add a React learning portal beside the engineering reference](0019-react-learning-portal.md) — partially supersedes ADR 0006
+20. [ADR 0020 — Keep the plain-English development blog in the portal](0020-portal-development-blog.md) — extends ADR 0019
