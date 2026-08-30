@@ -25,6 +25,85 @@ type RatioParameterizationKind = Literal["intensity", "mixture", "central_log_ra
 
 
 @dataclass(frozen=True, slots=True)
+class ScoreSchema:
+    """Name the parameter each score coordinate differentiates.
+
+    A score table is a matrix of partial derivatives, one column per model
+    parameter, and the column order is meaningful but invisible. Declaring the
+    names lets a profiled criterion say ``interest=("HSPCs",)`` instead of
+    ``interest=(4,)``, and lets reports and saved rules print the parameter
+    rather than its position.
+
+    This answers only *what each coordinate means*. Where the numbers came from
+    and at which reference point remains the job of
+    :class:`ScoreProvenance`, which already carries ``kind`` and
+    ``reference_point``; the two are validated against each other rather than
+    duplicating the reference point.
+
+    Parameters
+    ----------
+    parameters
+        Parameter names in score-column order. Names must be non-empty,
+        unique, and at least one must be present.
+
+    Examples
+    --------
+    >>> schema = ScoreSchema(("T cells", "B cells", "HSPCs"))
+    >>> schema.index("HSPCs")
+    2
+    >>> schema.select("B cells", "HSPCs")
+    (1, 2)
+    """
+
+    parameters: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        """Validate the name vector independently of any score table."""
+        if not isinstance(self.parameters, tuple):
+            raise TypeError("parameters must be a tuple of names")
+        if not self.parameters:
+            raise ValueError("parameters must contain at least one name")
+        if any(not isinstance(name, str) for name in self.parameters):
+            raise TypeError("parameter names must be strings")
+        if any(not name.strip() for name in self.parameters):
+            raise ValueError("parameter names must be non-empty")
+        if len(set(self.parameters)) != len(self.parameters):
+            duplicates = sorted(
+                {name for name in self.parameters if self.parameters.count(name) > 1}
+            )
+            raise ValueError(f"parameter names must be unique; repeated: {', '.join(duplicates)}")
+
+    @property
+    def dimension(self) -> int:
+        """Return the number of score columns this schema describes."""
+        return len(self.parameters)
+
+    def index(self, name: str) -> int:
+        """Return the score column of one named parameter.
+
+        Raises
+        ------
+        KeyError
+            When the name is not declared, naming the available parameters so
+            a typo is diagnosable without reading the constructor call.
+        """
+        try:
+            return self.parameters.index(name)
+        except ValueError:
+            raise KeyError(
+                f"unknown parameter {name!r}; schema declares {', '.join(self.parameters)}"
+            ) from None
+
+    def select(self, *names: str) -> tuple[int, ...]:
+        """Return the score columns of several named parameters, in the order given."""
+        return tuple(self.index(name) for name in names)
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        """Return JSON-ready schema state."""
+        return json_ready({"parameters": list(self.parameters)})
+
+
+@dataclass(frozen=True, slots=True)
 class RatioProvenance:
     """Describe how a model density-ratio representation was obtained.
 
@@ -95,25 +174,69 @@ class ScoreProvenance:
         )
 
 
+def validate_schema(
+    schema: ScoreSchema | None,
+    dimension: int,
+    provenance: ScoreProvenance | None = None,
+) -> None:
+    """Check a schema against the score dimension it is meant to describe.
+
+    The reference point deliberately lives on :class:`ScoreProvenance` rather
+    than on the schema, so this is also where the two are held to the same
+    parameter count instead of being allowed to disagree silently.
+    """
+    if schema is None:
+        return
+    if not isinstance(schema, ScoreSchema):
+        raise TypeError("schema must be a ScoreSchema")
+    if schema.dimension != dimension:
+        raise ValueError(
+            f"schema names {schema.dimension} parameters but the scores have {dimension} columns"
+        )
+    reference_point = None if provenance is None else provenance.reference_point
+    if reference_point is not None and len(reference_point) != schema.dimension:
+        raise ValueError(
+            f"schema names {schema.dimension} parameters but the provenance "
+            f"reference point has {len(reference_point)} entries"
+        )
+
+
 @dataclass(frozen=True, slots=True, init=False)
 class ScoreSample:
-    """A finite weighted score table representing an empirical score law."""
+    """A finite weighted score table representing an empirical score law.
+
+    Parameters
+    ----------
+    scores, weights
+        Score rows with shape ``[N, P]`` and their nonnegative measure.
+    schema
+        Optional :class:`ScoreSchema` naming what each of the ``P`` columns
+        differentiates. When present it must have exactly ``P`` names, and a
+        profiled criterion may then declare its parameters of interest by name.
+    provenance
+        Optional record of how the scores were obtained.
+    """
 
     scores: np.ndarray
     weights: np.ndarray
     provenance: ScoreProvenance
+    schema: ScoreSchema | None
 
     def __init__(
         self,
         scores: ArrayLike,
         weights: ArrayLike | None = None,
         *,
+        schema: ScoreSchema | None = None,
         provenance: ScoreProvenance | None = None,
     ) -> None:
         sample = canonical_sample(scores, weights)
+        resolved_provenance = provenance or ScoreProvenance()
+        validate_schema(schema, sample.scores.shape[1], resolved_provenance)
         object.__setattr__(self, "scores", canonical_array(sample.scores))
         object.__setattr__(self, "weights", canonical_array(sample.weights))
-        object.__setattr__(self, "provenance", provenance or ScoreProvenance())
+        object.__setattr__(self, "provenance", resolved_provenance)
+        object.__setattr__(self, "schema", schema)
 
 
 @dataclass(frozen=True, slots=True, init=False)

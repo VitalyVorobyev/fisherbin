@@ -70,7 +70,7 @@ def make_figure() -> Figure:
     )
     quantizer = sq.fit_quantizer(
         source,
-        score=provider,
+        provider=provider,
         n_bins=problem.n_bins,
         criterion=sq.DOptimality(),
         config=sq.DExchangeConfig(seed=50),

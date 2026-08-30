@@ -76,7 +76,7 @@ assert train.observations.shape == (4000, 1)
 
 quantizer_mc = sq.fit_quantizer(
     sq.ObservationSample(train.observations, train.weights),
-    score=provider,
+    provider=provider,
     n_bins=problem.n_bins,
     criterion=sq.DOptimality(),
     config=sq.DExchangeConfig(seed=50),
@@ -100,7 +100,7 @@ source = sq.IntegrationSource(
 )
 quantizer_int = sq.fit_quantizer(
     source,
-    score=provider,
+    provider=provider,
     n_bins=problem.n_bins,
     criterion=sq.DOptimality(),
     config=sq.DExchangeConfig(seed=50),

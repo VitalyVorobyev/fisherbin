@@ -59,7 +59,7 @@ def run(seed: int = 17) -> tuple[sq.QuantizerResult, np.ndarray]:
     model = build_model()
     result = sq.fit_quantizer(
         sq.ObservationSample(X_mc, mc_weights),
-        score=sq.LinearComponentScore(model),
+        provider=sq.LinearComponentScore(model),
         n_bins=8,
         criterion=sq.DOptimality(),
         config=sq.DExchangeConfig(seed=seed),

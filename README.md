@@ -27,7 +27,7 @@ Two tasks, kept deliberately separate:
   `PartitionResult` has **no** predict method: a labeling of one table does not determine what
   happens to an event you have not seen.
 - **Space quantization** — a reusable rule on score space.
-  `fit_quantizer(source, score=...) -> QuantizerResult`, applied through
+  `fit_quantizer(source, provider=...) -> QuantizerResult`, applied through
   `QuantizerResult.predict_scores(scores)`.
 
 The one sanctioned crossing is a theorem, not a convenience: an exchange-stable, nonsingular
@@ -40,8 +40,8 @@ Three doors, one per input regime:
 | | Sample partitioning (`optimize_partition`) | Space quantization (`fit_quantizer`) |
 | --- | --- | --- |
 | **Door 1** — you already have `(event, score)` rows | `optimize_partition(scores, weights=w, n_bins=k)` | `fit_quantizer(ScoreSample(scores, w), n_bins=k)` |
-| **Door 2** — you have component densities or an analytic score model | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w) \| IntegrationSource(...), score=provider, n_bins=k)` |
-| **Door 3** — you can estimate density ratios (calibrated classifier, direct ratio estimator) or write them analytically | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w), score=provider, n_bins=k)` |
+| **Door 2** — you have component densities or an analytic score model | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w) \| IntegrationSource(...), provider=provider, n_bins=k)` |
+| **Door 3** — you can estimate density ratios (calibrated classifier, direct ratio estimator) or write them analytically | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w), provider=provider, n_bins=k)` |
 
 `optimize_partition` always takes score rows, so doors 2 and 3 reach it through an explicit
 `provider.score(X)`. The observation-to-score step never hides inside a fitting call or a
@@ -153,7 +153,9 @@ source = sq.IntegrationSource(
     quadrature=sq.GaussLegendreConfig(order=96),
 )
 
-quantizer = sq.fit_quantizer(source, score=provider, n_bins=5, config=sq.DExchangeConfig(seed=11))
+quantizer = sq.fit_quantizer(
+    source, provider=provider, n_bins=5, config=sq.DExchangeConfig(seed=11)
+)
 data_bins = quantizer.predict_scores(provider.score(np.linspace(-2.0, 3.0, 200)[:, None]))
 ```
 
@@ -196,7 +198,7 @@ closure = sq.ratio_closure_report(classifier_score.ratio(events), np.ones(events
 
 quantizer = sq.fit_quantizer(
     sq.ObservationSample(events),
-    score=classifier_score,
+    provider=classifier_score,
     n_bins=4,
     config=sq.DExchangeConfig(seed=5),
 )

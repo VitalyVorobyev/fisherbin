@@ -40,7 +40,7 @@ from .information import (
     profiled_information_report,
 )
 from .partition import optimize_d_partition, optimize_profiled_d_partition
-from .providers import ScoreProvider
+from .providers import ScoreProvider, validate_provider
 from .quantizers import (
     QuantizerRun,
     chunked_hard_assign,
@@ -186,7 +186,7 @@ def _validate_solver(config: object, criterion: Criterion, task: str) -> None:
 
 @execution_scope
 def optimize_partition(
-    scores: ArrayLike,
+    scores: ScoreSample | ArrayLike,
     *,
     weights: ArrayLike | None = None,
     n_bins: int,
@@ -204,7 +204,17 @@ def optimize_partition(
 
     Parameters
     ----------
-    scores, weights, n_bins, criterion, config, provenance
+    scores
+        Either a :class:`~scorequant.ScoreSample` -- the same weighted score
+        law :func:`fit_quantizer` takes, carrying its own weights, schema and
+        provenance -- or a raw score array, in which case ``weights`` and
+        ``provenance`` supply those separately. Passing a sample together with
+        either keyword is rejected rather than silently resolved.
+
+        An observation source is deliberately not accepted here: converting
+        observations to scores stays an explicit ``provider.score(X)`` so the
+        fixed-sample boundary remains visible.
+    weights, n_bins, criterion, config, provenance
         Fixed-sample assignment contract described in the API guide.
     initial_labels
         Optional starting labeling with shape ``[N]`` and values in
@@ -219,31 +229,34 @@ def optimize_partition(
     """
     del execution
     resolved_execution = current_execution()
+    sample = _partition_sample(scores, weights, provenance)
     resolved_criterion = DOptimality() if criterion is None else criterion
     resolved_config = DExchangeConfig() if config is None else config
     _validate_solver(resolved_config, resolved_criterion, "optimize_partition")
     if isinstance(resolved_criterion, DOptimality):
         result = optimize_d_partition(
-            scores,
-            weights=weights,
+            sample.scores,
+            weights=sample.weights,
             n_bins=n_bins,
             config=resolved_config,
-            provenance=provenance or ScoreProvenance(),
+            provenance=sample.provenance,
             initial_labels=initial_labels,
         )
     else:
         # ``_validate_solver`` accepted the pair, and the only other criterion it
-        # can have accepted for this task is ProfiledDOptimality.
+        # can have accepted for this task is ProfiledDOptimality. Names become
+        # score columns here, once, so no solver or report resolves them again.
         result = optimize_profiled_d_partition(
-            scores,
-            weights=weights,
+            sample.scores,
+            weights=sample.weights,
             n_bins=n_bins,
-            criterion=resolved_criterion,
+            criterion=resolved_criterion.resolve(sample.schema),
             config=resolved_config,
-            provenance=provenance or ScoreProvenance(),
+            provenance=sample.provenance,
             initial_labels=initial_labels,
         )
     object.__setattr__(result, "execution", resolved_execution)
+    object.__setattr__(result, "schema", sample.schema)
     return canonicalize_public(result)
 
 
@@ -251,7 +264,7 @@ def optimize_partition(
 def fit_quantizer(
     source: Source,
     *,
-    score: ScoreProvider | None = None,
+    provider: ScoreProvider | None = None,
     validation: Source | None = None,
     n_bins: int,
     criterion: Criterion | None = None,
@@ -266,6 +279,11 @@ def fit_quantizer(
 
     Parameters
     ----------
+    provider
+        The observation-to-score map for an observation or integration source.
+        It is the object contract :class:`~scorequant.ScoreProvider` describes,
+        not a score array or a bare callable, and it is rejected when ``source``
+        is already a :class:`~scorequant.ScoreSample`.
     diagnostics
         How much of the recorded center history to re-score into
         ``trace.train_hard_retention`` and ``trace.validation_hard_retention``.
@@ -279,16 +297,19 @@ def fit_quantizer(
     """
     del execution
     resolved_execution = current_execution()
-    train, source_kind = _materialize_source(source, score)
+    train, source_kind = _materialize_source(source, provider)
     validation_sample = None
     if validation is not None:
-        validation_provider = None if isinstance(validation, ScoreSample) else score
+        validation_provider = None if isinstance(validation, ScoreSample) else provider
         validation_sample, _ = _materialize_source(validation, validation_provider)
-        if validation_sample.scores.shape[1] != train.scores.shape[1]:
-            raise ValueError("validation scores must use the training parameter order")
+        _validate_validation_sample(train, validation_sample)
     resolved_config = DExchangeConfig() if config is None else config
     resolved_criterion: Criterion = DOptimality() if criterion is None else criterion
     _validate_solver(resolved_config, resolved_criterion, "fit_quantizer")
+    if isinstance(resolved_criterion, ProfiledDOptimality):
+        # Names become score columns once, here, so no solver or report resolves
+        # them again.
+        resolved_criterion = resolved_criterion.resolve(train.schema)
 
     if isinstance(resolved_config, (DExchangeConfig, MahalanobisLloydConfig)):
         # ``_validate_solver`` already restricted this pairing to DOptimality:
@@ -314,6 +335,7 @@ def fit_quantizer(
                 validation_report=validation_report,
                 source_kind=source_kind,
                 execution=resolved_execution,
+                schema=train.schema,
             )
         )
 
@@ -362,7 +384,7 @@ def fit_quantizer(
         train_profiled_report = profiled_information_report(
             prepared.train_sample.scores,
             fit_diagnostics.labels,
-            interest=resolved_criterion.interest,
+            interest=resolved_criterion.interest_indices,
             weights=prepared.train_sample.weights,
             n_bins=n_bins,
         )
@@ -371,7 +393,7 @@ def fit_quantizer(
             validation_profiled_report = profiled_information_report(
                 prepared.validation_sample.scores,
                 chunked_hard_assign(prepared.validation_coordinates, run.centers),
-                interest=resolved_criterion.interest,
+                interest=resolved_criterion.interest_indices,
                 weights=prepared.validation_sample.weights,
                 n_bins=n_bins,
             )
@@ -395,23 +417,73 @@ def fit_quantizer(
             source_kind=source_kind,
             train_profiled_report=train_profiled_report,
             validation_profiled_report=validation_profiled_report,
+            schema=train.schema,
         )
     )
+
+
+def _validate_validation_sample(train: ScoreSample, validation: ScoreSample) -> None:
+    """Reject a validation sample that does not describe the same parameters.
+
+    A column count alone catches only the coarsest mismatch. When both samples
+    name their coordinates, disagreeing names are a reordering the count cannot
+    see, and silently scoring against it would report a meaningless retention.
+    """
+    if validation.scores.shape[1] != train.scores.shape[1]:
+        raise ValueError("validation scores must use the training parameter order")
+    if (
+        train.schema is not None
+        and validation.schema is not None
+        and train.schema.parameters != validation.schema.parameters
+    ):
+        raise ValueError(
+            "validation scores must use the training parameter order; training names "
+            f"{', '.join(train.schema.parameters)} but validation names "
+            f"{', '.join(validation.schema.parameters)}"
+        )
+
+
+def _partition_sample(
+    scores: ScoreSample | ArrayLike,
+    weights: ArrayLike | None,
+    provenance: ScoreProvenance | None,
+) -> ScoreSample:
+    """Canonicalize the fixed-sample input into one weighted score law.
+
+    The array shorthand stays supported for the simple case, but a supplied
+    ``ScoreSample`` already carries its weights and provenance, so combining
+    the two forms is a contradiction rather than an override.
+    """
+    if isinstance(scores, ScoreSample):
+        conflicting = [
+            name
+            for name, value in (("weights", weights), ("provenance", provenance))
+            if value is not None
+        ]
+        if conflicting:
+            raise ValueError(
+                f"{' and '.join(conflicting)} must be omitted when scores is a "
+                "ScoreSample; the sample already carries them"
+            )
+        return scores
+    return ScoreSample(scores, weights, provenance=provenance)
 
 
 def _materialize_source(source: Source, provider: ScoreProvider | None) -> tuple[ScoreSample, str]:
     if isinstance(source, ScoreSample):
         if provider is not None:
-            raise ValueError("score must be omitted when source is ScoreSample")
+            raise ValueError("provider must be omitted when source is ScoreSample")
         return source, "score_sample"
     if isinstance(source, IntegrationSource):
         if provider is None:
             raise ValueError("IntegrationSource requires a score provider")
+        validate_provider(provider)
         observations = source.materialize()
         return (
             ScoreSample(
                 provider.score(observations.observations),
                 observations.weights,
+                schema=getattr(provider, "schema", None),
                 provenance=provider.provenance,
             ),
             "integration_source",
@@ -419,10 +491,12 @@ def _materialize_source(source: Source, provider: ScoreProvider | None) -> tuple
     if isinstance(source, ObservationSample):
         if provider is None:
             raise ValueError("ObservationSample requires a score provider")
+        validate_provider(provider)
         return (
             ScoreSample(
                 provider.score(source.observations),
                 source.weights,
+                schema=getattr(provider, "schema", None),
                 provenance=provider.provenance,
             ),
             "observation_sample",
@@ -553,7 +627,7 @@ def _hard_retention_history(
             retention = profiled_information_report(
                 scores,
                 labels,
-                interest=criterion.interest,
+                interest=criterion.interest_indices,
                 weights=weights,
                 n_bins=centers.shape[0],
             ).geometric_mean_retention

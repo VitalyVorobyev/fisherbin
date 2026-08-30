@@ -212,7 +212,7 @@ def run_ladder(
         )
         result = sq.fit_quantizer(
             sq.ObservationSample(train_observations),
-            score=provider,
+            provider=provider,
             n_bins=n_bins,
             criterion=sq.DOptimality(),
             config=sq.DExchangeConfig(seed=7),

@@ -41,7 +41,7 @@ observations = np.asarray(sample.scores)
 provider = sq.ScoreFunction(lambda X: np.asarray(X))
 
 try:
-    sq.fit_quantizer(sample, score=provider, n_bins=3)
+    sq.fit_quantizer(sample, provider=provider, n_bins=3)
     raise AssertionError("a ScoreSample must reject a provider")
 except ValueError as error:
     score_sample_rejects_provider = str(error)
@@ -137,7 +137,7 @@ intensity = np.asarray(model.evaluate_components(events)) @ np.asarray(model.coe
 
 quantizer = sq.fit_quantizer(
     sq.ObservationSample(events, intensity),
-    score=component_score,
+    provider=component_score,
     n_bins=5,
     config=sq.DExchangeConfig(seed=11),
 )
@@ -160,7 +160,7 @@ source = sq.IntegrationSource(
     quadrature=sq.GaussLegendreConfig(order=96),
 )
 quantizer = sq.fit_quantizer(
-    source, score=component_score, n_bins=5, config=sq.DExchangeConfig(seed=11)
+    source, provider=component_score, n_bins=5, config=sq.DExchangeConfig(seed=11)
 )
 ```
 
@@ -180,7 +180,7 @@ exact_score = sq.ScoreFunction(
 )
 quantizer = sq.fit_quantizer(
     sq.ObservationSample(rng.normal(size=(1_000, 2))),
-    score=exact_score,
+    provider=exact_score,
     n_bins=4,
     config=sq.DExchangeConfig(seed=2),
 )
@@ -253,7 +253,7 @@ is_signal = rng.random(2_000) < 0.3
 mixture = np.where(is_signal, rng.normal(1.0, 0.5, 2_000), rng.normal(0.0, 1.5, 2_000))[:, None]
 quantizer = sq.fit_quantizer(
     sq.ObservationSample(mixture),
-    score=classifier_score,
+    provider=classifier_score,
     n_bins=4,
     config=sq.DExchangeConfig(seed=5),
 )

@@ -142,7 +142,7 @@ exact_score = sq.ScoreFunction(
 )
 door2 = sq.fit_quantizer(
     sq.ObservationSample(observations),
-    score=exact_score,
+    provider=exact_score,
     n_bins=4,
     criterion=sq.DOptimality(),
     config=sq.ScalarDPConfig(),
@@ -164,7 +164,7 @@ population = sq.IntegrationSource(
 )
 door2_population = sq.fit_quantizer(
     population,
-    score=exact_score,
+    provider=exact_score,
     n_bins=4,
     criterion=sq.DOptimality(),
     config=sq.ScalarDPConfig(),

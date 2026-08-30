@@ -36,8 +36,8 @@ exactly that rule — and refuses when the partition is unstable or geometricall
 | | Sample partitioning | Space quantization |
 | --- | --- | --- |
 | **Door 1** — precomputed `(event, score)` rows | `optimize_partition(scores, weights=w, n_bins=k)` | `fit_quantizer(ScoreSample(scores, w), n_bins=k)` |
-| **Door 2** — component densities or an analytic score model | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(source, score=provider, n_bins=k)` with an `ObservationSample` or `IntegrationSource` |
-| **Door 3** — density ratios (estimated by a calibrated classifier or a direct ratio estimator, or analytic) | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w), score=provider, n_bins=k)` |
+| **Door 2** — component densities or an analytic score model | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(source, provider=provider, n_bins=k)` with an `ObservationSample` or `IntegrationSource` |
+| **Door 3** — density ratios (estimated by a calibrated classifier or a direct ratio estimator, or analytic) | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w), provider=provider, n_bins=k)` |
 
 `optimize_partition` always takes score rows, so doors 2 and 3 reach it through an explicit
 `provider.score(X)` call. Observation-to-score conversion never hides inside fitting or prediction.

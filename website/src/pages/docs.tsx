@@ -24,7 +24,7 @@ const doors = {
     title: "Use estimated ratios without overclaiming",
     description: "Convert calibrated posterior estimates into component density ratios, record their provenance, and keep source weights separate.",
     steps: ["Calibrate class posteriors", "Convert with the training priors", "Validate the fitted rule on held-out observations"],
-    code: `provider = sq.DensityRatioScore.from_classifier(\n    classifier.predict_proba,\n    class_priors,\n    sq.MixtureParameterization(fractions),\n    calibration="isotonic",\n)\nquantizer = sq.fit_quantizer(\n    source, score=provider, n_bins=6,\n)`
+    code: `provider = sq.DensityRatioScore.from_classifier(\n    classifier.predict_proba,\n    class_priors,\n    sq.MixtureParameterization(fractions),\n    calibration="isotonic",\n)\nquantizer = sq.fit_quantizer(\n    source, provider=provider, n_bins=6,\n)`
   }
 } as const;
 

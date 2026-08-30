@@ -95,7 +95,7 @@ def _criterion_logdet(
         sign, value = jnp.linalg.slogdet(fisher)
         return sign, value, fisher.shape[0]
     dimension = fisher.shape[0]
-    interest_set = set(criterion.interest)
+    interest_set = set(criterion.interest_indices)
     nuisance = tuple(index for index in range(dimension) if index not in interest_set)
     interest_indices = jnp.asarray(criterion.interest)
     nuisance_indices = jnp.asarray(nuisance)
@@ -105,7 +105,7 @@ def _criterion_logdet(
     nuisance_sign, _ = jnp.linalg.slogdet(nuisance_block)
     schur = interest_block - cross_block @ jnp.linalg.solve(nuisance_block, cross_block.T)
     schur_sign, value = jnp.linalg.slogdet(0.5 * (schur + schur.T))
-    return nuisance_sign * schur_sign, value, len(criterion.interest)
+    return nuisance_sign * schur_sign, value, len(criterion.interest_indices)
 
 
 def soft_objective_and_center_gradient(
@@ -144,7 +144,7 @@ def soft_objective_and_center_gradient(
 
     metric = -jnp.linalg.inv(fisher)
     if isinstance(criterion, ProfiledDOptimality):
-        interest_set = set(criterion.interest)
+        interest_set = set(criterion.interest_indices)
         nuisance = tuple(index for index in range(fisher.shape[0]) if index not in interest_set)
         indices = jnp.asarray(nuisance)
         nuisance_information = fisher[jnp.ix_(indices, indices)]

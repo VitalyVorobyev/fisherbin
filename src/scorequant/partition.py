@@ -499,9 +499,9 @@ def optimize_profiled_d_partition(
     """Optimize same-label profiled-D labels of one fixed score table."""
     prepared = _prepare_partition(scores, weights, n_bins=n_bins, config=config)
     dimension = prepared.scores.shape[1]
-    if any(index >= dimension for index in criterion.interest):
+    if any(index >= dimension for index in criterion.interest_indices):
         raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
-    interest_set = set(criterion.interest)
+    interest_set = set(criterion.interest_indices)
     nuisance = tuple(index for index in range(dimension) if index not in interest_set)
     if not nuisance:
         raise ValueError("profiled D requires a nuisance block; use DOptimality")
@@ -521,7 +521,7 @@ def optimize_profiled_d_partition(
     # is refused where it is detectable - at the singular initial state.
     if n_bins < dimension:
         raise ValueError("profiled D requires at least as many bins as score dimensions")
-    objective = _ProfiledDObjective(interest=criterion.interest, nuisance=nuisance)
+    objective = _ProfiledDObjective(interest=criterion.interest_indices, nuisance=nuisance)
     run = _optimize_labels(
         points=prepared.scores,
         coordinates=prepared.coordinates,
@@ -552,7 +552,7 @@ def optimize_profiled_d_partition(
         profiled_report=profiled_information_report(
             sample.scores,
             compiled_labels,
-            interest=criterion.interest,
+            interest=criterion.interest_indices,
             weights=sample.weights,
             n_bins=n_bins,
         ),
@@ -697,9 +697,9 @@ def _stability_objective(
     if isinstance(criterion, DOptimality):
         return transform.apply(scores), _DObjective()
     dimension = int(scores.shape[1])
-    if any(index >= dimension for index in criterion.interest):
+    if any(index >= dimension for index in criterion.interest_indices):
         raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
-    interest = set(criterion.interest)
+    interest = set(criterion.interest_indices)
     nuisance = tuple(index for index in range(dimension) if index not in interest)
     if not nuisance:
         raise ValueError("profiled D requires a nuisance block; use DOptimality")
@@ -708,7 +708,7 @@ def _stability_objective(
             "profiled D requires full-rank supplied-score information in the declared "
             "interest/nuisance parameterization"
         )
-    return scores, _ProfiledDObjective(interest=criterion.interest, nuisance=nuisance)
+    return scores, _ProfiledDObjective(interest=criterion.interest_indices, nuisance=nuisance)
 
 
 def _partition_result(

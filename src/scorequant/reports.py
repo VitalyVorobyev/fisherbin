@@ -380,9 +380,9 @@ class EfficientScoreBound:
             raise ValueError(
                 "the efficient-score bound compares only against a profiled-D partition"
             )
-        if criterion.interest != self.interest:
+        if criterion.interest_indices != self.interest:
             raise ValueError(
-                f"partition interest {criterion.interest} differs from the certified "
+                f"partition interest {criterion.interest_indices} differs from the certified "
                 f"interest {self.interest}"
             )
         if partition_result.n_bins > self.n_bins:

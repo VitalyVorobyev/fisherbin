@@ -31,7 +31,7 @@ from .reports import (
     ProfiledInformationReport,
     StabilityReport,
 )
-from .sources import ScoreProvenance
+from .sources import ScoreProvenance, ScoreSchema
 from .transforms import FisherTransform
 
 if TYPE_CHECKING:
@@ -100,6 +100,7 @@ class QuantizerResult:
     source_kind: str = "score_sample"
     train_profiled_report: ProfiledInformationReport | None = None
     validation_profiled_report: ProfiledInformationReport | None = None
+    schema: ScoreSchema | None = None
 
     @property
     def n_bins(self) -> int:
@@ -252,6 +253,7 @@ class PartitionResult:
     geometry: GeometryReport | None = None
     profiled_report: ProfiledInformationReport | None = None
     profiled_geometry: ProfiledGeometryReport | None = None
+    schema: ScoreSchema | None = None
 
     @property
     def n_bins(self) -> int:

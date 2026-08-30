@@ -25,7 +25,7 @@ def test_observation_and_score_sources_are_equivalent() -> None:
     )
     composed = sq.fit_quantizer(
         sq.ObservationSample(observations, weights),
-        score=provider,
+        provider=provider,
         n_bins=3,
         criterion=sq.NormalizedTrace(),
         config=config,
@@ -43,7 +43,7 @@ def test_precomputed_score_validation_accepts_observation_training() -> None:
     provider = sq.ScoreFunction(lambda values: np.asarray(values))
     result = sq.fit_quantizer(
         sq.ObservationSample(observations),
-        score=provider,
+        provider=provider,
         validation=sq.ScoreSample(observations[::3]),
         n_bins=3,
         criterion=sq.NormalizedTrace(),
@@ -75,7 +75,7 @@ def test_bounded_quadrature_matches_symmetric_reference_law() -> None:
     assert second_moment == pytest.approx(1 / 3, abs=1e-12)
     result = sq.fit_quantizer(
         source,
-        score=provider,
+        provider=provider,
         n_bins=2,
         config=sq.DExchangeConfig(seed=2, n_init=3, max_scans=200),
     )
@@ -128,7 +128,7 @@ def test_central_log_ratio_score_is_always_estimated() -> None:
     assert provider.provenance.ratio.training_priors == ((0.5, 0.5),)
     result = sq.fit_quantizer(
         sq.ObservationSample(np.arange(12, dtype=float)[:, None]),
-        score=provider,
+        provider=provider,
         n_bins=2,
         criterion=sq.NormalizedTrace(),
         config=sq.KMeansConfig(n_init=2),
@@ -164,7 +164,7 @@ def test_classifier_derived_ratio_provider_records_full_provenance() -> None:
     assert ratio_record.calibration == "temperature_oof"
     result = sq.fit_quantizer(
         sq.ObservationSample(np.linspace(-2, 2, 40)[:, None]),
-        score=provider,
+        provider=provider,
         n_bins=3,
         criterion=sq.NormalizedTrace(),
         config=sq.KMeansConfig(seed=5, n_init=2),
@@ -263,7 +263,7 @@ def test_central_log_ratio_score_rejects_invalid_constructions() -> None:
 
 
 def test_integration_source_end_to_end_with_two_score_columns() -> None:
-    """`fit_quantizer(IntegrationSource(...), score=...)` with a multi-parameter score.
+    """`fit_quantizer(IntegrationSource(...), provider=...)` with a multi-parameter score.
 
     The existing quadrature test above covers only a single score column from an
     identity provider. Two score directions (a signal fraction and one
@@ -293,7 +293,7 @@ def test_integration_source_end_to_end_with_two_score_columns() -> None:
     )
     result = sq.fit_quantizer(
         source,
-        score=provider,
+        provider=provider,
         n_bins=problem.n_bins,
         criterion=sq.DOptimality(),
         config=sq.DExchangeConfig(seed=50, n_init=4),

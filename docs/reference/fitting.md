@@ -6,11 +6,15 @@
 
 ::: scorequant.ScoreSample
 
+::: scorequant.ScoreSchema
+
 ::: scorequant.ObservationSample
 
 ::: scorequant.IntegrationSource
 
 ::: scorequant.GaussLegendreConfig
+
+::: scorequant.ScoreProvider
 
 ::: scorequant.ScoreFunction
 

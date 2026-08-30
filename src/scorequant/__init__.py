@@ -31,6 +31,7 @@ from .providers import (
     DensityRatioScore,
     LinearComponentScore,
     ScoreFunction,
+    ScoreProvider,
 )
 from .ratios import (
     IntensityParameterization,
@@ -59,6 +60,7 @@ from .sources import (
     RatioProvenance,
     ScoreProvenance,
     ScoreSample,
+    ScoreSchema,
 )
 from .transforms import FisherTransform
 from .visualization import plot_information, plot_optimization, plot_partition, plot_summary
@@ -97,7 +99,9 @@ __all__ = [
     "ScalarDPConfig",
     "ScoreFunction",
     "ScoreProvenance",
+    "ScoreProvider",
     "ScoreSample",
+    "ScoreSchema",
     "SoftVoronoiConfig",
     "StabilityReport",
     "binned_fisher_information",

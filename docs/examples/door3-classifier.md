@@ -92,7 +92,7 @@ small_model = train_classifier(101, n_per_class=15)
 small_provider = classifier_provider(small_model, "logistic regression, 15 events per class")
 small_result = sq.fit_quantizer(
     sq.ObservationSample(train_observations),
-    score=small_provider,
+    provider=small_provider,
     n_bins=4,
     criterion=sq.DOptimality(),
     config=sq.DExchangeConfig(seed=7),
@@ -142,7 +142,7 @@ for n_per_class, seed in ((15, 101), (60, 102), (300, 103)):
     provider = classifier_provider(model, f"logistic regression, {n_per_class} events per class")
     result = sq.fit_quantizer(
         sq.ObservationSample(train_observations),
-        score=provider,
+        provider=provider,
         n_bins=4,
         criterion=sq.DOptimality(),
         config=sq.DExchangeConfig(seed=7),
@@ -171,7 +171,7 @@ assert [round(large[1], 3), round(large[2], 3)] == [0.970, 0.966]
 # The ceiling a quantizer fit directly from the exact score reaches on this sample.
 direct = sq.fit_quantizer(
     sq.ObservationSample(train_observations),
-    score=exact_provider,
+    provider=exact_provider,
     n_bins=4,
     criterion=sq.DOptimality(),
     config=sq.DExchangeConfig(seed=7),

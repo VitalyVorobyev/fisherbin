@@ -9,7 +9,7 @@ Source + (densities | density ratios | scores) -> ScoreProvider -> score law -> 
 ```
 
 - `optimize_partition(scores, ...)` owns fixed-sample assignment and returns no predictor.
-- `fit_quantizer(source, score=...)` owns reusable score-space rules.
+- `fit_quantizer(source, provider=...)` owns reusable score-space rules.
 - `scores_from_components(Phi, coefficients)` and the ratio algebra in `ratios.py` are explicit
   adapters, not fitting tasks.
 - Prediction is always `predict_scores`; observation-to-score conversion remains visible.
