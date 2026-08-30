@@ -17,13 +17,14 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
 *Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 29 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 (margins at finite \(D_s\) optima) is resolved for conditionally centered laws at \(d_\psi=1\) by the DS15 margins dichotomy (`KNOWN_RESULTS/05b-ds-bridge.md` DS15; packet `WORK/completed/DS-MARGINS-AT-OPTIMA.md`): (M2) is automatic at global optima, (M3) provably fails there — free optima converge to the nuisance-degenerate efficient-score interval quantizer — so profiled compilation routes through the projected efficient-score rule rather than a DS14 margin certificate. The surviving gaps are OP29 and OP7.*
+*Status 29 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 (margins at finite \(D_s\) optima) is resolved for conditionally centered laws at \(d_\psi=d_\lambda=1\) by the DS15 margins dichotomy (`KNOWN_RESULTS/05b-ds-bridge.md` DS15; packet `WORK/completed/DS-MARGINS-AT-OPTIMA.md`; independently audited 30 Aug 2026, `AUDITS/AUDIT-DS-MARGINS-AT-OPTIMA-001.md`, which refuted the registered \(d_\lambda\)-generality at \(K=d_\lambda+1\) and hardened the achievability proof): (M2) is automatic at global optima, (M3) provably fails there — free optima converge to the nuisance-degenerate efficient-score interval quantizer — so profiled compilation routes through the projected efficient-score rule rather than a DS14 margin certificate. The surviving gaps are OP29 and OP7.*
 
 ## OP29. Margins beyond conditional centering
 
 DS15 settles the margin behaviour of exact global finite \(D_s\) optima for
-\(d_\psi=1\) and conditionally centered laws (\(E[S_\lambda\mid\hat s]=0\):
-Gaussian, elliptical). Everything outside that class is open:
+\(d_\psi=d_\lambda=1\) and conditionally centered laws
+(\(E[S_\lambda\mid\hat s]=0\): Gaussian, elliptical). Everything outside that
+class is open:
 
 - **Non-centered laws** (\(E[S_\lambda\mid\hat s]\ne0\)): the projection tax
   has a \(\Theta(1)\) population component on efficient-score intervals, so
@@ -37,6 +38,11 @@ Gaussian, elliptical). Everything outside that class is open:
 - **Exchange-stable non-global sequences**: DS15 asserts nothing about them;
   do stable local solutions retain margins, and at what information cost
   relative to \(v_K\)?
+- **\(d_\lambda\ge2\)** (audit finding, 30 Aug 2026): at \(K=d_\lambda+1\)
+  the dichotomy is exactly false — every feasible labeling has profiled value
+  zero (`CE-DS-MARGINS-RANK-VACUITY-001`); at \(K\ge d_\lambda+2\) it is open
+  and needs a vector-(R) steering construction spanning the nuisance
+  directions.
 
 Target claim: `OPEN-DS-MARGINS-NONCENTERED`.
 

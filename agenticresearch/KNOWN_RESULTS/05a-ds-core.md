@@ -171,8 +171,11 @@ The bridge programme (OP4/OP5, packet `WORK/completed/DS-POPULATION-BRIDGE.md`,
 - DS12 — rigorous population stationary \(D_s\) geometry and its deployability
   characterization (OP5);
 - DS13 — exact finite leverage stability bound (the finite half of the bridge);
-- DS14 — conditional finite\(\to\)population bridge theorem (OP4).
+- DS14 — conditional finite\(\to\)population bridge theorem (OP4);
+- DS15 — margins dichotomy at global finite \(D_s\) optima (OP28, resolved
+  for conditionally centered laws at \(d_\psi=d_\lambda=1\); audited).
 
-Residual open conditions live in `OPEN_PROBLEMS.md` OP28 (whether the margin
-assumptions hold automatically at finite optima) and C2 (unrestricted
-population attainment).
+Residual open conditions live in `OPEN_PROBLEMS.md` OP29 (margins beyond
+conditional centering — non-centered laws, \(d_\psi>1\), \(d_\lambda\ge2\),
+exchange-stable non-global sequences) and C2 (unrestricted population
+attainment).
