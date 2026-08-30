@@ -297,9 +297,20 @@ class _ProfiledDObjective:
         # determinants, so a rebuild on this hot path never needs it.
         nuisance_information, nuisance_logdet, _ = _nuisance_information(information, self.interest)
         if float(np.asarray(full_sign)) <= 0:
+            # Bin means satisfy sum_b w_b m_b = mu, the overall weighted mean, so
+            # the information they generate has rank at most n_bins - and at most
+            # n_bins - 1 when mu is zero, because the means are then linearly
+            # dependent. A profiled value is positive only at full rank, so on an
+            # exactly centered sample every labeling into n_bins <= dimension
+            # cells is degenerate no matter how large the sample
+            # (CE-DS-MARGINS-RANK-VACUITY-001). Saying "use a different sample"
+            # would send those users looking for a data problem that is not there.
             raise ValueError(
-                "initial profiled-D partition is singular; increase n_bins or use a "
-                "different sample"
+                f"initial profiled-D partition is singular: {int(cells.means.shape[0])} "
+                f"bins cannot generate nonsingular {int(information.shape[0])}-dimensional "
+                "binned information. Binned information has rank at most n_bins, and at "
+                "most n_bins - 1 when the weighted score mean is zero, so raise n_bins "
+                "above the score dimension; on a centered sample no sample size helps."
             )
         return _ExchangeState(
             cells=cells,
@@ -496,6 +507,15 @@ def optimize_profiled_d_partition(
             "profiled D requires full-rank supplied-score information in the declared "
             "interest/nuisance parameterization"
         )
+    # This bound is centering-agnostic and is the right one here. Binned
+    # information has rank at most n_bins, so n_bins >= dimension is necessary
+    # for any sample. An exactly centered sample needs one more bin than that,
+    # because sum_b w_b m_b = 0 makes the bin means dependent and drops the
+    # ceiling to n_bins - 1 (CE-DS-MARGINS-RANK-VACUITY-001, which is the
+    # d_psi = 1 case of it). That extra bin is deliberately not required here:
+    # scores away from the true reference point have a nonzero mean, and for
+    # them n_bins == dimension is feasible and not vacuous. The centered case
+    # is refused where it is detectable - at the singular initial state.
     if n_bins < dimension:
         raise ValueError("profiled D requires at least as many bins as score dimensions")
     objective = _ProfiledDObjective(interest=criterion.interest, nuisance=nuisance)

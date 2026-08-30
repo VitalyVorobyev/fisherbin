@@ -690,6 +690,93 @@ def test_ds15_rank_deficiency_zeroes_every_feasible_profiled_value() -> None:
     assert schur(full) == Fraction(9, 5)
 
 
+def test_ds15_rank_vacuity_is_refused_by_both_public_tasks() -> None:
+    """The library refuses the vacuous configuration instead of scoring it.
+
+    The exact-arithmetic test above proves the profiled value is identically
+    zero at K = d_lambda + 1 on a centered sample. This drives the same fixture
+    through the public API, where the same fact has to surface as a refusal
+    rather than as a number: ``optimize_partition`` hits a singular initial
+    state, and ``fit_quantizer`` would otherwise return a rule whose profiled
+    retention is zero, because the soft solver checks n_bins only against the
+    Fisher rank, which this configuration satisfies.
+
+    The K = d_lambda + 2 control on the same atoms must still succeed and
+    reproduce the fixture's recorded exact value 9/5.
+    """
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-MARGINS-RANK-VACUITY-001.json").read_text()
+    )
+    scores = np.array([[float(Fraction(v)) for v in row] for row in fixture["scores"]])
+    weights = np.array([float(Fraction(w)) for w in fixture["weights"]])
+    interest = tuple(fixture["poi_indices"])
+    vacuous_bins = int(fixture["K"])
+    dimension = scores.shape[1]
+    assert vacuous_bins == len(fixture["nuisance_indices"]) + 1 == dimension
+    np.testing.assert_allclose(weights @ scores, 0.0, atol=0.0)
+
+    criterion = sq.ProfiledDOptimality(interest=interest)
+    provenance = sq.ScoreProvenance(kind="exact", reference_point=(0.0,) * dimension)
+    for config in (sq.DExchangeConfig(seed=0), sq.MahalanobisLloydConfig(seed=0)):
+        with pytest.raises(ValueError, match="rank at most n_bins"):
+            sq.optimize_partition(
+                scores,
+                weights=weights,
+                n_bins=vacuous_bins,
+                criterion=criterion,
+                config=config,
+                provenance=provenance,
+            )
+
+    sample = sq.ScoreSample(scores, weights, provenance=provenance)
+    with pytest.raises(ValueError, match="profiled-D fit is degenerate"):
+        sq.fit_quantizer(
+            sample,
+            n_bins=vacuous_bins,
+            criterion=criterion,
+            config=sq.SoftVoronoiConfig(seed=0),
+        )
+
+    # One more bin lifts the rank ceiling and the value becomes positive. All
+    # four atoms are singletons there, which is the state the fixture priced.
+    restored = sq.optimize_partition(
+        scores,
+        weights=weights,
+        n_bins=vacuous_bins + 1,
+        criterion=criterion,
+        config=sq.DExchangeConfig(seed=0),
+        provenance=provenance,
+    )
+    expected = fixture["exact_quantities"]["k_equals_d_lambda_plus_2_all_singletons_value"]
+    assert restored.objective == pytest.approx(float(np.log(float(Fraction(expected)))), abs=1e-12)
+
+
+def test_profiled_bins_equal_to_dimension_stay_legal_off_the_centered_class() -> None:
+    """The bin guard is centering-agnostic on purpose, so this must not regress.
+
+    The rank ceiling that makes n_bins == dimension vacuous is
+    ``sum_b w_b m_b = 0``, which holds only for an exactly centered sample.
+    Scores away from the true reference point have a nonzero weighted mean, the
+    ceiling rises to n_bins, and the configuration is feasible. Tightening the
+    guard to n_bins > dimension for every sample - the obvious reading of
+    CE-DS-MARGINS-RANK-VACUITY-001 - would refuse this legitimate case.
+    """
+    rng = np.random.default_rng(11)
+    scores = rng.normal(size=(60, 2)) + 0.9
+    weights = np.full(60, 1.0 / 60)
+    assert not np.allclose(weights @ scores, 0.0, atol=1e-3)
+
+    result = sq.optimize_partition(
+        scores,
+        weights=weights,
+        n_bins=scores.shape[1],
+        criterion=sq.ProfiledDOptimality(interest=(0,)),
+        config=sq.DExchangeConfig(seed=0),
+        provenance=sq.ScoreProvenance(kind="exact", reference_point=(0.0, 0.0)),
+    )
+    assert np.isfinite(result.objective)
+
+
 def test_ds15_projection_tax_identity_survives_ties_duplicates_and_unequal_weights() -> None:
     """Proposition 4 is pure finite algebra: it holds off DS15's assumptions.
 

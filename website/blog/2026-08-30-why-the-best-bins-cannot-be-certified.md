@@ -49,10 +49,13 @@ but you now pay a price in information that we can quantify rather than guess.
 
 Along the way the audit found something sharper, and a little embarrassing. If
 you ask for too few bins — one more than the number of nuisance parameters —
-the criterion is not merely hard to optimize. It is *exactly zero for every
-possible arrangement of every possible dataset*. The number is meaningless, and
-the library will currently compute it for you without complaint. That is a bug,
-and fixing it is the next thing we ship.
+the criterion is not merely hard to optimize. On a centred sample it is
+*exactly zero for every possible arrangement of the data*, and no amount of
+extra data changes that. We had two ways of handling this and both were wrong.
+One route refused the job but blamed your data, suggesting you try a different
+sample when no sample could ever work. The other quietly handed back a rule
+that scores zero. Both now refuse it and explain the actual reason, which
+ships alongside this post.
 
 We also had to walk back part of our own claim. We originally stated the result
 for any number of nuisance parameters; the independent audit produced an exact
