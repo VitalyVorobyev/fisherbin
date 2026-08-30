@@ -4,8 +4,8 @@
       "kind": "class",
       "name": "CentralLogRatioScore",
       "reference": "/reference/index/",
-      "signature": "CentralLogRatioScore(predict: Callable[[ArrayLike], ArrayLike], deltas: ArrayLike, class_priors: ArrayLike, *, description: str | None = None, metadata: Mapping[str, JsonValue] | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L267",
+      "signature": "CentralLogRatioScore(predict: Callable[[ArrayLike], ArrayLike], deltas: ArrayLike, class_priors: ArrayLike, *, description: str | None = None, metadata: Mapping[str, JsonValue] | None = None, schema: ScoreSchema | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L286",
       "summary": "Estimate central finite-difference scores from paired density ratios."
     },
     {
@@ -20,8 +20,8 @@
       "kind": "class",
       "name": "DExchangeConfig",
       "reference": "/reference/configuration/",
-      "signature": "DExchangeConfig(rank_rtol: float | None = None, seed: int = 0, n_init: int = 8, max_scans: int | None = None, batch_moves: bool = True, n_restarts: int = 1, init: Literal['kmeans++', 'random'] = 'kmeans++', gain_tolerance: float = 1e-10, first_improvement: bool = False, collapse_duplicates: bool | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L215",
+      "signature": "DExchangeConfig(rank_rtol: float | None = None, seed: int = 0, initializer_restarts: int = 8, max_scans: int | None = None, batch_moves: bool = True, solver_restarts: int = 1, init: Literal['kmeans++', 'random'] = 'kmeans++', gain_tolerance: float = 1e-10, first_improvement: bool = False, collapse_duplicates: bool | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L220",
       "summary": "Configure exact positive-gain D-optimal point exchange."
     },
     {
@@ -29,15 +29,15 @@
       "name": "DOptimality",
       "reference": "/reference/index/",
       "signature": "DOptimality()",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L11",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L12",
       "summary": "Maximize the log determinant in the informative score subspace."
     },
     {
       "kind": "class",
       "name": "DensityRatioScore",
       "reference": "/reference/index/",
-      "signature": "DensityRatioScore(ratio: Callable[[ArrayLike], ArrayLike], parameterization: RatioParameterization, *, provenance: ScoreProvenance | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L127",
+      "signature": "DensityRatioScore(ratio: Callable[[ArrayLike], ArrayLike], parameterization: RatioParameterization, *, provenance: ScoreProvenance | None = None, schema: ScoreSchema | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L141",
       "summary": "Map observations to model density ratios and evaluate declared scores."
     },
     {
@@ -45,7 +45,7 @@
       "name": "EfficientScoreBound",
       "reference": "/reference/index/",
       "signature": "EfficientScoreBound(upper_bound: float, labels: np.ndarray, efficient_scores: np.ndarray, n_bins: int, interest: tuple[int, ...])",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L311",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L341",
       "summary": "Certify a ceiling on profiled information from the full-data efficient score."
     },
     {
@@ -69,7 +69,7 @@
       "name": "GaussLegendreConfig",
       "reference": "/reference/configuration/",
       "signature": "GaussLegendreConfig(order: int = 16, max_points: int = 1000000)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L151",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L274",
       "summary": "Configure deterministic tensor-product Gauss-Legendre quadrature."
     },
     {
@@ -77,7 +77,7 @@
       "name": "GeometryReport",
       "reference": "/reference/index/",
       "signature": "GeometryReport(maximum_voronoi_violation: float, guaranteed_violation_gain: float, maximum_violation_gain: float, maximum_separation_residual: float, violating_moves: int, evaluated_moves: int, voronoi_consistent: bool, separation_certified: bool, gain_tolerance: float)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L110",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L140",
       "summary": "Certify the self-consistent Voronoi geometry of a finite D partition."
     },
     {
@@ -85,7 +85,7 @@
       "name": "InformationReport",
       "reference": "/reference/index/",
       "signature": "InformationReport(fisher_unbinned: np.ndarray, fisher_binned: np.ndarray, retained_matrix: np.ndarray, retained_eigenvalues: np.ndarray, arithmetic_mean_retention: float, geometric_mean_retention: float, logdet_retention: float, bin_weights: np.ndarray, bin_counts: np.ndarray, bin_effective_sample_sizes: np.ndarray, effective_rank: int, rank_threshold: float, psd_residual_min_eigenvalue: float)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L26",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L27",
       "summary": "Report supplied-score retention and per-bin diagnostics for one sample."
     },
     {
@@ -93,7 +93,7 @@
       "name": "IntegrationSource",
       "reference": "/reference/index/",
       "signature": "IntegrationSource(bounds: ArrayLike, *, density: Callable[[ArrayLike], ArrayLike], quadrature: GaussLegendreConfig | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L170",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L293",
       "summary": "A finite box, density, and deterministic quadrature reference measure."
     },
     {
@@ -108,8 +108,8 @@
       "kind": "class",
       "name": "KMeansConfig",
       "reference": "/reference/configuration/",
-      "signature": "KMeansConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, n_init: int = 8, max_iter: int = 100, tolerance: float = 1e-06, record_every: int = 1)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L99",
+      "signature": "KMeansConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, solver_restarts: int = 8, max_iter: int = 100, tolerance: float = 1e-06, record_every: int = 1)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L100",
       "summary": "Configure deterministic weighted score-space k-means."
     },
     {
@@ -117,7 +117,7 @@
       "name": "LinearComponentScore",
       "reference": "/reference/index/",
       "signature": "LinearComponentScore(model: LinearComponents, provenance: ScoreProvenance = ScoreProvenance(kind='exact', description='linear-component event score'))",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L54",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L58",
       "summary": "Evaluate a frozen linear-component model and return local scores."
     },
     {
@@ -140,8 +140,8 @@
       "kind": "class",
       "name": "MahalanobisLloydConfig",
       "reference": "/reference/configuration/",
-      "signature": "MahalanobisLloydConfig(rank_rtol: float | None = None, seed: int = 0, n_init: int = 8, max_iter: int = 100, guard: Literal['exchange', 'reject'] = 'exchange', gain_tolerance: float = 1e-10, collapse_duplicates: bool | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L304",
+      "signature": "MahalanobisLloydConfig(rank_rtol: float | None = None, seed: int = 0, initializer_restarts: int = 8, max_iter: int = 100, guard: Literal['exchange', 'reject'] = 'exchange', gain_tolerance: float = 1e-10, collapse_duplicates: bool | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L311",
       "summary": "Configure guarded batch Mahalanobis-Lloyd iteration."
     },
     {
@@ -157,7 +157,7 @@
       "name": "NormalizedTrace",
       "reference": "/reference/index/",
       "signature": "NormalizedTrace()",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L55",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L119",
       "summary": "Minimize within-bin distortion after Fisher whitening."
     },
     {
@@ -165,7 +165,7 @@
       "name": "ObservationSample",
       "reference": "/reference/index/",
       "signature": "ObservationSample(observations: ArrayLike, weights: ArrayLike | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L119",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L242",
       "summary": "A finite weighted observation table requiring a score provider."
     },
     {
@@ -181,23 +181,23 @@
       "name": "PartitionCertificate",
       "reference": "/reference/index/",
       "signature": "PartitionCertificate(status: Literal['optimal', 'budget_exhausted'], objective: float, labels: np.ndarray, upper_bound: float, gap: float, nodes_explored: int, incumbent_was_optimal: bool)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L258",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L288",
       "summary": "Report what a bounded global D search actually proved."
     },
     {
       "kind": "class",
       "name": "PartitionResult",
       "reference": "/reference/index/",
-      "signature": "PartitionResult(labels: np.ndarray, training_scores: np.ndarray, cell_weights: np.ndarray, cell_score_sums: np.ndarray, cell_score_means: np.ndarray, information_full: np.ndarray, information_partitioned: np.ndarray, objective: float, transform: FisherTransform, transformed_centers: np.ndarray | None, metric: np.ndarray | None, criterion: DOptimality | ProfiledDOptimality, config: PartitionConfig, execution: ExecutionConfig, train_report: InformationReport, provenance: ScoreProvenance, accepted_moves: int, scans: int, exchange_stable: bool, best_remaining_gain: float, objective_history: np.ndarray, positive_weight_mask: np.ndarray, lloyd_iterations: int = 0, accepted_lloyd_steps: int = 0, geometry: GeometryReport | None = None, profiled_report: ProfiledInformationReport | None = None, profiled_geometry: ProfiledGeometryReport | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/result.py#L204",
+      "signature": "PartitionResult(labels: np.ndarray, training_scores: np.ndarray, cell_weights: np.ndarray, cell_score_sums: np.ndarray, cell_score_means: np.ndarray, information_full: np.ndarray, information_partitioned: np.ndarray, objective: float, transform: FisherTransform, transformed_centers: np.ndarray | None, metric: np.ndarray | None, criterion: DOptimality | ProfiledDOptimality, config: PartitionConfig, execution: ExecutionConfig, train_report: InformationReport, provenance: ScoreProvenance, accepted_moves: int, scans: int, exchange_stable: bool, best_remaining_gain: float, objective_history: np.ndarray, positive_weight_mask: np.ndarray, lloyd_iterations: int = 0, accepted_lloyd_steps: int = 0, geometry: GeometryReport | None = None, profiled_report: ProfiledInformationReport | None = None, profiled_geometry: ProfiledGeometryReport | None = None, schema: ScoreSchema | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/result.py#L219",
       "summary": "Represent optimized labels of one fixed weighted score table."
     },
     {
       "kind": "class",
       "name": "ProfiledDOptimality",
       "reference": "/reference/index/",
-      "signature": "ProfiledDOptimality(interest: tuple[int, ...])",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L22",
+      "signature": "ProfiledDOptimality(interest: tuple[int, ...] | tuple[str, ...])",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L23",
       "summary": "Maximize profiled information for declared parameters of interest."
     },
     {
@@ -205,22 +205,30 @@
       "name": "ProfiledGeometryReport",
       "reference": "/reference/index/",
       "signature": "ProfiledGeometryReport(metric: np.ndarray, maximum_positive_violation: float, maximum_theoretical_bound: float, maximum_bound_residual: float, violating_moves: int, evaluated_moves: int, bound_certified: bool)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L241",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L271",
       "summary": "Diagnose the finite efficient-semimetric gap of a profiled partition."
     },
     {
       "kind": "class",
       "name": "ProfiledInformationReport",
       "reference": "/reference/index/",
-      "signature": "ProfiledInformationReport(interest: tuple[int, ...], nuisance: tuple[int, ...], schur_unbinned: np.ndarray, schur_binned: np.ndarray, nuisance_unbinned: np.ndarray, nuisance_binned: np.ndarray, objective: float, logdet_retention: float, geometric_mean_retention: float, interest_rank: int, nuisance_rank: int)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L89",
+      "signature": "ProfiledInformationReport(interest: tuple[int, ...], nuisance: tuple[int, ...], schur_unbinned: np.ndarray, schur_binned: np.ndarray, nuisance_unbinned: np.ndarray, nuisance_binned: np.ndarray, objective: float, logdet_retention: float, geometric_mean_retention: float, interest_rank: int, nuisance_rank: int, schema: ScoreSchema | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L90",
       "summary": "Report same-label profiled information for interest and nuisance blocks."
+    },
+    {
+      "kind": "class",
+      "name": "Quantizer",
+      "reference": "/reference/index/",
+      "signature": "Quantizer(transform: FisherTransform, centers: np.ndarray, metric: np.ndarray | None, schema: ScoreSchema | None, provenance: ScoreProvenance, criterion: Criterion, execution: ExecutionConfig)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/artifact.py#L49",
+      "summary": "A frozen hard rule on score space."
     },
     {
       "kind": "class",
       "name": "QuantizerResult",
       "reference": "/reference/index/",
-      "signature": "QuantizerResult(centers: np.ndarray, metric: np.ndarray | None, transform: FisherTransform, criterion: Criterion, config: QuantizerConfig, execution: ExecutionConfig, trace: OptimizationTrace, labels: np.ndarray, train_report: InformationReport, validation_report: InformationReport | None, provenance: ScoreProvenance, hardening_gap: float | None = None, source_kind: str = 'score_sample', train_profiled_report: ProfiledInformationReport | None = None, validation_profiled_report: ProfiledInformationReport | None = None)",
+      "signature": "QuantizerResult(quantizer: Quantizer, criterion: Criterion, config: QuantizerConfig, execution: ExecutionConfig, trace: OptimizationTrace, labels: np.ndarray, train_report: InformationReport, validation_report: InformationReport | None, provenance: ScoreProvenance, hardening_gap: float | None = None, source_kind: str = 'score_sample', train_profiled_report: ProfiledInformationReport | None = None, validation_profiled_report: ProfiledInformationReport | None = None)",
       "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/result.py#L84",
       "summary": "Represent a reusable hard rule on raw score vectors."
     },
@@ -229,7 +237,7 @@
       "name": "RatioClosureReport",
       "reference": "/reference/index/",
       "signature": "RatioClosureReport(normalizers: np.ndarray, max_residual: float)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L61",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L62",
       "summary": "Report how far model density ratios are from unit normalization."
     },
     {
@@ -237,7 +245,7 @@
       "name": "RatioProvenance",
       "reference": "/reference/index/",
       "signature": "RatioProvenance(estimator: str | None = None, parameterization: RatioParameterizationKind | None = None, coefficients: tuple[float, ...] | None = None, reference_fractions: tuple[float, ...] | None = None, reference_component: int | None = None, training_priors: tuple[float, ...] | tuple[tuple[float, float], ...] | None = None, calibration: str | None = None, deltas: tuple[float, ...] | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L27",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L106",
       "summary": "Describe how a model density-ratio representation was obtained."
     },
     {
@@ -245,15 +253,15 @@
       "name": "ScalarDPConfig",
       "reference": "/reference/configuration/",
       "signature": "ScalarDPConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, max_rows: int = 20000)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L373",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L380",
       "summary": "Configure exact interval dynamic programming for one score coordinate."
     },
     {
       "kind": "class",
       "name": "ScoreFunction",
       "reference": "/reference/index/",
-      "signature": "ScoreFunction(function: Callable[[ArrayLike], ArrayLike], provenance: ScoreProvenance = ScoreProvenance())",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L25",
+      "signature": "ScoreFunction(function: Callable[[ArrayLike], ArrayLike], provenance: ScoreProvenance = ScoreProvenance(), schema: ScoreSchema | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L26",
       "summary": "Wrap an exact or estimated callable ``[N, D] -> [N, P]``."
     },
     {
@@ -261,23 +269,39 @@
       "name": "ScoreProvenance",
       "reference": "/reference/index/",
       "signature": "ScoreProvenance(kind: ScoreKind = 'unknown', description: str | None = None, reference_point: tuple[float, ...] | None = None, metadata: Mapping[str, JsonValue] = dict(), ratio: RatioProvenance | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L63",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L142",
       "summary": "Describe where supplied score coordinates came from."
+    },
+    {
+      "kind": "class",
+      "name": "ScoreProvider",
+      "reference": "/reference/index/",
+      "signature": "",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L399",
+      "summary": "The observation-to-score contract every fitting route goes through."
     },
     {
       "kind": "class",
       "name": "ScoreSample",
       "reference": "/reference/index/",
-      "signature": "ScoreSample(scores: ArrayLike, weights: ArrayLike | None = None, *, provenance: ScoreProvenance | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L98",
+      "signature": "ScoreSample(scores: ArrayLike, weights: ArrayLike | None = None, *, schema: ScoreSchema | None = None, provenance: ScoreProvenance | None = None)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L204",
       "summary": "A finite weighted score table representing an empirical score law."
+    },
+    {
+      "kind": "class",
+      "name": "ScoreSchema",
+      "reference": "/reference/index/",
+      "signature": "ScoreSchema(parameters: tuple[str, ...])",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L27",
+      "summary": "Name the parameter each score coordinate differentiates."
     },
     {
       "kind": "class",
       "name": "SoftVoronoiConfig",
       "reference": "/reference/configuration/",
-      "signature": "SoftVoronoiConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, n_init: int = 8, kmeans_max_iter: int = 100, tolerance: float = 1e-06, max_steps: int = 1000, learning_rate: float = 0.01, gradient_clip: float = 10.0, temperature_end_ratio: float = 0.05, record_every: int = 10)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L148",
+      "signature": "SoftVoronoiConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, initializer_restarts: int = 8, kmeans_max_iter: int = 100, tolerance: float = 1e-06, max_steps: int = 1000, learning_rate: float = 0.01, gradient_clip: float = 10.0, temperature_end_ratio: float = 0.05, record_every: int = 10)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L152",
       "summary": "Configure differentiable D-optimal soft Voronoi fitting."
     },
     {
@@ -285,7 +309,7 @@
       "name": "StabilityReport",
       "reference": "/reference/index/",
       "signature": "StabilityReport(stable: bool, best_gain: float, best_move: tuple[int, int] | None, objective: float, n_bins: int, criterion: DOptimality | ProfiledDOptimality, gain_tolerance: float)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L193",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L223",
       "summary": "Certify that no single-row relocation improves one supplied labeling."
     },
     {
@@ -293,7 +317,7 @@
       "name": "binned_fisher_information",
       "reference": "/reference/index/",
       "signature": "binned_fisher_information(scores: ArrayLike, assignments: ArrayLike, weights: ArrayLike | None = None, *, n_bins: int | None = None, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L133",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L134",
       "summary": "Estimate Fisher information retained by hard bin counts."
     },
     {
@@ -309,7 +333,7 @@
       "name": "efficient_score_bound",
       "reference": "/reference/index/",
       "signature": "efficient_score_bound(scores: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, n_bins: int, config: ScalarDPConfig | None = None, execution: ExecutionConfig | None = None) -> EfficientScoreBound",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L482",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L485",
       "summary": "Certify a ceiling on profiled information by quantizing the efficient score."
     },
     {
@@ -317,7 +341,7 @@
       "name": "efficient_scores",
       "reference": "/reference/index/",
       "signature": "efficient_scores(scores: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L427",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L430",
       "summary": "Project scores with the full-information nuisance regression."
     },
     {
@@ -333,15 +357,15 @@
       "name": "fisher_information",
       "reference": "/reference/index/",
       "signature": "fisher_information(scores: ArrayLike, weights: ArrayLike | None = None, *, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L34",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L35",
       "summary": "Estimate unbinned Fisher information."
     },
     {
       "kind": "function",
       "name": "fit_quantizer",
       "reference": "/reference/index/",
-      "signature": "fit_quantizer(source: Source, *, score: ScoreProvider | None = None, validation: Source | None = None, n_bins: int, criterion: Criterion | None = None, config: QuantizerConfig | None = None, diagnostics: DiagnosticsMode = 'endpoints', execution: ExecutionConfig | None = None) -> QuantizerResult",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L244",
+      "signature": "fit_quantizer(source: Source, *, provider: ScoreProvider | None = None, validation: Source | None = None, n_bins: int, criterion: Criterion | None = None, config: QuantizerConfig | None = None, diagnostics: DiagnosticsMode = 'endpoints', execution: ExecutionConfig | None = None) -> QuantizerResult",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L267",
       "summary": "Fit a reusable hard rule from an empirical or bounded score law."
     },
     {
@@ -349,7 +373,7 @@
       "name": "fractional_fisher_information",
       "reference": "/reference/index/",
       "signature": "fractional_fisher_information(scores: ArrayLike, responsibilities: ArrayLike, weights: ArrayLike | None = None, *, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L168",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L169",
       "summary": "Estimate Fisher information retained by fractional assignments."
     },
     {
@@ -357,7 +381,7 @@
       "name": "information_report",
       "reference": "/reference/index/",
       "signature": "information_report(scores: ArrayLike, assignments: ArrayLike, weights: ArrayLike | None = None, *, n_bins: int | None = None, rank_rtol: float | None = None, execution: ExecutionConfig | None = None) -> InformationReport",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L250",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L251",
       "summary": "Build retained-information and occupancy diagnostics for hard bins."
     },
     {
@@ -372,8 +396,8 @@
       "kind": "function",
       "name": "optimize_partition",
       "reference": "/reference/index/",
-      "signature": "optimize_partition(scores: ArrayLike, *, weights: ArrayLike | None = None, n_bins: int, criterion: DOptimality | ProfiledDOptimality | None = None, config: PartitionConfig | None = None, provenance: ScoreProvenance | None = None, initial_labels: ArrayLike | None = None, execution: ExecutionConfig | None = None) -> PartitionResult",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L181",
+      "signature": "optimize_partition(scores: ScoreSample | ArrayLike, *, weights: ArrayLike | None = None, n_bins: int, criterion: DOptimality | ProfiledDOptimality | None = None, config: PartitionConfig | None = None, provenance: ScoreProvenance | None = None, initial_labels: ArrayLike | None = None, execution: ExecutionConfig | None = None) -> PartitionResult",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L184",
       "summary": "Optimize labels of one fixed score table without prediction semantics."
     },
     {
@@ -412,8 +436,8 @@
       "kind": "function",
       "name": "profiled_information_report",
       "reference": "/reference/index/",
-      "signature": "profiled_information_report(scores: ArrayLike, assignments: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, n_bins: int | None = None, execution: ExecutionConfig | None = None) -> ProfiledInformationReport",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L357",
+      "signature": "profiled_information_report(scores: ArrayLike, assignments: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, n_bins: int | None = None, schema: ScoreSchema | None = None, execution: ExecutionConfig | None = None) -> ProfiledInformationReport",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L358",
       "summary": "Build same-label profiled-\\(D_s\\) diagnostics without regularization."
     },
     {

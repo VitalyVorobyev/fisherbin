@@ -61,6 +61,36 @@ finite-difference scores. Each one carries a `provenance` and a `.score(X)` meth
 yourself — which is exactly how doors 2 and 3 feed `optimize_partition`, since that task takes
 score rows rather than a source.
 
+### Why a ratio oracle is enough
+
+For a normalized mixture \(p(x\mid\theta)=\sum_k\theta_k p_k(x)\), take one component as the
+simplex-dependent reference. The composition score is
+
+$$
+s_a(x)
+=
+\frac{p_a(x)-p_{\rm ref}(x)}
+{\sum_k \theta_{0k}p_k(x)}.
+$$
+
+Divide numerator and denominator by any nonzero reference density and every absolute normalization
+cancels — only ratios remain. That is the whole reason a ratio oracle suffices where a density
+would seem to be required.
+
+A calibrated classifier is one such oracle. If it predicts class posteriors \(q_k(x)\) under
+training priors \(\pi_k\), then
+
+$$
+\frac{p_k(x)}{p_{\rm ref}(x)}
+\propto
+\frac{q_k(x)/\pi_k}
+     {q_{\rm ref}(x)/\pi_{\rm ref}},
+$$
+
+up to a common event-wise factor that cancels again in the score. A ranking score or an arbitrary
+monotonic classifier output is *not* enough: the construction needs calibrated ratios, not merely
+event ordering.
+
 One distinction runs through everything downstream. **Model density ratios** — \(\phi_k/\phi_{\rm ref}\)
 or \(p(x\mid\theta)/p(x\mid\theta_0)\) — are a statistical representation: they build scores and
 enter through a provider. **Importance ratios** — \(p_{\theta_0}(x)/g(x)\) for a sample drawn from

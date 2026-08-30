@@ -43,6 +43,7 @@ _UNPUBLISHED = {
     Path("docs/development.md"),
     Path("docs/roadmap.md"),
     Path("docs/system-design.md"),
+    Path("docs/playbook.md"),
 }
 
 # Whole directories mkdocs.yml keeps out of the published site. These hold
@@ -96,6 +97,7 @@ def test_published_markdown_has_no_internal_or_malformed_content() -> None:
         "development.md",
         "roadmap.md",
         "system-design.md",
+        "playbook.md",
         *(f"{directory}/**" for directory in _UNPUBLISHED_DIRS),
     )
     for excluded in excluded_paths:

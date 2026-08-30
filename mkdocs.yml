@@ -11,6 +11,7 @@ exclude_docs: |
   development.md
   roadmap.md
   system-design.md
+  playbook.md
   adr/**
   proposals/**
 

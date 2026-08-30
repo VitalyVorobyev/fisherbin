@@ -92,9 +92,36 @@ uses the currently retained information, which upweights directions where little
 survived so far.
 
 **`ProfiledDOptimality(interest=...)`** maximizes the log determinant of the Schur complement for a
-declared block of interest columns, with nuisance information estimated from the *same* labels. At
-least one nuisance column must remain. This is the criterion to use when some parameters are
-genuinely of interest and the rest are being profiled away.
+declared block of interest columns, with nuisance information estimated from the *same* labels.
+Writing \(\theta=(\psi,\lambda)\) for parameters of interest and nuisance parameters, and
+partitioning the retained information
+
+$$
+I_B=
+\begin{pmatrix}
+I_{\psi\psi} & I_{\psi\lambda}\\
+I_{\lambda\psi} & I_{\lambda\lambda}
+\end{pmatrix},
+$$
+
+profiling the nuisance parameters leaves
+
+$$
+I_{\rm eff}
+=
+I_{\psi\psi}
+-
+I_{\psi\lambda}
+I_{\lambda\lambda}^{-1}
+I_{\lambda\psi},
+$$
+
+and the criterion maximizes \(\log\det I_{\rm eff}\). At least one nuisance column must remain.
+
+This is not a better \(D\). It answers a different question — *if only these parameters will be
+reported and the rest are allowed to float, how should the bins be spent?* — and can deliberately
+sacrifice a great deal of nuisance information to do it. Use it when some parameters are genuinely
+of interest and the rest are being profiled away.
 
 **`NormalizedTrace`** maximizes the retained trace after whitening. By the loss identity this is
 identical to minimizing weighted within-cell squared distance, so its solver is weighted k-means.
