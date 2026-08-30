@@ -245,6 +245,14 @@ What stays deliberately out of scope, and why, in one place:
   measured a 3.5x speedup on one chunk while staying in JAX, but it is not bit-identical to the
   residual-first formulation and needs its own ADR and error analysis before it can replace it
   (`benchmarks/README.md`, "Optimizations deliberately not taken").
+- **Profiled-\(D_s\) compile-to-quantizer via the projected efficient-score interval rule** —
+  research result DS15 (`agenticresearch/KNOWN_RESULTS/05b-ds-bridge.md`) names the deployable
+  rule for `ProfiledDOptimality` results that `compile_quantizer()` currently refuses to
+  produce, but only proves it holds at global optima for conditionally centered,
+  single-parameter-of-interest laws. Deferred: reconsider once OP29
+  (`agenticresearch/claims/OPEN-DS-MARGINS-NONCENTERED.json`) resolves whether the
+  exchange-stable, non-global solutions the library's optimizer actually returns retain the
+  same margins.
 - **A second numerical backend, signed weights, advanced statistical objectives** — gated on an
   approved roadmap change per `AGENTS.md`; none is planned.
 
