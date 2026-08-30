@@ -12,6 +12,12 @@
     "TRACE-WHITENED-KMEANS",
     "INFO-D-EFFICIENCY"
   ],
+  "literature": [
+    "Zador-1982",
+    "Gersho-1979",
+    "Bucklew-Wise-1982",
+    "Gupta-Hero-2003"
+  ],
   "proof_location": {
     "file": "OPEN_PROBLEMS.md",
     "section": "OP15. High-rate \\(K\\to\\infty\\) asymptotics"

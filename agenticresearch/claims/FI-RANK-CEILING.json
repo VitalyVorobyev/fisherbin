@@ -11,6 +11,9 @@
   "dependencies": [
     "FI-QUANT-IDENTITY"
   ],
+  "literature": [
+    "Zhang-Blum-Kaplan-Lu-2018"
+  ],
   "proof_location": {
     "file": "KNOWN_RESULTS/01-universal.md",
     "section": "U4. Rank ceiling"

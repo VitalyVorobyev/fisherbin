@@ -12,6 +12,9 @@
     "calibrated posterior probabilities",
     "known training priors"
   ],
+  "literature": [
+    "Cranmer-Pavez-Louppe-2015"
+  ],
   "proof_location": {
     "file": "KNOWN_RESULTS/10-oracle.md",
     "section": "O3. Calibrated classifier posteriors provide ratios"

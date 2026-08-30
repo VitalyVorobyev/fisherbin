@@ -20,6 +20,23 @@
 
 - arXiv PDF: https://arxiv.org/pdf/1712.00012
 
+## Alsing & Wandelt (2019) — nuisance-hardened compression
+
+**Key:** Alsing-Wandelt-2019
+
+**Paper:** *Nuisance Hardened Data Compression for Fast Likelihood-Free Inference*
+**Result:** projects the score into a locally/asymptotically
+Fisher-preserving summary for parameters of interest using the nuisance
+Schur geometry.
+**Transfer:** closest published representation-level antecedent of the
+full-data efficient score used by `DS-EFFICIENT-SCORE-DOMINATION`.
+**Does not transfer:** the paper studies continuous summaries and does not
+prove Loewner domination for every hard quantizer or the project’s global
+\(D_s\) upper bound.
+
+- DOI: https://doi.org/10.1093/mnras/stz1900
+- arXiv: https://arxiv.org/abs/1903.01473
+
 ## Brehmer et al. — SALLY/SALLINO and MadMiner
 
 **Use:** learned likelihood-score representations and practical score-space histograms in HEP. Establishes that learned scores and score histograms are prior art; ScoreQuant's question is how to optimize the hard cells under D/\(D_s\).
@@ -42,6 +59,18 @@
 - arXiv PDF: https://arxiv.org/pdf/2203.05570
 
 ## Density-ratio estimation
+
+### Cranmer, Pavez & Louppe (2015)
+
+**Key:** Cranmer-Pavez-Louppe-2015
+
+*Approximating Likelihood Ratios with Calibrated Discriminative Classifiers*
+establishes that a classifier trained to distinguish two samples learns a
+monotone function of their likelihood ratio and that calibration can recover
+the ratio. This directly supports `CLASSIFIER-RATIO-ORACLE`; it does not bound
+the Fisher-information loss caused by calibration or approximation error.
+
+- arXiv: https://arxiv.org/abs/1506.02169
 
 Direct density-ratio estimation (KLIEP, uLSIF and related methods) is a mature alternative to separately estimating component densities. Classifier posterior odds are another route. For ScoreQuant these are **model-access backends**, not the quantizer itself.
 

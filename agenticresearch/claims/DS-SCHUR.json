@@ -10,7 +10,8 @@
   "statement": "For POI \u03c8 and nuisance \u03bb, S_\u03c8(I)=I_\u03c8\u03c8-I_\u03c8\u03bb I_\u03bb\u03bb^{-1} I_\u03bb\u03c8 and F_s=logdet S_\u03c8(I)=logdet I-logdet I_\u03bb\u03bb when the relevant blocks are nonsingular.",
   "literature": [
     "Wynn-1972",
-    "Nather-Reinsch-1981"
+    "Nather-Reinsch-1981",
+    "Alsing-Wandelt-2019"
   ],
   "proof_location": {
     "file": "KNOWN_RESULTS/05a-ds-core.md",

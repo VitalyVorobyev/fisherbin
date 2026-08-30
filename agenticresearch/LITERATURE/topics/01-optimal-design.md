@@ -96,6 +96,23 @@
 
 ---
 
+## Silvey & Titterington (1973) and Silvey, Titterington & Torsney (1978)
+
+**Key:** Silvey-Titterington-1973, Silvey-Titterington-Torsney-1978
+
+The 1973 paper formulates D- and \(D_s\)-equivalence geometrically through
+Lagrangian duality and gives a convergent monotone D construction. The 1978
+paper gives two monotone algorithms on a finite design space. They are direct
+precedents for sensitivity certificates and monotone determinant updates, but
+their feasible variables are free design weights at fixed regressors. They do
+not cover hard partitions whose cell masses and conditional means move
+together.
+
+- 1973 DOI: https://doi.org/10.1093/biomet/60.1.21
+- 1978 DOI: https://doi.org/10.1080/03610927808827719
+
+---
+
 ## Design-side margins: weight bounds, singular \(D_s\) designs, extreme-point selection (29 Aug 2026)
 
 **Key:** Sibson-Kenny-1975, Silvey-1978, Wang-Yang-Stufken-2019

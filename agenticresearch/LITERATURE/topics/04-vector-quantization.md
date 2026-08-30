@@ -4,6 +4,27 @@
 > live in `graph.json`; `BIBLIOGRAPHY.md` (generated) maps every registry
 > bibliography key to the heading that annotates it.
 
+## Zador, Gersho, Bucklew–Wise, and task-aware high-rate theory
+
+**Key:** Zador-1982, Gersho-1979, Bucklew-Wise-1982, Gupta-Hero-2003
+
+Zador and Gersho establish the classical high-rate scaling and geometric
+templates for fixed additive distortion; Bucklew & Wise give a rigorous
+multidimensional \(r\)-power distortion limit. Gupta & Hero show that an
+inference objective—binary-detection loss—can admit high-rate vector-
+quantization calculus and an optimal point density.
+
+**Transfer to `OPEN-D-HIGH-RATE`:** these papers supply the expected
+\(K^{-2/d}\)-type machinery, density/shape separation, and a task-aware
+precedent. **What does not transfer:** none treats the nonlinear logdet of
+retained conditional-score Fisher information or the profiled \(D_s\)
+criterion, so the ScoreQuant high-rate claim remains open.
+
+- Zador DOI: https://doi.org/10.1109/TIT.1982.1056490
+- Gersho DOI: https://doi.org/10.1109/TIT.1979.1056067
+- Bucklew–Wise DOI: https://doi.org/10.1109/TIT.1982.1056486
+- Gupta–Hero DOI: https://doi.org/10.1109/TIT.2003.814482
+
 ## Pollard (1981, 1982) and the k-means consistency cluster
 
 **Key:** Pollard-1981
