@@ -46,3 +46,43 @@ binned likelihood "is not differentiable at its bin edges", and reaches for INFE
 histogram or a KDE surrogate. That is the softening `KNOWN_RESULTS/08-soft.md` exists to make
 unnecessary. Worth citing in the motivation of any \(D_s\) manuscript.
 
+
+## Pollard (1981) — read verbatim 30 August 2026 (DS15 audit)
+
+Bibliography key `Pollard-1981`; annotation in `topics/04-vector-quantization.md`.
+
+**Outcome: statement and hypotheses fully verified from the Yale scan.** The
+consistency theorem assumes uniqueness of the optimal center set for *every*
+\(j\le k\) (not just \(j=k\)) plus a \(\phi\)-moment; value convergence needs
+no uniqueness. Informs `OPEN-DS-MARGINS-AT-OPTIMA` (Proposition 5 and
+conclusions (2)–(3)) and `AUDIT-DS-MARGINS-AT-OPTIMA`. The every-\(j\)
+hypothesis is discharged for log-concave efficient-score laws by the
+uniqueness cluster (Kieffer/Graf–Luschgy 5.1/Mease–Nair).
+
+## Fisher (1958) — read verbatim 30 August 2026 (DS15 audit)
+
+Bibliography key `Fisher-1958`; annotation in `topics/04-vector-quantization.md`.
+
+**Outcome: contiguity of optimal 1-D weighted SSE partitions confirmed with
+its appendix proof** (pp. 789–792 read). Anchors `DS-SCALAR-EFFICIENT-DP` and
+the interval-optimum leg of DS15's Proposition 4.
+
+## Mease & Nair (2006) — read verbatim 30 August 2026 (DS15 audit)
+
+Bibliography key `Mease-Nair-2006`; annotation in `topics/04-vector-quantization.md`.
+
+**Outcome: (S)-boundary found.** Log-concavity of the density suffices for
+scalar-quantizer uniqueness (likelihood-ratio ordering); Eubank (1988)'s
+weaker condition is refuted by an explicit three-stationary-point
+counterexample. DS15's assumption (S) must not be weakened toward
+Eubank-type conditions. Informs `OPEN-DS-MARGINS-AT-OPTIMA`.
+
+## Levrard (2015) — read verbatim 30 August 2026 (DS15 audit)
+
+Bibliography key `Levrard-2015`; annotation in `topics/04-vector-quantization.md`.
+
+**Outcome: the margin condition (Definition 2.1) is a hypothesis on the law
+at population optima and is never proven to hold at empirical optima** —
+confirming the structural contrast with DS15, which proves a margin *fails*
+at optima. Registry arXiv id corrected (1405.6672; 1310.7138 is the 2013
+precursor "Margin conditions for vector quantization").

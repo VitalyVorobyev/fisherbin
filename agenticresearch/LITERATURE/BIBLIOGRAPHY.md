@@ -8,11 +8,13 @@ and the claims that cite it.
 | Key | Title | Annotated in | Cited by |
 |---|---|---|---|
 | `Barnes-Han-Ozgur-2018` | A Geometric Characterization of Fisher Information from Quantized Samples with Applications to Distributed Statistical Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Barnes, Han & Özgür (2018) | `FI-QUANT-IDENTITY`, `TRACE-WHITENED-KMEANS` |
+| `Blanchard-Jaffe-Zhivotovskiy-2025` | Consistency and inconsistency in k-means clustering | `LITERATURE/topics/04-vector-quantization.md` — Constraint-restored consistency of empirical clustering (30 Aug 2026) | `AUDIT-DS-MARGINS-AT-OPTIMA` |
 | `CMS-2025` | Development of systematic uncertainty-aware neural network trainings for binned-likelihood analyses at the LHC | `LITERATURE/topics/05-hep-inference-aware.md` — CMS Collaboration (2025) — SANNT | — |
 | `Coleman-et-al-1999` | Some computational issues in cluster analysis with no a priori metric | `LITERATURE/topics/03-determinant-clustering.md` — Coleman, Dong, Hardin, Rocke & Woodruff (1999) | — |
 | `Du-Faber-Gunzburger-1999` | Centroidal Voronoi Tessellations: Applications and Algorithms | `LITERATURE/topics/04-vector-quantization.md` — Du, Faber & Gunzburger (1999) | — |
 | `Dulek-2023` | On the Optimality of Sufficient Statistics-Based Quantizers | `LITERATURE/topics/02-fisher-quantization.md` — Dülek (2023) | `TRACE-WHITENED-KMEANS` |
 | `Farias-Brossier-2013` | Optimal Scalar Quantization for Parameter Estimation | `LITERATURE/topics/02-fisher-quantization.md` — Farias & Brossier (2013/2014) | — |
+| `Fisher-1958` | On Grouping for Maximum Homogeneity | `LITERATURE/topics/04-vector-quantization.md` — Scalar grouping and 1-D contiguity (30 Aug 2026) | `AUDIT-DS-MARGINS-AT-OPTIMA`, `DS-SCALAR-EFFICIENT-DP`, `OPEN-DS-MARGINS-AT-OPTIMA` |
 | `Friedman-Rubin-1967` | On Some Invariant Criteria for Grouping Data | `LITERATURE/topics/03-determinant-clustering.md` — Friedman & Rubin (1967) | — |
 | `Garcia-Escudero-Gordaliza-1999` | Robustness Properties of k Means and Trimmed k Means | `LITERATURE/topics/04-vector-quantization.md` — Outlier and singleton cells at exact clustering optima | — |
 | `Graf-Luschgy-2000` | Foundations of Quantization for Probability Distributions | `LITERATURE/topics/04-vector-quantization.md` — Graf & Luschgy (2000, 2002) | `AUDIT-DS-MARGINS-AT-OPTIMA`, `OPEN-DS-MARGINS-AT-OPTIMA` |
@@ -24,6 +26,7 @@ and the claims that cite it.
 | `Levrard-2015` | Nonasymptotic bounds for vector quantization in Hilbert spaces | `LITERATURE/topics/04-vector-quantization.md` — Margin conditions in quantization | `AUDIT-DS-MARGINS-AT-OPTIMA`, `OPEN-DS-MARGINS-AT-OPTIMA` |
 | `Li-Mathias-2000` | Extremal Characterizations of the Schur Complement and Resulting Inequalities | `LITERATURE/audits/DS-POPULATION-BRIDGE-28-August-2026.md` — Targeted audit for the DS-POPULATION-BRIDGE claims — 28 August 2026 | `AUDIT-DS-POPULATION-BRIDGE`, `DS-PROFILED-VARIATIONAL` |
 | `Liu-Pages-2020` | Convergence rate of optimal quantization and application to the clustering performance of the empirical measure | `LITERATURE/topics/04-vector-quantization.md` — Scalar quantizer uniqueness (log-concave laws) | — |
+| `Mease-Nair-2006` | Unique optimal partitions of distributions and connections to hazard rates and stochastic ordering | `LITERATURE/topics/04-vector-quantization.md` — Scalar quantizer uniqueness (log-concave laws) | `AUDIT-DS-MARGINS-AT-OPTIMA`, `OPEN-DS-MARGINS-AT-OPTIMA` |
 | `Nather-Reinsch-1981` | D_s-optimality and Whittle's equivalence theorem | `LITERATURE/topics/01-optimal-design.md` — Näther & Reinsch (1981) — \(D_s\) equivalence | `DS-CLASSICAL-DESIGN-THEORY`, `DS-SCHUR` |
 | `Pollard-1981` | Strong Consistency of K-Means Clustering | `LITERATURE/topics/04-vector-quantization.md` — Pollard (1981, 1982) and the k-means consistency cluster | `AUDIT-DS-MARGINS-AT-OPTIMA`, `OPEN-DS-MARGINS-AT-OPTIMA` |
 | `Richter-Alexa-2015` | Mahalanobis centroidal Voronoi tessellations | `LITERATURE/topics/04-vector-quantization.md` — Richter & Alexa (2015) | — |

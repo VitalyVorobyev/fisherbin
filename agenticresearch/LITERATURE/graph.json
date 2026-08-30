@@ -32,6 +32,14 @@
         "valassi-2020-wdr",
         "cms-2025-sannt"
       ]
+    },
+    {
+      "round": 2,
+      "date": "2026-08-30",
+      "mode": "targeted-audit-search",
+      "scope": "Independent DS15 audit prior-art search (AUDIT-DS-MARGINS-AT-OPTIMA): 6 axes, 40+ queries, ~350 results screened / ~86 relevant; per-axis counts and the full log in LITERATURE/audits/AUDIT-DS-MARGINS-AT-OPTIMA-30-August-2026.md. Not a snowballing round: no systematic backward/forward traversal; cites_relevant/cited_by_relevant populated only where read directly.",
+      "candidates_screened": 350,
+      "relevant": 86
     }
   ],
   "papers": [
@@ -72,6 +80,165 @@
       ],
       "status": "screened",
       "note": "Minimises (F^{-1})_{rr} over parameter-of-interest plus 224 nuisances on a binned likelihood: the D_s objective at s=1, at production scale. Cites INFERNO and a KDE surrogate as the known workarounds for non-differentiable bin edges (no graph records for those yet). Motivation, not prior art -- no claim cites it."
+    },
+    {
+      "id": "pollard-1981-kmeans",
+      "title": "Strong Consistency of K-Means Clustering",
+      "year": 1981,
+      "authors": [
+        "D. Pollard"
+      ],
+      "bibliography_key": "Pollard-1981",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "vector-quantization",
+      "relevant_claims": [
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-MARGINS-AT-OPTIMA",
+        "OPEN-DS-FINITE-POP-BRIDGE"
+      ],
+      "status": "deeply_reviewed",
+      "note": "Verbatim (full Yale scan, 30 Aug 2026): a.s. Hausdorff consistency of empirical optimal centers and value, under uniqueness for EVERY j <= k and a phi-moment; the engine of DS15 Prop 5 and conclusions (2)-(3)."
+    },
+    {
+      "id": "graf-luschgy-2000-foundations",
+      "title": "Foundations of Quantization for Probability Distributions",
+      "year": 2000,
+      "authors": [
+        "S. Graf",
+        "H. Luschgy"
+      ],
+      "bibliography_key": "Graf-Luschgy-2000",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "vector-quantization",
+      "relevant_claims": [
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-MARGINS-AT-OPTIMA"
+      ],
+      "status": "screened",
+      "note": "Book unreachable (403/500); positive-mass/null-boundary content secondary-verified (Roychowdhury Prop 1.1; Liu-Pages: Thm 4.2 null boundaries, Thm 4.12 existence); Thm 5.1 scalar log-concave uniqueness confirmed twice; the 'Thm 4.1' numbering for positive mass remains unverified."
+    },
+    {
+      "id": "kieffer-1983-uniqueness",
+      "title": "Uniqueness of locally optimal quantizer for log-concave density and convex error weighting function",
+      "year": 1983,
+      "authors": [
+        "J. C. Kieffer"
+      ],
+      "bibliography_key": "Kieffer-1983",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "vector-quantization",
+      "relevant_claims": [
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-MARGINS-AT-OPTIMA"
+      ],
+      "status": "screened",
+      "note": "Abstract-verified; uniqueness content corroborated verbatim via Mease-Nair 2006 and secondary via Liu-Pages/Kazikli."
+    },
+    {
+      "id": "levrard-2015-nonasymptotic",
+      "title": "Nonasymptotic bounds for vector quantization in Hilbert spaces",
+      "year": 2015,
+      "authors": [
+        "C. Levrard"
+      ],
+      "bibliography_key": "Levrard-2015",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "vector-quantization",
+      "relevant_claims": [
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-MARGINS-AT-OPTIMA"
+      ],
+      "status": "screened",
+      "note": "Verbatim (full text, 30 Aug 2026): Definition 2.1 margin condition is a hypothesis on the LAW at population optima, never proven at optima; arXiv id corrected to 1405.6672 (1310.7138 is the 2013 precursor)."
+    },
+    {
+      "id": "silvey-1978-singular",
+      "title": "Optimal design measures with singular information matrices",
+      "year": 1978,
+      "authors": [
+        "S. D. Silvey"
+      ],
+      "bibliography_key": "Silvey-1978",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "optimal-design",
+      "relevant_claims": [
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-MARGINS-AT-OPTIMA"
+      ],
+      "status": "screened",
+      "note": "Secondary only (Lopez-Fidalgo & Rodriguez-Diaz restatement; St. John-Draper 1975 verbatim for the Kiefer/Karlin-Studden singular-Ds background): equivalence theory PERMITS singular information at Ds optima; no inevitability statement. Theorem itself unread (JSTOR)."
+    },
+    {
+      "id": "fisher-1958-grouping",
+      "title": "On Grouping for Maximum Homogeneity",
+      "year": 1958,
+      "authors": [
+        "W. D. Fisher"
+      ],
+      "bibliography_key": "Fisher-1958",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "vector-quantization",
+      "relevant_claims": [
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-MARGINS-AT-OPTIMA",
+        "DS-SCALAR-EFFICIENT-DP"
+      ],
+      "status": "screened",
+      "note": "Verbatim (Brown scan pp. 789-792): optimal 1-D weighted SSE partitions are contiguous (appendix proof); the classical anchor for DS8 and DS15 Prop 4's interval-optimum leg."
+    },
+    {
+      "id": "mease-nair-2006-unique",
+      "title": "Unique optimal partitions of distributions and connections to hazard rates and stochastic ordering",
+      "year": 2006,
+      "authors": [
+        "D. Mease",
+        "V. N. Nair"
+      ],
+      "bibliography_key": "Mease-Nair-2006",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "vector-quantization",
+      "relevant_claims": [
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-MARGINS-AT-OPTIMA"
+      ],
+      "status": "screened",
+      "note": "Verbatim (full text): log-concave-density uniqueness via likelihood-ratio ordering; refutes Eubank-1988's weaker condition by a three-stationary-point counterexample - pins DS15 assumption (S) to density log-concavity."
+    },
+    {
+      "id": "blanchard-jaffe-zhivotovskiy-2025",
+      "title": "Consistency and inconsistency in k-means clustering",
+      "year": 2025,
+      "authors": [
+        "M. Blanchard",
+        "A. Q. Jaffe",
+        "N. Zhivotovskiy"
+      ],
+      "bibliography_key": "Blanchard-Jaffe-Zhivotovskiy-2025",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "vector-quantization",
+      "relevant_claims": [
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "AUDIT-DS-MARGINS-AT-OPTIMA",
+        "OPEN-DS-MARGINS-NONCENTERED"
+      ],
+      "status": "screened",
+      "note": "Abstract: balance constraints restore k-means consistency at no asymptotic cost - closest published structure to DS15 Prop 6; engage before publication."
     }
   ]
 }

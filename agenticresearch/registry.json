@@ -166,13 +166,13 @@
     "Graf-Luschgy-2000": {
       "title": "Foundations of Quantization for Probability Distributions",
       "doi": "10.1007/BFb0103945",
-      "note": "Springer LNM 1730. Thm 4.1/4.2: every cell of an optimal quantizer has positive mass, null overlaps; Thm 5.1: uniqueness of the scalar log-concave K-quantizer."
+      "note": "Springer LNM 1730. Every cell of an optimal quantizer has positive mass and null boundaries (content secondary-verified via Roychowdhury Prop 1.1 and Liu-Pages 2020, who pin the null-boundary statement to Thm 4.2 and existence to Thm 4.12; the \"Thm 4.1\" numbering for positive mass is unverified - 30 Aug 2026 audit); Thm 5.1: uniqueness of the scalar log-concave K-quantizer (numbering and content confirmed twice at secondary level)."
     },
     "Levrard-2015": {
       "title": "Nonasymptotic bounds for vector quantization in Hilbert spaces",
       "doi": "10.1214/14-AOS1293",
-      "arxiv": "1310.7138",
-      "note": "Defines the mass margin p_min, separation B, and the boundary-mass margin condition; fast rates with constants polynomial in their inverses."
+      "arxiv": "1405.6672",
+      "note": "AOS 43(2):592-619. Definition 2.1 margin condition: p(t) <= (B p_min / 128 M^2) t on the mass of t-neighborhoods of optimal-cell boundaries - a hypothesis on the LAW at population optima, never proven at empirical optima; buys finite optimal-codebook sets, quadratic growth, and 1/n rates; Gaussian mixtures satisfy it. (arXiv 1405.6672; the earlier arXiv 1310.7138 \"Margin conditions for vector quantization\" is the 2013 precursor.)"
     },
     "Kieffer-1983": {
       "title": "Uniqueness of locally optimal quantizer for log-concave density and convex error weighting function",
@@ -208,6 +208,20 @@
       "title": "Optimal design measures with singular information matrices",
       "doi": "10.1093/biomet/65.3.553",
       "note": "Biometrika 65:553-559 (secondary-verified). Ds-optimal designs can carry singular full information matrices - the design-side analogue of the (M3) failure at Ds-optimal partitions (DS15)."
+    },
+    "Fisher-1958": {
+      "title": "On Grouping for Maximum Homogeneity",
+      "doi": "10.1080/01621459.1958.10501479",
+      "note": "JASA 53(284):789-798 (verbatim-verified 30 Aug 2026). Optimal 1-D weighted SSE partitions are contiguous (appendix proof); reduction to C(K-1,G-1) contiguous partitions - the classical anchor for the scalar interval optimum and exact DP step (DS8, DS15 Proposition 4). Credits the continuous analogue to Dalenius 1950 and Cox 1957."
+    },
+    "Mease-Nair-2006": {
+      "title": "Unique optimal partitions of distributions and connections to hazard rates and stochastic ordering",
+      "note": "Statistica Sinica 16:1299-1312 (verbatim-verified 30 Aug 2026). Confirms scalar-quantizer uniqueness under log-concavity of the density via likelihood-ratio ordering, and refutes Eubank-1988 weaker sufficient condition by an explicit three-stationary-solution counterexample: DS15 assumption (S) must stay pinned to log-concavity of the density itself."
+    },
+    "Blanchard-Jaffe-Zhivotovskiy-2025": {
+      "title": "Consistency and inconsistency in k-means clustering",
+      "arxiv": "2507.06226",
+      "note": "Empirical k-means centers can fail to converge under finite first moment even with a unique population optimum (extreme cluster imbalance); consistency restored by an a priori balance constraint. Closest published structure to DS15 Proposition 6 (constraints at negligible asymptotic cost), but repairs a moment pathology rather than the optimizer-driven degeneracy DS15 proves; scalar distortion only. Engage before publication."
     }
   },
   "agent_usage": {

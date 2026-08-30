@@ -102,11 +102,43 @@ a self-contained lemma (§8) — and DS14 already lists DS15 in its `implies`.
 
 ## 5. Nearest literature and transfer boundary
 
-Independent targeted search, 30 Aug 2026 (query log and per-source
-triangulation in
-`LITERATURE/audits/AUDIT-DS-MARGINS-AT-OPTIMA-30-August-2026.md`).
+Independent targeted search, 30 Aug 2026 — separate from the researcher's
+29 Aug triangulation; 6 axes, 40+ recorded queries, ≈350 results screened;
+full query log and six-field triangulation in
+`LITERATURE/audits/AUDIT-DS-MARGINS-AT-OPTIMA-30-August-2026.md`.
 
-<!-- FILLED-FROM-SEARCH -->
+- **Ingredients all check out.** Pollard 1981 *verbatim* (its uniqueness
+  hypothesis is for every \(j\le k\) — discharged by (S) via the
+  log-concave uniqueness cluster); Graf–Luschgy Thm 5.1 numbering+content
+  confirmed twice (secondary; the book itself was unreachable, and the
+  "Thm 4.1" numbering for positive cell mass is unverified — registry note
+  softened); Kieffer 1983 as stated (abstract, corroborated verbatim via
+  Mease–Nair 2006); W. D. Fisher 1958 *verbatim* proves the 1-D contiguity
+  Proposition 4 leans on (new key `Fisher-1958`); Silvey 1978 secondary —
+  the design literature *permits* singular information at \(D_s\) optima
+  but proves no inevitability.
+- **Boundary found in the literature:** Mease & Nair (2006, verbatim, new
+  key `Mease-Nair-2006`) refute Eubank-type weakenings of log-concavity —
+  assumption (S) must stay pinned to log-concavity of the density itself.
+- **Corrections:** Levrard-2015's registry arXiv id was the 2013 precursor
+  (now 1405.6672); its margin condition is a hypothesis on the law at
+  population optima, never proven at optima — the exact structural contrast
+  to DS15, which *proves* a margin fails at optima.
+- **Novelty axis:** 13 queries across profiled-information binning,
+  Schur-complement partitions, HEP systematics-aware binning, and
+  constrained-clustering degeneracy found **no direct precedent** for the
+  margins-failure-at-optima dichotomy. Nearest non-precedents: singular
+  \(D_s\) designs (permitted, not inevitable); Gaussian-mixture ML
+  degeneracy repaired by eigenvalue constraints (Hathaway 1985) — same
+  shape, different criterion; INFERNO's unproven nuisance-independence
+  remark; Erdmann et al. 2026's ad-hoc anti-degeneracy penalties (the DS15
+  phenomenon observed, untheorized); Wunsch et al. 2021 stating the optimum
+  under systematics "is not known". Recorded as a **search gap**, not
+  novelty.
+- **Proposition 6's neighbourhood:** no published swap-steering-to-a-
+  constraint theorem exists; closest is Blanchard–Jaffe–Zhivotovskiy
+  (arXiv:2507.06226, new key) — balance constraints restore k-means
+  consistency at no asymptotic cost — to be engaged before publication.
 
 ## 6. Counterexample search
 
