@@ -139,6 +139,13 @@ deploy. Promoting the portal to the site root is a separately authorized migrati
 - In CI, `corepack enable` must run both before and after `setup-node`, because `cache: pnpm`
   shells out to `pnpm store path` in between.
 
+The browser Lab has its own contract worth knowing: the wire protocol is
+`website/schema/lab-protocol.schema.json`, the browser-side Python is
+`website/static/runtime/python/scorequant_browser_lab.py`, and `tests/test_browser_lab.py` runs
+that module under CPython and pins it against the committed fixtures. A change to one side that
+the other does not follow fails there rather than in a browser — which is how the stale wheel was
+caught when the config fields were renamed.
+
 ## Examples and the FlowCyt study
 
 Every example honors one environment variable:

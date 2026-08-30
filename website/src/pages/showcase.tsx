@@ -237,6 +237,21 @@ export default function Showcase(): React.JSX.Element {
           <code>interest=(&quot;HSPCs&quot;,)</code> — rather than a column index whose meaning
           lives in a comment.
         </p>
+        <h3>Why so few bins are enough</h3>
+        <p>
+          The resulting score cloud is far closer to a handful of atoms than to a continuum. A cell
+          the classifier is confident about has a nearly fixed score, so cells of the same
+          population land almost on top of each other: across the study&apos;s five thousand
+          sampled cells there are only about a hundred and sixty distinct positions in the first
+          two score coordinates.
+        </p>
+        <p>
+          That is the real reason eight hard bins can retain {percent(headline.heldOutEfficiency)}{" "}
+          of the information. The score distribution the quantizer has to cover is nearly discrete
+          already, so a small alphabet is not a coarse approximation of it — it is close to the
+          right shape. It is also why the score-space plot in the Lab looks sparse for this
+          dataset: it is showing the structure, not failing to show the data.
+        </p>
       </section>
 
       <section className="section-wrap">

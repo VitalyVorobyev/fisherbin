@@ -266,12 +266,44 @@ def build_lab_scores() -> dict[str, object]:
     return {
         "schema": {"parameters": list(SCORE_PARAMETERS)},
         "rows": int(scores.shape[0]),
+        "structure": _score_structure(scores, labels),
         "dimensions": int(scores.shape[1]),
         "scores": _round(scores, 5),
         "weights": _round(weights / weights.mean(), 5),
         "populations": [int(value) for value in labels],
         "populationNames": list(CLASS_NAMES),
         "license": "CC-BY-NC-SA-4.0",
+    }
+
+
+def _score_structure(scores: np.ndarray, labels: np.ndarray) -> dict[str, object]:
+    """Measure how concentrated the score cloud is.
+
+    A confidently classified cell has a nearly fixed score, so the cloud is much
+    closer to a handful of atoms than to a continuum. That is the reason a small
+    bin budget can retain almost all the information, and it is worth reporting
+    as a measurement rather than leaving a reader to wonder why the score-space
+    plot looks sparse.
+    """
+    plane = np.round(scores[:, :2], 1)
+    distinct = int(np.unique(plane, axis=0).shape[0])
+    per_population = []
+    for index, name in enumerate(CLASS_NAMES):
+        selected = scores[labels == index]
+        if selected.shape[0] == 0:
+            continue
+        per_population.append(
+            {
+                "population": name,
+                "cells": int(selected.shape[0]),
+                "meanFirstScore": _round(float(selected[:, 0].mean()), 3),
+                "spread": _round(float(selected[:, 0].std()), 3),
+            }
+        )
+    return {
+        "distinctPlanePositions": distinct,
+        "rows": int(scores.shape[0]),
+        "perPopulation": per_population,
     }
 
 

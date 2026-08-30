@@ -71,6 +71,12 @@ export interface ShowcaseData {
 export const showcaseData = rawShowcase as unknown as ShowcaseData;
 
 /** The five-dimensional score table the Lab runs on, fetched rather than bundled. */
+export interface ScoreStructure {
+  distinctPlanePositions: number;
+  perPopulation: {cells: number; meanFirstScore: number; population: string; spread: number}[];
+  rows: number;
+}
+
 export interface LabScoreTable {
   dimensions: number;
   license: string;
@@ -79,6 +85,7 @@ export interface LabScoreTable {
   rows: number;
   schema: {parameters: string[]};
   scores: number[][];
+  structure: ScoreStructure;
   weights: number[];
 }
 

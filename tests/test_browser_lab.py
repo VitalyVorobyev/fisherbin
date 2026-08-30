@@ -11,6 +11,94 @@ import numpy as np
 ROOT = Path(__file__).parents[1]
 
 
+def _run_lab() -> Callable[[str], str]:
+    namespace = runpy.run_path(ROOT / "website/static/runtime/python/scorequant_browser_lab.py")
+    return cast(Callable[[str], str], namespace["run_lab"])
+
+
+def _flowcyt_problem(**overrides: object) -> dict[str, object]:
+    """Build a request from the committed score table the portal ships."""
+    payload = json.loads((ROOT / "website/static/showcase-data/flowcyt-scores.json").read_text())
+    # A slice keeps the pin fast; the browser envelope is exercised by the shape
+    # assertions rather than by re-running five thousand rows here.
+    rows = 600
+    problem: dict[str, object] = {
+        "scores": payload["scores"][:rows],
+        "weights": payload["weights"][:rows],
+        "schema": payload["schema"]["parameters"],
+        "nBins": 6,
+        "solver": "d_exchange",
+        "seed": 28,
+        "maxSteps": 120,
+        "maxScans": 120,
+    }
+    problem.update(overrides)
+    return problem
+
+
+def test_the_shipped_score_table_is_within_the_browser_envelope() -> None:
+    """The Lab caps a run, and the table it ships must fit under that cap."""
+    payload = json.loads((ROOT / "website/static/showcase-data/flowcyt-scores.json").read_text())
+    scores = np.asarray(payload["scores"], dtype=np.float64)
+    assert scores.ndim == 2
+    assert scores.shape[0] <= 5_000, "the browser refuses more rows than this"
+    assert scores.shape[1] <= 6, "the browser refuses more score dimensions than this"
+    assert scores.shape[1] == len(payload["schema"]["parameters"])
+    assert len(payload["weights"]) == scores.shape[0]
+    assert np.isfinite(scores).all()
+    # The mixture score absorbs one component, so five columns for six
+    # populations. A change here means the score construction changed.
+    assert scores.shape[1] == 5
+    assert payload["license"] == "CC-BY-NC-SA-4.0"
+
+
+def test_the_browser_adapter_runs_the_real_five_dimensional_scores() -> None:
+    """Five dimensions is what v1's four-column ceiling excluded."""
+    result = json.loads(_run_lab()(json.dumps(_flowcyt_problem())))
+    assert len(result["labels"]) == 600
+    assert np.asarray(result["centers"]).shape == (6, 5)
+    assert 0.0 < result["retention"] <= 1.0
+    assert result["criterionLabel"] == "D-optimality"
+    assert "interest" not in result
+
+
+def test_a_profiled_run_reports_the_profiled_retention_by_name() -> None:
+    """The full-D retention of a D_s fit answers a different question."""
+    run_lab = _run_lab()
+    profiled = json.loads(
+        run_lab(
+            json.dumps(
+                _flowcyt_problem(
+                    solver="soft_voronoi",
+                    maxSteps=40,
+                    criterion={"name": "profiled_d_optimality", "interest": ["HSPCs"]},
+                )
+            )
+        )
+    )
+    assert profiled["criterionLabel"] == "Profiled D_s (HSPCs)"
+    assert profiled["interest"] == ["HSPCs"]
+
+    plain = json.loads(run_lab(json.dumps(_flowcyt_problem(solver="soft_voronoi", maxSteps=40))))
+    # Different objectives, therefore different reported numbers. If these
+    # agreed, the profiled label would be decorating a full-D retention.
+    assert profiled["retention"] != plain["retention"]
+
+
+def test_an_unknown_criterion_is_refused_rather_than_defaulted() -> None:
+    run_lab = _run_lab()
+    for criterion, message in (
+        ({"name": "e_optimality"}, "unsupported browser criterion"),
+        ({"name": "profiled_d_optimality"}, "at least one parameter of interest"),
+    ):
+        try:
+            run_lab(json.dumps(_flowcyt_problem(criterion=criterion)))
+        except ValueError as error:
+            assert message in str(error)
+        else:  # pragma: no cover - the adapter must not silently accept these
+            raise AssertionError(f"expected {criterion} to be refused")
+
+
 def test_browser_adapter_matches_committed_numpy_fixture() -> None:
     portal_data = json.loads((ROOT / "website/src/generated/portal-data.json").read_text())
     score_space = portal_data["scoreSpace"]
@@ -23,9 +111,7 @@ def test_browser_adapter_matches_committed_numpy_fixture() -> None:
         "maxSteps": 120,
         "maxScans": 120,
     }
-    namespace = runpy.run_path(ROOT / "website/static/runtime/python/scorequant_browser_lab.py")
-    run_lab = cast(Callable[[str], str], namespace["run_lab"])
-    result = json.loads(run_lab(json.dumps(problem)))
+    result = json.loads(_run_lab()(json.dumps(problem)))
     fixture = score_space["scenarios"]["4"]
 
     # The labels are the portable part of the fixture: the assignment is discrete
