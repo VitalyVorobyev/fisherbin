@@ -801,11 +801,26 @@ exact optimum (SSE agreement \(10^{-9}\), identical min cell mass \(49/200\)).
 
 **Claims:** DS-STABLE-MARGINS-PRICE, DS-STABLE-STATE-SELECTION, DS-PROFILED-COMPILE-CERTIFICATE
 
+**Audit (30 Aug 2026,
+`AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`):** all three claims are
+**hardened**. The PRICE/FUNNEL/FLOOR theorem is verified after replacing a
+pointwise SLLN at a data-dependent centroid limit by a uniform strong law on
+compact tilt--codebook sets, making the all-labelings event explicit, and
+fixing the raw-label/exact-centering convention in the FLOOR. The compile
+claim now says *only currently established in the registered theory*, not
+mathematical uniqueness: DS14 is a theorem for certified **sequences**, and
+a single finite certificate supplies diagnostics but no population guarantee.
+The measured census range is corrected from 18--944 to 5--944, and its
+reported library gap interval is identified as an aggregate summary rather
+than a run-wise bound.
+
 Setting: exactly DS15's — \(S=(S_\psi,S_\lambda)\sim P\) on \(\mathbb R^2\),
 \(ES=0\), \(E\|S\|^2<\infty\), \(I\succ0\), class **(L)** (conditional
 centering) + **(S)** (scalar regularity of \(\operatorname{law}(\hat s)\));
 **(R)** is *not* needed here except where DS15's conclusion (1) is imported
-for a comparison. Equal weights, exact empirical centering, \(K\ge3\)
+for a comparison. Equal weights, centered score rows
+\(\tilde S_i=S_i-\bar S_N\) in every empirical information calculation,
+\(K\ge3\)
 (\(=d_\psi+d_\lambda+1\); see the cardinality restatement below), feasible
 labelings = nonsingular binned nuisance block \(\hat I_{\lambda\lambda}>0\).
 \(v_K\), \(J^*\), \(w^*_b\), \(\hat v_K\), \(\mathrm{btw}(\hat s_N;z)\) as in
@@ -818,11 +833,15 @@ binned moment vectors of an exactly centered sample satisfy one linear
 relation, so
 \(\operatorname{rank}(I_z)\le K-1\), and a nonvacuous profiled value needs
 \(K-1\ge d=d_\psi+d_\lambda\), i.e. **\(K\ge d_\psi+d_\lambda+1\)** on a
-centered sample (\(K\ge d\) suffices off the centered class, where
-\(\hat\mu\ne0\)). At \(d_\psi=1\) this is exactly \(K\ge d_\lambda+2\), which
+centered sample. At \(d_\psi=1\) this is exactly \(K\ge d_\lambda+2\), which
 is why `CE-DS-MARGINS-RANK-VACUITY-001` (a \(d_\psi=1\) witness) suggested
 the narrower formula; its `consequences[0]` line carries that \(d_\psi=1\)
 restriction implicitly.
+
+The algebraic rank bound can be one larger for a matrix built from rows with
+nonzero empirical mean. That is not an alternative Fisher-score regime:
+scores have mean zero, and ScoreQuant's empirical information uses exact
+centering. No off-centered compile claim is inferred from that matrix fact.
 
 ### The question
 
@@ -876,18 +895,24 @@ surely:
    \(\hat B_z=\hat I_{\psi\lambda}/\hat I_{\lambda\lambda}\) rides the same
    \(0/0\) as in DS15. DS15's conclusions (2)–(3) are therefore
    value-topological, not properties of exact global optimality.
-3. **(Floor.)** For every fixed measurable \(K\)-cell quantizer \(q\) with
-   \(W_b>0\) and \(I_{q,\lambda\lambda}>\kappa\), the induced sample labelings
-   are eventually feasible with \(\hat I_{\lambda\lambda}\ge\kappa\) and
+3. **(Floor.)** For every fixed measurable \(K\)-cell quantizer \(q\) on the
+   raw score \(S\), with \(W_b>0\) and
+   \(I_{q,\lambda\lambda}>\kappa\), label row \(i\) by \(q(S_i)\) and compute
+   its empirical information from the centered rows \(\tilde S_i\). Those
+   labelings are eventually feasible with
+   \(\hat I_{\lambda\lambda}\ge\kappa\) and
    \(\hat\Phi_s\to\Phi(q)\). Hence the supremum in (1) is asymptotically at
    least \(v^{*+}(\kappa):=\sup\{\Phi(q):I_{q,\lambda\lambda}>\kappa\}\), and
    \(v^{*+}(\kappa)\le v_K-\delta(\kappa)\); DS15's margin-compatible optimum
    \(v^*(\kappa)\) (over \(\lambda_{\min}(I_q)\ge\kappa\), a subclass) obeys
-   \(v^*(\kappa)\le v^{*+}(\kappa)\).
+   \(v^*(\kappa)\le v^{*+}(\kappa)\). This is a supremal lower bound: it
+   asserts neither attainment nor one-sided continuity of either constrained
+   value in \(\kappa\).
 
 ### Proof
 
-Throughout, work on the almost-sure event where: \(\hat v_K(\hat s_N)\to v_K\)
+Throughout, work on one probability-one event where:
+\(\hat v_K(\hat s_N)\to v_K\)
 and the tilt-Lipschitz bound of DS15 Proposition 5 holds (its proof needs
 only (M1)-type moments and (S); the same argument gives
 \(\hat v_{K-1}\to v_{K-1}\)); \(\hat B^*_N\to B^*\) and the SLLN holds for
@@ -895,8 +920,20 @@ only (M1)-type moments and (S); the same argument gives
 \(S_\lambda\); the Glivenko–Cantelli law holds over the fixed VC class of
 tilted half-planes \(\{s:s_\psi-\beta s_\lambda\le c\}\), \((\beta,c)\) in a
 compact neighborhood of \((B^*,\cdot)\), both unweighted and with integrable
-envelope \(|S_\lambda|\) (VC class with integrable envelope; van der
-Vaart–Wellner Thm 2.4.3); and the empirical DP boundaries and masses of
+envelope \(|S_\lambda|\). For the signed weight, apply the VC theorem to
+\(S_\lambda^+1_H\) and \(S_\lambda^-1_H\) separately; compact tilt control is
+already included because all \((\beta,c)\) half-planes form one fixed
+finite-VC class, and \(E|S_\lambda|<\infty\) follows from the second moment.
+Also include the uniform strong law
+\[
+ \sup_{\beta\in\mathcal B,\ C\in[-R,R]^K}
+ \left|(P_N-P)\min_{c\in C}(S_\psi-\beta S_\lambda-c)^2\right|\to0
+\]
+for every compact \(\mathcal B\) containing \(B^*\) and finite \(R\). This
+follows by truncation and finite parameter nets: the class is continuous in
+the finite-dimensional parameter \((\beta,C)\), and on each compact set has
+an integrable envelope \(A_R(1+\|S\|^2)\). Finally include the empirical DP
+boundaries and masses of
 \(\hat J^*_N\) converge to \(J^*\)'s (the audit-hardened boundary/mass
 consistency ingredient of DS15 Proposition 6, which needs only (S)).
 
@@ -927,28 +964,42 @@ terms converge to their population values by the SLLN on fixed functions; so
 inactive cells contribute \(\tau(K\eta)+o(1)\) to the between value with
 \(\tau(m)\downarrow0\).
 
-(ii) *Deletion comparison and* (iii) *full support.* As in Lemma 3, using
+(ii) *Deletion comparison and* (iii) *full support.* If one cell has mass
+below \(\eta\), merge it into a bounded active cell. The increment in SSE is
+bounded by the inactive cell's second-moment contribution plus its mass times
+an active-centroid bound, hence by \(\rho(\eta)+o(1)\), where
+\(\rho(\eta)\downarrow0\) by (i). The resulting grouping uses at most
+\(K-1\) cells, so its SSE is at least \(\hat W_{K-1}\). Therefore
+\(\hat W_{K-1}-\hat W_K\le\delta_0+\rho(\eta)+o(1)\). But
 \(\hat W_{K-1}-\hat W_K\to W_{K-1}-W_K>0\) (value convergence at both
-budgets; strict positivity from (S): atomless with infinite support): once
-\(\delta_0+\rho(\eta)<W_{K-1}-W_K-o(1)\), all \(K\) cells are active — the
-mass bound.
+budgets; strict positivity from (S), whose positive density near the optimal
+boundaries in particular rules out a finite-support collapse). Choose
+\(\eta\), then \(\delta_0\), below this gap: every cell is active. This also
+closes the apparent \(K\)-versus-\(K-1\) loophole; an empty cell is simply the
+\(\eta=0\) case.
 
-(iv) *Centroid convergence, uniform over groupings.* Suppose groupings
+(iv) *Centroid convergence, uniform over groupings.* This is the standard
+almost-minimizer rigidity principle for k-means codebooks
+(Rakhlin--Caponnetto 2006 supplies direct bounded-source prior art), with the
+grouping-to-nearest-center reduction made explicit here. Suppose groupings
 \(z^{(N_j)}\) with \(\mathrm{WSSE}\le\hat W_K+\delta_j\), \(\delta_j\to0\),
 had active-centroid sets escaping a neighborhood of \(C^*\). Active centroids
 are bounded (moment bound), so a subsequential limit set \(C'\ne C^*\)
 exists. The nearest-point SSE is grouping-independent:
-\(\mathrm{SSE}_{\hat P_N}(c(z))\le\mathrm{WSSE}(z)\), moving the finitely
-many centroids to \(C'\) changes the empirical SSE by
-\(O(\gamma)\) with SLLN-bounded constants, and for the **fixed** centroid set
-\(C'\) the map \(\beta\mapsto\hat P_N[\min_{c\in
-C'}(s_\psi-\beta s_\lambda-c)^2]\) is Lipschitz near \(B^*\) with an
-SLLN-bounded constant (expand as in Proposition 5; min-of-quadratics is
-dominated by the same second moments), so
-\(\mathrm{SSE}_{\hat P_N}(C')\to\mathrm{SSE}_P(C')\) along the subsequence.
-Chaining: \(\mathrm{SSE}_P(C')\le\lim(\hat W_K+\delta_j)=W_K\), contradicting
-(S)-uniqueness of the optimal centroid set. So near-optimal groupings have
-centroid sets uniformly convergent to \(C^*\).
+\(\mathrm{SSE}_{\hat P_N}(c(z))\le\mathrm{WSSE}(z)\): reassigning every
+observation to a nearest centroid cannot increase SSE, even when duplicate
+atoms were split among cells. By the compact-set uniform law displayed
+above, simultaneously for the data-dependent \(\hat B_N^*\) and all bounded
+codebooks,
+\(
+\mathrm{SSE}_{P}(c(z^{(N_j)}))
+\le \hat W_K+\delta_j+o(1).
+\)
+Continuity in the codebook then gives
+\(\mathrm{SSE}_P(C')\le W_K\), contradicting (S)-uniqueness when
+\(C'\ne C^*\). This uniform law is essential: a pointwise SLLN for the
+random subsequential limit \(C'\) would be invalid. Thus near-optimal
+groupings have centroid sets uniformly convergent to \(C^*\).
 
 (v) *Misassignment slabs.* For a grouping \(z\) with centroids
 \(\gamma\)-close to \(C^*\): a point on cell \(a\)'s side at distance
@@ -966,9 +1017,16 @@ same GC-plus-atomlessness argument. Masses follow:
 \(\hat W_b\ge \hat P_N(\hat s_N\in J^*_b)-\varepsilon\to w^*_b-\varepsilon\).
 ∎
 
-**Proof of (1).** Both sups run over the finitely many labelings of one
-sample, so no measurability issue arises; let \(z^{(N)}\) (nearly) attain the
-\(\mathrm{btw}\)-sup subject to \(\hat I_{\lambda\lambda}\ge\kappa\). The
+**Proof of (1).** Define a supremum over an empty feasible set as \(-\infty\).
+For each \(N\), both suprema are maxima of finitely many extended-real
+measurable functions of the sample, so they are measurable. Intersecting the
+probability-one uniform-law events above over integer compact radii and
+rational tolerances produces one measurable event on which the argument is
+pathwise and simultaneous over **all** labelings at every \(N\). Consequently
+the conclusion holds for every labeling sequence selected on that event,
+including a data-dependent selection; no separate exceptional set is chosen
+per sequence. When the constrained set is nonempty, let \(z^{(N)}\) attain the
+\(\mathrm{btw}\)-maximum subject to \(\hat I_{\lambda\lambda}\ge\kappa\). The
 first inequality is DS15 Proposition 4 (exact, every sample, every feasible
 labeling). Fix \(\kappa\); suppose along a subsequence
 \(\mathrm{btw}(\hat s_N;z^{(N)})> v_K-\delta\). Since \(\hat v_K\to v_K\),
@@ -1011,14 +1069,22 @@ block \(\hat I_{\psi\lambda}=\sum_b\hat m_{\psi,b}\hat m_{\lambda,b}/\hat
 W_b\to0\) since \(\hat m_{\psi,b}\) is bounded and masses are bounded below;
 \(\lambda_{\min}\le\hat I_{\lambda\lambda}\to0\). ∎
 
-**Proof of (3).** For a fixed \(q\), the induced labels' masses and moments
-are sample means of fixed integrable functions: LLN gives
+**Proof of (3).** For a fixed \(q\), label by \(q(S_i)\), not by applying an
+arbitrary discontinuous rule to the sample-centered row. Masses and raw
+moments are sample means of fixed integrable functions. Exact centering only
+changes the empirical cell moment by
+\[
+ \hat m_b=P_N[S1_{\{q(S)=b\}}]-\bar S_NP_N(q(S)=b),
+\]
+which converges to \(m_b\) because \(\bar S_N\to ES=0\). Thus the LLN gives
 \(\hat W_b\to W_b>0\), \(\hat m_b\to m_b\), so \(\hat
 I_{\lambda\lambda}\to I_{q,\lambda\lambda}>\kappa\) (eventually
 \(\ge\kappa\)), feasibility eventually, and \(\hat\Phi_s\to\Phi(q)\) by
 continuity of the Schur value at a nonsingular scalar nuisance block. Taking
 \(q\) near the sup gives the floor; the cap of (1) applied to these labelings
-gives \(v^{*+}(\kappa)\le v_K-\delta(\kappa)\). ∎
+gives \(v^{*+}(\kappa)\le v_K-\delta(\kappa)\). Neither this approximation nor
+the price proof supplies an optimizer at the strict boundary or continuity in
+\(\kappa\). ∎
 
 **Self-adversarial notes (protocol G).** Duplicate atoms and split duplicates
 are inside the grouping formulation by construction; singleton cells are
@@ -1030,7 +1096,11 @@ probed adversarially at finite \(N\) (census suite) but are not claimed; the
 law class needs (S) (atomless, unique scalar optimum) — the census grid laws
 are atomic emulations, evidence only; nothing here claims margin-carrying
 *exchange-stable* sequences exist asymptotically (that inhabitation question
-is OP30).
+is OP30). Applying \(q\) to centered rows instead of raw \(S_i\) is a
+different, sample-dependent labeling convention and needs boundary/translation
+continuity not assumed here. The PRICE statement is nevertheless pathwise
+uniform over all labelings, so it covers either convention whenever the
+margin is observed.
 
 ### Measured: which regime the optimizer actually occupies
 
@@ -1039,7 +1109,7 @@ is OP30).
 against the audit stack's from-scratch oracle on 782 states.)
 
 - **Census (exact, \(N=10\)–\(14\), \(K=3\), centered06 + mix3, 2 reps).**
-  Exchange-stable states are plentiful (18–944 per instance) and
+  Exchange-stable states are plentiful (5–944 per instance) and
   overwhelmingly non-global. On the centered law they span both regimes:
   \(\hat I_{\lambda\lambda}\) from \(10^{-5}\) to \(0.57\), with gap and
   nuisance block **anti-correlated** (per-instance correlation \(-0.27\) to
@@ -1072,8 +1142,9 @@ against the audit stack's from-scratch oracle on 782 states.)
   verified).** On the centered law, **every** seeding's terminal state
   collapses the nuisance block at the predicted \(K/N\) scale
   (\(N\cdot\hat I_{\lambda\lambda}\) median \(0.5\)–\(3.0\) across all seeds
-  and sizes) with near-optimal values (log-gap to the certified DP ceiling
-  \(0.004\)–\(0.046\)), masses approaching the population values and healthy
+  and sizes) with near-optimal values (the research run's reported aggregate
+  log-gap summaries to the certified DP ceiling are \(0.004\)–\(0.046\); this
+  is not a bound on every seed/run), masses approaching the population values and healthy
   separations — exactly conclusion (2) in action: the terminals are in the
   funnel because they are near-optimal in value, seed-independently. On mix3
   every seeding lands at \(\lambda_{\min}\approx1.7=\Theta(1)\) with log-gaps
@@ -1084,38 +1155,45 @@ against the audit stack's from-scratch oracle on 782 states.)
 
 On the conditionally centered class, for what the free optimizer returns:
 
-- **The projected efficient-score interval rule remains the only
-  unconditional theorem-backed compile path.** Free profiled optimization is
+- **The projected efficient-score interval rule remains the only currently
+  established unconditional compile path in the registered theory.** This is
+  an inventory of proved routes, not a mathematical uniqueness theorem about
+  every possible compiler. Free profiled optimization is
   value-driven; conclusion (2) makes every value-successful run — global or
   not, however seeded — nuisance-degenerate in the limit, with the companion
   rule's slope \(\hat B_z\) unstable (0/0). Nothing about the terminal state
   is stably compilable, and `compile_quantizer`'s refusal for profiled
   criteria is the correct default, now backed by a theorem about the
   optimizer's actual output rather than only about global optima.
-- **A certificate-gated conditional path exists and is exactly priced.** If a
-  terminal state passes the *measured* DS14 triple — min mass \(\ge c_0\),
-  \(\lambda_{\min}(\hat I_N)\ge\kappa\), projected-centroid separation
-  \(\ge\gamma\) (else the merged/reduced rule of DS11(d)/DS14) — together
-  with exchange stability (DS13 is its finite certificate), then the DS14
-  companion efficient-Voronoi rule \(\rho_N\) built from the state's own
-  \(\hat e_b\) and \(S_\psi(\hat I_N)^{-1}\) is the theorem-backed inductive
-  rule: DS14 gives geometrization and population stationarity of the limits
-  along certified sequences. Conclusion (1) prices the certificate
-  intrinsically: such states sit at least \(\delta(\kappa)\) below \(v_K\),
-  so the price \(\hat v_K-\hat\Phi_s\) (exactly computable — the library's
-  `efficient_score_bound` DP ceiling) must be *reported, never hidden*
-  (invariant 7). Measured: on the centered class the free optimizer does
+- **DS14 supplies a sequence-conditional companion rule, not a population
+  guarantee from one finite certificate.** If an exchange-stable sequence
+  satisfies DS14's full hypotheses — (M1)/(M4) on the law and, eventually,
+  uniform (M2)/(M3)/(M5), or the audited merged-rule variant — then the
+  companion efficient-Voronoi rules \(\rho_N\) built from the states' own
+  projected centroids and profiled metrics geometrize and have
+  population-stationary subsequential limits. At one finite \(N\), exact
+  exchange stability plus measured mass, conditioning, and separation checks
+  are useful diagnostics and define a candidate companion rule, but do not by
+  themselves certify those asymptotics; DS13 is a consequence of stability,
+  not a replacement for it. DS16 prices any state with measured
+  \(\lambda_{\min}(\hat I_N)\ge\kappa\) pathwise: report the observable finite
+  gap \(\hat v_K-\hat\Phi_s\) (the `efficient_score_bound` DP ceiling minus
+  the terminal value). The population \(\delta(\kappa)\) is existential and
+  may not be reported numerically without a law-specific lower bound.
+  Measured: on the centered class the free optimizer does
   **not** return such states at realistic \(N\) (the funnel), so the
-  certified path operationally requires margin-*constrained* optimization —
-  a solver-design question (OP7), whose asymptotic non-vacuity (do
+  candidate path operationally appears to require margin-*constrained*
+  optimization — a solver-design question (OP7), whose asymptotic non-vacuity (do
   margin-compatible stable sequences exist? is \(v^*(\kappa)\) attained?) is
   the explicit open remainder OP30 (`OPEN-DS-STABLE-BASINS`).
 - **Information-loss implication.** A margin-certified compile retains at
   most \(v_K-\delta(\kappa)\) of profiled information against the \(K\)-cell
   ceiling \(v_K\) (relative retention \(\le1-\delta(\kappa)/v_K\)), on top of
   the binning loss \(v_K<\sigma_s^2\) against unbinned inference; the
-  projected rule attains the ceiling itself, with the nuisance estimated
-  unbinned (DS9/DS15 deployability).
+  projected rule attains the ceiling only in the distinct projected-score
+  formulation where nuisance information is supplied externally/unbinned
+  (DS9/DS15 deployability). The theorem gives no positive computable lower
+  bound on \(\delta(\kappa)\) from a single finite dataset.
 
 Both packet stop conditions that could close the deployment question are thus
 hit: **proved** (price + funnel on the stated class) and **reduced** (the

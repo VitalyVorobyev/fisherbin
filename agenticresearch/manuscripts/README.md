@@ -120,6 +120,32 @@ canonical.
   `CE-DS-INTERVAL-SEED-UNSTABLE-001`) and the census/library measured rows
   (N-DS-STABLE-*) postdate v8.
 
+### Added 30 August 2026 (the DS16 audit session)
+
+- **DS16 needs the audited uniform-law proof, not the original pointwise
+  SLLN wording.** The codebook in Lemma DS16.1 is data-dependent; the valid
+  bridge is a uniform strong law over compact tilt--codebook sets. The
+  near-minimizer codebook-rigidity ingredient must be attributed to
+  Rakhlin--Caponnetto (2006), while the arbitrary-grouping and signed-nuisance
+  steps remain specific to DS16.
+- **The compile language was too strong.** The projected rule is the only
+  *currently established* unconditional route in the registry, not a theorem
+  excluding all future compilers. DS14 is a theorem for exchange-stable
+  sequences satisfying all eventual margins and law assumptions; one finite
+  fit passing a measured triple supplies diagnostics, not population
+  stationarity. Certificate-branch inhabitation and a constrained solver stay
+  open in OP30/OP7.
+- **The constrained values and prices must not be conflated.** The strict
+  nuisance-block value \(v^{*+}(\kappa)\) differs from the closed
+  full-eigenvalue value \(v^*(\kappa)\); neither attainment nor one-sided
+  continuity is proved. Report the observable finite
+  \(\hat v_K-\hat\Phi_s\), not a numerical \(\delta(\kappa)\), which is only
+  existential.
+- **Two measured summaries were corrected.** The exact stable-count range is
+  5--944, not 18--944. The 0.004--0.046 researcher library gap is an aggregate
+  summary, not a run-wise bound; an independent N=100 random-seed run reached
+  0.075 while preserving the qualitative centered-law funnel.
+
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of
 `protocols/audit.md`. It had no updater before workspace v4.0, which is why the

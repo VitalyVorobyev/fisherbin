@@ -17,7 +17,7 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
 *Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 29 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 (margins at finite \(D_s\) optima) is resolved for conditionally centered laws at \(d_\psi=d_\lambda=1\) by the DS15 margins dichotomy (`KNOWN_RESULTS/05b-ds-bridge.md` DS15; packet `WORK/completed/DS-MARGINS-AT-OPTIMA.md`; independently audited 30 Aug 2026, `AUDITS/AUDIT-DS-MARGINS-AT-OPTIMA-001.md`, which refuted the registered \(d_\lambda\)-generality at \(K=d_\lambda+1\) and hardened the achievability proof): (M2) is automatic at global optima, (M3) provably fails there — free optima converge to the nuisance-degenerate efficient-score interval quantizer — so profiled compilation routes through the projected efficient-score rule rather than a DS14 margin certificate. OP29's deployment half (exchange-stable non-global states — what the optimizer actually returns) is resolved 30 Aug 2026 by DS16 (`KNOWN_RESULTS/05b-ds-bridge.md`; packet `WORK/completed/DS-STABLE-MARGINS-COMPILE.md`): the margins are priced at every labeling — \(\hat I_{\lambda\lambda}\ge\kappa\) caps the value at \(v_K-\delta(\kappa)\) — and any value-convergent solver output lands in the DS15 degeneracy seed-independently (measured through \(N=1000\)), so the projected rule remains the only unconditional compile path and a DS14 companion rule is compilable only under a measured margin certificate at a reported price (`DS-STABLE-MARGINS-PRICE`, `DS-PROFILED-COMPILE-CERTIFICATE`). The surviving gaps are OP29's mathematical branches, OP30, and OP7.*
+*Status 30 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 is resolved on the audited scalar DS15 class. OP29's deployment half is resolved by DS16 and hardened by `AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`: \(\hat I_{\lambda\lambda}\ge\kappa\) has a strict existential population price and every value-convergent sequence enters the nuisance-degenerate funnel. The projected rule is the only currently established unconditional compile path in the registry. A DS14 companion rule has an asymptotic guarantee only along exchange-stable sequences satisfying all DS14 law and eventual-margin hypotheses; one finite diagnostic is not a population certificate. The surviving gaps are OP29's mathematical branches, OP30, and OP7.*
 
 ## OP29. Margins beyond conditional centering
 
@@ -65,9 +65,14 @@ margin-retaining non-global stable states exist in every census instance at
 terminal at \(N=100\)–\(1000\) is in the funnel. (b) Does exchange ascent
 from the documented seeds converge in value to \(v_K\) a.s., so the DS16
 funnel forces terminal degeneracy? Measured yes through \(N=1000\),
-seed-independently. (c) Design a margin-constrained exchange (or certified
-relaxation) terminating at certified states with a stated gap to
-\(v^*(\kappa)\) — feeds OP7.
+seed-independently in the tested runs. The DS16 audit corrected the census
+range to 5--944 and showed that the reported 0.004--0.046 library gap was an
+aggregate summary, not a per-run bound. (c) Design a margin-constrained
+exchange (or certified relaxation) terminating along sequences satisfying
+DS14's full hypotheses, with a stated gap to a correctly defined constrained
+value. A single finite state passing the measured triple plus stability is a
+diagnostic candidate, not a population certificate; attainment and one-sided
+continuity of \(v^{*+}(\kappa)\) and \(v^*(\kappa)\) remain open — feeds OP7.
 
 Target claim: `OPEN-DS-STABLE-BASINS`.
 
