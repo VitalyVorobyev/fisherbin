@@ -81,7 +81,8 @@ def _validate_common_config(
     whiten: bool,
     rank_rtol: float | None,
     seed: int,
-    n_init: int,
+    restarts: int,
+    restarts_field: str,
     tolerance: float,
     record_every: int,
 ) -> None:
@@ -91,7 +92,7 @@ def _validate_common_config(
         if rank_rtol >= 1:
             raise ValueError("rank_rtol must be less than one")
     _validate_integer("seed", seed, minimum=0)
-    _validate_integer("n_init", n_init, minimum=1)
+    _validate_integer(restarts_field, restarts, minimum=1)
     _validate_finite("tolerance", tolerance, positive=False)
     _validate_integer("record_every", record_every, minimum=1)
 
@@ -109,8 +110,10 @@ class KMeansConfig:
         dtype-aware default is used when omitted.
     seed
         Nonnegative JAX random seed.
-    n_init
+    solver_restarts
         Number of weighted k-means++ restarts after invariant row ordering.
+        This is k-means' own restart count: the run with the lowest final
+        objective wins.
     max_iter
         Maximum Lloyd iterations per restart.
     tolerance
@@ -123,7 +126,7 @@ class KMeansConfig:
     whiten: bool = True
     rank_rtol: float | None = None
     seed: int = 0
-    n_init: int = 8
+    solver_restarts: int = 8
     max_iter: int = 100
     tolerance: float = 1e-6
     record_every: int = 1
@@ -134,7 +137,8 @@ class KMeansConfig:
             whiten=self.whiten,
             rank_rtol=self.rank_rtol,
             seed=self.seed,
-            n_init=self.n_init,
+            restarts=self.solver_restarts,
+            restarts_field="solver_restarts",
             tolerance=self.tolerance,
             record_every=self.record_every,
         )
@@ -158,7 +162,7 @@ class SoftVoronoiConfig:
         dtype-aware default is used when omitted.
     seed
         Nonnegative JAX random seed.
-    n_init
+    initializer_restarts
         Number of k-means restarts used to initialize the centers.
     kmeans_max_iter
         Maximum Lloyd iterations for each initialization restart.
@@ -180,7 +184,7 @@ class SoftVoronoiConfig:
     whiten: bool = True
     rank_rtol: float | None = None
     seed: int = 0
-    n_init: int = 8
+    initializer_restarts: int = 8
     kmeans_max_iter: int = 100
     tolerance: float = 1e-6
     max_steps: int = 1000
@@ -195,7 +199,8 @@ class SoftVoronoiConfig:
             whiten=self.whiten,
             rank_rtol=self.rank_rtol,
             seed=self.seed,
-            n_init=self.n_init,
+            restarts=self.initializer_restarts,
+            restarts_field="initializer_restarts",
             tolerance=self.tolerance,
             record_every=self.record_every,
         )
@@ -228,8 +233,10 @@ class DExchangeConfig:
     seed
         Base seed of deterministic initialization. Exchange restart ``r`` uses
         ``seed + r``.
-    n_init
-        Number of k-means seeding restarts inside one exchange restart.
+    initializer_restarts
+        Number of k-means seeding restarts inside one exchange restart. This
+        nests inside ``solver_restarts``: the total seeding work is the
+        product of the two.
     max_scans
         Maximum number of complete candidate scans. ``None`` runs until the
         exchange is stable, which strict positive-gain acceptance guarantees;
@@ -243,7 +250,7 @@ class DExchangeConfig:
         single best move. Small improving sets always use that single exact
         move, so results match ``batch_moves=False`` on small samples. Ignored
         when ``first_improvement`` is set.
-    n_restarts
+    solver_restarts
         Number of independent exchange restarts. The restart with the best
         exact final objective wins, ties resolving to the earliest restart, and
         every reported diagnostic describes that winning restart.
@@ -268,10 +275,10 @@ class DExchangeConfig:
     method: Literal["d_exchange"] = field(default="d_exchange", init=False)
     rank_rtol: float | None = None
     seed: int = 0
-    n_init: int = 8
+    initializer_restarts: int = 8
     max_scans: int | None = None
     batch_moves: bool = True
-    n_restarts: int = 1
+    solver_restarts: int = 1
     init: Literal["kmeans++", "random"] = "kmeans++"
     gain_tolerance: float = 1e-10
     first_improvement: bool = False
@@ -284,11 +291,11 @@ class DExchangeConfig:
             if self.rank_rtol >= 1:
                 raise ValueError("rank_rtol must be less than one")
         _validate_integer("seed", self.seed, minimum=0)
-        _validate_integer("n_init", self.n_init, minimum=1)
+        _validate_integer("initializer_restarts", self.initializer_restarts, minimum=1)
         if self.max_scans is not None:
             _validate_integer("max_scans", self.max_scans, minimum=1)
         _validate_bool("batch_moves", self.batch_moves)
-        _validate_integer("n_restarts", self.n_restarts, minimum=1)
+        _validate_integer("solver_restarts", self.solver_restarts, minimum=1)
         if self.init not in ("kmeans++", "random"):
             raise ValueError("init must be 'kmeans++' or 'random'")
         _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
@@ -319,7 +326,7 @@ class MahalanobisLloydConfig:
         Relative threshold for the informative Fisher subspace.
     seed
         Nonnegative seed of the deterministic k-means seeding.
-    n_init
+    initializer_restarts
         Number of weighted k-means++ restarts used to seed the labels.
     max_iter
         Maximum number of guarded batch iterations.
@@ -344,7 +351,7 @@ class MahalanobisLloydConfig:
     method: Literal["mahalanobis_lloyd"] = field(default="mahalanobis_lloyd", init=False)
     rank_rtol: float | None = None
     seed: int = 0
-    n_init: int = 8
+    initializer_restarts: int = 8
     max_iter: int = 100
     guard: Literal["exchange", "reject"] = "exchange"
     gain_tolerance: float = 1e-10
@@ -357,7 +364,7 @@ class MahalanobisLloydConfig:
             if self.rank_rtol >= 1:
                 raise ValueError("rank_rtol must be less than one")
         _validate_integer("seed", self.seed, minimum=0)
-        _validate_integer("n_init", self.n_init, minimum=1)
+        _validate_integer("initializer_restarts", self.initializer_restarts, minimum=1)
         _validate_integer("max_iter", self.max_iter, minimum=1)
         if self.guard not in ("exchange", "reject"):
             raise ValueError("guard must be 'exchange' or 'reject'")

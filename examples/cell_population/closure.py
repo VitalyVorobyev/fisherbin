@@ -320,12 +320,12 @@ def _fit_partition(
     )
     if method == "score_kmeans":
         config: sq.KMeansConfig | sq.SoftVoronoiConfig = sq.KMeansConfig(
-            seed=seed, n_init=3 if quick else 8
+            seed=seed, solver_restarts=3 if quick else 8
         )
     elif method == "soft_voronoi":
         config = sq.SoftVoronoiConfig(
             seed=seed,
-            n_init=3 if quick else 4,
+            initializer_restarts=3 if quick else 4,
             max_steps=50 if quick else 160,
             record_every=10,
         )

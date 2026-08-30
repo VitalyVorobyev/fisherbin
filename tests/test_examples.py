@@ -65,13 +65,15 @@ def test_soft_d_optimality_improves_a_targeted_nonlinear_fixture() -> None:
         train_scores,
         weights=train_weights,
         n_bins=2,
-        config=scorequant.KMeansConfig(seed=0, n_init=8),
+        config=scorequant.KMeansConfig(seed=0, solver_restarts=8),
     )
     soft = fit_test_quantizer(
         train_scores,
         weights=train_weights,
         n_bins=2,
-        config=scorequant.SoftVoronoiConfig(seed=0, n_init=8, max_steps=400, record_every=100),
+        config=scorequant.SoftVoronoiConfig(
+            seed=0, initializer_restarts=8, max_steps=400, record_every=100
+        ),
     )
     improvement = (
         soft.evaluate_scores(test_scores, test_weights).geometric_mean_retention

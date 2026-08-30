@@ -85,13 +85,13 @@ def main() -> None:
             table,
             n_bins=n_bins,
             criterion=sq.ProfiledDOptimality((0,)),
-            config=sq.DExchangeConfig(seed=0, n_init=8),
+            config=sq.DExchangeConfig(seed=0, initializer_restarts=8),
         )
         hot = sq.optimize_partition(
             table,
             n_bins=n_bins,
             criterion=sq.ProfiledDOptimality((0,)),
-            config=sq.DExchangeConfig(seed=0, n_init=8),
+            config=sq.DExchangeConfig(seed=0, initializer_restarts=8),
             initial_labels=bound.labels,
         )
         ceilings.append(bound.upper_bound)

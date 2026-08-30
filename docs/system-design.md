@@ -169,7 +169,8 @@ never share an argument: the former enter through providers, the latter through 
 The current exact exchange scan is \(O(NKP^2)\) per accepted move and avoids \(O(N^2)\) storage.
 Geometric solvers materialize \([N,K]\) distances. Histories store aggregate metrics and center
 snapshots, never per-event responsibilities. `to_dict()` is JSON-ready diagnostic state, not a
-versioned persistence format.
+versioned persistence format; that role belongs to `Quantizer.save`, which writes a versioned
+non-pickle artifact holding the rule alone.
 
 ## Pre-1.0 API audit
 
@@ -188,7 +189,7 @@ not a need for a generic facade:
 | Monte Carlo population law | pass an unrecorded callback as a score table | deterministic score/observation sampler source | not yet implemented |
 | analytic cell integrals | pretend an oracle contains rows | moment-oracle evaluation of an existing rule | not yet implemented |
 | large transported data | call minibatch fitting exact | streaming aggregation for a frozen rule | not yet implemented |
-| reuse across processes | treat `to_dict()` as a schema | versioned non-pickle quantizer artifact | not yet implemented |
+| reuse across processes | treat `to_dict()` as a schema | versioned non-pickle quantizer artifact | implemented as `Quantizer.save`/`Quantizer.load`, a zip of `manifest.json` plus `allow_pickle=False` arrays; loads and predicts with no JAX present |
 
 The revision deliberately does not add `predict`, a generic criterion plugin, classifier training,
 or a universal streaming optimizer. See [ADR 0013](adr/0013-complete-pre-1-api-boundaries.md) and

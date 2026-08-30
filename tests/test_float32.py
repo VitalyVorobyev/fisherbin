@@ -14,7 +14,7 @@ def test_float32_fit_and_soft_step() -> None:
         scores,
         n_bins=5,
         config=scorequant.SoftVoronoiConfig(
-            n_init=1,
+            initializer_restarts=1,
             kmeans_max_iter=20,
             max_steps=5,
             record_every=5,
@@ -94,7 +94,7 @@ def test_float32_solvers_are_individually_valid_on_each_backend() -> None:
             scores,
             weights=weights,
             n_bins=3,
-            config=scorequant.DExchangeConfig(n_init=2),
+            config=scorequant.DExchangeConfig(initializer_restarts=2),
             execution=scorequant.ExecutionConfig(
                 backend=backend, precision="float32", device="cpu"
             ),

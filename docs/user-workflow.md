@@ -3,6 +3,8 @@
 Four questions decide a ScoreQuant call: which task, which door, which criterion, which solver.
 This page answers them in that order. Every snippet runs, and they share one namespace.
 
+Install with `uv add scorequant`, or `pip install scorequant` outside a `uv` project.
+
 ```python
 import numpy as np
 
@@ -90,7 +92,7 @@ diagnostics = {
 
 The exchange runs until no relocation improves the objective, accepting many verified relocations
 per scan; `max_scans` bounds the work, `batch_moves=False` forces one relocation per scan, and
-`n_restarts` with `init` searches several seeded starting labelings and keeps the best exact final
+`solver_restarts` with `init` searches several seeded starting labelings and keeps the best exact final
 objective.
 
 To check labels this solver did not produce — an external tool, a hand edit, a batch run stopped by
@@ -129,7 +131,7 @@ quantizer = sq.fit_quantizer(
     validation=sq.ScoreSample(holdout),
     n_bins=5,
     criterion=sq.DOptimality(),
-    config=sq.SoftVoronoiConfig(seed=21, n_init=4, max_steps=120, record_every=20),
+    config=sq.SoftVoronoiConfig(seed=21, initializer_restarts=4, max_steps=120, record_every=20),
 )
 soft_fit = {
     "train": float(quantizer.train_report.geometric_mean_retention),
@@ -150,7 +152,7 @@ baseline = sq.fit_quantizer(
     sq.ScoreSample(scores, weights),
     n_bins=5,
     criterion=sq.NormalizedTrace(),
-    config=sq.KMeansConfig(seed=21, n_init=4),
+    config=sq.KMeansConfig(seed=21, solver_restarts=4),
 )
 baseline_efficiency = float(baseline.train_report.geometric_mean_retention)
 ```

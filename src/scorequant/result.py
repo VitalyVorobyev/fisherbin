@@ -15,13 +15,13 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from ._chunking import assignment_chunk_rows
-from ._execution import backend_array, canonical_array, canonicalize_public, use_execution
+from ._execution import backend_array, canonicalize_public, use_execution
 from ._execution import xp as jnp
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
+from .artifact import Quantizer
 from .config import ExecutionConfig, MahalanobisLloydConfig, PartitionConfig, QuantizerConfig
 from .criteria import Criterion, DOptimality, ProfiledDOptimality
-from .information import information_report
 from .reports import (
     EfficientScoreBound,
     GeometryReport,
@@ -31,7 +31,7 @@ from .reports import (
     ProfiledInformationReport,
     StabilityReport,
 )
-from .sources import ScoreProvenance
+from .sources import ScoreProvenance, ScoreSchema
 from .transforms import FisherTransform
 
 if TYPE_CHECKING:
@@ -85,9 +85,7 @@ class OptimizationTrace:
 class QuantizerResult:
     """Represent a reusable hard rule on raw score vectors."""
 
-    centers: np.ndarray
-    metric: np.ndarray | None
-    transform: FisherTransform
+    quantizer: Quantizer
     criterion: Criterion
     config: QuantizerConfig
     execution: ExecutionConfig
@@ -102,14 +100,34 @@ class QuantizerResult:
     validation_profiled_report: ProfiledInformationReport | None = None
 
     @property
+    def centers(self) -> np.ndarray:
+        """Return the frozen cell centers in transformed coordinates."""
+        return self.quantizer.centers
+
+    @property
+    def metric(self) -> np.ndarray | None:
+        """Return the frozen common Mahalanobis metric, if the rule carries one."""
+        return self.quantizer.metric
+
+    @property
+    def transform(self) -> FisherTransform:
+        """Return the informative-subspace projection the rule was fitted in."""
+        return self.quantizer.transform
+
+    @property
+    def schema(self) -> ScoreSchema | None:
+        """Return the names of the raw score coordinates, when they were declared."""
+        return self.quantizer.schema
+
+    @property
     def n_bins(self) -> int:
         """Return the number of hard output labels."""
-        return int(self.centers.shape[0])
+        return self.quantizer.n_bins
 
     @property
     def rank(self) -> int:
         """Return the numerically informative score-space rank."""
-        return self.transform.rank
+        return self.quantizer.rank
 
     @property
     def information_kind(self) -> str:
@@ -136,9 +154,7 @@ class QuantizerResult:
         argmin are independent of every other row, so chunking is
         bit-identical to the unchunked computation.
         """
-        with use_execution(execution or self.execution):
-            coordinates = self.transform.apply(scores, execution=execution or self.execution)
-            return canonical_array(_chunked_predict_labels(coordinates, self.centers, self.metric))
+        return self.quantizer.predict_scores(scores, execution=execution or self.execution)
 
     def evaluate_scores(
         self,
@@ -148,11 +164,9 @@ class QuantizerResult:
         execution: ExecutionConfig | None = None,
     ) -> InformationReport:
         """Evaluate the frozen rule on a new weighted score sample."""
-        return information_report(
+        return self.quantizer.evaluate_scores(
             scores,
-            self.predict_scores(scores, execution=execution or self.execution),
             weights,
-            n_bins=self.n_bins,
             rank_rtol=self.config.rank_rtol,
             execution=execution or self.execution,
         )
@@ -179,6 +193,7 @@ class QuantizerResult:
                 ),
                 "provenance": self.provenance.to_dict(),
                 "information_kind": self.information_kind,
+                "schema": None if self.schema is None else self.schema.to_dict(),
                 "hardening_gap": self.hardening_gap,
                 "source_kind": self.source_kind,
                 "train_profiled_report": (
@@ -252,6 +267,7 @@ class PartitionResult:
     geometry: GeometryReport | None = None
     profiled_report: ProfiledInformationReport | None = None
     profiled_geometry: ProfiledGeometryReport | None = None
+    schema: ScoreSchema | None = None
 
     @property
     def n_bins(self) -> int:
@@ -282,7 +298,7 @@ class PartitionResult:
         self,
         *,
         execution: ExecutionConfig | None = None,
-    ) -> QuantizerResult:
+    ) -> Quantizer:
         r"""Compile an exchange-stable D partition into its canonical rule.
 
         Theorem 3 makes a one-point-exchange-stable, nonsingular D partition a
@@ -306,9 +322,10 @@ class PartitionResult:
 
         Returns
         -------
-        QuantizerResult
-            Reusable score-space rule carrying the partition's centers, metric,
-            labels, and training report.
+        Quantizer
+            The deployable rule itself -- the partition's centers, metric and
+            transform. It is a rule, not a new fit, so it carries no labels,
+            reports or history; those already belong to this partition.
 
         Raises
         ------
@@ -348,37 +365,15 @@ class PartitionResult:
                     "by more than the gain tolerance the partition was certified at; "
                     "inspect geometry.maximum_violation_gain"
                 )
-        trace = OptimizationTrace(
-            steps=np.arange(self.objective_history.shape[0]),
-            centers=np.repeat(
-                self.transformed_centers[None, :, :], self.objective_history.shape[0], axis=0
-            ),
-            objective=self.objective_history,
-            bin_weights=np.repeat(
-                self.cell_weights[None, :], self.objective_history.shape[0], axis=0
-            ),
-            train_hard_retention=np.full(
-                self.objective_history.shape,
-                self.train_report.geometric_mean_retention,
-                dtype=self.cell_weights.dtype,
-            ),
-            objective_label="logdet_retained",
-        )
         return canonicalize_public(
-            QuantizerResult(
+            Quantizer(
+                transform=self.transform,
                 centers=self.transformed_centers,
                 metric=self.metric,
-                transform=self.transform,
-                criterion=self.criterion,
-                config=self.config,
-                execution=resolved_execution,
-                trace=trace,
-                labels=self.labels,
-                train_report=self.train_report,
-                validation_report=None,
+                schema=self.schema,
                 provenance=self.provenance,
-                hardening_gap=0.0,
-                source_kind="compiled_partition",
+                criterion=self.criterion,
+                execution=resolved_execution,
             )
         )
 
@@ -402,6 +397,7 @@ class PartitionResult:
                 "train_report": self.train_report.to_dict(),
                 "provenance": self.provenance.to_dict(),
                 "information_kind": self.information_kind,
+                "schema": None if self.schema is None else self.schema.to_dict(),
                 "accepted_moves": self.accepted_moves,
                 "scans": self.scans,
                 "lloyd_iterations": self.lloyd_iterations,

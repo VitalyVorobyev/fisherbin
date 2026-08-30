@@ -125,7 +125,7 @@ profiled = sq.optimize_partition(
     weights=weights,
     n_bins=3,
     criterion=sq.ProfiledDOptimality((0,)),
-    config=sq.DExchangeConfig(seed=1, n_init=32, max_scans=200),
+    config=sq.DExchangeConfig(seed=1, initializer_restarts=32, max_scans=200),
 )
 geometry = profiled.profiled_geometry
 
@@ -176,7 +176,7 @@ plain = sq.optimize_partition(
     scores,
     weights=weights,
     n_bins=3,
-    config=sq.DExchangeConfig(seed=1, n_init=32, max_scans=200),
+    config=sq.DExchangeConfig(seed=1, initializer_restarts=32, max_scans=200),
 )
 certificate = sq.certify_partition(scores, weights=weights, n_bins=3, incumbent=plain.labels)
 compiled = plain.compile_quantizer()

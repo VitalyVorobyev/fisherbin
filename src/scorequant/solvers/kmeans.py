@@ -229,6 +229,6 @@ def weighted_kmeans(
     order = np.lexsort((np.asarray(weights), norms))
     ordered_points = points[jnp.asarray(order)]
     ordered_weights = weights[jnp.asarray(order)]
-    seeds = split_seeds(config.seed, config.n_init)
+    seeds = split_seeds(config.seed, config.solver_restarts)
     runs = [_single_kmeans(ordered_points, ordered_weights, n_bins, config, seed) for seed in seeds]
     return min(runs, key=lambda run: run.objective_history[-1])

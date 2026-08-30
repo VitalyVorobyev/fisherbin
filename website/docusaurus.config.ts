@@ -1,5 +1,6 @@
 import type {Config} from "@docusaurus/types";
 import type {Options as ClassicOptions} from "@docusaurus/preset-classic";
+import {BannerPlugin} from "webpack";
 
 const config: Config = {
   title: "ScoreQuant",
@@ -19,13 +20,29 @@ const config: Config = {
   plugins: [
     () => ({
       name: "runtime-boundary-warnings",
-      configureWebpack: () => ({
-        // These two imports intentionally resolve only in the assembled static
-        // artifact; keeping them dynamic is what prevents eager runtime loads.
+      configureWebpack: (_config, isServer) => ({
+        // This import intentionally resolves only in the assembled static
+        // artifact; keeping it dynamic is what prevents an eager runtime load.
         ignoreWarnings: [
-          {module: /SearchDialog\.tsx$/, message: /request of a dependency is an expression/},
-          {module: /lab\.worker\.tsx?$/, message: /request of a dependency is an expression/}
-        ]
+          {module: /SearchDialog\.tsx$/, message: /request of a dependency is an expression/}
+        ],
+        // Docusaurus's own ChunkAssetPlugin taps additionalTreeRuntimeRequirements
+        // and appends `__webpack_require__.gca = ...` to every chunk that has a
+        // runtime. A web worker built through `new Worker(new URL(...))` is its
+        // own entry, and once its module needs no webpack runtime helpers webpack
+        // emits it with no `__webpack_require__` binding at all -- so the appended
+        // assignment is the first statement to run and it throws
+        // `__webpack_require__ is not defined`, killing the worker before Pyodide
+        // is fetched. The lab then reports only "the local runtime could not
+        // start". Nothing in the worker ever calls `gca`; only the assignment
+        // runs, so giving it an object to assign onto is enough. Guarded with
+        // `||` so that a future chunk which does carry a real runtime is
+        // untouched. Remove once Docusaurus scopes that plugin to chunks it owns.
+        ...(isServer ? {} : {plugins: [new BannerPlugin({
+          banner: "var __webpack_require__ = __webpack_require__ || {};",
+          raw: true,
+          test: /lab-worker\./
+        })]})
       })
     })
   ],

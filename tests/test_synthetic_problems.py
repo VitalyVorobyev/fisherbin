@@ -94,7 +94,7 @@ def test_signal_background_shape_works_with_profiled_d_optimality() -> None:
         weights=problem.train.weights,
         n_bins=4,
         criterion=sq.ProfiledDOptimality(problem.interest),
-        config=sq.DExchangeConfig(seed=0, n_init=4),
+        config=sq.DExchangeConfig(seed=0, initializer_restarts=4),
     )
     assert result.profiled_report is not None
 

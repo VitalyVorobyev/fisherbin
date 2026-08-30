@@ -70,7 +70,7 @@ def run_experiment(
     kmeans = scorequant.fit_quantizer(
         train_source,
         criterion=scorequant.NormalizedTrace(),
-        config=scorequant.KMeansConfig(seed=42, n_init=4),
+        config=scorequant.KMeansConfig(seed=42, solver_restarts=4),
         **common,
     )
     soft = scorequant.fit_quantizer(
@@ -78,7 +78,7 @@ def run_experiment(
         criterion=scorequant.DOptimality(),
         config=scorequant.SoftVoronoiConfig(
             seed=42,
-            n_init=4,
+            initializer_restarts=4,
             max_steps=soft_steps,
             record_every=max(soft_steps // 30, 1),
         ),

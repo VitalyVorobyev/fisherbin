@@ -135,7 +135,7 @@ assert partition.exchange_stable is True
 
 compiled = partition.compile_quantizer()
 assert np.array_equal(np.asarray(compiled.predict_scores(scores)), np.asarray(partition.labels))
-assert compiled.source_kind == "compiled_partition"
+assert isinstance(compiled, sq.Quantizer)  # a deployable rule, not a second fit
 assert compiled.metric is not None  # the Mahalanobis metric the theorem supplies
 ```
 
@@ -252,14 +252,14 @@ validated = sq.fit_quantizer(
     validation=sq.ScoreSample(holdout),
     n_bins=4,
     criterion=sq.NormalizedTrace(),
-    config=sq.KMeansConfig(seed=0, n_init=4),
+    config=sq.KMeansConfig(seed=0, solver_restarts=4),
 )
 
 plain = sq.fit_quantizer(
     sq.ScoreSample(scores),
     n_bins=4,
     criterion=sq.NormalizedTrace(),
-    config=sq.KMeansConfig(seed=0, n_init=4),
+    config=sq.KMeansConfig(seed=0, solver_restarts=4),
 )
 
 # The validation sample changed the reports and nothing else.

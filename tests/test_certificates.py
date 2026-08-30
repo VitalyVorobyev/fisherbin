@@ -276,7 +276,7 @@ def _boundary_fixture(nudge: float = 1e-6) -> tuple[np.ndarray, np.ndarray]:
 
 def _boundary_configs() -> list[sq.PartitionConfig]:
     return [
-        sq.DExchangeConfig(gain_tolerance=_BOUNDARY_GAIN_TOLERANCE, n_restarts=1),
+        sq.DExchangeConfig(gain_tolerance=_BOUNDARY_GAIN_TOLERANCE, solver_restarts=1),
         sq.MahalanobisLloydConfig(gain_tolerance=_BOUNDARY_GAIN_TOLERANCE),
     ]
 

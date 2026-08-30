@@ -22,3 +22,6 @@ Only decisions that materially constrain future implementation are recorded here
 18. [ADR 0018 — Use explicit JAX and NumPy execution behind one mathematical core](0018-explicit-multi-backend-execution.md) — supersedes ADR 0004
 19. [ADR 0019 — Add a React learning portal beside the engineering reference](0019-react-learning-portal.md) — partially supersedes ADR 0006
 20. [ADR 0020 — Keep the plain-English development blog in the portal](0020-portal-development-blog.md) — extends ADR 0019
+21. [ADR 0021 — Name the score coordinates](0021-named-score-schema.md) — extends ADR 0001
+22. [ADR 0022 — Make `ScoreProvider` a protocol, not a closed union](0022-score-provider-protocol.md) — extends ADR 0010
+23. [ADR 0023 — Separate the deployable rule from the fit](0023-versioned-quantizer-artifact.md) — extends ADR 0009

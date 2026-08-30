@@ -36,12 +36,23 @@ exactly that rule — and refuses when the partition is unstable or geometricall
 | | Sample partitioning | Space quantization |
 | --- | --- | --- |
 | **Door 1** — precomputed `(event, score)` rows | `optimize_partition(scores, weights=w, n_bins=k)` | `fit_quantizer(ScoreSample(scores, w), n_bins=k)` |
-| **Door 2** — component densities or an analytic score model | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(source, score=provider, n_bins=k)` with an `ObservationSample` or `IntegrationSource` |
-| **Door 3** — density ratios (estimated by a calibrated classifier or a direct ratio estimator, or analytic) | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w), score=provider, n_bins=k)` |
+| **Door 2** — component densities or an analytic score model | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(source, provider=provider, n_bins=k)` with an `ObservationSample` or `IntegrationSource` |
+| **Door 3** — density ratios (estimated by a calibrated classifier or a direct ratio estimator, or analytic) | `optimize_partition(provider.score(X), weights=w, n_bins=k)` | `fit_quantizer(ObservationSample(X, w), provider=provider, n_bins=k)` |
 
 `optimize_partition` always takes score rows, so doors 2 and 3 reach it through an explicit
 `provider.score(X)` call. Observation-to-score conversion never hides inside fitting or prediction.
 [Three doors](three-doors.md) treats each regime in full.
+
+## Install
+
+```bash
+uv add scorequant
+```
+
+or, outside a `uv` project, `pip install scorequant`. Python 3.12 or newer. JAX and Optax are the
+required numerical dependencies; NumPy is a supported portable runtime, which is what lets a saved
+rule predict where JAX is absent. ScoreQuant never sets global JAX configuration at import, so
+64-bit precision stays your application's call (`JAX_ENABLE_X64=1`).
 
 ## Quickstart
 
@@ -82,7 +93,7 @@ quantizer = sq.fit_quantizer(
     sq.ScoreSample(scores),
     n_bins=5,
     criterion=sq.NormalizedTrace(),
-    config=sq.KMeansConfig(seed=3, n_init=4),
+    config=sq.KMeansConfig(seed=3, solver_restarts=4),
 )
 future_bins = quantizer.predict_scores(rng.normal(loc=0.2, size=(500, 2)))
 ```

@@ -189,7 +189,7 @@ def _score_space_data() -> dict[str, object]:
             scores,
             weights=weights,
             n_bins=n_bins,
-            config=sq.DExchangeConfig(seed=28, n_init=2, max_scans=120),
+            config=sq.DExchangeConfig(seed=28, initializer_restarts=2, max_scans=120),
             execution=execution,
         )
         scenarios[str(n_bins)] = {

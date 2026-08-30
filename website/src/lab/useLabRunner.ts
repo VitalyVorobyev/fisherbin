@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 
-import {createRunRequest, isLabEvent, validateProblem} from "./protocol";
+import {PROTOCOL_VERSION, createRunRequest, isLabEvent, validateProblem} from "./protocol";
 import type {LabEvent, LabProblem, LabResult, LabRunRequest} from "./protocol";
 
 export type LabState = "idle" | "loading" | "running" | "complete" | "error" | "cancelled";
@@ -13,6 +13,8 @@ export interface LabRunner {
   run: (problem: LabProblem, runner: LabRunRequest["runner"]) => void;
   stage: string;
   state: LabState;
+  /** Whether a warmed runtime is held, so the next run skips the cold start. */
+  warm: boolean;
 }
 
 export function useLabRunner(): LabRunner {
@@ -23,6 +25,7 @@ export function useLabRunner(): LabRunner {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<LabResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [warm, setWarm] = useState(false);
 
   const terminate = useCallback((): void => {
     workerRef.current?.terminate();
@@ -35,6 +38,7 @@ export function useLabRunner(): LabRunner {
   const cancel = useCallback((): void => {
     if (workerRef.current === null) return;
     terminate();
+    setWarm(false);
     setState("cancelled");
     setStage("Run cancelled; the isolated worker was terminated");
     setProgress(0);
@@ -47,25 +51,37 @@ export function useLabRunner(): LabRunner {
       setState("error");
       return;
     }
-    terminate();
     setResult(null);
     setError(null);
     setProgress(0.02);
     const request = createRunRequest(problem, runner);
     runIdRef.current = request.runId;
     if (runner === "fixture") {
+      terminate();
       setState("complete");
       setStage("Loaded verified native NumPy fixture");
       return;
     }
     if (runner !== "pyodide-numpy") {
-      setError(`${runner} is admitted by the protocol but has no approved runner in v1.`);
+      terminate();
+      setError(`${runner} is admitted by the protocol but has no approved runner in v${String(PROTOCOL_VERSION)}.`);
       setState("error");
       return;
     }
     setState("loading");
+    const existing = workerRef.current;
+    if (existing !== null) {
+      setStage("Reusing the warm browser runtime");
+      existing.postMessage(request);
+      return;
+    }
     setStage("Starting isolated browser worker");
-    const worker = new Worker(new URL("./lab.worker.ts", import.meta.url), {type: "module"});
+    // `name` is what gives the emitted chunk a stable name, which
+    // docusaurus.config.ts needs in order to target it. See the note there.
+    const worker = new Worker(new URL("./lab.worker.ts", import.meta.url), {
+      name: "lab-worker",
+      type: "module"
+    });
     workerRef.current = worker;
     worker.onmessage = (message: MessageEvent<unknown>): void => {
       if (!isLabEvent(message.data) || message.data.runId !== runIdRef.current) return;
@@ -77,21 +93,32 @@ export function useLabRunner(): LabRunner {
         setResult(event.result);
         setProgress(1);
         setState("complete");
-        terminate();
+        // The worker is deliberately kept alive: it holds the warmed Pyodide
+        // runtime, and re-running with a different bin budget is the normal
+        // interaction. Cancelling still terminates it.
+        setWarm(true);
       }
       if (event.type === "error") {
         setError(event.message ?? "The browser runtime failed without a diagnostic.");
         setState("error");
+        setWarm(false);
         terminate();
       }
     };
-    worker.onerror = (): void => {
-      setError("The local runtime could not start. The verified fixture remains available.");
+    // A worker that fails while its module is evaluated reports through
+    // onerror rather than through the protocol, so this is the only place the
+    // cause is ever visible. Discarding it leaves "could not start" as the
+    // whole diagnosis, which is indistinguishable from a missing runtime asset,
+    // a bad MIME type and a syntax error the bundler let through.
+    worker.onerror = (event: ErrorEvent): void => {
+      const where = event.filename === "" ? "" : ` (${event.filename}:${String(event.lineno)})`;
+      const cause = event.message === "" ? "" : ` ${event.message}${where}`;
+      setError(`The local runtime could not start.${cause} The verified fixture remains available.`);
       setState("error");
       terminate();
     };
     worker.postMessage(request);
   }, [terminate]);
 
-  return {cancel, error, progress, result, run, stage, state};
+  return {cancel, error, progress, result, run, stage, state, warm};
 }

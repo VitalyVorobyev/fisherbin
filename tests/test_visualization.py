@@ -17,7 +17,7 @@ def test_all_visualizations_construct_figures() -> None:
     result = fit_test_quantizer(
         scores,
         n_bins=4,
-        config=scorequant.KMeansConfig(n_init=2),
+        config=scorequant.KMeansConfig(solver_restarts=2),
         diagnostics="full",
     )
     figures = [

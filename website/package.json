@@ -4,12 +4,12 @@
   "version": "0.1.0",
   "packageManager": "pnpm@11.0.9",
   "engines": {
-    "node": ">=24 <25",
+    "node": ">=20",
     "pnpm": "11.0.9"
   },
   "scripts": {
     "start": "pnpm generate && docusaurus start",
-    "generate": "pnpm generate:protocol && pnpm generate:data",
+    "generate": "pnpm generate:protocol && pnpm generate:data && pnpm generate:showcase",
     "generate:protocol": "node scripts/generate-protocol.mjs",
     "generate:data": "cd .. && uv run python website/scripts/generate_data.py",
     "export:lessons": "cd .. && uv run marimo check website/lessons/score_space.py --select MW && uv run marimo export html-wasm website/lessons/score_space.py -o website/static/lessons/score-space --mode run --no-show-code --no-execute",
@@ -22,7 +22,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "validate": "pnpm generate && pnpm export:lessons && pnpm typecheck && pnpm lint && pnpm test && pnpm build:site"
+    "validate": "pnpm generate && pnpm export:lessons && pnpm typecheck && pnpm lint && pnpm test && pnpm build:site",
+    "generate:showcase": "cd .. && uv run python website/scripts/generate_showcase.py"
   },
   "dependencies": {
     "@docusaurus/core": "3.10.2",
@@ -58,6 +59,7 @@
     "pagefind": "1.5.2",
     "typescript": "5.9.3",
     "typescript-eslint": "8.42.0",
-    "vitest": "4.1.11"
+    "vitest": "4.1.11",
+    "webpack": "5.110.0"
   }
 }

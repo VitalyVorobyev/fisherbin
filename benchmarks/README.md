@@ -141,7 +141,7 @@ Cumulative attribution for the reference D cell (N=2e5, R=8, B=64) splits the ru
 | stage | cumulative % |
 | --- | ---: |
 | candidate scans (`_scan`) | 83.5 |
-| k-means++ initialization (`n_init=8`) | 12.4 |
+| k-means++ initialization (`initializer_restarts=8`) | 12.4 |
 | batch acceptance, relocation, rank-two updates | 2.5 |
 | result assembly, reports, and validation | 1.6 |
 
@@ -267,7 +267,7 @@ Explicit gates for reopening this:
 1. **Throughput gate.** If a converged D-exchange at N=10^6, B=64, R<=8 must finish under 60 s,
    the levers in order are (a) the algebraic reformulation above, worth a measured 3.5x on the
    kernel, and (b) the k-means++ initialization, which is 12% of the converged 200 000-row run
-   and 59% of a scan-bounded 10^6-row run at `n_init=8`. A port becomes the next question only
+   and 59% of a scan-bounded 10^6-row run at `initializer_restarts=8`. A port becomes the next question only
    if both are done and the target is still missed.
 2. **Orchestration gate.** A port of a numerical path is justified when Python orchestration
    exceeds roughly 25% of steady state. Measured today: 1.6% of a scan and <=4% of a run — a

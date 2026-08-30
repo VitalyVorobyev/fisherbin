@@ -41,7 +41,7 @@ observations = np.asarray(sample.scores)
 provider = sq.ScoreFunction(lambda X: np.asarray(X))
 
 try:
-    sq.fit_quantizer(sample, score=provider, n_bins=3)
+    sq.fit_quantizer(sample, provider=provider, n_bins=3)
     raise AssertionError("a ScoreSample must reject a provider")
 except ValueError as error:
     score_sample_rejects_provider = str(error)
@@ -60,6 +60,36 @@ parameterization; `CentralLogRatioScore` turns paired minus/plus probabilities i
 finite-difference scores. Each one carries a `provenance` and a `.score(X)` method you can call
 yourself — which is exactly how doors 2 and 3 feed `optimize_partition`, since that task takes
 score rows rather than a source.
+
+### Why a ratio oracle is enough
+
+For a normalized mixture \(p(x\mid\theta)=\sum_k\theta_k p_k(x)\), take one component as the
+simplex-dependent reference. The composition score is
+
+$$
+s_a(x)
+=
+\frac{p_a(x)-p_{\rm ref}(x)}
+{\sum_k \theta_{0k}p_k(x)}.
+$$
+
+Divide numerator and denominator by any nonzero reference density and every absolute normalization
+cancels — only ratios remain. That is the whole reason a ratio oracle suffices where a density
+would seem to be required.
+
+A calibrated classifier is one such oracle. If it predicts class posteriors \(q_k(x)\) under
+training priors \(\pi_k\), then
+
+$$
+\frac{p_k(x)}{p_{\rm ref}(x)}
+\propto
+\frac{q_k(x)/\pi_k}
+     {q_{\rm ref}(x)/\pi_{\rm ref}},
+$$
+
+up to a common event-wise factor that cancels again in the score. A ranking score or an arbitrary
+monotonic classifier output is *not* enough: the construction needs calibrated ratios, not merely
+event ordering.
 
 One distinction runs through everything downstream. **Model density ratios** — \(\phi_k/\phi_{\rm ref}\)
 or \(p(x\mid\theta)/p(x\mid\theta_0)\) — are a statistical representation: they build scores and
@@ -137,7 +167,7 @@ intensity = np.asarray(model.evaluate_components(events)) @ np.asarray(model.coe
 
 quantizer = sq.fit_quantizer(
     sq.ObservationSample(events, intensity),
-    score=component_score,
+    provider=component_score,
     n_bins=5,
     config=sq.DExchangeConfig(seed=11),
 )
@@ -160,7 +190,7 @@ source = sq.IntegrationSource(
     quadrature=sq.GaussLegendreConfig(order=96),
 )
 quantizer = sq.fit_quantizer(
-    source, score=component_score, n_bins=5, config=sq.DExchangeConfig(seed=11)
+    source, provider=component_score, n_bins=5, config=sq.DExchangeConfig(seed=11)
 )
 ```
 
@@ -180,7 +210,7 @@ exact_score = sq.ScoreFunction(
 )
 quantizer = sq.fit_quantizer(
     sq.ObservationSample(rng.normal(size=(1_000, 2))),
-    score=exact_score,
+    provider=exact_score,
     n_bins=4,
     config=sq.DExchangeConfig(seed=2),
 )
@@ -253,7 +283,7 @@ is_signal = rng.random(2_000) < 0.3
 mixture = np.where(is_signal, rng.normal(1.0, 0.5, 2_000), rng.normal(0.0, 1.5, 2_000))[:, None]
 quantizer = sq.fit_quantizer(
     sq.ObservationSample(mixture),
-    score=classifier_score,
+    provider=classifier_score,
     n_bins=4,
     config=sq.DExchangeConfig(seed=5),
 )
@@ -337,7 +367,7 @@ quantizer = sq.fit_quantizer(
     validation=sq.ScoreSample(holdout_scores),
     n_bins=5,
     criterion=sq.NormalizedTrace(),
-    config=sq.KMeansConfig(seed=4, n_init=4),
+    config=sq.KMeansConfig(seed=4, solver_restarts=4),
 )
 train_efficiency = float(quantizer.train_report.geometric_mean_retention)
 holdout_efficiency = float(quantizer.validation_report.geometric_mean_retention)

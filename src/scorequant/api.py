@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Literal
 
+import numpy as np
+
 from ._execution import (
     canonicalize_public,
     current_execution,
@@ -20,6 +22,7 @@ from ._validation import (
     validate_n_bins,
     validate_sample,
 )
+from .artifact import Quantizer
 from .config import (
     BackendName,
     DExchangeConfig,
@@ -40,7 +43,7 @@ from .information import (
     profiled_information_report,
 )
 from .partition import optimize_d_partition, optimize_profiled_d_partition
-from .providers import ScoreProvider
+from .providers import ScoreProvider, validate_provider
 from .quantizers import (
     QuantizerRun,
     chunked_hard_assign,
@@ -186,7 +189,7 @@ def _validate_solver(config: object, criterion: Criterion, task: str) -> None:
 
 @execution_scope
 def optimize_partition(
-    scores: ArrayLike,
+    scores: ScoreSample | ArrayLike,
     *,
     weights: ArrayLike | None = None,
     n_bins: int,
@@ -204,7 +207,17 @@ def optimize_partition(
 
     Parameters
     ----------
-    scores, weights, n_bins, criterion, config, provenance
+    scores
+        Either a :class:`~scorequant.ScoreSample` -- the same weighted score
+        law :func:`fit_quantizer` takes, carrying its own weights, schema and
+        provenance -- or a raw score array, in which case ``weights`` and
+        ``provenance`` supply those separately. Passing a sample together with
+        either keyword is rejected rather than silently resolved.
+
+        An observation source is deliberately not accepted here: converting
+        observations to scores stays an explicit ``provider.score(X)`` so the
+        fixed-sample boundary remains visible.
+    weights, n_bins, criterion, config, provenance
         Fixed-sample assignment contract described in the API guide.
     initial_labels
         Optional starting labeling with shape ``[N]`` and values in
@@ -214,36 +227,46 @@ def optimize_partition(
         before the solver runs and must therefore already agree on their bin,
         and every requested cell must remain nonempty afterwards. Supplied
         labels replace the seeding of the first exchange restart only, so
-        ``init`` and ``n_init`` still govern any further restart; the guarded
+        ``init`` and ``initializer_restarts`` still govern any further restart; the guarded
         Mahalanobis-Lloyd solver starts from them directly.
     """
     del execution
     resolved_execution = current_execution()
+    sample = _partition_sample(scores, weights, provenance)
     resolved_criterion = DOptimality() if criterion is None else criterion
     resolved_config = DExchangeConfig() if config is None else config
     _validate_solver(resolved_config, resolved_criterion, "optimize_partition")
     if isinstance(resolved_criterion, DOptimality):
         result = optimize_d_partition(
-            scores,
-            weights=weights,
+            sample.scores,
+            weights=sample.weights,
             n_bins=n_bins,
             config=resolved_config,
-            provenance=provenance or ScoreProvenance(),
+            provenance=sample.provenance,
             initial_labels=initial_labels,
         )
     else:
         # ``_validate_solver`` accepted the pair, and the only other criterion it
-        # can have accepted for this task is ProfiledDOptimality.
+        # can have accepted for this task is ProfiledDOptimality. Names become
+        # score columns here, once, so no solver or report resolves them again.
         result = optimize_profiled_d_partition(
-            scores,
-            weights=weights,
+            sample.scores,
+            weights=sample.weights,
             n_bins=n_bins,
-            criterion=resolved_criterion,
+            criterion=resolved_criterion.resolve(sample.schema),
             config=resolved_config,
-            provenance=provenance or ScoreProvenance(),
+            provenance=sample.provenance,
             initial_labels=initial_labels,
         )
     object.__setattr__(result, "execution", resolved_execution)
+    object.__setattr__(result, "schema", sample.schema)
+    if sample.schema is not None and result.profiled_report is not None:
+        # Attaching the schema is bookkeeping, not a second computation: the
+        # report already holds the columns, and the schema only lets it say
+        # their names.
+        object.__setattr__(
+            result, "profiled_report", replace(result.profiled_report, schema=sample.schema)
+        )
     return canonicalize_public(result)
 
 
@@ -251,7 +274,7 @@ def optimize_partition(
 def fit_quantizer(
     source: Source,
     *,
-    score: ScoreProvider | None = None,
+    provider: ScoreProvider | None = None,
     validation: Source | None = None,
     n_bins: int,
     criterion: Criterion | None = None,
@@ -266,6 +289,11 @@ def fit_quantizer(
 
     Parameters
     ----------
+    provider
+        The observation-to-score map for an observation or integration source.
+        It is the object contract :class:`~scorequant.ScoreProvider` describes,
+        not a score array or a bare callable, and it is rejected when ``source``
+        is already a :class:`~scorequant.ScoreSample`.
     diagnostics
         How much of the recorded center history to re-score into
         ``trace.train_hard_retention`` and ``trace.validation_hard_retention``.
@@ -279,16 +307,19 @@ def fit_quantizer(
     """
     del execution
     resolved_execution = current_execution()
-    train, source_kind = _materialize_source(source, score)
+    train, source_kind = _materialize_source(source, provider)
     validation_sample = None
     if validation is not None:
-        validation_provider = None if isinstance(validation, ScoreSample) else score
+        validation_provider = None if isinstance(validation, ScoreSample) else provider
         validation_sample, _ = _materialize_source(validation, validation_provider)
-        if validation_sample.scores.shape[1] != train.scores.shape[1]:
-            raise ValueError("validation scores must use the training parameter order")
+        _validate_validation_sample(train, validation_sample)
     resolved_config = DExchangeConfig() if config is None else config
     resolved_criterion: Criterion = DOptimality() if criterion is None else criterion
     _validate_solver(resolved_config, resolved_criterion, "fit_quantizer")
+    if isinstance(resolved_criterion, ProfiledDOptimality):
+        # Names become score columns once, here, so no solver or report resolves
+        # them again.
+        resolved_criterion = resolved_criterion.resolve(train.schema)
 
     if isinstance(resolved_config, (DExchangeConfig, MahalanobisLloydConfig)):
         # ``_validate_solver`` already restricted this pairing to DOptimality:
@@ -302,18 +333,32 @@ def fit_quantizer(
             config=resolved_config,
             provenance=train.provenance,
         )
-        result = partition.compile_quantizer()
+        object.__setattr__(partition, "schema", train.schema)
+        rule = partition.compile_quantizer(execution=resolved_execution)
         validation_report = (
             None
             if validation_sample is None
-            else result.evaluate_scores(validation_sample.scores, validation_sample.weights)
+            else information_report(
+                validation_sample.scores,
+                rule.predict_scores(validation_sample.scores),
+                validation_sample.weights,
+                n_bins=n_bins,
+                rank_rtol=resolved_config.rank_rtol,
+            )
         )
         return canonicalize_public(
-            replace(
-                result,
-                validation_report=validation_report,
-                source_kind=source_kind,
+            QuantizerResult(
+                quantizer=rule,
+                criterion=partition.criterion,
+                config=resolved_config,
                 execution=resolved_execution,
+                trace=_compiled_trace(partition),
+                labels=partition.labels,
+                train_report=partition.train_report,
+                validation_report=validation_report,
+                provenance=train.provenance,
+                hardening_gap=0.0,
+                source_kind=source_kind,
             )
         )
 
@@ -362,27 +407,35 @@ def fit_quantizer(
         train_profiled_report = profiled_information_report(
             prepared.train_sample.scores,
             fit_diagnostics.labels,
-            interest=resolved_criterion.interest,
+            interest=resolved_criterion.interest_indices,
             weights=prepared.train_sample.weights,
             n_bins=n_bins,
+            schema=train.schema,
         )
         hard_retention = train_profiled_report.geometric_mean_retention
         if prepared.validation_sample is not None and prepared.validation_coordinates is not None:
             validation_profiled_report = profiled_information_report(
                 prepared.validation_sample.scores,
                 chunked_hard_assign(prepared.validation_coordinates, run.centers),
-                interest=resolved_criterion.interest,
+                interest=resolved_criterion.interest_indices,
                 weights=prepared.validation_sample.weights,
                 n_bins=n_bins,
+                schema=train.schema,
             )
     hardening_gap = None
     if run.soft_retention_history:
         hardening_gap = run.soft_retention_history[-1] - hard_retention
     return canonicalize_public(
         QuantizerResult(
-            centers=run.centers,
-            metric=None,
-            transform=prepared.transform,
+            quantizer=Quantizer(
+                transform=prepared.transform,
+                centers=run.centers,
+                metric=None,
+                schema=train.schema,
+                provenance=train.provenance,
+                criterion=resolved_criterion,
+                execution=resolved_execution,
+            ),
             criterion=resolved_criterion,
             config=resolved_config,
             execution=resolved_execution,
@@ -399,19 +452,93 @@ def fit_quantizer(
     )
 
 
+def _compiled_trace(partition: PartitionResult) -> OptimizationTrace:
+    """Describe a compiled partition as a quantizer trace.
+
+    Compilation is bookkeeping, not a second optimization, so the centers and
+    cell weights are constant across the trace; what varies is the finite
+    solver's own objective trajectory, reported here so a compiled rule and a
+    directly fitted one expose the same history shape.
+    """
+    if partition.transformed_centers is None:
+        raise ValueError("D compilation geometry is unavailable")
+    steps = partition.objective_history.shape[0]
+    return OptimizationTrace(
+        steps=np.arange(steps),
+        centers=np.repeat(partition.transformed_centers[None, :, :], steps, axis=0),
+        objective=partition.objective_history,
+        bin_weights=np.repeat(partition.cell_weights[None, :], steps, axis=0),
+        train_hard_retention=np.full(
+            partition.objective_history.shape,
+            partition.train_report.geometric_mean_retention,
+            dtype=partition.cell_weights.dtype,
+        ),
+        objective_label="logdet_retained",
+    )
+
+
+def _validate_validation_sample(train: ScoreSample, validation: ScoreSample) -> None:
+    """Reject a validation sample that does not describe the same parameters.
+
+    A column count alone catches only the coarsest mismatch. When both samples
+    name their coordinates, disagreeing names are a reordering the count cannot
+    see, and silently scoring against it would report a meaningless retention.
+    """
+    if validation.scores.shape[1] != train.scores.shape[1]:
+        raise ValueError("validation scores must use the training parameter order")
+    if (
+        train.schema is not None
+        and validation.schema is not None
+        and train.schema.parameters != validation.schema.parameters
+    ):
+        raise ValueError(
+            "validation scores must use the training parameter order; training names "
+            f"{', '.join(train.schema.parameters)} but validation names "
+            f"{', '.join(validation.schema.parameters)}"
+        )
+
+
+def _partition_sample(
+    scores: ScoreSample | ArrayLike,
+    weights: ArrayLike | None,
+    provenance: ScoreProvenance | None,
+) -> ScoreSample:
+    """Canonicalize the fixed-sample input into one weighted score law.
+
+    The array shorthand stays supported for the simple case, but a supplied
+    ``ScoreSample`` already carries its weights and provenance, so combining
+    the two forms is a contradiction rather than an override.
+    """
+    if isinstance(scores, ScoreSample):
+        conflicting = [
+            name
+            for name, value in (("weights", weights), ("provenance", provenance))
+            if value is not None
+        ]
+        if conflicting:
+            raise ValueError(
+                f"{' and '.join(conflicting)} must be omitted when scores is a "
+                "ScoreSample; the sample already carries them"
+            )
+        return scores
+    return ScoreSample(scores, weights, provenance=provenance)
+
+
 def _materialize_source(source: Source, provider: ScoreProvider | None) -> tuple[ScoreSample, str]:
     if isinstance(source, ScoreSample):
         if provider is not None:
-            raise ValueError("score must be omitted when source is ScoreSample")
+            raise ValueError("provider must be omitted when source is ScoreSample")
         return source, "score_sample"
     if isinstance(source, IntegrationSource):
         if provider is None:
             raise ValueError("IntegrationSource requires a score provider")
+        validate_provider(provider)
         observations = source.materialize()
         return (
             ScoreSample(
                 provider.score(observations.observations),
                 observations.weights,
+                schema=getattr(provider, "schema", None),
                 provenance=provider.provenance,
             ),
             "integration_source",
@@ -419,10 +546,12 @@ def _materialize_source(source: Source, provider: ScoreProvider | None) -> tuple
     if isinstance(source, ObservationSample):
         if provider is None:
             raise ValueError("ObservationSample requires a score provider")
+        validate_provider(provider)
         return (
             ScoreSample(
                 provider.score(source.observations),
                 source.weights,
+                schema=getattr(provider, "schema", None),
                 provenance=provider.provenance,
             ),
             "observation_sample",
@@ -553,7 +682,7 @@ def _hard_retention_history(
             retention = profiled_information_report(
                 scores,
                 labels,
-                interest=criterion.interest,
+                interest=criterion.interest_indices,
                 weights=weights,
                 n_bins=centers.shape[0],
             ).geometric_mean_retention

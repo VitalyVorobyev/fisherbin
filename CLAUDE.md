@@ -39,7 +39,7 @@ IntegrationSource + ScoreProvider ------+
 ```
 
 - `optimize_partition(scores, ...)` owns a fixed-sample assignment; `PartitionResult` deliberately has **no** predict method. The one exception: an exchange-stable, nonsingular D-optimal result can `compile_quantizer()` into a theorem-backed Mahalanobis rule.
-- `fit_quantizer(source, score=...)` owns reusable score-space rules; prediction is always the explicit `predict_scores` — observation-to-score conversion is never hidden inside prediction.
+- `fit_quantizer(source, provider=...)` owns reusable score-space rules; prediction is always the explicit `predict_scores` — observation-to-score conversion is never hidden inside prediction.
 - Sources (the reference measure) and score providers (observation-to-score map) are separate contracts and are validated together: a `ScoreSample` rejects a provider; observation/integration sources require one.
 - Providers consume one of three statistical representations: exact densities (`LinearComponentScore`), model density ratios (`DensityRatioScore`, `CentralLogRatioScore`), or scores directly (`ScoreFunction`). Importance ratios are source weights, never provider inputs; estimated ratios never claim exact Fisher semantics.
 

@@ -105,7 +105,7 @@ def four_cell_fit(table, whiten):
         sq.ScoreSample(table),
         n_bins=4,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=0, n_init=4, whiten=whiten),
+        config=sq.KMeansConfig(seed=0, solver_restarts=4, whiten=whiten),
     )
 
 

@@ -24,7 +24,7 @@ const doors = {
     title: "Use estimated ratios without overclaiming",
     description: "Convert calibrated posterior estimates into component density ratios, record their provenance, and keep source weights separate.",
     steps: ["Calibrate class posteriors", "Convert with the training priors", "Validate the fitted rule on held-out observations"],
-    code: `provider = sq.DensityRatioScore.from_classifier(\n    classifier.predict_proba,\n    class_priors,\n    sq.MixtureParameterization(fractions),\n    calibration="isotonic",\n)\nquantizer = sq.fit_quantizer(\n    source, score=provider, n_bins=6,\n)`
+    code: `provider = sq.DensityRatioScore.from_classifier(\n    classifier.predict_proba,\n    class_priors,\n    sq.MixtureParameterization(fractions),\n    calibration="isotonic",\n)\nquantizer = sq.fit_quantizer(\n    source, provider=provider, n_bins=6,\n)`
   }
 } as const;
 
@@ -54,6 +54,16 @@ export default function Docs(): React.JSX.Element {
           </div>
           <pre className="code-block"><code>{selected.code}</code></pre>
         </div>
+      </section>
+      <section className="home-section section-wrap">
+        <div><span className="eyebrow">Before any of it</span><h2>Install the package.</h2></div>
+        <pre className="code-block"><code>uv add scorequant</code></pre>
+        <p>
+          Or <code>pip install scorequant</code> outside a <code>uv</code> project. Python 3.12 or
+          newer. JAX and Optax are the numerical dependencies; NumPy is a supported portable
+          runtime, which is what lets a saved rule predict where JAX is absent — including in the
+          browser, which is exactly what the Lab on this site runs.
+        </p>
       </section>
       <section className="home-section section-wrap">
         <div className="provenance-note"><span aria-hidden="true">◇</span><span>The portal teaches the public task contract. Exhaustive configuration, result fields, developer internals, and ADRs remain in the canonical MkDocs reference.</span></div>

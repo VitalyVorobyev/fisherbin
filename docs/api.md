@@ -1,5 +1,28 @@
 # API guide
 
+Almost every use of ScoreQuant is built from a dozen names. The rest of the surface is machinery
+you reach for when you have a specific question about a result.
+
+**Core.** The two tasks, `optimize_partition` and `fit_quantizer`; the inputs `ScoreSample`,
+`ObservationSample`, `IntegrationSource` and `ScoreSchema`; the objectives `DOptimality`,
+`ProfiledDOptimality` and `NormalizedTrace`; a solver configuration; a provider such as
+`ScoreFunction`, `LinearComponentScore` or `DensityRatioScore`; and `Quantizer`, the rule you
+deploy.
+
+**Advanced.** Certificates and bounds (`certify_partition`, `exchange_stability_report`,
+`efficient_score_bound`), the information algebra (`fisher_information`,
+`binned_fisher_information`, `information_report`, `profiled_information_report`), the ratio
+algebra (`ratios_from_posteriors`, `mixture_scores_from_ratios`, `ratio_closure_report`),
+`FisherTransform`, the report types, and the plotting helpers. Each answers a question you will
+know you have; none is needed to fit anything.
+
+The sections below follow that order. The generated [reference](reference/index.md) covers every
+public object.
+
+---
+
+# Core
+
 ## Top-level tasks
 
 ### `optimize_partition`
@@ -7,7 +30,7 @@
 <!-- snippet: skip -->
 ```python
 optimize_partition(
-    scores,
+    scores,                       # ScoreSample, or a raw score array
     *,
     weights=None,
     n_bins,
@@ -18,7 +41,12 @@ optimize_partition(
 ) -> PartitionResult
 ```
 
-This is fixed-sample assignment. It accepts `DOptimality` or `ProfiledDOptimality` with either
+This is fixed-sample assignment. `scores` is either a `ScoreSample` — the same weighted score law
+`fit_quantizer` takes, carrying its own weights, schema and provenance — or a raw score array with
+`weights` and `provenance` supplied separately. Passing a sample together with either keyword is
+rejected rather than silently resolved. An observation source is deliberately not accepted:
+converting observations to scores stays an explicit `provider.score(X)`, so the fixed-sample
+boundary remains visible. It accepts `DOptimality` or `ProfiledDOptimality` with either
 `DExchangeConfig` (exact positive-gain relocation) or `MahalanobisLloydConfig` (guarded
 nearest-centroid batches). A batch is adopted only when the exactly rebuilt objective strictly
 improves, because the frozen-metric batch step is not monotone on its own; with the default
@@ -30,7 +58,7 @@ is how `efficient_score_bound(...).labels` is used as an initializer. Zero-weigh
 measure and their labels are ignored, identical score rows are merged before the solver runs and
 must therefore already agree on their bin, and every requested cell must remain nonempty
 afterwards. Supplied labels replace the seeding of the first exchange restart only, so `init` and
-`n_init` still govern any further restart and one call can compare both starts; the guarded
+`initializer_restarts` still govern any further restart and one call can compare both starts; the guarded
 Mahalanobis-Lloyd solver starts from them directly.
 
 ### `fit_quantizer`
@@ -40,7 +68,7 @@ Mahalanobis-Lloyd solver starts from them directly.
 fit_quantizer(
     source,
     *,
-    score=None,
+    provider=None,
     validation=None,
     n_bins,
     criterion=None,
@@ -52,8 +80,9 @@ fit_quantizer(
 Supported pairs are D exchange, guarded Mahalanobis-Lloyd, soft D, normalized-trace k-means, and
 exact scalar interval dynamic programming. The two finite D solvers take the same route: optimize
 the labels, then compile the verified rule. `ScoreSample` forbids a provider; observation and
-integration sources require one. Validation must use the same score dimension and remains
-diagnostic.
+integration sources require one. Validation must use the same score dimension — and, when both
+sides declare a `ScoreSchema`, the same parameter names, since a reordering is invisible to a
+column count — and remains diagnostic.
 
 `diagnostics` controls how many recorded center snapshots are re-scored into
 `trace.train_hard_retention` and `trace.validation_hard_retention`: `"final"` scores only the
@@ -66,6 +95,54 @@ unaffected.
 one after `rank_rtol` projection; a higher rank is rejected by name. On that rank the D-optimal
 partition has ordered interval cells, so the weighted interval dynamic program returns the global
 optimum rather than a local one, and `max_rows` bounds its exact quadratic work.
+
+## Naming the score coordinates
+
+A score matrix is a table of partial derivatives, one column per model parameter. The order is
+meaningful but invisible, which is bearable in a two-parameter toy and dangerous in a real problem
+with dozens of components. `ScoreSchema` declares the names:
+
+<!-- snippet: skip -->
+```python
+schema = sq.ScoreSchema(("T cells", "B cells", "monocytes", "mast cells", "HSPCs"))
+
+sample = sq.ScoreSample(scores, weights, schema=schema)
+
+criterion = sq.ProfiledDOptimality(interest=("HSPCs",))
+```
+
+Names are resolved to score columns exactly once, at the public task boundary, so every solver,
+report and certificate downstream still works in indices. `ProfiledDOptimality` accepts either
+form and refuses a mixture of the two; declaring names against a sample that carries no schema
+fails by name rather than guessing. Reports then print `interest: HSPCs` instead of `(4,)`.
+
+A schema answers only *what each coordinate means*. Where the numbers came from and at which
+reference point stays with `ScoreProvenance`, and the two are validated against each other rather
+than each carrying a reference point that can drift.
+
+Providers may supply the schema for the observation-space routes. `LinearComponentScore` derives
+it from the component names the model already declares; `ScoreFunction`, `DensityRatioScore` and
+`CentralLogRatioScore` accept `schema=` explicitly. It then reaches `PartitionResult.schema` and
+`QuantizerResult.schema`.
+
+## The score-provider contract
+
+`ScoreProvider` is a runtime-checkable protocol, not a closed union. Any object with a
+`provenance` and a `score` method is a provider:
+
+<!-- snippet: skip -->
+```python
+class MyExternalScore:
+    provenance = sq.ScoreProvenance(kind="estimated_ratio")
+
+    def score(self, observations):
+        return my_package.evaluate(observations)
+```
+
+`score` takes observations alone; the execution backend is ambient context established by the
+public task, so an external implementation needs no knowledge of `ExecutionConfig`. A provider may
+also expose `schema`, which is used when present and is not part of the required contract. The
+four built-in providers are convenience implementations of this protocol.
 
 ## Sources, providers, and density ratios
 
@@ -96,6 +173,58 @@ and `"custom_estimated"`; `exact_fisher` is derived from `kind` and cannot be se
 Ratio-derived scores carry a structured `ScoreProvenance.ratio` record (`RatioProvenance`) naming
 the estimator, parameterization, reference fractions or coefficients, reference component,
 training priors, calibration method, and finite-difference offsets.
+
+## The deployable rule
+
+A fit produces two different things and they now have two different types. `QuantizerResult` is
+the record of the fit — labels, reports, trace, solver diagnostics. `result.quantizer` is the rule
+itself:
+
+<!-- snippet: skip -->
+```python
+fit = sq.fit_quantizer(sample, n_bins=8)
+
+fit.train_report  # what the fit measured
+fit.trace  # how it got there
+
+rule = fit.quantizer  # what you deploy
+rule.predict_scores(future_scores)
+rule.save("flowcyt-8bins.sqz")
+```
+
+`Quantizer` carries the transform, centers, optional metric, score schema, provenance and
+criterion — and nothing about the training sample. `PartitionResult.compile_quantizer()` returns
+one too, under exactly the same theorem-backed conditions as before: compilation is bookkeeping on
+an exchange-stable D partition, not a second fit, so it hands back a rule rather than something
+that impersonates a new training result.
+
+`QuantizerResult.predict_scores` remains the one prediction verb and delegates to the rule;
+`centers`, `metric`, `transform` and `schema` read through to it.
+
+### The artifact format
+
+`Quantizer.save` writes a zip archive holding one `manifest.json` and one `.npy` member per array.
+
+- **Versioned.** The manifest declares a `format_version`, and a reader refuses a version it does
+  not know by name rather than interpreting a field it has never seen.
+- **Not a pickle.** Arrays are written with `allow_pickle=False`, so loading an artifact executes
+  no code from the file.
+- **Backend-free.** A rule fitted on the JAX backend loads and predicts in a process where JAX is
+  not importable, which is the other half of the NumPy backend: fit offline, deploy where the
+  fitting stack is not installed.
+
+<!-- snippet: skip -->
+```python
+rule = sq.Quantizer.load("flowcyt-8bins.sqz")
+bins = rule.predict_scores(scores, execution=sq.ExecutionConfig(backend="numpy"))
+```
+
+This is a durable format, unlike `to_dict()` on the result types, which stays JSON-ready
+diagnostic state.
+
+---
+
+# Advanced
 
 ## The efficient-score upper bound
 

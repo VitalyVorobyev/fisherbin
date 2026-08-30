@@ -69,7 +69,7 @@ profiled = sq.optimize_partition(
     scores,
     n_bins=4,
     criterion=sq.ProfiledDOptimality((0,)),
-    config=sq.DExchangeConfig(seed=0, n_init=8),
+    config=sq.DExchangeConfig(seed=0, initializer_restarts=8),
 )
 report = profiled.profiled_report
 
@@ -299,7 +299,7 @@ counterexample = sq.optimize_partition(
     weights=weights_8,
     n_bins=3,
     criterion=sq.ProfiledDOptimality((0,)),
-    config=sq.DExchangeConfig(seed=1, n_init=32, max_scans=200),
+    config=sq.DExchangeConfig(seed=1, initializer_restarts=32, max_scans=200),
 )
 
 assert counterexample.exchange_stable is True
@@ -385,7 +385,7 @@ for n_rows in (100, 200, 400, 800):
         weights=balanced,
         n_bins=4,
         criterion=sq.ProfiledDOptimality((0,)),
-        config=sq.DExchangeConfig(seed=0, n_init=4),
+        config=sq.DExchangeConfig(seed=0, initializer_restarts=4),
     )
     cells = np.asarray(stable.cell_score_means)
     labels = np.asarray(stable.labels)
@@ -487,7 +487,7 @@ warm = sq.optimize_partition(
     scores,
     n_bins=4,
     criterion=sq.ProfiledDOptimality((0,)),
-    config=sq.DExchangeConfig(seed=0, n_init=8),
+    config=sq.DExchangeConfig(seed=0, initializer_restarts=8),
     initial_labels=bound.labels,
 )
 
@@ -510,7 +510,7 @@ ceiling. Starting from the bound's own labels takes 3 scans and 3 relocations to
 terms the exchange result is within 0.35% of a quantity that no four-cell rule of this
 score table can exceed, which is a far more useful statement than "the solver converged".
 
-Supplied labels replace the seeding of the *first* restart only, so `n_restarts` still
+Supplied labels replace the seeding of the *first* restart only, so `solver_restarts` still
 explores; the initializer is a head start, not a cage.
 
 ## Where this leaves the profiled criterion

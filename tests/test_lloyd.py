@@ -84,7 +84,7 @@ def test_frozen_counterexample_batch_step_is_rejected_not_recorded() -> None:
             scores,
             weights=weights,
             n_bins=3,
-            config=sq.MahalanobisLloydConfig(seed=0, n_init=4, guard=guard),  # type: ignore[arg-type]
+            config=sq.MahalanobisLloydConfig(seed=0, initializer_restarts=4, guard=guard),  # type: ignore[arg-type]
         )
         history = np.asarray(result.objective_history)
         assert np.all(np.diff(history) > 0)
@@ -168,7 +168,7 @@ def test_quantizer_fit_is_end_to_end_and_deterministic() -> None:
     """``fit_quantizer`` compiles the guarded partition into a reusable rule."""
     rng = np.random.default_rng(55)
     scores = rng.normal(size=(20_000, 3))
-    config = sq.MahalanobisLloydConfig(seed=6, n_init=2)
+    config = sq.MahalanobisLloydConfig(seed=6, initializer_restarts=2)
     first = sq.fit_quantizer(sq.ScoreSample(scores), n_bins=6, config=config)
     second = sq.fit_quantizer(sq.ScoreSample(scores), n_bins=6, config=config)
     assert first.n_bins == 6
@@ -207,8 +207,8 @@ def test_configuration_validates_its_contract() -> None:
         sq.MahalanobisLloydConfig(max_iter=0)
     with pytest.raises(ValueError, match="guard must be"):
         sq.MahalanobisLloydConfig(guard="none")  # type: ignore[arg-type]
-    with pytest.raises(ValueError, match="n_init"):
-        sq.MahalanobisLloydConfig(n_init=0)
+    with pytest.raises(ValueError, match="initializer_restarts"):
+        sq.MahalanobisLloydConfig(initializer_restarts=0)
     with pytest.raises(ValueError, match="seed"):
         sq.MahalanobisLloydConfig(seed=-1)
     with pytest.raises(TypeError, match="max_iter"):

@@ -63,7 +63,9 @@ FAST_SIZES = (800, 400, 2_000)
 def test_rank_deficient_fixture_projects_duplicate_direction() -> None:
     coordinate = np.linspace(-2, 2, 600)
     scores = np.column_stack([coordinate, 2 * coordinate])
-    result = fit_test_quantizer(scores, n_bins=4, config=sq.KMeansConfig(seed=31, n_init=3))
+    result = fit_test_quantizer(
+        scores, n_bins=4, config=sq.KMeansConfig(seed=31, solver_restarts=3)
+    )
     assert result.transform.rank == 1
     assert result.evaluate_scores(scores).geometric_mean_retention >= 0.90
 
@@ -73,7 +75,9 @@ def test_rare_population_fixture_retains_nonempty_hard_bins() -> None:
     common = rng.normal(0, 0.35, size=(1_900, 2))
     rare = rng.normal([3.0, -2.0], 0.12, size=(100, 2))
     scores = np.vstack([common, rare])
-    result = fit_test_quantizer(scores, n_bins=6, config=sq.KMeansConfig(seed=32, n_init=4))
+    result = fit_test_quantizer(
+        scores, n_bins=6, config=sq.KMeansConfig(seed=32, solver_restarts=4)
+    )
     assert np.all(np.asarray(result.train_report.bin_counts) > 0)
     assert result.train_report.geometric_mean_retention >= 0.70
 
@@ -87,7 +91,7 @@ def test_skewed_and_zero_weight_fixture_remains_finite() -> None:
         scores,
         weights=weights,
         n_bins=8,
-        config=sq.KMeansConfig(seed=33, n_init=4),
+        config=sq.KMeansConfig(seed=33, solver_restarts=4),
     )
     assert np.isfinite(np.asarray(result.centers)).all()
     assert np.isfinite(result.train_report.geometric_mean_retention)
@@ -98,7 +102,7 @@ def test_controlled_train_test_shift_is_reported_not_optimized(shift: float) -> 
     rng = np.random.default_rng(34)
     train = rng.normal(size=(1_200, 2))
     test = rng.normal(loc=[shift, -shift / 2], size=(2_000, 2))
-    config = sq.KMeansConfig(seed=34, n_init=3)
+    config = sq.KMeansConfig(seed=34, solver_restarts=3)
     without_validation = fit_test_quantizer(train, n_bins=6, config=config)
     with_validation = fit_test_quantizer(
         train,
@@ -745,7 +749,11 @@ def test_fast_rerun_reproduces_the_hardening_and_purification_signs() -> None:
             n_bins=6,
             criterion=sq.DOptimality(),
             config=sq.SoftVoronoiConfig(
-                seed=3, n_init=4, max_steps=80, record_every=80, temperature_end_ratio=ratio
+                seed=3,
+                initializer_restarts=4,
+                max_steps=80,
+                record_every=80,
+                temperature_end_ratio=ratio,
             ),
         )
         gaps.append(float(rule.hardening_gap or 0.0))
@@ -756,7 +764,7 @@ def test_fast_rerun_reproduces_the_hardening_and_purification_signs() -> None:
         source,
         n_bins=6,
         criterion=sq.DOptimality(),
-        config=sq.SoftVoronoiConfig(seed=3, n_init=4, max_steps=80, record_every=80),
+        config=sq.SoftVoronoiConfig(seed=3, initializer_restarts=4, max_steps=80, record_every=80),
     )
     coordinates = np.asarray(fitted.transform.apply(train.scores))
     centers = np.asarray(fitted.centers)
@@ -1042,18 +1050,20 @@ def test_certification_json_matches_the_published_hit_rate_table() -> None:
     assert int(rates["certified_nodes"]) == 51_292  # type: ignore[call-overload]
 
     rows = {
-        (str(row["init"]), int(row["n_restarts"])): row  # type: ignore[call-overload]
+        (str(row["init"]), int(row["solver_restarts"])): row  # type: ignore[call-overload]
         for row in _listing(rates, "rows")
     }
-    for n_restarts, seeded, random_init in PAGE_CERT_HIT_RATES:
-        assert int(rows[("kmeans++", n_restarts)]["trials"]) == 64  # type: ignore[call-overload]
-        assert round(float(rows[("kmeans++", n_restarts)]["hit_rate"]), 3) == pytest.approx(seeded)  # type: ignore[arg-type]
-        assert round(float(rows[("random", n_restarts)]["hit_rate"]), 3) == pytest.approx(  # type: ignore[arg-type]
+    for solver_restarts, seeded, random_init in PAGE_CERT_HIT_RATES:
+        assert int(rows[("kmeans++", solver_restarts)]["trials"]) == 64  # type: ignore[call-overload]
+        assert round(float(rows[("kmeans++", solver_restarts)]["hit_rate"]), 3) == pytest.approx(
+            seeded
+        )  # type: ignore[arg-type]
+        assert round(float(rows[("random", solver_restarts)]["hit_rate"]), 3) == pytest.approx(  # type: ignore[arg-type]
             random_init
         )
         # Seeded restarts dominate random ones at every budget.
-        assert float(rows[("kmeans++", n_restarts)]["hit_rate"]) >= float(  # type: ignore[arg-type]
-            rows[("random", n_restarts)]["hit_rate"]  # type: ignore[arg-type]
+        assert float(rows[("kmeans++", solver_restarts)]["hit_rate"]) >= float(  # type: ignore[arg-type]
+            rows[("random", solver_restarts)]["hit_rate"]  # type: ignore[arg-type]
         )
 
     # "Six restarts reach 95%, at 0.035 seconds per fit against 3.4 seconds to
@@ -1065,8 +1075,8 @@ def test_certification_json_matches_the_published_hit_rate_table() -> None:
     assert certified_seconds / six == pytest.approx(100.0, abs=5.0)
 
     # The full "Seconds per fit, k-means++" column.
-    for n_restarts, seconds in PAGE_CERT_SECONDS_PER_FIT:
-        measured = float(rows[("kmeans++", n_restarts)]["seconds_per_trial"])  # type: ignore[arg-type]
+    for solver_restarts, seconds in PAGE_CERT_SECONDS_PER_FIT:
+        measured = float(rows[("kmeans++", solver_restarts)]["seconds_per_trial"])  # type: ignore[arg-type]
         assert round(measured, 3) == pytest.approx(seconds, abs=5e-4)
 
     # "0.55 seconds for sixteen random restarts against 0.083 for sixteen
@@ -1122,7 +1132,7 @@ def test_certification_json_matches_the_published_cost_table() -> None:
 def test_fast_rerun_reproduces_the_restart_hit_rate_trend() -> None:
     """Restarts help, seeded restarts help more, and the certificate bounds both."""
     study = restart_hit_rates(restarts=(1, 8), trials=12)
-    rows = {(row.init, row.n_restarts): row for row in study.rows}
+    rows = {(row.init, row.solver_restarts): row for row in study.rows}
     assert study.certified_objective < 0.0
     # Hit counts over 12 trials shift a little across platforms (BLAS/float
     # differences move k-means++ seeds between basins), so assert the robust

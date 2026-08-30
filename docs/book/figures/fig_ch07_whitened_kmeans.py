@@ -67,7 +67,7 @@ def four_cell_fit(scores: np.ndarray, whiten: bool) -> sq.QuantizerResult:
         sq.ScoreSample(scores),
         n_bins=N_BINS,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=0, n_init=4, whiten=whiten),
+        config=sq.KMeansConfig(seed=0, solver_restarts=4, whiten=whiten),
     )
 
 

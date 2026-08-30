@@ -99,7 +99,7 @@ direct = sq.fit_quantizer(
     sample,
     n_bins=4,
     criterion=sq.NormalizedTrace(),
-    config=sq.KMeansConfig(seed=12, n_init=4),
+    config=sq.KMeansConfig(seed=12, solver_restarts=4),
 )
 direct_retention = float(direct.evaluate_scores(test.scores, test.weights).geometric_mean_retention)
 assert 0.85 < direct_retention < 0.92

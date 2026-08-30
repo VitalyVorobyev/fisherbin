@@ -429,7 +429,7 @@ def library_run() -> LibraryRun:
         the determinant result with its clean geometry and its certificate.
     """
     scores, weights = float_table()
-    config = sq.DExchangeConfig(seed=1, n_init=32, max_scans=200)
+    config = sq.DExchangeConfig(seed=1, initializer_restarts=32, max_scans=200)
 
     profiled = sq.optimize_partition(
         scores,

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from typing import Protocol, runtime_checkable
 
 import numpy as np
 
@@ -19,7 +20,7 @@ from .ratios import (
     _validate_simplex_vector,
     ratios_from_posteriors,
 )
-from .sources import RatioProvenance, ScoreProvenance
+from .sources import RatioProvenance, ScoreProvenance, ScoreSchema
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,11 +29,14 @@ class ScoreFunction:
 
     function: Callable[[ArrayLike], ArrayLike]
     provenance: ScoreProvenance = ScoreProvenance()
+    schema: ScoreSchema | None = None
 
     def __post_init__(self) -> None:
         """Reject non-callable providers at construction time."""
         if not callable(self.function):
             raise TypeError("function must be callable")
+        if self.schema is not None and not isinstance(self.schema, ScoreSchema):
+            raise TypeError("schema must be a ScoreSchema")
 
     @execution_scope
     def score(
@@ -64,6 +68,16 @@ class LinearComponentScore:
         """Validate the model boundary."""
         if not isinstance(self.model, LinearComponents):
             raise TypeError("model must be LinearComponents")
+
+    @property
+    def schema(self) -> ScoreSchema:
+        """Name each score column after the component it differentiates.
+
+        A linear-intensity model emits one score column per component and the
+        component names are already declared, so the schema is derived rather
+        than asked for.
+        """
+        return ScoreSchema(self.model.component_names)
 
     @execution_scope
     def score(
@@ -154,6 +168,7 @@ class DensityRatioScore:
     ratio: Callable[[ArrayLike], ArrayLike]
     parameterization: RatioParameterization
     provenance: ScoreProvenance
+    schema: ScoreSchema | None
 
     def __init__(
         self,
@@ -161,9 +176,12 @@ class DensityRatioScore:
         parameterization: RatioParameterization,
         *,
         provenance: ScoreProvenance | None = None,
+        schema: ScoreSchema | None = None,
     ) -> None:
         if not callable(ratio):
             raise TypeError("ratio must be callable")
+        if schema is not None and not isinstance(schema, ScoreSchema):
+            raise TypeError("schema must be a ScoreSchema")
         if not isinstance(parameterization, (IntensityParameterization, MixtureParameterization)):
             raise TypeError(
                 "parameterization must be IntensityParameterization or MixtureParameterization"
@@ -182,6 +200,7 @@ class DensityRatioScore:
         object.__setattr__(self, "ratio", ratio)
         object.__setattr__(self, "parameterization", parameterization)
         object.__setattr__(self, "provenance", resolved)
+        object.__setattr__(self, "schema", schema)
 
     @classmethod
     def from_classifier(
@@ -295,6 +314,7 @@ class CentralLogRatioScore:
     class_priors: jnp.ndarray
     description: str | None
     metadata: Mapping[str, JsonValue]
+    schema: ScoreSchema | None
 
     def __init__(
         self,
@@ -304,9 +324,12 @@ class CentralLogRatioScore:
         *,
         description: str | None = None,
         metadata: Mapping[str, JsonValue] | None = None,
+        schema: ScoreSchema | None = None,
     ) -> None:
         if not callable(predict):
             raise TypeError("predict must be callable")
+        if schema is not None and not isinstance(schema, ScoreSchema):
+            raise TypeError("schema must be a ScoreSchema")
         delta_array = jnp.asarray(deltas)
         if delta_array.ndim != 1 or delta_array.shape[0] == 0:
             raise ValueError("deltas must have shape [P]")
@@ -324,6 +347,7 @@ class CentralLogRatioScore:
         ):
             raise ValueError("class_priors must be finite and positive")
         priors = priors / jnp.sum(priors, axis=1, keepdims=True)
+        object.__setattr__(self, "schema", schema)
         object.__setattr__(self, "predict", predict)
         object.__setattr__(self, "deltas", canonical_array(delta_array))
         object.__setattr__(self, "class_priors", canonical_array(priors))
@@ -372,4 +396,70 @@ class CentralLogRatioScore:
         return canonical_array((log_ratio - prior_log_ratio[None, :]) / (2 * self.deltas[None, :]))
 
 
-type ScoreProvider = ScoreFunction | LinearComponentScore | DensityRatioScore | CentralLogRatioScore
+@runtime_checkable
+class ScoreProvider(Protocol):
+    """The observation-to-score contract every fitting route goes through.
+
+    ScoreQuant does not care how a score was obtained -- an analytic
+    derivative, autodiff, a component model, a density-ratio estimator, or an
+    external inference package -- only that observations can be mapped to a
+    finite score matrix and that the mapping says what it is. Those are the two
+    members here, so a caller can supply their own object rather than wrapping
+    it:
+
+    .. code-block:: python
+
+        class MyExternalScore:
+            provenance = ScoreProvenance(kind="estimated_ratio")
+
+            def score(self, observations):
+                return my_package.evaluate(observations)
+
+    The built-in providers -- :class:`ScoreFunction`,
+    :class:`LinearComponentScore`, :class:`DensityRatioScore` and
+    :class:`CentralLogRatioScore` -- are convenience implementations of this
+    protocol, not a closed list of what is allowed.
+
+    A provider may additionally expose ``schema``, a
+    :class:`~scorequant.ScoreSchema` naming its score columns; it is used when
+    present and is not part of the required contract.
+
+    Notes
+    -----
+    ``score`` takes observations alone. The execution backend is ambient
+    context established by the public task, not an argument a provider has to
+    thread through, so an external implementation needs no knowledge of
+    :class:`~scorequant.ExecutionConfig`.
+    """
+
+    @property
+    def provenance(self) -> ScoreProvenance:
+        """Describe how this score representation was obtained."""
+        ...
+
+    def score(self, observations: ArrayLike) -> ArrayLike:
+        """Map observations with shape ``[N, D]`` to scores with shape ``[N, P]``."""
+        ...
+
+
+def validate_provider(provider: object) -> None:
+    """Reject an object that cannot act as a score provider.
+
+    ``runtime_checkable`` only proves the attributes exist, so the provenance
+    type is checked here too: a provider whose ``provenance`` is not a
+    :class:`~scorequant.ScoreProvenance` would otherwise reach the result and
+    silently decide whether exact-Fisher language is justified.
+    """
+    if not isinstance(provider, ScoreProvider):
+        missing = [name for name in ("score", "provenance") if not hasattr(provider, name)]
+        raise TypeError(
+            "provider must implement the ScoreProvider protocol; "
+            f"{type(provider).__name__} is missing {', '.join(missing)}"
+        )
+    if not isinstance(provider.provenance, ScoreProvenance):
+        raise TypeError(
+            "provider.provenance must be a ScoreProvenance, not "
+            f"{type(provider.provenance).__name__}"
+        )
+    if not callable(provider.score):
+        raise TypeError("provider.score must be callable")

@@ -545,7 +545,7 @@ for seed in range(10):
         sq.ScoreSample(instance),
         n_bins=3,
         criterion=sq.NormalizedTrace(),
-        config=sq.KMeansConfig(seed=0, n_init=1),
+        config=sq.KMeansConfig(seed=0, solver_restarts=1),
     )
     proved = sq.certify_partition(instance, n_bins=3, incumbent=fitted.labels)
     optimal += proved.incumbent_was_optimal

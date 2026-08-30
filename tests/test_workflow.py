@@ -51,7 +51,7 @@ def test_score_component_and_observation_workflows_are_equivalent() -> None:
     weights = np.linspace(0.2, 1.8, len(values))
     model = _model()
     problem = model.evaluate(values, weights=weights)
-    config = sq.KMeansConfig(seed=9, n_init=3)
+    config = sq.KMeansConfig(seed=9, solver_restarts=3)
     common = {
         "n_bins": 5,
         "criterion": sq.NormalizedTrace(),
@@ -62,7 +62,7 @@ def test_score_component_and_observation_workflows_are_equivalent() -> None:
     component_result = sq.fit_quantizer(sq.ScoreSample(evaluated_components, weights), **common)
     observation_result = sq.fit_quantizer(
         sq.ObservationSample(values, weights),
-        score=sq.LinearComponentScore(model),
+        provider=sq.LinearComponentScore(model),
         **common,
     )
     _same_partition(np.asarray(direct.labels), np.asarray(component_result.labels))
@@ -76,7 +76,7 @@ def test_observation_prediction_keeps_score_step_explicit() -> None:
     provider = sq.LinearComponentScore(_model())
     result = sq.fit_quantizer(
         sq.ObservationSample(train),
-        score=provider,
+        provider=provider,
         n_bins=6,
         criterion=sq.NormalizedTrace(),
         config=sq.KMeansConfig(seed=3),
@@ -94,14 +94,14 @@ def test_validation_is_diagnostic_through_observation_provider() -> None:
     config = sq.KMeansConfig(seed=5)
     without = sq.fit_quantizer(
         sq.ObservationSample(train),
-        score=provider,
+        provider=provider,
         n_bins=5,
         criterion=sq.NormalizedTrace(),
         config=config,
     )
     with_validation = sq.fit_quantizer(
         sq.ObservationSample(train),
-        score=provider,
+        provider=provider,
         validation=sq.ObservationSample(validation),
         n_bins=5,
         criterion=sq.NormalizedTrace(),

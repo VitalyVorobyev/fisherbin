@@ -28,6 +28,7 @@ from ._validation import (
 from .config import ExecutionConfig, ScalarDPConfig
 from .quantizers import chunked_hard_assign, scalar_interval_dp
 from .reports import EfficientScoreBound, InformationReport, ProfiledInformationReport
+from .sources import ScoreSchema
 from .transforms import _default_rank_rtol, fisher_transform
 
 
@@ -423,6 +424,7 @@ def profiled_information_report(
     interest: tuple[int, ...],
     weights: ArrayLike | None = None,
     n_bins: int | None = None,
+    schema: ScoreSchema | None = None,
     execution: ExecutionConfig | None = None,
 ) -> ProfiledInformationReport:
     r"""Build same-label profiled-\(D_s\) diagnostics without regularization.
@@ -481,6 +483,7 @@ def profiled_information_report(
             geometric_mean_retention=retention,
             interest_rank=interest_rank,
             nuisance_rank=nuisance_rank,
+            schema=schema,
         )
     )
 
