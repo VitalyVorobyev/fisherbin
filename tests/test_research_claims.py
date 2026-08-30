@@ -612,3 +612,147 @@ def test_ds15_profiled_value_is_bounded_by_the_efficient_score_interval_optimum(
     assert best_profiled == Fraction(6241, 984)
     assert interval_best == Fraction(135987641, 19993584)
     assert best_profiled < interval_best
+
+
+def test_ds15_rank_deficiency_zeroes_every_feasible_profiled_value() -> None:
+    """DS15's K = d_lambda + 1 rank boundary (CE-DS-MARGINS-RANK-VACUITY-001).
+
+    Exact centering forces rank(I_z) <= K - 1, so with a scalar POI and a
+    d_lambda = K - 1 nuisance every labeling with a nonsingular binned
+    nuisance block has profiled Schur value exactly 0 - on every sample -
+    while the efficient-score interval optimum stays strictly positive and
+    K = d_lambda + 2 restores a positive value on the same atoms. Conclusion
+    (i) of DS15 therefore needs K >= d_lambda + 2, not K >= 3.
+    """
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-MARGINS-RANK-VACUITY-001.json").read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    n_rows = len(scores)
+    weight = Fraction(1, n_rows)
+    assert all(sum(row[column] for row in scores) == 0 for column in range(3))
+
+    def blocks(labels: tuple[int, ...], n_bins: int) -> list[list[Fraction]]:
+        masses = [Fraction(0)] * n_bins
+        moments = [[Fraction(0)] * 3 for _ in range(n_bins)]
+        for row, label in enumerate(labels):
+            masses[label] += weight
+            for column in range(3):
+                moments[label][column] += weight * scores[row][column]
+        return [
+            [
+                sum(
+                    moments[b][row] * moments[b][column] / masses[b]
+                    for b in range(n_bins)
+                    if masses[b] > 0
+                )
+                for column in range(3)
+            ]
+            for row in range(3)
+        ]
+
+    def schur(info: list[list[Fraction]]) -> Fraction | None:
+        det_l = info[1][1] * info[2][2] - info[1][2] * info[2][1]
+        if det_l == 0:
+            return None
+        adj = info[0][1] * (info[2][2] * info[0][1] - info[1][2] * info[0][2]) + info[0][2] * (
+            info[1][1] * info[0][2] - info[1][2] * info[0][1]
+        )
+        return info[0][0] - adj / det_l
+
+    n_feasible = 0
+    for labels in _canonical_partitions(n_rows, 3):
+        value = schur(blocks(labels, 3))
+        if value is not None:
+            n_feasible += 1
+            assert value == 0
+    assert n_feasible == 6
+
+    full = blocks((0, 1, 2, 3), 4)
+    det_l = full[1][1] * full[2][2] - full[1][2] * full[2][1]
+    slope_1 = (full[0][1] * full[2][2] - full[0][2] * full[1][2]) / det_l
+    slope_2 = (full[0][2] * full[1][1] - full[0][1] * full[2][1]) / det_l
+    shat = [row[0] - slope_1 * row[1] - slope_2 * row[2] for row in scores]
+    order = sorted(range(n_rows), key=shat.__getitem__)
+    interval_best = Fraction(0)
+    for first_cut in range(1, n_rows - 1):
+        for second_cut in range(first_cut + 1, n_rows):
+            masses = [Fraction(0)] * 3
+            sums = [Fraction(0)] * 3
+            for position, row in enumerate(order):
+                cell = 0 if position < first_cut else (1 if position < second_cut else 2)
+                masses[cell] += weight
+                sums[cell] += weight * shat[row]
+            interval_best = max(
+                interval_best, sum(sums[b] ** 2 / masses[b] for b in range(3) if masses[b] > 0)
+            )
+    assert interval_best == Fraction(81, 50)
+    assert schur(full) == Fraction(9, 5)
+
+
+def test_ds15_projection_tax_identity_survives_ties_duplicates_and_unequal_weights() -> None:
+    """Proposition 4 is pure finite algebra: it holds off DS15's assumptions.
+
+    Duplicate atoms with unequal positive weights, and a nuisance-symmetric
+    sample whose efficient scores carry exact duplicate values, both satisfy
+    the exact identity profiled = between - cross^2 / I_ll on every feasible
+    labeling; on singular-nuisance labelings the pseudo-inverse value
+    collapses to the between value exactly.
+    """
+    datasets = [
+        (
+            [(2, 1), (2, 1), (-1, 2), (0, -3), (-1, -1), (-2, 0)],
+            [Fraction(1, 4)] + [Fraction(1, 8)] * 3 + [Fraction(1, 4), Fraction(1, 8)],
+            88,
+            2,
+        ),
+        (
+            [(1, 1), (1, -1), (-1, 2), (-1, -2), (0, 3), (0, -3)],
+            [Fraction(1, 6)] * 6,
+            89,
+            1,
+        ),
+    ]
+    for raw, weights, expected_feasible, expected_singular in datasets:
+        total = sum(weights)
+        mean = [
+            sum(w * Fraction(r[c]) for w, r in zip(weights, raw, strict=True)) / total
+            for c in range(2)
+        ]
+        scores = [[Fraction(r[c]) - mean[c] for c in range(2)] for r in raw]
+        n_rows = len(scores)
+        full = [
+            [
+                sum(w * row[a] * row[b] for w, row in zip(weights, scores, strict=True)) / total
+                for b in range(2)
+            ]
+            for a in range(2)
+        ]
+        slope = full[0][1] / full[1][1]
+        shat = [row[0] - slope * row[1] for row in scores]
+        assert sum(w * s * row[1] for w, s, row in zip(weights, shat, scores, strict=True)) == 0
+
+        n_feasible = n_singular = 0
+        for labels in _canonical_partitions(n_rows, 3):
+            masses = [Fraction(0)] * 3
+            shat_sums = [Fraction(0)] * 3
+            lam_sums = [Fraction(0)] * 3
+            psi_sums = [Fraction(0)] * 3
+            for row, label in enumerate(labels):
+                masses[label] += weights[row]
+                shat_sums[label] += weights[row] * shat[row]
+                lam_sums[label] += weights[row] * scores[row][1]
+                psi_sums[label] += weights[row] * scores[row][0]
+            between = sum(s**2 / m for s, m in zip(shat_sums, masses, strict=True))
+            cross = sum(s * ell / m for s, ell, m in zip(shat_sums, lam_sums, masses, strict=True))
+            i_ll = sum(ell**2 / m for ell, m in zip(lam_sums, masses, strict=True))
+            i_pp = sum(p**2 / m for p, m in zip(psi_sums, masses, strict=True))
+            i_pl = sum(p * ell / m for p, ell, m in zip(psi_sums, lam_sums, masses, strict=True))
+            if i_ll == 0:
+                n_singular += 1
+                assert cross == 0 and i_pl == 0
+                assert i_pp == between
+                continue
+            n_feasible += 1
+            assert i_pp - i_pl**2 / i_ll == between - cross**2 / i_ll
+        assert (n_feasible, n_singular) == (expected_feasible, expected_singular)

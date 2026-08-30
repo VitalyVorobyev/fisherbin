@@ -104,7 +104,7 @@ margin condition is a hypothesis on the law, never proven automatic.
 
 ## Scalar quantizer uniqueness (log-concave laws)
 
-**Key:** Kieffer-1983, Liu-Pages-2020
+**Key:** Kieffer-1983, Liu-Pages-2020, Mease-Nair-2006
 
 **Sources:** Kieffer (1983, IEEE IT 29:42–47): log-concave density + convex,
 strictly increasing, \(C^1\) error weight ⟹ the locally optimal \(K\)-level
@@ -117,7 +117,14 @@ Rayleigh covered explicitly. Trushkin (1982, IEEE IT 28:187–198): convex
 error weights (hypotheses unverified, cited by Liu–Pagès). Liu & Pagès
 Prop 11: strictly log-concave density ⟹ positive-definite distortion Hessian
 at the optimum — a published population-level conditioning statement at the
-scalar optimum.
+scalar optimum. Mease & Nair (2006, Statistica Sinica 16:1299–1312,
+verbatim, 30 Aug 2026 audit): uniqueness under log-concavity of the density
+via likelihood-ratio ordering — and an explicit counterexample refuting
+Eubank (1988)'s weaker sufficient condition (log-concavity of
+\(f(F^{-1}(u))\)): a spliced exponential/Weibull density with three
+stationary solutions. **Boundary for (S): the assumption must stay pinned to
+log-concavity of the density itself; Eubank-type weakenings are
+known-broken.**
 
 **Use:** DS15's assumption (S) — uniqueness of the optimal efficient-score
 interval quantizer — holds for Gaussian efficient scores by any of these;
@@ -127,6 +134,49 @@ scalar optimum fully rigorous in one dimension.
 **Does not transfer:** one-dimensional and distortion-side only; uniqueness
 for \(d_\psi>1\) fails in general (rotational symmetry), which is exactly why
 DS15 is stated for \(d_\psi=1\).
+
+## Scalar grouping and 1-D contiguity (30 Aug 2026)
+
+**Key:** Fisher-1958
+
+**Sources:** W. D. Fisher (1958, JASA 53:789–798, verbatim): optimal
+one-dimensional weighted least-squares partitions are contiguous in the
+sorted order (appendix proof), reducing the search to
+\(\binom{K-1}{G-1}\) contiguous partitions; credits the
+continuous-distribution analogue to Dalenius (1950) and Cox (1957). Bellman
+(1961, CACM 4:284): dynamic programming for segmented least squares — the
+exact-DP citation. Wang & Song (2011, R Journal 3(2):29–33):
+`Ckmeans.1d.dp`, modern guaranteed-optimal 1-D DP.
+
+**Use:** the classical anchors for DS8 (scalar efficient-score DP) and the
+\(\mathrm{btw}\le\hat v_K\) leg of DS15's Proposition 4; the DS15 audit
+verified contiguity against full partition lattices, including duplicate
+values and unequal weights.
+
+**Does not transfer:** one-dimensional SSE only; nothing about matrix
+criteria or feasibility constraints.
+
+## Constraint-restored consistency of empirical clustering (30 Aug 2026)
+
+**Key:** Blanchard-Jaffe-Zhivotovskiy-2025
+
+**Sources:** Blanchard, Jaffe & Zhivotovskiy (arXiv:2507.06226, abstract):
+under only a finite first moment, empirical k-means centers can fail to
+converge even when the population optimum is unique — the failure mode is
+extreme cluster imbalance — and an a priori balance (minimum-size)
+constraint restores consistency. Kanungo et al. (2004, Comput. Geom.
+28:89–112): single-swap local search with bounded worst-case cost. Bradley,
+Bennett & Demiriz (2000, MSR TR-2000-65): minimum-cluster-size constrained
+assignment via network flow.
+
+**Use:** the closest published *structure* to DS15's Proposition 6 —
+constraints imposed at asymptotically negligible cost — and the reference to
+engage before any publication of the steering construction.
+
+**Does not transfer:** their constraint repairs a moment pathology of the
+scalar-distortion objective; DS15's margin fights the profiled criterion's
+own drive to nuisance degeneracy, and no published theorem provides
+swap-steering to a side constraint at \(\tilde O(N^{-3/4})\) cost.
 
 ## Outlier and singleton cells at exact clustering optima
 

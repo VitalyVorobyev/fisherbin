@@ -197,6 +197,33 @@ formulation. Theory: `KNOWN_RESULTS/05b-ds-bridge.md` DS11(c–d).
 
 ---
 
+## CE-DS-MARGINS-RANK-VACUITY-001 — at \(K=d_\lambda+1\) every feasible labeling has profiled value exactly zero
+
+**Status:** exact rational boundary counterexample (exhaustive enumeration; the
+mechanism is a two-line rank argument, universal over samples).
+
+**Claim falsified:**
+
+> DS15's margins dichotomy as first registered for general nuisance dimension
+> under the bare cardinality assumption \(K\ge3\): conclusion (i) — value
+> convergence to the positive unrestricted supremum \(v_K\) — for
+> \(d_\lambda\ge2\) with \(K=d_\lambda+1\).
+
+Exact centering gives \(\sum_b m_b=0\), so \(\operatorname{rank}(I_z)\le K-1\);
+when the \(d_\lambda\times d_\lambda\) binned nuisance block is nonsingular
+with \(d_\lambda=K-1\), Schur rank additivity forces the profiled value to be
+exactly zero — for **every** sample and every feasible labeling. The minimized
+witness (\(N=4\), integer scores with zero column sums, \(d_\lambda=2\),
+\(K=3\)) has all six feasible labelings at value \(0\), efficient-score
+interval optimum \(81/50>0\), and \(K=4=d_\lambda+2\) value \(9/5>0\) on the
+same atoms. Hence the dichotomy needs \(K\ge d_\lambda+2\); at
+\(d_\lambda=1\) that is exactly the recorded \(K\ge3\). Theory:
+`KNOWN_RESULTS/05b-ds-bridge.md` DS15 (audited scope) and DS9/FI-RANK-CEILING.
+
+**Fixture:** `CE-DS-MARGINS-RANK-VACUITY-001.json`.
+
+---
+
 ## CE-DS-GLOBAL-GEOMETRY-001 / -002 — exact finite \(D_s\) geometry can fail
 
 **Status:** two independent exact rational counterexamples for the same claim.

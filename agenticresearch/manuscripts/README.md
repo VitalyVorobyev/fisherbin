@@ -91,6 +91,21 @@ canonical.
   the distortion-vs-determinant "two camps" frame (topics/01, topics/04) is
   the natural related-work skeleton for the margins discussion.
 
+### Added 30 August 2026 (the DS15 audit session)
+
+- **DS15's scope narrowed by its audit.** The independent audit
+  (`AUDITS/AUDIT-DS-MARGINS-AT-OPTIMA-001.md`) refuted the registered
+  \(d_\lambda\)-generality: at \(K=d_\lambda+1\) every feasible labeling has
+  profiled value exactly zero (rank ceiling;
+  `CE-DS-MARGINS-RANK-VACUITY-001`), so DS15 is a
+  \(d_\psi=d_\lambda=1\) theorem with \(K\ge3=d_\lambda+2\), and the
+  \(d_\lambda\ge2\) branch is open (OP29). Any manuscript statement of DS15
+  must carry the scalar-nuisance scope and must not cite the original
+  \(O(N^{-3/4})\) achievability rate as almost-sure (the audited rate carries
+  a \(\sqrt{\log\log N}\)); the achievability proposition is now a proof, not
+  a sketch, with audit-supplied ingredients that a paper would need to spell
+  out.
+
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of
 `protocols/audit.md`. It had no updater before workspace v4.0, which is why the

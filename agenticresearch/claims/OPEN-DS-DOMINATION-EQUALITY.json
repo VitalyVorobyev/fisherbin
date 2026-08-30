@@ -7,7 +7,7 @@
   "level": "population_quantizer",
   "status": "project_proved",
   "publication_status": "internal",
-  "statement": "Var(E[S_hat|q]) - S_psi^+(I_q) = (B*_full - B*_q) I^q_ll (B*_full - B*_q)^T exactly; equality for fixed q iff (B*_full - B*_q) I^q_ll = 0 (the full-data nuisance projection is binned-optimal); along partition sequences refining to the Borel sigma-field the gap vanishes. At global finite Ds optima the gap is the DS15 projection tax and vanishes almost surely for conditionally centered laws with d_psi=1 (DS15 conclusion (v)); beyond that class it is OPEN-DS-MARGINS-NONCENTERED.",
+  "statement": "Var(E[S_hat|q]) - S_psi^+(I_q) = (B*_full - B*_q) I^q_ll (B*_full - B*_q)^T exactly; equality for fixed q iff (B*_full - B*_q) I^q_ll = 0 (the full-data nuisance projection is binned-optimal); along partition sequences refining to the Borel sigma-field the gap vanishes. At global finite Ds optima the gap is the DS15 projection tax and vanishes almost surely for conditionally centered laws with d_psi = d_lambda = 1 (DS15 conclusion (v), audited); beyond that class it is OPEN-DS-MARGINS-NONCENTERED.",
   "dependencies": [
     "DS-PROFILED-VARIATIONAL",
     "DS-EFFICIENT-SCORE-DOMINATION"

@@ -85,7 +85,10 @@ the binned nuisance blocks are eventually nonsingular, where
 of OP6. (The pseudo-inverse map is discontinuous at rank drops — witness
 \(I_{\lambda\lambda}^{(k)}=\mathrm{diag}(1,1/k)\), \(I_{\psi\lambda}=[1,1]\),
 \(B^*_k=[1,k]\) — so the nonsingular-limit hypothesis is load-bearing; audit
-§8.) The behavior at global optima is tied to OP28 and remains open.
+§8.) The behavior at global optima was OP28 and is now settled by DS15 for
+conditionally centered laws at \(d_\psi=d_\lambda=1\): the gap is the
+projection tax and vanishes a.s. along free global optima (DS15 conclusion 5);
+beyond that class it is OP29.
 
 **(b) Refinement monotonicity with exact equality characterization
 (\(d_\psi=1\)).** Splitting cell \(M\) into \((x,y)\): for every slope \(c\),
@@ -438,12 +441,27 @@ remains C2. (iii) Everything is for exact scores; estimated-score robustness
 is the P2 programme.
 
 ---
-## DS15. Margins dichotomy at global finite \(D_s\) optima — [PROJECT-PROVED for conditionally centered laws]
+## DS15. Margins dichotomy at global finite \(D_s\) optima — [PROJECT-PROVED for conditionally centered laws, \(d_\lambda=1\); audited]
 
 **Claims:** OPEN-DS-MARGINS-AT-OPTIMA
 
-Setting: \(S=(S_\psi,S_\lambda)\sim P\) on \(\mathbb R^{1+d_\lambda}\)
-(\(d_\psi=1\); general \(d_\psi\) discussed at the end), \(E S=0\),
+**Audit (30 Aug 2026, `AUDITS/AUDIT-DS-MARGINS-AT-OPTIMA-001.md`):** verified
+with hardened assumptions. The originally registered generality — arbitrary
+\(d_\lambda\) under the bare cardinality assumption \(K\ge3\) — is **false**:
+for \(K=d_\lambda+1\) exact centering forces
+\(\operatorname{rank}(I_z)\le K-1\), so every feasible labeling has profiled
+value exactly \(0\) while \(v_K>0\)
+(`COUNTEREXAMPLES/CE-DS-MARGINS-RANK-VACUITY-001.json`). The theorem below is
+therefore stated for \(d_\lambda=1\), where \(K\ge3\) is exactly
+\(K\ge d_\lambda+2\); the \(d_\lambda\ge2\), \(K\ge d_\lambda+2\) branch is
+open (Proposition 6's steering is one-dimensional in the nuisance). The audit
+supplied the previously missing pieces of Propositions 5–6 and replaced the
+misattributed Glivenko–Cantelli import in the proof of conclusion (3); see
+the audit report §8.
+
+Setting: \(S=(S_\psi,S_\lambda)\sim P\) on \(\mathbb R^{2}\)
+(\(d_\psi=d_\lambda=1\); general \(d_\psi\) and general \(d_\lambda\) are
+discussed at the end), \(E S=0\),
 \(E\|S\|^2<\infty\), full information \(I=E[SS^\top]\succ0\). Efficient score
 \(\hat s=S_\psi-B^*S_\lambda\), \(B^*=I_{\psi\lambda}I_{\lambda\lambda}^{-1}\),
 \(\sigma_s^2=E[\hat s^2]=S_\psi(I)\). All second moments are uncentered about
@@ -480,8 +498,9 @@ For a quantizer \(q\) (or finite labeling \(z\)): \(W_b\), moments
 
 Let \(z^{(N)}\) be exact global finite \(D_s\) optima of i.i.d. samples from
 \(P\) satisfying (L)+(S)+(R), over feasible \(K\)-cell labelings
-(\(K\ge3\), equal weights, nonsingular binned nuisance block). Then, almost
-surely:
+(\(K\ge3=d_\lambda+2\) — load-bearing: at \(K=2=d_\lambda+1\) the rank
+boundary above makes every feasible value exactly \(0\); equal weights;
+nonsingular binned nuisance block). Then, almost surely:
 
 1. **(Value; unrestricted supremum.)**
    \(\hat\Phi_s(z^{(N)})\to v_K=\sup_q S_\psi^+(I_q)\), the supremum over
@@ -578,14 +597,26 @@ rational arithmetic for every optimum in the N-DS-MARGINS-TREND suite.
 **Proposition 5 (bracket limits).** A.s. \(\hat v_K(\hat s_N)\to v_K\):
 value convergence of empirical scalar quantization (uniform SLLN over interval
 classes; Pollard 1981 — value convergence needs no uniqueness), plus a
-uniform-in-labelings Lipschitz bound in the tilt (between-values are quadratic
-in \(B\) with moment coefficients) to absorb \(\hat B^*_N\to B^*\) and the
-exact centering.
+uniform-in-labelings Lipschitz bound in the tilt to absorb
+\(\hat B^*_N\to B^*\) and the exact centering.
+*Proof of the Lipschitz bound (audit-supplied).* For any labeling \(z\),
+\(\mathrm{btw}(s_\psi-\beta s_\lambda;z)=A_z-2\beta B_z+\beta^2C_z\) with
+\(A_z,B_z,C_z\) the binned between-moments; \(0\le C_z\le\sum_iw s_{\lambda,i}^2\)
+and \(|B_z|\le\sqrt{A_zC_z}\le\sqrt{\sum_iws_{\psi,i}^2\sum_iws_{\lambda,i}^2}\)
+(between-values are dominated by total second moments; per-cell
+Cauchy–Schwarz for the cross term). Hence on \(|\beta-B^*|\le1\) every
+\(z\mapsto\mathrm{btw}\) is \(\hat L\)-Lipschitz in \(\beta\) with one
+SLLN-bounded \(\hat L\), so their maximum \(\hat v_K(\beta)\) is too, and
+\(|\hat v_K(\hat B^*_N)-\hat v_K(B^*)|\le\hat L|\hat B^*_N-B^*|\to0\). The
+exact centering shifts every between-value by the same
+\(-\bar{\hat s}_N^2\to0\). ∎
 
 **Proposition 6 (achievability by steering).** Under (L)+(S)+(R), a.s. there
 are feasible labelings \(z'_N\) with
-\(\hat\Phi_s(z'_N)\ge\hat v_K-O(N^{-3/4})\).
-*Proof sketch (the tax obstruction and its resolution).* Write
+\(\hat\Phi_s(z'_N)\ge\hat v_K-O(N^{-3/4}\sqrt{\log\log N})\).
+*Proof (the tax obstruction and its resolution; the audit hardened the
+original sketch — the four supplied ingredients follow the construction).*
+Write
 \(x_b=m_{\hat s,b}/\hat W_b^{1/2}\), \(y_b=m_{\lambda,b}/\hat W_b^{1/2}\)
 (\(d_\lambda=1\)); Proposition 4 reads
 \(\hat\Phi_s(z)=|x|^2-\langle x,y\rangle^2/|y|^2\): the profiled value pays the
@@ -604,11 +635,43 @@ move \(y\) in two independent directions of its constraint plane
 individual between-cost \(\le2\Delta t/N+O(N^{-2})\). Steer \(y\) to within
 \(O(L/N)\) of a target \(y^*\) with \(\langle x,y^*\rangle=0\) and
 \(|y^*|=N^{-1/2}\) (the intersection of the constraint plane with
-\(x^\perp\) is nonempty for \(K\ge3\)): then \(|\langle x,y\rangle|=O(1/N)\)
+\(x^\perp\) is nonempty for \(K\ge3\), and \(x\ne0\) since
+\(\mathrm{btw}(z_0)=\hat v_K>0\)): then \(|\langle x,y\rangle|=O(1/N)\)
 while \(\hat I^z_{\lambda\lambda}=|y|^2=N^{-1}(1+o(1))\) is *constructed*, not
-random — no small-ball event needed — so the tax is \(O(1/N)\), the
-between-value loss from \(O(N^{1/2})\) swaps is \(O(N^{-3/4})\), and
-feasibility \(\hat I_{\lambda\lambda}>0\) holds by construction. ∎
+random — no small-ball event needed — so the tax is \(\tilde O(1/N)\), the
+between-value loss from \(\tilde O(N^{1/2})\) swaps is
+\(\tilde O(N^{-3/4})\), and feasibility \(\hat I_{\lambda\lambda}>0\) holds by
+construction.
+
+The four ingredients the audit supplied to close the sketch:
+
+- *(Boundary and mass consistency.)* The empirical DP boundaries and masses
+  of \(z_0\) converge a.s. to those of \(J^*\) — from (S)-uniqueness and
+  Pollard's argmin consistency for the empirical scalar problem; this both
+  places the swap slabs at the population boundaries where (R) applies and
+  keeps the \(\sqrt{\hat W_b}\) scalings bounded, so the two adjacent-swap
+  increment directions \(v_{b,b+1}=e_{b+1}/\sqrt{\hat W_{b+1}}
+  -e_b/\sqrt{\hat W_b}\) stay uniformly non-collinear (greedy two-direction
+  steering then reaches any plane target to within one increment).
+- *(Availability count.)* The number of sample points in a data-dependent
+  slab of width \(2N^{-1/4}\) around an empirical boundary carrying each
+  nuisance-sign window is \(\ge cN^{3/4}\) eventually a.s.: mean
+  \(\asymp N^{3/4}\) by (S) positive density and (R), fluctuation
+  \(O(\sqrt{N\log\log N})\) uniformly over the fixed VC class of intervals
+  \(\times\) sign windows, and the data-dependent tilt
+  \(\hat B^*_N\) shifts memberships by \(L|\hat B^*_N-B^*|
+  =O(\sqrt{\log\log N/N})\ll N^{-1/4}\) (LIL). The pools
+  (\(\asymp N^{3/4}\)) dominate the \(\tilde O(N^{1/2})\) swaps, each point
+  used once, sources never emptied (masses stay near \(w^*>0\)).
+- *(Drift accounting.)* Each swap moves \(x\), the centroids, and the
+  midpoints by \(O(1/N)\); over \(\tilde O(N^{1/2})\) swaps the cumulative
+  \(\tilde O(N^{-1/2})\) drift changes \(\langle x,y\rangle\) by
+  \(O(|\Delta x||y|)=\tilde O(N^{-1})\) and each swap's between-cost bound by
+  a factor \(1+o(1)\) — absorbed.
+- *(Steering distance.)* \(|y(z_0)-y^*|=O(\sqrt{\log\log N/N})\) a.s. (LIL
+  over the fixed interval class under (L)), whence the
+  \(\tilde O(N^{1/2})\) swap count and the stated
+  \(\tilde O(N^{-3/4})\) rate; the theorem consumes only \(o(1)\). ∎
 
 **Proof of the theorem.** (1) Upper: Propositions 4–5. Lower: global
 optimality against Proposition 6. Attainment/uniqueness: Lemma 2.
@@ -619,9 +682,16 @@ argument to \(\hat\mu_N(\hat s_N)\Rightarrow\operatorname{law}(\hat s)\))
 forces the optimum's cells to converge in sample measure to \(J^*\): masses
 converge to \(w^*\) (conclusion 2), and the empirical cell nuisance moments
 converge to \(E[S_\lambda1_{J^*_b}]=0\) (empirical Cauchy–Schwarz over the
-symmetric differences plus the LLN on the fixed sets \(J^*_b\), with the
-data-dependent slope absorbed by the fixed-slab Glivenko–Cantelli class of
-audit §8): \(\hat I_{\lambda\lambda},\hat I_{\psi\lambda}\to0\), and
+symmetric differences plus the LLN on the fixed sets \(J^*_b\)). The
+data-dependent slope is absorbed by a Glivenko–Cantelli law over the **fixed**
+VC class of half-planes \(\{s:s_\psi-\beta s_\lambda\le c\}\), \((\beta,c)\)
+in a compact neighborhood of \((B^*,\cdot)\), with the population side needing
+only (S)-atomlessness of \(\operatorname{law}(\hat s)\) at the \(K-1\) fixed
+optimal boundaries — *not* the (M4) slab margin or the (M5) scale that power
+the superficially similar step in audit §8 of
+`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md` (the earlier citation of that step
+here was a misattribution; the audit report §8 records the corrected lemma):
+\(\hat I_{\lambda\lambda},\hat I_{\psi\lambda}\to0\), and
 \(\lambda_{\min}\le\hat I_{\lambda\lambda}\) (conclusion 3).
 (4): if \(\Phi(q_m)\to v_K\) with \(\lambda_{\min}(I_{q_m})\ge\kappa\), Lemma 1
 gives \(\mathrm{btw}\to v_K\), Lemma 3 gives
@@ -634,8 +704,12 @@ gives \(\mathrm{btw}\to v_K\), Lemma 3 gives
 The theorem says the free \(D_s\) optimizer *sheds the in-bin formulation's own
 feasibility margin*: its limit \(J^*\) is exactly the optimal binning of the
 **projected full-data efficient score** (the external-projection problem,
-DS-PROJECTED-K-REQUIREMENT), which is DS9-infeasible as an in-bin profiled
-model. The two formulations, kept deliberately separate by invariant 3, merge
+DS-PROJECTED-K-REQUIREMENT), which is infeasible as an in-bin profiled model
+in the sense of DS9's feasibility *split* — its binned nuisance block is
+exactly singular, so the in-bin formulation cannot estimate the nuisance from
+the bins. (Audit note: DS9's recorded statement is the \(K\le d\) rank
+ceiling; \(J^*\)'s infeasibility is the zero-nuisance-block face of the same
+split at any \(K\), not the cardinality face.) The two formulations, kept deliberately separate by invariant 3, merge
 at the optimum — and that merger is *why* the margins fail. This is the
 asymptotic form of the tie fixture's finite phenomenon (pseudo-inverse value
 \(1191/4096\) above the feasible optimum \(1083/4096\)), and the partition-side
@@ -670,7 +744,13 @@ be attained at nondegenerate quantizers — the margins may then hold; this is
 OP29 (`OPEN-DS-MARGINS-NONCENTERED`). (ii) \(d_\psi>1\): Lemma 2's reduction
 (via the Loewner form of DS11(a)) identifies the degenerate attainers, but the
 uniqueness/rigidity theory of the vector between-matrix problem is open —
-the dichotomy transfers exactly when that theory does. (iii) Local/
+the dichotomy transfers exactly when that theory does. (ii′) \(d_\lambda\ge2\):
+at \(K=d_\lambda+1\) the claim is **false** (rank vacuity,
+`CE-DS-MARGINS-RANK-VACUITY-001`); at \(K\ge d_\lambda+2\) it is open —
+Proposition 6's steering uses a scalar nuisance sign and (R) as stated is
+one-dimensional (a vector version needs sign-rich swap directions spanning
+\(\mathbb R^{d_\lambda}\) and \(K\ge d_\lambda+2\) for the constraint-plane
+target to exist); tracked in OP29. (iii) Local/
 exchange-stable non-global sequences: DS14 continues to govern them under
 certified margins; nothing here says local optima degenerate. (iv) Estimated
 scores: P2. (v) (M5): at optima the projected-centroid *object*
@@ -699,3 +779,19 @@ population values (Gaussian \(K=3\): 0.259–0.268 at \(N=20{,}000\) vs 0.2703;
 \(K=6\): 0.063–0.071 vs 0.0740) with no singleton beyond \(N=100\).
 The float screen is anchored by fully exact enumeration (all 86,526 canonical
 partitions per instance) at \(N=12\): 6/6 optima match exactly.
+
+**Audit-side measured (30 Aug 2026, N-DS-AUDIT15 rows).** An independent
+pure-stdlib exact suite (`py/audit_ds_margins_at_optima.py`, own CLT-rational
+law emulation and LCG seeds, no float screen) exhaustively certified 20 exact
+global optima at \(N=12\)–\(16\) (up to all 7,141,686 canonical partitions per
+instance): the sandwich and tax identity hold on 20/20; **zero exact ties over
+the full lattice on every instance**; the researcher's float top-64 screen,
+re-implemented with its \(10^{-9}\) guard, ranks the true optimum first with
+zero guard casualties on 20/20 — validating the screen mechanism in the
+\(N\ge14\) territory where the original suite is screen-selected (the original
+\(N\ge14\) instances themselves remain uncertified); the centered law's
+nuisance block stays small while the non-centered control's stays macroscopic
+(class boundary reproduced); the single observed singleton sits on the
+non-centered control (\(N=15\)). The float-only scalar (M2) sweep is anchored
+by an exact-rational interval DP at \(N=1000\): the library DP reproduces the
+exact optimum (SSE agreement \(10^{-9}\), identical min cell mass \(49/200\)).
