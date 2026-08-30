@@ -263,6 +263,32 @@ non-Lab Lighthouse LCP below 2.5 seconds and CLS below 0.1 on CI, no Pyodide/mar
 ordinary routes, representative manual visual inspection, and a seeded browser scenario agreeing
 with native NumPy in under ten seconds after warm-up.
 
+## M11 — First public release
+
+**Status:** apparatus landed; the tag is unpushed and nothing is published.
+
+The library has been installable only from git. That is a real barrier: it makes the package
+unusable in a locked dependency set, gives no stable artifact to cite, and means every reported bug
+has to be traced to a commit rather than a version.
+
+1. Version single-sourcing: `scorequant.__version__` resolved from installed metadata, so
+   `pyproject.toml` stays the only place a version is written.
+2. `CHANGELOG.md`, and `Homepage`/`Changelog` project URLs.
+3. `release.yml`: tag-triggered, gated on the full handoff gate, publishing through PyPI Trusted
+   Publishing so no API token exists. `workflow_dispatch` publishes the same build to TestPyPI, so
+   a release can be rehearsed without consuming a version on the real index.
+4. Two guards that cannot be fixed after publication: the git tag must match the packaged version,
+   and `twine check` must pass so the README does not render as raw text on the project page.
+
+**Gate:** the full handoff gate passes; `uv build` produces a `py3-none-any` wheel and an sdist that
+`twine check` accepts; the wheel installs into a clean environment and `import scorequant` there
+reports the packaged version and completes a fit-and-predict round trip from the installed package
+rather than the source tree; the trusted publisher is configured on the index; and the tag is pushed
+deliberately.
+
+Publication is an authorized action, not a merge side effect. Landing this milestone does not
+publish anything.
+
 ## Explicitly outside the development plan
 
 An E-optimal solver is not planned. The E-optimality chapter and deterministic counterexample stay

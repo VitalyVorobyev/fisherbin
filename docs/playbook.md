@@ -174,6 +174,43 @@ Run these unpinned and single-process — no `-n`, no thread pinning — because
 `benchmarks/baselines.json` was measured. Quality is the real regression signal; wall-clock is
 deliberately given a loose tolerance because CI machines differ.
 
+## Publishing a release
+
+Nothing publishes automatically. `release.yml` triggers on a `v*` tag, so publication is a
+deliberate push.
+
+**Once, before the first release**, create the trusted publishers in the web UI. This is the only
+step that cannot be done from here, and it is what removes the need for an API token anywhere:
+
+| Field | Value |
+| --- | --- |
+| PyPI project | `scorequant` |
+| Owner | `VitalyVorobyev` |
+| Repository | `scorequant` |
+| Workflow | `release.yml` |
+| Environment | `pypi` (and `testpypi` on test.pypi.org) |
+
+Then rehearse on TestPyPI — run the `Release` workflow manually with target `testpypi`, and install
+what it produced into a scratch environment:
+
+```bash
+uv venv /tmp/sq && uv pip install --python /tmp/sq/bin/python   --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ scorequant
+/tmp/sq/bin/python -c "import scorequant as sq; print(sq.__version__)"
+```
+
+Then publish for real:
+
+```bash
+git tag -a v0.1.0 -m "ScoreQuant 0.1.0"
+git push origin v0.1.0
+```
+
+The workflow re-runs the full handoff gate, checks the tag matches the packaged version, runs
+`twine check` so the README cannot render as raw text on the project page, and only then publishes.
+Bumping a version means editing `pyproject.toml` alone — `scorequant.__version__` is read from
+installed metadata — plus a `CHANGELOG.md` entry and re-running the portal's `prepare:runtime`,
+since `website/static/runtime/manifest.json` pins the wheel by filename.
+
 ## Before handing work off
 
 ```bash

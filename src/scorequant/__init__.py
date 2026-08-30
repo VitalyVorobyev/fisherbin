@@ -1,5 +1,8 @@
 """Information-preserving hard quantization for statistical inference."""
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _distribution_version
+
 from .api import fit_quantizer, optimize_partition
 from .artifact import Quantizer
 from .certify import CertificationConfig, certify_partition
@@ -65,6 +68,14 @@ from .sources import (
 )
 from .transforms import FisherTransform
 from .visualization import plot_information, plot_optimization, plot_partition, plot_summary
+
+#: Installed distribution version. Resolved from package metadata so
+#: ``pyproject.toml`` stays the single source of truth; a source tree that was
+#: never installed reports ``"0.0.0.dev0"`` rather than failing to import.
+try:
+    __version__ = _distribution_version("scorequant")
+except PackageNotFoundError:  # pragma: no cover - only hit in an uninstalled tree
+    __version__ = "0.0.0.dev0"
 
 __all__ = [
     "CentralLogRatioScore",
