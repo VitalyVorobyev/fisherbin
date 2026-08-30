@@ -1,0 +1,34 @@
+{
+  "id": "DS-PROFILED-COMPILE-CERTIFICATE",
+  "title": "Profiled compile verdict: projected rule unconditionally, DS14 companion rule only under a measured margin certificate at a reported price",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "empirical_inductive_quantizer",
+  "status": "project_proved",
+  "publication_status": "internal",
+  "statement": "On the conditionally centered class (d_psi = d_lambda = 1): (a) the projected efficient-score interval rule is the only UNCONDITIONAL theorem-backed compile path for profiled criteria - by the DS16 funnel, every asymptotically value-optimal run of the free optimizer (any seed, stable or not, global or not) is nuisance-degenerate in the limit with an unstable companion slope, so the free terminal state is not stably compilable and compile_quantizer's refusal is correct as the default; (b) a certificate-gated conditional path exists: if a terminal state passes the MEASURED DS14 triple (min mass >= c0, lambda_min(I_hat) >= kappa, projected-centroid separation >= gamma - else the DS11(d)/DS14 merged rule) together with exchange stability (DS13 as its finite certificate), the DS14 companion efficient-Voronoi rule rho_N built from the state's own projected centroids and profiled metric is theorem-backed (DS14 geometrization + population stationarity along certified sequences), and DS16(1) prices it intrinsically: such states sit at least delta(kappa) below v_K, so the exactly computable price v_hat_K - Phi_hat_s (the efficient_score_bound DP ceiling) must be reported, never hidden (invariant 7); (c) measured, the free optimizer does not return certified states at realistic N on the centered class, so the conditional path operationally requires margin-CONSTRAINED optimization (OP7 design; OP30 non-vacuity). Retention implication: margin-certified compile keeps at most v_K - delta(kappa) of the K-cell ceiling v_K; the projected rule attains the ceiling with nuisance estimated unbinned (DS9/DS15).",
+  "assumptions": [
+    "class (L)+(S), d_psi = d_lambda = 1, equal weights, exact scores; the conditional path's asymptotic guarantee is DS14's and inherits DS14's hypotheses along sequences - the per-fit certificate is a measured triple at one N",
+    "beyond the class (non-centered laws): measured only (mix3 keeps lambda_min = Theta(1) at terminal states); OP29's mathematical branches remain open"
+  ],
+  "dependencies": [
+    "DS-STABLE-MARGINS-PRICE",
+    "OPEN-DS-FINITE-POP-BRIDGE",
+    "OPEN-DS-MARGINS-AT-OPTIMA",
+    "DS-EXCHANGE-LEVERAGE-BOUND",
+    "DS-PROJECTED-K-REQUIREMENT",
+    "DS-STABLE-STATE-SELECTION"
+  ],
+  "implies": [
+    "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+    "OPEN-DS-STABLE-BASINS"
+  ],
+  "proof_location": {
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS16. Margin price at arbitrary labelings, the value funnel, and the profiled compile verdict"
+  },
+  "programme": "P1",
+  "role": "the deployment verdict OP29's packet was opened for; the target of the independent adversarial audit that gates any compile_quantizer change",
+  "warning": "This is a guarantee the library would ship: no src/ change may embed it before an independent adversarial audit (PLAYBOOK section 2). The proposed surface is recorded in WORK/completed/DS-STABLE-MARGINS-COMPILE.md, not implemented."
+}

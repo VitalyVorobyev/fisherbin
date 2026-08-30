@@ -17,7 +17,7 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
 *Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 29 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 (margins at finite \(D_s\) optima) is resolved for conditionally centered laws at \(d_\psi=d_\lambda=1\) by the DS15 margins dichotomy (`KNOWN_RESULTS/05b-ds-bridge.md` DS15; packet `WORK/completed/DS-MARGINS-AT-OPTIMA.md`; independently audited 30 Aug 2026, `AUDITS/AUDIT-DS-MARGINS-AT-OPTIMA-001.md`, which refuted the registered \(d_\lambda\)-generality at \(K=d_\lambda+1\) and hardened the achievability proof): (M2) is automatic at global optima, (M3) provably fails there — free optima converge to the nuisance-degenerate efficient-score interval quantizer — so profiled compilation routes through the projected efficient-score rule rather than a DS14 margin certificate. The surviving gaps are OP29 and OP7.*
+*Status 29 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 (margins at finite \(D_s\) optima) is resolved for conditionally centered laws at \(d_\psi=d_\lambda=1\) by the DS15 margins dichotomy (`KNOWN_RESULTS/05b-ds-bridge.md` DS15; packet `WORK/completed/DS-MARGINS-AT-OPTIMA.md`; independently audited 30 Aug 2026, `AUDITS/AUDIT-DS-MARGINS-AT-OPTIMA-001.md`, which refuted the registered \(d_\lambda\)-generality at \(K=d_\lambda+1\) and hardened the achievability proof): (M2) is automatic at global optima, (M3) provably fails there — free optima converge to the nuisance-degenerate efficient-score interval quantizer — so profiled compilation routes through the projected efficient-score rule rather than a DS14 margin certificate. OP29's deployment half (exchange-stable non-global states — what the optimizer actually returns) is resolved 30 Aug 2026 by DS16 (`KNOWN_RESULTS/05b-ds-bridge.md`; packet `WORK/completed/DS-STABLE-MARGINS-COMPILE.md`): the margins are priced at every labeling — \(\hat I_{\lambda\lambda}\ge\kappa\) caps the value at \(v_K-\delta(\kappa)\) — and any value-convergent solver output lands in the DS15 degeneracy seed-independently (measured through \(N=1000\)), so the projected rule remains the only unconditional compile path and a DS14 companion rule is compilable only under a measured margin certificate at a reported price (`DS-STABLE-MARGINS-PRICE`, `DS-PROFILED-COMPILE-CERTIFICATE`). The surviving gaps are OP29's mathematical branches, OP30, and OP7.*
 
 ## OP29. Margins beyond conditional centering
 
@@ -35,16 +35,41 @@ class is open:
 - **\(d_\psi>1\)**: the DS15 reduction identifies the degenerate attainers,
   but the dichotomy needs uniqueness/rigidity for the vector D problem on the
   efficient score (ties into OP8/C2).
-- **Exchange-stable non-global sequences**: DS15 asserts nothing about them;
-  do stable local solutions retain margins, and at what information cost
-  relative to \(v_K\)?
-- **\(d_\lambda\ge2\)** (audit finding, 30 Aug 2026): at \(K=d_\lambda+1\)
-  the dichotomy is exactly false — every feasible labeling has profiled value
-  zero (`CE-DS-MARGINS-RANK-VACUITY-001`); at \(K\ge d_\lambda+2\) it is open
-  and needs a vector-(R) steering construction spanning the nuisance
-  directions.
+- ~~Exchange-stable non-global sequences~~ — **resolved for the
+  conditionally centered class** (DS16, 30 Aug 2026): margins price every
+  labeling at \(\delta(\kappa)\) below \(v_K\), value convergence forces the
+  DS15 degeneracy regardless of stability or seeding, and the compile
+  verdict is certificate-gated (`DS-STABLE-MARGINS-PRICE`,
+  `DS-PROFILED-COMPILE-CERTIFICATE`). The inhabitation/selection remainder
+  is OP30.
+- **\(d_\lambda\ge2\)** (audit finding, 30 Aug 2026): at the rank-vacuous
+  cardinality the dichotomy is exactly false — every feasible labeling has
+  profiled value zero (`CE-DS-MARGINS-RANK-VACUITY-001`). The correct
+  mechanism is \(\sum_b m_b=\hat\mu\): a centered sample needs
+  `n_bins > dimension`, i.e. \(K\ge d_\psi+d_\lambda+1\) — the fixture's
+  \(K\ge d_\lambda+2\) is its \(d_\psi=1\) case (commit `891bbf3`; DS16
+  restatement). Above that cardinality the dichotomy is open and needs a
+  vector-(R) steering construction spanning the nuisance directions.
 
 Target claim: `OPEN-DS-MARGINS-NONCENTERED`.
+
+## OP30. Inhabitation and selection of margin-retaining stable states
+
+DS16 leaves the certificate branch's asymptotics explicitly open
+(`OPEN-DS-STABLE-BASINS`): (a) do margin-compatible exchange-stable
+sequences exist a.s. as \(N\to\infty\) — is the certified compile path
+non-vacuous asymptotically — and is \(v^*(\kappa)\) attained by
+margin-compatible stationary rules (ties into C2)? Measured:
+margin-retaining non-global stable states exist in every census instance at
+\(N\le14\) (`CE-DS-STABLE-MARGIN-RETAINING-001`), yet every free-ascent
+terminal at \(N=100\)–\(1000\) is in the funnel. (b) Does exchange ascent
+from the documented seeds converge in value to \(v_K\) a.s., so the DS16
+funnel forces terminal degeneracy? Measured yes through \(N=1000\),
+seed-independently. (c) Design a margin-constrained exchange (or certified
+relaxation) terminating at certified states with a stated gap to
+\(v^*(\kappa)\) — feeds OP7.
+
+Target claim: `OPEN-DS-STABLE-BASINS`.
 
 ## OP7. Best practical \(D_s\) solver with theorem-backed certificate
 

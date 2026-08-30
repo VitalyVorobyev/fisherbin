@@ -106,6 +106,20 @@ canonical.
   a sketch, with audit-supplied ingredients that a paper would need to spell
   out.
 
+### Added 30 August 2026 (the stable-margins session)
+
+- **DS16 is absent.** The margin price and value-funnel theorem at arbitrary
+  labelings, the exchange-stable-state census, the seed-independent nuisance
+  collapse at library scale, and the certificate-gated compile verdict for
+  profiled criteria (`KNOWN_RESULTS/05b-ds-bridge.md` DS16, packet
+  `WORK/completed/DS-STABLE-MARGINS-COMPILE.md`) have no manuscript
+  counterpart, and the deployability story in any future revision must route
+  profiled compilation through the projected efficient-score rule with the
+  margin-certified path priced, not assumed.
+- The two new fixtures (`CE-DS-STABLE-MARGIN-RETAINING-001`,
+  `CE-DS-INTERVAL-SEED-UNSTABLE-001`) and the census/library measured rows
+  (N-DS-STABLE-*) postdate v8.
+
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of
 `protocols/audit.md`. It had no updater before workspace v4.0, which is why the

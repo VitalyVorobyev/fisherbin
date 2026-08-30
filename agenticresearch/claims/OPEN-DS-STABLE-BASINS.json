@@ -1,0 +1,21 @@
+{
+  "id": "OPEN-DS-STABLE-BASINS",
+  "title": "Inhabitation and selection of margin-retaining exchange-stable Ds states",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "empirical_to_population",
+  "status": "open",
+  "publication_status": "open",
+  "statement": "On the DS15/DS16 class: (a) INHABITATION - do margin-compatible one-point exchange-stable sequences exist almost surely as N -> oo (is DS16's certificate branch non-vacuous asymptotically), and is the margin-compatible optimum v*(kappa) attained by margin-compatible population-stationary rules (ties into C2 attainment)? Measured: margin-retaining non-global stable states exist in every census instance at N <= 14 (CE-DS-STABLE-MARGIN-RETAINING-001), but every free-ascent terminal at N = 100..1000 is in the funnel. (b) SELECTION - does exchange ascent from the documented seeds (efficient-score labels, k-means, random) converge in value to v_K almost surely, so that the DS16 funnel forces terminal degeneracy? Measured yes through N = 1000, seed-independently. (c) DESIGN - a margin-constrained exchange (accept only moves keeping lambda_min >= kappa, or a penalized/certified relaxation) that terminates at certified states with a stated gap to v*(kappa), feeding OP7's certified-solver programme.",
+  "dependencies": [
+    "DS-STABLE-MARGINS-PRICE",
+    "DS-STABLE-STATE-SELECTION",
+    "OPEN-DS-FINITE-POP-BRIDGE"
+  ],
+  "proof_location": {
+    "file": "OPEN_PROBLEMS.md",
+    "section": "OP30. Inhabitation and selection of margin-retaining stable states"
+  },
+  "programme": "P1"
+}
