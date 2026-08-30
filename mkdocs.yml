@@ -12,6 +12,7 @@ exclude_docs: |
   roadmap.md
   system-design.md
   adr/**
+  proposals/**
 
 theme:
   name: material
