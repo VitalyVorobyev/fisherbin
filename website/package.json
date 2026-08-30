@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "pnpm generate && docusaurus start",
-    "generate": "pnpm generate:protocol && pnpm generate:data",
+    "generate": "pnpm generate:protocol && pnpm generate:data && pnpm generate:showcase",
     "generate:protocol": "node scripts/generate-protocol.mjs",
     "generate:data": "cd .. && uv run python website/scripts/generate_data.py",
     "export:lessons": "cd .. && uv run marimo check website/lessons/score_space.py --select MW && uv run marimo export html-wasm website/lessons/score_space.py -o website/static/lessons/score-space --mode run --no-show-code --no-execute",
@@ -22,7 +22,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "validate": "pnpm generate && pnpm export:lessons && pnpm typecheck && pnpm lint && pnpm test && pnpm build:site"
+    "validate": "pnpm generate && pnpm export:lessons && pnpm typecheck && pnpm lint && pnpm test && pnpm build:site",
+    "generate:showcase": "cd .. && uv run python website/scripts/generate_showcase.py"
   },
   "dependencies": {
     "@docusaurus/core": "3.10.2",

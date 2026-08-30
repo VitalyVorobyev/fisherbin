@@ -1,0 +1,77 @@
+import {useMemo} from "react";
+
+import {Legend} from "./Axes";
+import {populationColor} from "./scale";
+import type {PatientComposition} from "../../data/showcase";
+
+interface CompositionBarsProps {
+  patients: PatientComposition[];
+  populations: string[];
+}
+
+const WIDTH = 620;
+const ROW_HEIGHT = 15;
+const LABEL_WIDTH = 74;
+
+/**
+ * Per-patient population composition, one stacked bar per patient.
+ *
+ * This is the quantity the whole study estimates, so showing its spread across
+ * patients up front is what makes the later error numbers interpretable: the
+ * between-patient variation is much larger than any method's error.
+ */
+export function CompositionBars({patients, populations}: CompositionBarsProps): React.JSX.Element {
+  const rows = useMemo(
+    () =>
+      patients.map((patient, index) => {
+        let offset = 0;
+        const segments = patient.fractions.map((fraction, population) => {
+          const start = offset;
+          offset += fraction;
+          return {
+            color: populationColor(population),
+            label: populations[population] ?? String(population),
+            value: fraction,
+            width: fraction * (WIDTH - LABEL_WIDTH),
+            x: LABEL_WIDTH + start * (WIDTH - LABEL_WIDTH),
+          };
+        });
+        return {patient, segments, y: index * ROW_HEIGHT};
+      }),
+    [patients, populations]
+  );
+  const height = rows.length * ROW_HEIGHT + 8;
+
+  return (
+    <figure className="chart-figure chart-figure--wide">
+      <svg viewBox={`0 0 ${String(WIDTH)} ${String(height)}`} role="img">
+        <title>Cell-population composition of every patient</title>
+        <desc>
+          One stacked bar per patient, split into the six labelled populations. Held-out patients
+          are marked; reference patients are not.
+        </desc>
+        {rows.map((row) => (
+          <g key={row.patient.patient}>
+            <text className="chart-tick" x={LABEL_WIDTH - 6} y={row.y + 11} textAnchor="end">
+              {`${row.patient.role === "held-out" ? "▸ " : ""}Case ${String(row.patient.patient)}`}
+            </text>
+            {row.segments.map((segment) => (
+              <rect
+                key={segment.label}
+                x={segment.x}
+                y={row.y + 2}
+                width={Math.max(segment.width, 0)}
+                height={ROW_HEIGHT - 4}
+                fill={segment.color}
+              >
+                <title>{`Case ${String(row.patient.patient)} — ${segment.label}: ${(segment.value * 100).toFixed(1)}%`}</title>
+              </rect>
+            ))}
+          </g>
+        ))}
+      </svg>
+      <Legend entries={populations.map((name, index) => ({color: populationColor(index), label: name}))} />
+      <figcaption>▸ marks the ten held-out patients, frozen before any fitting.</figcaption>
+    </figure>
+  );
+}

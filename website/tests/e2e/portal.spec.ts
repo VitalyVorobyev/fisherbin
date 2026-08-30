@@ -10,7 +10,7 @@ test("home is navigable, evidence-backed, and free of heavy runtime requests", a
   await expect(page.getByRole("heading", {name: /Compress events/})).toBeVisible();
   await expect(page.getByRole("img", {name: /Score-space partition/})).toBeVisible();
   await expect(page.getByText("JAX + NumPy")).toBeVisible();
-  for (const route of ["./docs", "./api", "./examples", "./theory", "./benchmarks", "./research"]) {
+  for (const route of ["./docs", "./api", "./examples", "./showcase", "./theory", "./benchmarks", "./research"]) {
     await page.goto(route);
     await expect(page.locator("main")).toBeVisible();
   }
@@ -73,4 +73,51 @@ test("lab validation, cancellation, and lazy lesson states are explicit", async 
     "src",
     "/scorequant/portal/lessons/score-space/"
   );
+});
+
+test("the showcase tells the study end to end without loading a runtime", async ({page}) => {
+  // The narrative route must stay a narrative route: the moment it pulls the
+  // wheel it stops meeting the ordinary-route budget, and the reader pays 15 MB
+  // for a page they may only be reading.
+  const heavyRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/pyodide|marimo|scorequant-.*\.whl|flowcyt-scores/.test(request.url())) {
+      heavyRequests.push(request.url());
+    }
+  });
+  await page.goto("./showcase");
+
+  await expect(page.getByRole("heading", {name: /Thirty patients/})).toBeVisible();
+  for (const section of ["The problem", "The data", "Results"]) {
+    await expect(page.getByRole("heading", {name: section})).toBeVisible();
+  }
+
+  // The licence is not decoration: the data is CC BY-NC-SA and the attribution
+  // travels with anything derived from it.
+  await expect(page.getByText("CC-BY-NC-SA-4.0")).toBeVisible();
+  await expect(page.getByText(/Marchand-Maillet/)).toBeVisible();
+
+  await expect(page.getByRole("img", {name: /composition of every patient/})).toBeVisible();
+  await expect(page.getByRole("img", {name: /macro RMSE against bin budget/})).toBeVisible();
+  await expect(page.getByRole("img", {name: /FS INT intensity distribution/})).toBeVisible();
+
+  expect(heavyRequests).toEqual([]);
+
+  const accessibility = await new AxeBuilder({page}).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
+test("marker panels can be filtered by population and expanded", async ({page}, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "One interaction pass is sufficient.");
+  await page.goto("./showcase");
+
+  // "other" dominates every panel, so it starts hidden and can be restored.
+  const other = page.getByRole("button", {name: "other", exact: true});
+  await expect(other).not.toHaveClass(/is-active/);
+  await other.click();
+  await expect(other).toHaveClass(/is-active/);
+
+  await expect(page.getByRole("img", {name: /FL5 INT_CD34-PC7/})).toHaveCount(0);
+  await page.getByRole("button", {name: /Show all 12 markers/}).click();
+  await expect(page.getByRole("img", {name: /FL5 INT_CD34-PC7/})).toBeVisible();
 });

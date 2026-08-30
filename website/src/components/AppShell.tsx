@@ -12,6 +12,7 @@ const navigation = [
   ["Docs", "/docs"],
   ["API", "/api"],
   ["Examples", "/examples"],
+  ["Showcase", "/showcase"],
   ["Theory", "/theory"],
   ["Benchmarks", "/benchmarks"],
   ["Research", "/research"],
