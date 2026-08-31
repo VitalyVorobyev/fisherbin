@@ -1292,3 +1292,59 @@ def test_ds17_minimal_atomic_signsplit_is_only_a_boundary_witness() -> None:
         )
         assert slab_mass == Fraction(2, 3)
     assert fixture["claim_falsified"].startswith("None:")
+
+
+def test_ds18_population_cut_labels_need_not_be_exchange_stable() -> None:
+    """Boundary noise can defeat the raw population labels at finite N."""
+    fixture = json.loads(
+        (
+            RESEARCH_WORKSPACE
+            / "COUNTEREXAMPLES"
+            / "CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001.json"
+        ).read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    weights = [Fraction(value) for value in fixture["weights"]]
+    before = tuple(fixture["labels_before"])
+    after = tuple(fixture["labels_after_or_optimum"])
+
+    assert len(scores) == 4
+    assert fixture["K"] == 3
+    assert [
+        sum(weight * score[column] for weight, score in zip(weights, scores, strict=True))
+        for column in range(2)
+    ] == [Fraction(0), Fraction(0)]
+
+    before_information = _exact_binned_information(scores, before, 3)
+    after_information = _exact_binned_information(scores, after, 3)
+    assert before_information == [
+        [Fraction(value) for value in row]
+        for row in fixture["exact_quantities"]["information_before"]
+    ]
+    assert after_information == [
+        [Fraction(value) for value in row]
+        for row in fixture["exact_quantities"]["information_after"]
+    ]
+
+    before_value = (
+        before_information[0][0]
+        - before_information[0][1] ** 2 / before_information[1][1]
+    )
+    after_value = (
+        after_information[0][0]
+        - after_information[0][1] ** 2 / after_information[1][1]
+    )
+    assert before_value == Fraction(fixture["objective_before"])
+    assert after_value == Fraction(fixture["objective_after"])
+    assert after_value - before_value == Fraction(fixture["exact_quantities"]["exact_gain"])
+    assert after_value > before_value
+
+    partitions = _canonical_partitions(4, 3)
+    regular_values = []
+    for labels in partitions:
+        information = _exact_binned_information(scores, labels, 3)
+        if information[1][1] == 0:
+            continue
+        value = information[0][0] - information[0][1] ** 2 / information[1][1]
+        regular_values.append((value, labels))
+    assert max(regular_values) == (after_value, after)
