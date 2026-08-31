@@ -149,8 +149,7 @@ def _check_proof_locations(registry: dict, workspace: Path, out: list[str]) -> N
             cache[location["file"]] = target.read_text()
         if location["section"] not in cache[location["file"]]:
             out.append(
-                f"{claim['id']}: section {location['section']!r} "
-                f"not found in {location['file']}"
+                f"{claim['id']}: section {location['section']!r} not found in {location['file']}"
             )
 
 
@@ -324,7 +323,7 @@ def _check_programmes(registry: dict, workspace: Path, out: list[str]) -> None:
 
 
 def _check_label_collisions(workspace: Path, out: list[str]) -> None:
-    """Result labels are unique, and inline assumption labels never reuse them."""
+    """Check that result labels are unique and assumption labels do not reuse them."""
     files = _known_results_files(workspace)
     owner: dict[str, str] = {}
     for path in files:
@@ -416,15 +415,13 @@ def render_index(registry: dict) -> str:
     order = sorted(programmes, key=lambda name: programmes[name]["rank"])
     for name in order:
         meta = programmes[name]
-        members = sorted(
-            (c for c in claims if c.get("programme") == name), key=lambda c: c["id"]
-        )
+        members = sorted((c for c in claims if c.get("programme") == name), key=lambda c: c["id"])
         if not members:
             continue
         lines.append(f"## {name} — {meta['title']} (rank {meta['rank']}, {meta['readiness']})")
         lines.append("")
         for claim in members:
-            lines.append(f"- `{claim['id']}` — {claim['title']}")
+            lines.append(f"- `{claim['id']}` — {claim['title']} · status: `{claim['status']}`")
         lines.append("")
     lines.append("## Settled claims by status")
     lines.append("")
@@ -536,7 +533,7 @@ def transitive_dependencies(index: dict[str, dict], claim_id: str) -> list[str]:
 
 
 def proof_text(claim: dict, workspace: Path = WORKSPACE) -> str | None:
-    """The prose section a claim's ``proof_location`` points at."""
+    """Return the prose section a claim's ``proof_location`` points at."""
     location = claim["proof_location"]
     path = workspace / location["file"]
     if not path.is_file():
@@ -572,6 +569,7 @@ def show(claim_id: str, deps: bool, proof: bool, workspace: Path = WORKSPACE) ->
 # cli
 # --------------------------------------------------------------------------- #
 def main(argv: list[str] | None = None) -> int:
+    """Run the registry command-line interface."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("validate", help="report every registry integrity violation")

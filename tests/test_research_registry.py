@@ -56,6 +56,39 @@ def test_registry_is_referentially_consistent(tool: ModuleType) -> None:
     assert not violations, "\n".join(["registry integrity violations:", *violations])
 
 
+def test_programme_claims_display_their_status(tool: ModuleType) -> None:
+    registry = {
+        "programmes": {
+            "P1": {
+                "title": "Example programme",
+                "rank": 1,
+                "readiness": "ready",
+            }
+        },
+        "claims": [
+            {
+                "id": "EXAMPLE-MEASURED",
+                "title": "Measured evidence",
+                "status": "measured",
+                "programme": "P1",
+                "proof_location": {"file": "KNOWN_RESULTS/example.md"},
+            },
+            {
+                "id": "EXAMPLE-OPEN",
+                "title": "Open question",
+                "status": "open",
+                "programme": "P1",
+                "proof_location": {"file": "OPEN_PROBLEMS.md"},
+            },
+        ],
+    }
+
+    rendered = tool.render_index(registry)
+
+    assert "`EXAMPLE-MEASURED` — Measured evidence · status: `measured`" in rendered
+    assert "`EXAMPLE-OPEN` — Open question · status: `open`" in rendered
+
+
 def test_generated_indexes_are_current(tool: ModuleType) -> None:
     stale = tool.reindex(WORKSPACE, check=True)
     assert not stale, "\n".join(

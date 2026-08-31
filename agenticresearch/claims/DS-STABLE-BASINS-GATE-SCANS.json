@@ -7,27 +7,34 @@
   "level": "population_quantizer",
   "status": "measured",
   "publication_status": "internal",
-  "statement": "Closed-form Gaussian-mixture strip-moment scans (py/ds_stable_basins.py; selftest validates against the public scorequant IntegrationSource tensor Gauss-Legendre quadrature at 1e-9 and exact 8-atom rationals): (1) Gaussian laws at rho in {0, 0.6, 0.9} plus an anisotropic case are rank-one at every tilt on a 241-point grid (max lambda_min <= 2.4e-16), tilt-residual zero-free, Moebius orbits non-convergent; (2) product bimodal (L)-laws (m in {0.75..3}, s = 0.4) and dependent (L)-laws xcorr(c in {0.5, 0.8, 0.95}): branch-tracked root scans over beta in [-2.5, 2.5] tracking up to 3 Lloyd-stationary branches per tilt (asymmetric mode-splitting branches included) find ZERO self-consistent roots - eight (L)-laws, three structural families, zero gate inhabitants, all measured BEFORE the DS17.1 proof was trusted; (3) the N(0,I_2) sign-split family has Phi - 2/pi = 0 to machine precision across the split parameter, lambda_min maximal 1/pi at v = 0, v_3 - v_2 = 0.173206; (4) mix3 has exactly one root: beta = 0, cuts +-1.00476, lambda_min = 1.7364, value = v_3 to 1e-6 (price ~ 0), zero Monte-Carlo rule violations - the population object behind DS16's measured mix3 retention; (5) geometry of the 420 recorded DS16 ascent terminals: the N = 8 margin-retaining witness is companion-EXACT; centered06 terminals are 2% companion-exact (median disagreement 18%, median lambda_min 0.034) vs 61% and 1.06 on mix3 - the DS17.1 class boundary visible in finite states; (6) seeded public-library ascent (N = 300..3000) per rows N-DS-BASINS-LIBRARY.",
+  "statement": "Measured evidence only. The original closed-form instrument and an independent audit instrument reproduce the exact sign-split algebra, Gaussian rank collapse, a mix3 root near beta = 0, and the qualitative centered-versus-noncentered library behavior. The original product-bimodal and dependent-(L) scans found no roots within beta in [-2.5,2.5] and at most three continued Lloyd branches; this is windowed finite-search evidence, not proof that the gate is empty. The mix3 search found one root near beta = 0 with cuts near +-1.00476, lambda_min near 1.7364, and value numerically equal to the efficient interval optimum; it does not prove global uniqueness, sufficiency, or an empirical transfer theorem. The Gaussian sign-split family has exact profiled value 2/pi and maximum lambda_min 1/pi; the reported v_3-v_2 = 0.173206 is numerical.",
   "assumptions": [
     "population quantities are closed-form Phi/phi mixture algebra, no sampling; Monte Carlo appears only in violation scans and library runs with deterministic seeds SEED_BASE = 20260831",
     "measured, never theorem authority; scan grids and branch multistarts are finite - absence of roots on a grid is evidence, the proof is DS17.1",
-    "full provenance (git revision, script sha256, python, platform) in WORK/artifacts/DS-STABLE-BASINS/"
+    "the original scan window was not derived from 2M/kappa for a declared kappa and its branch cap could miss isolated roots",
+    "independent audit provenance and tolerances are stored as separate mode artifacts under AUDITS/artifacts/AUDIT-DS-STABLE-BASINS-001/"
   ],
   "dependencies": [
     "DS-STABLE-BASINS-FIXED-POINT-GATE"
   ],
   "implies": [
-    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
     "OPEN-DS-MARGINS-NONCENTERED"
   ],
-  "boundary_counterexamples": [],
-  "literature": [],
-  "literature_search_status": "not_searched",
+  "boundary_counterexamples": [
+    "CE-DS-LCM-SIGNSPLIT-MINIMAL-001"
+  ],
+  "literature": [
+    "Serinko-Babu-1992",
+    "Tarpey-Loperfido-2015"
+  ],
+  "literature_search_status": "search_gap",
   "proof_location": {
     "file": "KNOWN_RESULTS/05b-ds-bridge.md",
     "section": "DS17. Inhabitation of the margin-certified branch: the conditional-centering obstruction and the fixed-point gate"
   },
-  "artifact": "py/ds_stable_basins.py",
+  "audit": "AUDITS/AUDIT-DS-STABLE-BASINS-001.md",
+  "artifact": "py/audit_ds_stable_basins.py",
   "programme": "P1",
-  "role": "the falsification evidence that failed to falsify DS17.1, plus the off-class witness that scopes it"
+  "role": "windowed falsification evidence that did not falsify DS17.1, plus a measured off-class witness that scopes it",
+  "warning": "Audit-hardened measured node. No numerical no-root or unique-root statement carries theorem authority; the centered obstruction is proved independently. Search windows must be tied to an explicit kappa, and observed mix3 behavior is per-law evidence only."
 }
