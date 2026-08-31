@@ -35,6 +35,7 @@ _RESULT_HEADING = re.compile(r"^##\s+([A-Z]+\d+)\.\s", re.MULTILINE)
 _CLAIMS_LINE = re.compile(r"^\*\*Claims:\*\*\s*(.+?)\s*$", re.MULTILINE)
 #: An actual inlined payload -- not prose naming one, which the docs must be free to do.
 _DATA_URI = re.compile(r"data:image/[a-z+]+;base64,[A-Za-z0-9+/=]{32,}")
+_FORMAL_PROOF_FIELDS = {"system", "spec", "file", "declaration", "statement_audit"}
 
 
 # --------------------------------------------------------------------------- #
@@ -185,6 +186,72 @@ def _check_artifacts(registry: dict, workspace: Path, out: list[str]) -> None:
             value = claim.get(field)
             if value is not None and not (workspace / value).is_file():
                 out.append(f"{claim['id']}: {field} path {value} does not exist")
+
+
+def _check_formal_proofs(registry: dict, workspace: Path, out: list[str]) -> None:
+    """Validate optional machine-checked evidence without changing claim status.
+
+    The registry remains the source of truth for the mathematical statement.
+    This check keeps its pointers into the Lean workspace honest and prevents
+    an unresolved claim from acquiring a misleading machine-checked marker.
+    Lean, axiom-audit, and leanchecker validate the proof environment in a
+    separate CI job.
+    """
+    declarations: dict[str, str] = {}
+    workspace_root = workspace.resolve()
+    for claim in registry["claims"]:
+        formal = claim.get("formal_proof")
+        if formal is None:
+            continue
+        cid = claim["id"]
+        if not isinstance(formal, dict):
+            out.append(f"{cid}: formal_proof must be an object")
+            continue
+        fields = set(formal)
+        missing = sorted(_FORMAL_PROOF_FIELDS - fields)
+        extra = sorted(fields - _FORMAL_PROOF_FIELDS)
+        if missing:
+            out.append(f"{cid}: formal_proof missing fields {missing}")
+        if extra:
+            out.append(f"{cid}: formal_proof has unknown fields {extra}")
+        if claim["status"] in {"open", "conjecture", "measured", "counterexample"}:
+            out.append(f"{cid}: status {claim['status']!r} cannot carry formal_proof")
+
+        for field in ("spec", "file", "statement_audit"):
+            value = formal.get(field)
+            if not isinstance(value, str) or not value:
+                out.append(f"{cid}: formal_proof.{field} must be a nonempty path")
+                continue
+            target = (workspace / value).resolve()
+            if not target.is_relative_to(workspace_root):
+                out.append(f"{cid}: formal_proof.{field} escapes agenticresearch/: {value}")
+            elif not target.is_file():
+                out.append(f"{cid}: formal_proof.{field} path {value} does not exist")
+
+        system = formal.get("system")
+        if not isinstance(system, str) or not system:
+            out.append(f"{cid}: formal_proof.system must be a nonempty string")
+        declaration = formal.get("declaration")
+        if not isinstance(declaration, str) or not declaration:
+            out.append(f"{cid}: formal_proof.declaration must be a nonempty string")
+            continue
+        if declaration in declarations:
+            out.append(
+                f"{cid}: formal declaration {declaration!r} is already owned by "
+                f"{declarations[declaration]}"
+            )
+        else:
+            declarations[declaration] = cid
+        source = formal.get("file")
+        if isinstance(source, str):
+            source_path = workspace / source
+            if source_path.is_file():
+                local_name = declaration.rsplit(".", 1)[-1]
+                theorem = re.compile(rf"\btheorem\s+{re.escape(local_name)}\b")
+                if theorem.search(source_path.read_text()) is None:
+                    out.append(
+                        f"{cid}: declaration {declaration!r} not found in formal_proof.file"
+                    )
 
 
 def bibliography_anchors(workspace: Path) -> dict[str, tuple[str, str]]:
@@ -386,6 +453,7 @@ def validate(workspace: Path = WORKSPACE) -> list[str]:
     _check_proof_locations(registry, workspace, out)
     _check_counterexamples(registry, workspace, out)
     _check_artifacts(registry, workspace, out)
+    _check_formal_proofs(registry, workspace, out)
     _check_bibliography(registry, workspace, out)
     _check_work_pointers(workspace, out)
     _check_evidence_ledger(index, workspace, out)
@@ -424,7 +492,9 @@ def render_index(registry: dict) -> str:
         lines.append(f"## {name} — {meta['title']} (rank {meta['rank']}, {meta['readiness']})")
         lines.append("")
         for claim in members:
-            lines.append(f"- `{claim['id']}` — {claim['title']}")
+            formal = claim.get("formal_proof")
+            marker = f" · machine-checked: `{formal['declaration']}`" if formal else ""
+            lines.append(f"- `{claim['id']}` — {claim['title']}{marker}")
         lines.append("")
     lines.append("## Settled claims by status")
     lines.append("")
@@ -437,7 +507,11 @@ def render_index(registry: dict) -> str:
         lines.append("")
         for claim in members:
             location = claim["proof_location"]
-            lines.append(f"- `{claim['id']}` — {claim['title']} · {location['file']}")
+            formal = claim.get("formal_proof")
+            marker = f" · machine-checked: `{formal['declaration']}`" if formal else ""
+            lines.append(
+                f"- `{claim['id']}` — {claim['title']} · {location['file']}{marker}"
+            )
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 

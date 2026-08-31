@@ -13,6 +13,8 @@ prompt only needs to point at them.
 | Adversarial audit | Strongest model, extended thinking | **Fresh session**; must not share the researcher's context |
 | Bookkeeping | Mid-tier model is fine | Registry/doc edits; validator tests catch slips |
 | Literature | Mid-tier + web search | Writes into `LITERATURE/`, links papers to claim ids |
+| Formal statement audit | Strongest model, fresh context for critical claims | Compares frozen Lean spec to the canonical claim and prose proof |
+| Formal prover | Strongest model, high reasoning | Owns proof modules; may not edit the audited spec |
 
 ## 1. Research session (the default)
 
@@ -107,6 +109,45 @@ clean.
 Do not change claim statuses; report proposed status changes instead.
 ```
 
+## 5. Formal statement and audit sessions
+
+Draft the statement in one session:
+
+```text
+You are formalizing the statement boundary for ScoreQuant claim <CLAIM-ID>.
+Read agenticresearch/README.md, then protocols/formalization.md. Resolve the
+claim with py/registry.py show <CLAIM-ID> --deps --proof. Create only the Lean
+specification and a quantifier-by-quantifier audit draft. Do not search for or
+write the proof. Split partial coverage into a new atomic claim rather than
+marking the parent theorem formal. End with every included and excluded part of
+the informal result listed explicitly.
+```
+
+For a publication-critical or library-guarantee claim, give the frozen spec to
+a fresh session:
+
+```text
+You are an independent informal-to-formal statement auditor. You did not draft
+this Lean spec. Read protocols/formalization.md, the target claim and dependency
+closure, its proof_location prose, and the proposed *Spec.lean file. Check every
+quantifier, assumption, definition, and conclusion in both directions. You may
+return exact match, assumption-hardened match, or mismatch. Do not prove the
+theorem and do not weaken the spec to make a future proof easier.
+```
+
+## 6. Formal prover session
+
+```text
+You are the prover for an audited ScoreQuant Lean specification. Read
+protocols/formalization.md and formal/README.md. The target is <CLAIM-ID>, with
+frozen spec <SPEC-FILE>. You may edit its proof module and add private lemmas;
+you may not edit the spec or claim statement, use sorry/admit, or add axioms.
+Iterate with lake build --wfail. Add a guarded axiom audit, attach formal_proof
+metadata only after the proof is accepted, then run the registry and Lean gates.
+If the statement is false or underspecified, stop and request an ordinary
+mathematical audit instead of changing it.
+```
+
 ## After any session (operator checklist)
 
 1. `git log --oneline` — commits are small and labeled.
@@ -122,4 +163,5 @@ Do not change claim statuses; report proposed status changes instead.
 - exploratory lemma → one research session;
 - promising theorem → research session + one independent audit session;
 - publication-critical claim → research + adversarial audit + independent
-  prior-art search (types 2 and 4, separate sessions).
+  prior-art search + formal certification when it is inside the approved finite
+  Lean track (types 2, 4, 5, and 6, separate sessions).

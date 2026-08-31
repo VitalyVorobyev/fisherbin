@@ -26,6 +26,12 @@ Files, prior results, algebra, or search strategies — suggestions, not a presc
 
 Registry patches, fixtures, tests, ledger rows, audit report if publication-critical.
 
+## Formalization gate
+
+State one of: `not_required`, `required_after_audit`, or `complete`. Formal
+certification is required only for a publication-critical claim or a theorem
+supporting a shipped library guarantee; see `protocols/formalization.md`.
+
 ## Stop conditions
 
 Proved / disproved / reduced to explicitly listed unresolved assumptions — or a scientific branch worth its own packet.

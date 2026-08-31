@@ -1,6 +1,7 @@
 *.pyc
 .DS_Store
 .venv/
+agenticresearch/formal/.lake/
 .pytest_cache/
 .ruff_cache/
 __pycache__/

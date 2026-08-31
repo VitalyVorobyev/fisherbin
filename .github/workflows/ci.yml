@@ -14,6 +14,21 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  formal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: agenticresearch/formal
+          auto-config: false
+          build: true
+          build-args: "--wfail"
+          leanchecker: true
+          axiom-audit: true
+          axiom-audit-root: ScoreQuantFormal
+          axiom-audit-allow: propext,Classical.choice,Quot.sound
+
   quality:
     runs-on: ubuntu-latest
     env:

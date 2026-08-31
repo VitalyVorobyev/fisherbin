@@ -25,3 +25,4 @@ Only decisions that materially constrain future implementation are recorded here
 21. [ADR 0021 — Name the score coordinates](0021-named-score-schema.md) — extends ADR 0001
 22. [ADR 0022 — Make `ScoreProvider` a protocol, not a closed union](0022-score-provider-protocol.md) — extends ADR 0010
 23. [ADR 0023 — Separate the deployable rule from the fit](0023-versioned-quantizer-artifact.md) — extends ADR 0009
+24. [ADR 0024 — Keep selected formal proofs inside the research memory](0024-formal-verification-track.md)

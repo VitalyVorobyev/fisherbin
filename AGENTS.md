@@ -50,13 +50,16 @@ public registry or provisional backend class.
 - `agenticresearch/` is the mathematical scientific memory (claim registry, counterexample bank, open-problem queue). It governs itself through its own `agenticresearch/AGENT.md` and is excluded from the Ruff gate.
 - The library crosses into it at exactly two points: `tests/test_research_claims.py` reads counterexample fixtures from `agenticresearch/COUNTEREXAMPLES/`, and `tests/test_research_registry.py` runs `agenticresearch/py/registry.py validate` plus the index-freshness check. Research results become library behavior only by being copied into deterministic regression tests or theorem-cited code paths.
 - The registry is one file per claim under `agenticresearch/claims/`, with vocabularies in `registry.json`. Every index is generated — never hand-edit `claims/INDEX.md`, `COUNTEREXAMPLES/INDEX.md`, or `LITERATURE/BIBLIOGRAPHY.md`; run `python agenticresearch/py/registry.py reindex`.
+- Selected publication-critical or library-guarantee claims may attach exact Lean evidence through `formal_proof`; the pinned workspace and protocol live under `agenticresearch/formal/` and `agenticresearch/protocols/formalization.md`. Partial coverage gets its own claim and never marks a broader theorem machine-checked.
 - Code in `src/` that relies on a theorem names it; code that refuses a capability names the counterexample forcing the refusal. Keep both in sync with the registry.
 
 ## Tooling: use uv
 
 `uv` is the only supported Python environment, dependency, build, and command runner. Do not
 introduce pip, Conda, Poetry, or manually edit `uv.lock`. The isolated `website/` workspace uses
-its pinned Node and pnpm versions.
+its pinned Node and pnpm versions. The only other language workspace is
+`agenticresearch/formal/`, which uses its pinned Elan/Lake toolchain and never enters the Python
+package.
 
 ```bash
 uv sync --all-extras --all-groups --locked
@@ -67,6 +70,7 @@ JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
 uv build
 uv run mkdocs build --strict
+(cd agenticresearch/formal && lake build --wfail)
 ```
 
 `pytest` is tiered by what a test is for, not by how long it takes, so a bare
@@ -106,4 +110,6 @@ by M9/M10 and ADRs 0018/0019.
 
 ## Completion checklist
 
-Before finishing, run the relevant tests plus Ruff, the strict documentation build, and the package build. Report the exact validation performed and explain any check that could not be run.
+Before finishing, run the relevant tests plus Ruff, the strict documentation build, the package
+build, and the Lean gate when formal evidence is present. Report the exact validation performed
+and explain any check that could not be run.

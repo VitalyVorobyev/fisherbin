@@ -1,7 +1,7 @@
 {
-  "schema_version": "4.0",
+  "schema_version": "4.1",
   "project": "ScoreQuant",
-  "updated": "2026-08-30",
+  "updated": "2026-08-31",
   "canonical_problem_file": "PROBLEM.md",
   "human_readable_ledger": "KNOWN_RESULTS/",
   "open_problem_ledger": "OPEN_PROBLEMS.md",
@@ -26,6 +26,17 @@
     "not_searched": "No targeted prior-art search has been run for this claim.",
     "search_gap": "Targeted prior-art search found no direct precedent; recorded in LITERATURE/; not a novelty claim.",
     "prior_art_found": "Direct or near-direct precedent located; see the literature entry cited by the claim."
+  },
+  "formal_proof_contract": {
+    "meaning": "Optional machine-checked evidence attached to the canonical claim; it does not replace status, publication_status, proof_location, or an informal statement audit.",
+    "required_fields": [
+      "system",
+      "spec",
+      "file",
+      "declaration",
+      "statement_audit"
+    ],
+    "path_base": "agenticresearch/"
   },
   "levels": [
     "universal",

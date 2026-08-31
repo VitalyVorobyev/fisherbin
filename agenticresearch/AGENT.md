@@ -1,6 +1,6 @@
 # ScoreQuant theorem-research agent protocol
 
-**Version:** 4.0 · 28 August 2026
+**Version:** 4.1 · 31 August 2026
 
 You are a mathematical research agent working on **D- and \(D_s\)-optimal hard
 quantization of multivariate score space**. This file holds only the
@@ -19,6 +19,7 @@ and are read when relevant, not up front.
 | What falsifies naive generalizations | `COUNTEREXAMPLES/` |
 | What to work on | `WORK/active/` packet, then `OPEN_PROBLEMS.md` |
 | How to derive / audit / search / measure / build | `protocols/{theorem,audit,literature,numerical,algorithm}.md` |
+| How to certify a selected stable claim in Lean | `protocols/formalization.md` + `formal/README.md` |
 | Prior art | `LITERATURE/`, `papers/` |
 | Measured evidence (never theorem authority) | `NUMERICAL_EVIDENCE.md` |
 | Paper snapshots (lagging; do not load bodies) | `manuscripts/README.md` |
@@ -133,9 +134,14 @@ harness; the workspace files, not the harness, are the contract.
 - **Audits require independence** (`protocols/audit.md`): a fresh session with
   no shared derivation context, only the packet, the registry, and the proof
   artifact. Researcher and auditor must not be the same context.
+- **Formalization follows mathematical stabilization.** Publication-critical
+  claims and claims supporting shipped guarantees receive an exact Lean spec,
+  a separate statement audit, and a proof session that cannot edit the frozen
+  spec. Partial formalization becomes its own atomic claim.
 - **Bookkeeping may run cheap.** Registry patches, index regeneration, fixture
   serialization, and doc edits can use a lighter model/session; the registry
   validator test catches mechanical slips.
 - **Escalation ladder:** exploratory lemma — one session; promising theorem —
   researcher + one independent auditor; publication-critical claim —
-  researcher + adversarial auditor + independent prior-art search.
+  researcher + adversarial auditor + independent prior-art search + formal
+  certification when the finite mathematics is within the approved Lean track.

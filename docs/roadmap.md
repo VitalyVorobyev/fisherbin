@@ -289,6 +289,31 @@ deliberately.
 Publication is an authorized action, not a merge side effect. Landing this milestone does not
 publish anything.
 
+## M12 — Machine-checked research claims
+
+**Status:** scalar pilot implemented; expansion requires a separate go/no-go review. This track may
+run alongside M11 and does not change the release scope or public Python API.
+
+1. Foundation: [ADR 0024](adr/0024-formal-verification-track.md), a pinned Lean 4.33.1/Mathlib
+   4.33.1 workspace under `agenticresearch/formal/`, exact claim-to-proof metadata, and a dedicated
+   formalization protocol.
+2. Scalar pilot: machine-check the reciprocal cell-mass identity and the strengthened real-arithmetic
+   lower bound as the atomic claim `D-EXCHANGE-SCALAR-CORE`; keep the broader determinant/log and
+   exchange-to-Voronoi claims explicitly unmarked.
+3. Trust gate: frozen spec plus statement audit, guarded axiom dependencies, `lake build --wfail`,
+   namespace-wide axiom audit, and bundled `leanchecker` verification on every pull request and
+   release. Nanoda remains deferred while its export parser is incompatible with current Lean.
+4. Conditional expansion, in dependency order: inner-product identities; leverage/projector bound;
+   rank-two update and determinant ratio; logarithm, strictness, singleton/duplicate boundaries, and
+   the complete finite `D-EXCHANGE-IMPLIES-VORONOI` theorem.
+
+**Gate:** the scalar spec matches the registered claim in both directions; Lean accepts the proof
+without unfinished terms; the guarded axiom list contains no `sorryAx` or project axiom; registry
+validation exposes one machine-checked marker; ordinary CI and release validation remain green.
+
+**Stop condition:** do not enter population measure theory, profiled \(D_s\), or specialized prover
+integration until the finite D chain receives a reviewed expansion decision.
+
 ## Explicitly outside the development plan
 
 An E-optimal solver is not planned. The E-optimality chapter and deterministic counterexample stay
@@ -343,4 +368,5 @@ JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
 uv build
 uv run mkdocs build --strict
+(cd agenticresearch/formal && lake build --wfail)
 ```

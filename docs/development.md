@@ -22,9 +22,28 @@ JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
 uv build
 uv run mkdocs build --strict
+(cd agenticresearch/formal && lake build --wfail)
 ```
 
 X64 is an explicit application and CI choice. The package never changes global JAX configuration during import.
+
+## Validate formal research claims
+
+Only the isolated `agenticresearch/formal/` workspace uses Lean tooling. Install
+[Elan](https://lean-lang.org/install/) once; the repository then selects the
+pinned Lean version and locked Mathlib revision automatically:
+
+```bash
+cd agenticresearch/formal
+lake exe cache get
+lake build --wfail
+```
+
+The formal job is a required pull-request and release gate. It checks selected
+mathematical statements, not equivalence between those statements and the
+Python/JAX implementation. Toolchain upgrades must keep Lean and Mathlib on the
+same stable release and land as a dedicated reviewed change with a regenerated
+`lake-manifest.json`.
 
 ## Test tiers and parallelism
 

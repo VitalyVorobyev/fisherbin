@@ -61,3 +61,14 @@ def test_generated_indexes_are_current(tool: ModuleType) -> None:
     assert not stale, "\n".join(
         ["stale generated indexes; run `python agenticresearch/py/registry.py reindex`", *stale]
     )
+
+
+def test_formal_proof_is_attached_only_to_the_atomic_scalar_claim(tool: ModuleType) -> None:
+    registry = tool.load(WORKSPACE)
+    claims = tool.claims_by_id(registry)
+    formal = claims["D-EXCHANGE-SCALAR-CORE"]["formal_proof"]
+
+    assert formal["declaration"] == ("ScoreQuantFormal.scalarExchangeStrengthenedLowerBound")
+    assert "formal_proof" not in claims["D-EXCHANGE-VIOLATION-LOWER-BOUND"]
+    assert "formal_proof" not in claims["D-EXCHANGE-IMPLIES-VORONOI"]
+    assert formal["declaration"] in tool.render_index(registry)

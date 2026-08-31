@@ -67,6 +67,20 @@ JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_fit.py -k name         
 `-n auto` for a full run, omitted for a targeted one. X64 is an application choice made by the
 caller; the package never touches global JAX configuration at import.
 
+## Formal research claims
+
+The research memory contains one isolated Lean workspace. After installing
+Elan once, the committed toolchain and Lake manifest select everything else:
+
+```bash
+cd agenticresearch/formal
+lake exe cache get
+lake build --wfail
+```
+
+Run this whenever formal evidence, its claim metadata, or the pinned Lean/Mathlib
+pair changes. It is also part of pull-request and release CI.
+
 ## The reference documentation site (MkDocs)
 
 ```bash
@@ -238,6 +252,7 @@ JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto
 JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py
 uv build
 uv run mkdocs build --strict
+(cd agenticresearch/formal && lake build --wfail)
 ```
 
 Plus `corepack pnpm validate` in `website/` when the portal changed.

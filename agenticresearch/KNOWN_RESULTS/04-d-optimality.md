@@ -114,7 +114,7 @@ gives \(Av=\mu_a-\mu_b\), hence
 
 ## D5. Exchange stability implies strict D-Voronoi geometry — [PROJECT-PROVED; audited]
 
-**Claims:** D-EXCHANGE-IMPLIES-VORONOI, D-EXCHANGE-VIOLATION-LOWER-BOUND
+**Claims:** D-EXCHANGE-IMPLIES-VORONOI, D-EXCHANGE-SCALAR-CORE, D-EXCHANGE-VIOLATION-LOWER-BOUND
 
 Let coincident score rows be merged into distinct atoms with positive weights,
 and partition those atoms into exactly \(K\) nonempty cells. Assume \(I\succ0\),
@@ -142,6 +142,14 @@ The exact algebra is
 E\ge\frac{\alpha\beta}{4}
 \left[q_\delta^2+(q_{aa}-q_{bb})^2\right].
 \]
+
+The real-arithmetic implication from the relocation coefficients, the
+nearest-centroid premise, and the leverage bound to this strengthened
+inequality is machine-checked as `D-EXCHANGE-SCALAR-CORE` in
+`formal/ScoreQuantFormal/ScalarExchange.lean`. This is deliberately a partial
+formalization: the matrix determinant reduction and the remaining strict
+Voronoi argument are still certified by the informal proof and independent
+audit below, not yet by Lean.
 
 Distinct centroids follow from stability rather than needing a separate
 assumption. If \(\mu_a=\mu_b\) and either cell is non-singleton, moving a
