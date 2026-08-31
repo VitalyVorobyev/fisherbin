@@ -165,6 +165,40 @@
     "tarpey-li-flury-1995-ss",
     "serinko-babu-1992-jmva"
    ]
+  },
+  {
+   "round": 5,
+   "date": "2026-08-31",
+   "mode": "independent-audit-triangulation-and-targeted-snowball",
+   "scope": "AUDIT-DS-STABLE-BASINS independent per-theorem search. Thirty-six exact queries covered efficient-score/least-favourable-direction orthogonality, Chebyshev equality and association, principal points/self-consistency/LCM, scalar Lloyd fixed points, and empirical nonregularity. Backward and forward metadata were traversed from the four researcher-registered DS17 papers. The existing round 4 conclusions were treated only as comparison.",
+   "sources": [
+    "primary article PDFs or author/publisher full text where accessible",
+    "Project Euclid, Oxford Academic, ScienceDirect, arXiv, author repositories, Crossref/DOI metadata",
+    "backward reference lists and forward title/abstract citation search"
+   ],
+   "query_count": 36,
+   "candidate_count": 55,
+   "candidate_count_scope": "Distinct scholarly title/DOI records retained after deduplicating the visible first-page results of the 36 logged searches; excludes obvious lexical collisions and non-scholarly pages.",
+   "relevant_count": 9,
+   "deeply_reviewed_count": 4,
+   "papers_added": [
+    "bickel-klaassen-ritov-wellner-1993",
+    "esary-proschan-walkup-1967",
+    "hastie-stuetzle-1989",
+    "jakubowski-2021-chebyshev",
+    "tarpey-loperfido-2015"
+   ],
+   "rejected_near_misses": [
+    "bali-boente-2009-functional-principal-points",
+    "matsuura-kurata-2010-location-mixture-principal-points",
+    "generic-fkg-association-results",
+    "choquet-covariance-inequality-results",
+    "application-specific-semiparametric-efficient-score-papers"
+   ],
+   "limitations": [
+    "The Tarpey-Li-Flury 1995 primary proof and Tarpey-Loperfido 2015 primary theorem text remained library-access restricted; exact theorem scope was cross-checked against Tarpey-Flury 1996 primary text and explicit later theorem restatements.",
+    "This was a theorem-targeted one-hop traversal, not a field-wide saturation round; the verdict is a search gap, never a novelty claim."
+   ]
   }
  ],
  "papers": [
@@ -1738,14 +1772,17 @@
    "bibliography_key": "Flury-1990",
    "source_of_discovery": "targeted-packet-search",
    "cites_relevant": [],
-   "cited_by_relevant": [],
+   "cited_by_relevant": [
+    "tarpey-li-flury-1995-ss",
+    "tarpey-flury-1996-sc"
+   ],
    "research_area": "vector-quantization",
    "relevant_claims": [
     "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
     "DS-STABLE-BASINS-LCM-CLASSIFICATION"
    ],
-   "status": "screened",
-   "note": "Abstract-level review 31 Aug 2026 (full text paywalled): population k-means points, existence, Gaussian/elliptical programme; the existence-direction baseline DS17 contrasts against."
+   "status": "deeply_reviewed",
+   "note": "Primary text reviewed 31 Aug 2026. Defines globally MSE-optimal principal points; proves the two-point elliptical leading-eigenvector result and dim span <= k-1, but states the k>2 leading principal-subspace result only as a conjecture. No general existence or arbitrary self-consistent-point theorem."
   },
   {
    "id": "tarpey-flury-1996-sc",
@@ -1757,7 +1794,11 @@
    ],
    "bibliography_key": "Tarpey-Flury-1996",
    "source_of_discovery": "targeted-packet-search",
-   "cites_relevant": [],
+   "cites_relevant": [
+    "flury-1990-pp",
+    "hastie-stuetzle-1989",
+    "tarpey-li-flury-1995-ss"
+   ],
    "cited_by_relevant": [],
    "research_area": "vector-quantization",
    "relevant_claims": [
@@ -1765,8 +1806,8 @@
     "DS-STABLE-BASINS-FIXED-POINT-GATE",
     "DS-STABLE-BASINS-LCM-CLASSIFICATION"
    ],
-   "status": "screened",
-   "note": "Definition E[X|Y]=Y verified from the publisher abstract 31 Aug 2026; full text not retrieved. The self-consistency vocabulary DS17's tilt-consistent strip rules specialize."
+   "status": "deeply_reviewed",
+   "note": "Primary text reviewed 31 Aug 2026. Credits Hastie-Stuetzle for the term and defines E[X|Y]=Y. Theorem 4.1 under LCM plus projection-measurability forces the q-dimensional support span of self-consistent Y to be spanned by q covariance eigenvectors, not necessarily the leading q."
   },
   {
    "id": "tarpey-li-flury-1995-ss",
@@ -1779,15 +1820,20 @@
    ],
    "bibliography_key": "Tarpey-Li-Flury-1995",
    "source_of_discovery": "targeted-packet-search",
-   "cites_relevant": [],
-   "cited_by_relevant": [],
+   "cites_relevant": [
+    "flury-1990-pp"
+   ],
+   "cited_by_relevant": [
+    "tarpey-flury-1996-sc",
+    "tarpey-loperfido-2015"
+   ],
    "research_area": "vector-quantization",
    "relevant_claims": [
     "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
     "DS-STABLE-BASINS-LCM-CLASSIFICATION"
    ],
    "status": "screened",
-   "note": "Closest structural cousin of the DS17 obstruction: self-consistency plus elliptical symmetry forces principal-subspace alignment. Summarized from the abstract 31 Aug 2026; primary proof not read - no technique-transfer claim is made."
+   "note": "Theorem scope cross-checked 31 Aug 2026 against Tarpey-Flury 1996 primary text and later explicit restatements: n principal points of a centered elliptical law spanning dimension q lie in the leading q-eigenspace. Primary proof not retrieved; do not silently extend the leading-eigenspace conclusion to every self-consistent point set."
   },
   {
    "id": "serinko-babu-1992-jmva",
@@ -1807,6 +1853,114 @@
    ],
    "status": "deeply_reviewed",
    "note": "Primary PDF read verbatim 31 Aug 2026: split-function formulation of 1-D k-means over ordered cutpoints, unique global optimum, singular-Hessian nonregular case with n^{1/4} rates. Per-law degeneracy asymptotics, not a class-wide forcing theorem."
+  },
+  {
+   "id": "bickel-klaassen-ritov-wellner-1993",
+   "title": "Efficient and Adaptive Estimation for Semiparametric Models",
+   "year": 1993,
+   "authors": [
+    "P. J. Bickel",
+    "C. A. J. Klaassen",
+    "Y. Ritov",
+    "J. A. Wellner"
+   ],
+   "bibliography_key": "Bickel-Klaassen-Ritov-Wellner-1993",
+   "source_of_discovery": "concept-search:efficient-score-orthogonality",
+   "cites_relevant": [],
+   "cited_by_relevant": [],
+   "research_area": "score-compression",
+   "relevant_claims": [
+    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
+    "DS-STABLE-BASINS-FIXED-POINT-GATE"
+   ],
+   "status": "screened",
+   "note": "Classical source for efficient scores as L2 residuals orthogonal to nuisance tangent directions. Re-attribution boundary: this covers the full-data projection/normal equation, not DS17's binned tilt residual or hard-partition obstruction."
+  },
+  {
+   "id": "esary-proschan-walkup-1967",
+   "title": "Association of Random Variables, with Applications",
+   "year": 1967,
+   "authors": [
+    "J. D. Esary",
+    "F. Proschan",
+    "D. W. Walkup"
+   ],
+   "bibliography_key": "Esary-Proschan-Walkup-1967",
+   "source_of_discovery": "backward:jakubowski-2021-chebyshev",
+   "cites_relevant": [],
+   "cited_by_relevant": [
+    "jakubowski-2021-chebyshev"
+   ],
+   "research_area": "other",
+   "relevant_claims": [
+    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION"
+   ],
+   "status": "deeply_reviewed",
+   "note": "Primary paper reviewed for the definition and closure properties of association. It supplies the historical covariance-sign language; it does not contain the exact equality theorem DS17 consumes."
+  },
+  {
+   "id": "hastie-stuetzle-1989",
+   "title": "Principal Curves",
+   "year": 1989,
+   "authors": [
+    "T. Hastie",
+    "W. Stuetzle"
+   ],
+   "bibliography_key": "Hastie-Stuetzle-1989",
+   "source_of_discovery": "backward:tarpey-flury-1996-sc",
+   "cites_relevant": [],
+   "cited_by_relevant": [
+    "tarpey-flury-1996-sc"
+   ],
+   "research_area": "vector-quantization",
+   "relevant_claims": [
+    "DS-STABLE-BASINS-FIXED-POINT-GATE"
+   ],
+   "status": "screened",
+   "note": "Origin of self-consistent curves and of the terminology explicitly credited by Tarpey-Flury 1996. Vocabulary provenance only; no finite point, nuisance, or profiled-information theorem."
+  },
+  {
+   "id": "jakubowski-2021-chebyshev",
+   "title": "A complement to the Chebyshev integral inequality",
+   "year": 2021,
+   "authors": [
+    "A. Jakubowski"
+   ],
+   "bibliography_key": "Jakubowski-2021",
+   "source_of_discovery": "concept-search:chebyshev-equality",
+   "cites_relevant": [
+    "esary-proschan-walkup-1967"
+   ],
+   "cited_by_relevant": [],
+   "research_area": "other",
+   "relevant_claims": [
+    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION"
+   ],
+   "status": "deeply_reviewed",
+   "note": "Primary text and proof read verbatim 31 Aug 2026. Theorem 1.2 is exactly the monotone-covariance equality condition, proved via an iid-copy product identity. It supports DS17's conditional equality step after conditioning; the cell-measurability and rank consequences remain project-specific."
+  },
+  {
+   "id": "tarpey-loperfido-2015",
+   "title": "Self-consistency and a generalized principal subspace theorem",
+   "year": 2015,
+   "authors": [
+    "T. Tarpey",
+    "N. Loperfido"
+   ],
+   "bibliography_key": "Tarpey-Loperfido-2015",
+   "source_of_discovery": "forward:tarpey-li-flury-1995-ss",
+   "cites_relevant": [
+    "tarpey-flury-1996-sc",
+    "tarpey-li-flury-1995-ss"
+   ],
+   "cited_by_relevant": [],
+   "research_area": "vector-quantization",
+   "relevant_claims": [
+    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
+    "DS-STABLE-BASINS-LCM-CLASSIFICATION"
+   ],
+   "status": "screened",
+   "note": "Missed forward source from round 4. Generalizes principal-subspace results through self-consistency to location-mixture/skew-normal settings. It is closer on the beyond-elliptical axis, but the objective remains squared approximation error and no nuisance/profiled fixed point appears. Primary theorem text remains library-access pending."
   }
  ]
 }

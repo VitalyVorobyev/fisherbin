@@ -56,3 +56,25 @@ Screened and found irrelevant, with one-line reasons, so nobody re-screens them.
   ordinary Euclidean k-means in unwhitened classifier-output space, not D or
   \(D_s\) score-Fisher optimization; `TRACE-WHITENED-KMEANS`,
   `REPRESENTATION-QUANTIZATION-LOSS`.
+
+## Independent DS17 audit — 31 August 2026
+
+- **Generic FKG correlation papers** — require lattice/positive-association
+  structure far stronger than DS17's conditional one-variable monotonicity;
+  Chebyshev plus Jakubowski's equality theorem is the exact source pair;
+  `DS-STABLE-BASINS-CENTERED-OBSTRUCTION`.
+- **Choquet-integral covariance inequalities** — generalize the integration
+  functional rather than the hard-quantizer or equality mechanism; no
+  transfer to DS17.
+- **Bali & Boente (2009), functional elliptical principal points** — extends
+  the Tarpey–Li–Flury programme to Hilbert spaces but adds no endogenous tilt,
+  profiled block, or fixed-point obstruction;
+  `DS-STABLE-BASINS-LCM-CLASSIFICATION`.
+- **Matsuura & Kurata (2010), location-mixture principal-subspace theorem** —
+  adjacent extension for two principal points of spherical location mixtures;
+  objective remains Euclidean MSE and the result is subsumed for this audit by
+  the broader Tarpey–Loperfido forward source.
+- **Application-specific semiparametric efficient-score papers** — repeatedly
+  instantiate projection off a nuisance tangent space, but add no theorem
+  beyond the Bickel–Klaassen–Ritov–Wellner classical source and no hard-cell
+  geometry; `DS-STABLE-BASINS-FIXED-POINT-GATE`.
