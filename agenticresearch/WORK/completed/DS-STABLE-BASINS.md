@@ -1,6 +1,6 @@
 # DS-STABLE-BASINS — inhabit the margin-certified profiled branch
 
-**Programme:** P1 · **Opened:** 30 August 2026 · **Status:** active
+**Programme:** P1 · **Opened:** 30 August 2026 · **Closed:** 31 August 2026 · **Status:** completed
 
 ## Goal
 
@@ -148,3 +148,115 @@ constrained value (`OPEN-DS-PRACTICAL-CERTIFIED-SOLVER`)? If inhabitation is
 refuted, what weaker certificate or alternative representation can replace
 the DS14 companion branch without contradicting
 `DS-STABLE-MARGINS-PRICE`?
+
+---
+
+## Outcome (31 August 2026)
+
+**Stop condition 2 — DISPROVED — hit on the packet's own class, in a form
+stronger than the packet asked for.** The goal question ("are there
+\(\kappa,c_0,\gamma\) and an a.s. sequence of unconstrained exchange-stable
+labelings with eventual DS14 margins, on at least the canonical Gaussian?")
+is answered **no on every law of the DS15/DS16 class at once**, and not
+merely for sequences: almost surely, for all large \(N\), no single
+margin-compatible stable labeling exists.
+
+- **The theorem** (`KNOWN_RESULTS/05b-ds-bridge.md` §DS17;
+  `DS-STABLE-BASINS-CENTERED-OBSTRUCTION`): the exact tilt-residual identity
+  \(B^*(I_q)-\beta=E[h(T_\beta)S_\lambda]/I_{\lambda\lambda}\) plus the
+  conditional Chebyshev association inequality shows that on any atomless
+  (L)-law no tilt-consistent strip rule keeps a positive nuisance block, at
+  any tilt; the pathwise DS14′ lemma (DS17.0) chains this to eventual
+  emptiness of the (M2)+(M3)+(M5) stable class. Neither (S) nor (R) is
+  needed; jointly Gaussian, elliptical (with an independent LCM rank-one
+  second proof and the Möbius discriminant identity), product-nuisance, and
+  dependent (L)-laws are all instances.
+- **The (M5)-free escape is classified**
+  (`DS-STABLE-BASINS-LCM-CLASSIFICATION`): margin-compatible stationary
+  configurations exist on the canonical law (sign-split family,
+  \(\lambda_{\min}\) up to \(1/\pi\)) but are wasted-cell structures — value
+  pinned at \(v_2\) in every scanned instance, compilable reductions with
+  \(\lambda_{\min}=0\). This also proves DS16's constraint class
+  \(\{\lambda_{\min}(I_q)\ge\kappa\}\) nonempty for \(\kappa\le1/\pi\):
+  the audit's attainment subproblem has a nonvacuous feasible set. Fixture
+  `CE-DS-LCM-SIGNSPLIT-MARGIN-001` ((M5) is load-bearing), CI-pinned.
+- **The gate** (`DS-STABLE-BASINS-FIXED-POINT-GATE`): inhabitation reduces
+  per law to the scalar root equation \(E[h(T_\beta)S_\lambda]=0\) over
+  Lloyd-stationary branches. Measured (`DS-STABLE-BASINS-GATE-SCANS`,
+  instrument `py/ds_stable_basins.py`): eight (L)-laws across three
+  structural families have zero roots (the theorem's falsification evidence,
+  run before the proof was trusted); mix3 — off-class — has exactly one
+  root, the efficient interval optimum itself, carrying
+  \(\lambda_{\min}=1.7364\) at price \(\approx0\): conditional centering,
+  not binning, is what makes margins expensive.
+- **Blockers honored:** unconstrained one-point stability was never traded
+  for stability-under-constraint (blocker on silent replacement); the
+  \(N\le14\) margin-retaining census states are pre-asymptotic exactly as
+  blocker 3/6 warned — the geometry scan shows the class boundary in the
+  recorded DS16 terminals (2% companion-exact on centered06 vs 61% on mix3).
+
+## Deployment statement (required deliverable)
+
+- *Inhabited DS14 sequence:* *impossible* on class (L) — the certified
+  compile branch is vacuous asymptotically; `compile_quantizer`'s refusal
+  needs no certificate carve-out there.
+- *Finite diagnostic:* still legitimate as a diagnostic (the \(N=8\) witness
+  is even companion-exact) but transient on the class; it certifies nothing
+  asymptotic.
+- *Constrained terminal:* the only object a margin-constrained solver can
+  deliver on the class, and it is not ordinary-exchange-stable eventually;
+  any future `ProfiledMarginPolicy` surface must present it as constrained,
+  priced (\(\hat v_K-\hat\Phi_s\)), and non-inductive on this class. Off the
+  class, target the gate roots (OP29(a)); on mix3-like laws certification is
+  free.
+
+No `src/` file changed. The result goes to a fresh independent adversarial
+audit before any library change (the session did not audit itself).
+
+## Artifacts
+
+- `KNOWN_RESULTS/05b-ds-bridge.md` §DS17 (theorems DS17.0–DS17.4, protocol
+  F/G passes, measured, verdict).
+- Claims: `DS-STABLE-BASINS-{CENTERED-OBSTRUCTION, LCM-CLASSIFICATION,
+  FIXED-POINT-GATE, GATE-SCANS}` new;
+  `OPEN-DS-STABLE-BASINS` rerouted; `DS-PROFILED-COMPILE-CERTIFICATE`,
+  `OPEN-DS-PRACTICAL-CERTIFIED-SOLVER`, `OPEN-DS-MARGINS-NONCENTERED`
+  patched; OP30/OP29/OP7/P1 updated in `OPEN_PROBLEMS.md`.
+- `COUNTEREXAMPLES/CE-DS-LCM-SIGNSPLIT-MARGIN-001.json` + catalogue entry +
+  pin `tests/test_research_claims.py::test_ds17_signsplit_stationary_state_retains_margins_without_separation`.
+- Instrument `py/ds_stable_basins.py` (selftest-validated against the public
+  Gauss–Legendre quadrature at \(10^{-9}\) and exact 8-atom rationals);
+  provenance-complete artifacts under `WORK/artifacts/DS-STABLE-BASINS/`;
+  ledger rows N-DS-BASINS-* in `NUMERICAL_EVIDENCE.md`.
+- Literature round 4: Flury-1990, Tarpey-Flury-1996, Tarpey-Li-Flury-1995,
+  Serinko-Babu-1992 registered; triangulation
+  `LITERATURE/audits/DS-STABLE-BASINS-31-August-2026.md`; cluster note in
+  `topics/04-vector-quantization.md`; `search_gap` maintained.
+- `manuscripts/README.md` staleness block "Added 31 August 2026".
+- Erratum note (registry hygiene, not acted on in the permanent audit
+  artifact): `AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md` §15 cites the
+  test name `test_ds16_interval_initializer_can_be_exchange_unstable`; the
+  actual CI pin is
+  `test_ds16_efficient_score_interval_seed_is_not_exchange_stable`.
+
+## Falsification discipline
+
+The population scans ran before the proofs were trusted and were built to
+find roots, not to confirm their absence: branch-tracked continuation over
+Lloyd-*stationary* (not only optimal) branches, asymmetric mode-splitting
+branches included, plus the off-class control that *does* produce a root.
+The instrument's evaluator was validated against an independent quadrature
+path through the shipped library and exact rationals before any scan was
+believed.
+
+## Next dependency-blocking question
+
+`OPEN-DS-MARGINS-NONCENTERED` (OP29 branch (a)), now carrying the live
+question with a concrete tool: for non-centered laws, does the
+`DS-STABLE-BASINS-FIXED-POINT-GATE` root equation admit nondegenerate
+solutions on a stated class (measured yes on mix3, at price \(\approx0\)),
+and does the empirical transfer hold — from a nondegenerate root's basin to
+exact one-point exchange stability against \(O(1/N)\)-scale boundary noise
+(DS14 Step-1)? Behind it: DS16's \(v^*(\kappa)\) attainment on the now
+provably nonempty constraint class (OP30(a″)), and OP7's constrained-solver
+design under the DS17 constraints.

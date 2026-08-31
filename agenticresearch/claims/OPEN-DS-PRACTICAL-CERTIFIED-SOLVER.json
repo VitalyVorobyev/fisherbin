@@ -7,11 +7,13 @@
   "level": "empirical_inductive_quantizer",
   "status": "open",
   "publication_status": "open",
-  "statement": "Synthesize efficient-score upper optimization, soft/affine inductive fitting, exact Ds exchange refinement, Cholesky updates, held-out evaluation, and upper-bound gap reporting.",
+  "statement": "Synthesize efficient-score upper optimization, soft/affine inductive fitting, exact Ds exchange refinement, Cholesky updates, held-out evaluation, and upper-bound gap reporting - now under the DS17 constraints: on the conditionally centered class (L) a margin-constrained or penalized method CANNOT terminate at ordinary one-point exchange-stable margin states asymptotically (DS-STABLE-BASINS-CENTERED-OBSTRUCTION: the certified class is eventually empty), so any certified output there is stable only under its constraint and must be reported as constrained, priced by the observable gap v_hat_K - Phi_hat_s, and non-inductive; the theorem-backed compile deliverable on that class is the projected efficient-score interval rule with its exact DP ceiling. Off the class, the solver should target the DS-STABLE-BASINS-FIXED-POINT-GATE roots (per-law scalar root equation E[h(T_beta) S_lambda] = 0 over Lloyd-stationary branches): on mix3 the root is the efficient optimum itself at price ~ 0, suggesting free-margin laws where certification is cheap; the empirical transfer from a root's basin to exact exchange stability (packet blocker: boundary noise vs O(1/N) move gains) is the remaining mathematical obstacle, now scoped off-class in OP29(a).",
   "dependencies": [
     "DS-EXACT-MOVE-ORACLE",
     "DS-SCALAR-EFFICIENT-DP",
-    "DS-EFFICIENT-SCORE-GLOBAL-UPPER"
+    "DS-EFFICIENT-SCORE-GLOBAL-UPPER",
+    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
+    "DS-STABLE-BASINS-FIXED-POINT-GATE"
   ],
   "proof_location": {
     "file": "OPEN_PROBLEMS.md",

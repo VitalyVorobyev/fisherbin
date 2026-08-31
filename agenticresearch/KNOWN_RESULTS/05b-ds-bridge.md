@@ -1200,3 +1200,383 @@ hit: **proved** (price + funnel on the stated class) and **reduced** (the
 inhabitation/selection remainder is OP30), with the falsification half
 serialized (`CE-DS-STABLE-MARGIN-RETAINING-001`,
 `CE-DS-INTERVAL-SEED-UNSTABLE-001`).
+
+## DS17. Inhabitation of the margin-certified branch: the conditional-centering obstruction and the fixed-point gate — [PROJECT-PROVED theorem + MEASURED gate scans; \(d_\psi=d_\lambda=1\)]
+
+**Claims:** DS-STABLE-BASINS-CENTERED-OBSTRUCTION, DS-STABLE-BASINS-LCM-CLASSIFICATION, DS-STABLE-BASINS-FIXED-POINT-GATE, DS-STABLE-BASINS-GATE-SCANS
+
+**Normalization (protocol A).** Criterion: in-bin profiled \(D_s\). Levels:
+`population_quantizer` (existence/non-existence of self-consistent rules) and
+`empirical_to_population` (the inhabitation consequence). Decision variables:
+ordinary one-point exchange-stable finite labelings (DS14's hypotheses — never
+stability-under-constraint) and population strip rules. Setting as in DS14/DS15:
+\(d_\psi=d_\lambda=1\), \(K\ge3\), \(ES=0\), \(E\|S\|^2<\infty\),
+\(I=E[SS^\top]\succ0\), efficient score \(\hat s=S_\psi-B^*S_\lambda\),
+\(B^*=I_{\psi\lambda}/I_{\lambda\lambda}\). For \(\beta\in\mathbb R\) write
+\(T_\beta=S_\psi-\beta S_\lambda\); a **strip rule** at tilt \(\beta\) is a
+\(K\)-cell interval partition of \(T_\beta\) with positive masses. Neither (S)
+nor (R) is assumed anywhere in DS17.1–DS17.2; (L) is the DS15 conditional
+centering \(E[S_\lambda\mid\hat s]=0\) a.s. Deployability question decided: is
+OP30(a) — almost-sure sequences of margin-certified exchange-stable labelings —
+inhabited on the DS15/DS16 class? Information-loss implication: on that class
+the certified branch retains nothing because it is empty; off the class the
+gate identity below prices it per law.
+
+### Lemma DS17.1a (tilt-residual identity; any law, any partition)
+
+For any \(K\)-cell partition \(q\) with masses \(W_b>0\), centroids
+\((\mu_{\psi,b},\mu_{\lambda,b})\), and any \(\beta\), set
+\(t_b=\mu_{\psi,b}-\beta\mu_{\lambda,b}\). Then
+\(\sum_bW_bt_b\mu_{\lambda,b}=I_{\psi\lambda}(q)-\beta I_{\lambda\lambda}(q)\),
+so whenever \(I_{\lambda\lambda}(q)>0\),
+
+\[
+B^*(I_q)-\beta=\frac{\sum_bW_bt_b\mu_{\lambda,b}}{I_{\lambda\lambda}(q)} .
+\]
+
+For a strip rule at tilt \(\beta\), \(t_b=E[T_\beta\mid A_b]\) and the numerator
+is \(E[h(T_\beta)S_\lambda]\), where \(h=\sum_bt_b1_{A_b}\) is the
+**non-decreasing step function** sending each \(T_\beta\)-interval to its
+conditional mean (strictly increasing values across cells, for an atomless law
+with positive masses). *Proof:* expand the definitions; for the strip form use
+the tower property \(\sum_bW_bt_b\mu_{\lambda,b}
+=E[\,E[T\mid\sigma(q)]\,E[S_\lambda\mid\sigma(q)]\,]=E[h(T)S_\lambda]\), since
+\(h(T)=E[T\mid\sigma(q)]\) is \(\sigma(q)\)-measurable and bounded
+(\(|h|\le\max_b|t_b|<\infty\)). ∎
+
+Two immediate readings. (i) A strip rule is **tilt-consistent**
+(\(B^*(I_q)=\beta\)) iff \(E[h(T_\beta)S_\lambda]=0\); a self-consistent
+efficient-Voronoi rule with \(I_{q,\lambda\lambda}>0\) is tilt-consistent at
+\(\beta=B^*_q\) by construction (its strips are drawn in its own efficient
+projection). (ii) At any tilt-consistent pair the projected centroids satisfy
+\(e_b=\mu_{\psi,b}-\beta\mu_{\lambda,b}=t_b\) **identically** — projection
+linearity, no law hypothesis — so the nearest-centroid cuts are exactly the
+Lloyd midpoints of \(\operatorname{law}(T_\beta)\): self-consistency decomposes
+into "cuts are Lloyd-stationary for \(T_\beta\)" plus the scalar root equation
+\(E[h(T_\beta)S_\lambda]=0\). This is the gate every later scan tests.
+
+### Theorem DS17.1 (conditional-centering obstruction; population)
+
+Let \(P\) be atomless, in class (L), with \(ES=0\), \(E\|S\|^2<\infty\),
+\(I\succ0\). Then **every tilt-consistent strip rule — in particular every
+bounded-packet stationary rule with pairwise-distinct projected centroids —
+has \(I_{q,\lambda\lambda}=0\)**, at every tilt \(\beta\) and every \(K\ge2\).
+No LCM, ellipticity, independence, or log-concavity is assumed: (L) alone.
+
+*Proof.* Write \(\delta=\beta-B^*\), so \(T_\beta=\hat s-\delta S_\lambda\).
+
+**Case \(\delta=0\).** Cells are \(\hat s\)-measurable, so
+\(W_b\mu_{\lambda,b}=E[S_\lambda1_{A_b}]=E[\,E[S_\lambda\mid\hat s]1_{A_b}]=0\)
+by (L): \(I_{\lambda\lambda}(q)=\sum_bW_b\mu_{\lambda,b}^2=0\) directly.
+
+**Case \(\delta>0\).** Condition on \(\hat s\): the map
+\(x\mapsto h(\hat s-\delta x)\) is non-increasing (\(h\) non-decreasing). The
+Chebyshev association inequality for a non-increasing transform — for an
+i.i.d. conditional copy \(X'\) of \(X=S_\lambda\) given \(\hat s\),
+\(2\,\mathrm{Cov}(h(\hat s-\delta X),X\mid\hat s)
+=E[(h(\hat s-\delta X)-h(\hat s-\delta X'))(X-X')\mid\hat s]\le0\)
+termwise — gives, with (L) killing the product of conditional means,
+
+\[
+E[h(T_\beta)S_\lambda\mid\hat s]
+\le E[h(T_\beta)\mid\hat s]\,E[S_\lambda\mid\hat s]=0
+\quad\text{a.s.}
+\]
+
+Integrating, \(E[h(T_\beta)S_\lambda]\le0\). Now suppose
+\(I_{\lambda\lambda}(q)>0\) and tilt-consistency. By DS17.1a the numerator is
+exactly \(0\), so the conditional inequality is an equality a.s. Equality in
+the termwise-nonpositive covariance forces, for \(P_{\hat s}\)-a.e. value of
+\(\hat s\): \((h(\hat s-\delta X)-h(\hat s-\delta X'))(X-X')=0\) a.s., i.e.
+\(h(\hat s-\delta S_\lambda)\) is a.s. constant given \(\hat s\) (if
+\(S_\lambda\) is conditionally degenerate the same constancy holds trivially).
+Since \(h\) takes distinct values on distinct cells, every cell indicator
+\(1_{A_b}(T_\beta)\) is then a.s. \(\hat s\)-measurable, and the Case-\(\delta=0\)
+computation applies verbatim: \(\mu_{\lambda,b}=0\) for all \(b\), so
+\(I_{\lambda\lambda}(q)=0\) — contradiction.
+
+**Case \(\delta<0\).** \(x\mapsto h(\hat s-\delta x)\) is non-decreasing; the
+inequality reverses (\(E[h(T)S_\lambda]\ge0\)) and the same equality analysis
+applies. ∎
+
+*Consequences.* Under (L) a bounded-packet stationary rule with
+\(I_q\succ0\) (full rank) **cannot have pairwise-distinct projected
+centroids**: distinctness plus tie-nullity (below) would make it a genuine
+tilt-consistent strip rule, forcing \(I_{\lambda\lambda}=0\) and, by
+\(I_{\psi\lambda}^2\le I_{\psi\psi}I_{\lambda\lambda}\) (PSD), rank
+\(\le1\). Margin-compatible stationary configurations on class (L) are
+therefore all wasted-cell structures in the DS12 sense — the merged branch of
+DS17.3.
+
+### Lemma DS17.0 (pathwise DS14′)
+
+Fix \(K\) and rational \(\kappa,c_0,\gamma>0\), and let \(P\) satisfy (M1) and
+(M4). There is one probability-one event \(\Omega_0\) — the intersection,
+over the countable family of rational constants and integer truncation radii,
+of: the SLLN events for \(P_N\|S\|^2\) and \(P_NS\); the DS14 Step-2
+Glivenko–Cantelli event over the **fixed** slab family; and the C1 uniform
+moment law over the compact affine-max class with parameters bounded by
+\((c_0,\kappa,\gamma,M)\) — such that on \(\Omega_0\) the following holds for
+**every** (arbitrarily data-dependent, merely \(\omega\)-wise) choice of
+one-point exchange-stable \(K\)-cell labelings \(z^{(N)}\), \(N\in\mathcal N\),
+\(|\mathcal N|=\infty\), whose margins (M2)+(M3)+(M5) hold at
+\((c_0,\kappa,\gamma)\) for every \(N\in\mathcal N\): along a sub-subsequence
+of \(\mathcal N\) the companion parameters converge, and the limit \(q^*\) is a
+self-consistent efficient-Voronoi quantizer with
+\(\lambda_{\min}(I_{q^*})\ge\kappa\), cell masses \(\ge c_0\), and
+pairwise-distinct projected centroids separated by \(\ge\gamma\).
+
+*Proof.* DS14's five steps consume only: the margins at the indices actually
+used; the uniform laws — all over fixed function classes after the audit's
+repair (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md` §8), hence valid
+simultaneously for every candidate sequence on \(\Omega_0\); and compactness
+of the explicit parameter set, which supplies the convergent sub-subsequence.
+Restricting the index set to \(\mathcal N\) leaves every step intact (the
+sample is the same; limits along \(\mathcal N\) use the same events). No step
+selects a null set depending on the sequence, so the conclusion is pathwise on
+\(\Omega_0\); measurable selection is not needed because the argument runs at
+fixed \(\omega\). \(\lambda_{\min}\) passes to the limit by its 1-Lipschitz
+continuity in operator norm; separation and masses pass by DS14 Step 3. This
+is the DS16 §"proof of (1)" quantifier idiom applied to DS14. ∎
+
+### Theorem DS17.2 (inhabitation disproved on the whole class; eventual emptiness)
+
+Let \(P\) be in class (L) with (M1) and (M4) and \(I\succ0\) — the DS15/DS16
+law class satisfies this, and neither (S) nor (R) is needed. Then almost
+surely, for every rational \(\kappa,c_0,\gamma>0\) there is
+\(N_0(\omega)<\infty\) such that for all \(N\ge N_0\) **no one-point
+exchange-stable \(K\)-cell labeling of the sample satisfies
+(M2)+(M3)+(M5) at \((c_0,\kappa,\gamma)\) at all.** In particular OP30(a) is
+**disproved**: on the entire conditionally centered class there is no
+almost-sure margin-certified exchange-stable sequence, for any margins;
+DS14's hypothesis set is asymptotically empty, and real margins at real
+constants are covered by shrinking them to rationals.
+
+*Proof.* Work on \(\Omega_0\). If some \((c_0,\kappa,\gamma)\)-margin-
+compatible stable labeling existed for infinitely many \(N\), choose one per
+such \(N\) (\(\omega\)-wise) and apply DS17.0: a limit \(q^*\) exists —
+bounded-packet stationary with \(\lambda_{\min}(I_{q^*})\ge\kappa>0\) and
+pairwise-distinct projected centroids. By DS14 Step 4 the limit **is** the
+nearest-projected-centroid rule of its own centroids and metric (the audited
+identification — not bare DS12, whose stationarity alone would tolerate
+coincident centroids); for \(d_\psi=1\) the scalar metric \(S_\psi(I_{q^*})^{-1}>0\)
+cancels, so \(q^*\) is a strip rule at tilt \(\beta^*=B^*_{q^*}\), genuinely
+tilt-consistent, with tie sets \(P\)-null by (M4). Theorem DS17.1 gives
+\(I_{q^*,\lambda\lambda}=0<\kappa\le\lambda_{\min}(I_{q^*})\le
+I_{q^*,\lambda\lambda}\) — contradiction. Union over the countable rational
+constants. ∎
+
+*Corollaries (instances).* Jointly Gaussian and atomless elliptical laws with
+\(\Sigma\succ0\) are in (L) (linear conditional means) and satisfy (M4)
+(below), so the canonical law is covered. Product laws
+\(S_\psi\perp S_\lambda\), \(ES_\lambda=0\), are in (L) via independence
+(\(B^*=0\), \(\hat s=S_\psi\)) — every bimodal-nuisance product law scanned
+below is an instance. For LCM laws (linear conditional means along every tilt,
+e.g. elliptical) there is an independent one-line second proof: cell means of
+a strip rule are collinear, \(\mu_b=\theta\,t_b\) with
+\(\theta=\mathrm{Cov}(S,T_\beta)/\mathrm{Var}(T_\beta)\) and
+\(\mathrm{Var}(T_\beta)\ge\lambda_{\min}(I)(1+\beta^2)>0\), so
+\(I_q=(\sum_bW_bt_b^2)\,\theta\theta^\top\) has rank \(\le1\) and
+\(\lambda_{\min}(I_q)=0\); moreover the tilt-consistency equation on a
+Gaussian is the Möbius fixed point \(\beta=(a-\beta c)/(c-\beta d)\), i.e.
+\(\beta^2d-2\beta c+a=0\Longleftrightarrow\mathrm{Var}(T_\beta)=0\), with
+discriminant \(4(c^2-ad)<0\): no real solution at any correlation.
+
+*(M4) for atomless elliptical laws (\(d=2\), \(\Sigma\succ0\)).* Writing
+\(S=R\Lambda U\) with \(U\) uniform on the circle: for unit \(v\),
+\(P(|v^\top S-c|\le t)\le P(R\le\sqrt t\,k_1)+\sup_{r>\sqrt t k_1}
+P_U(|v^\top\Lambda U-c/r|\le t/r)\le P(R\le\sqrt tk_1)+k_2t^{1/4}\) — the
+angular arc a slab cuts from an ellipse of radius \(r\) has measure
+\(O(\sqrt{t/r})\) even at tangency — and \(P(R\le\varepsilon)\downarrow0\) by
+atomlessness at the origin: a uniform \(\varphi(t)\downarrow0\).
+
+### Theorem DS17.3 (LCM merged-branch classification: margins survive only in wasted cells, and are never compilable)
+
+Let \(P\) be atomless with (M4)-tie-nullity and LCM on the relevant tilt
+range, and let \(q\) be bounded-packet stationary with \(W_b>0\) and
+\(I_q\succ0\) (the merged branch: (M5) dropped). Then:
+
+1. the projected centroids are **not** pairwise distinct (else DS12
+   deployability (i)+(ii) reproduces \(q\) as a strip rule and the LCM rank
+   bound — or Theorem DS17.1, since LCM\(\Rightarrow\)(L) — contradicts
+   \(I_q\succ0\));
+2. the reduced rule \(\rho'\) (merge coincident-\(e\) groups; DS12) is a
+   genuine \(T_{B^*_q}\)-interval rule with \(K'\le K-1\) cells and
+   \(\operatorname{rank}(I_{\rho'})\le1\), so
+   \(\lambda_{\min}(I_{\rho'})=0\): **the compilable reduction never carries a
+   nuisance margin**;
+3. value identity: \(\Phi(q)=\sum_{\text{groups }g}W_gE[e_q(S)\mid G_g]^2\)
+   with \(e_q(s)=s_\psi-B^*_qs_\lambda\) — the between-value of
+   \(\operatorname{law}(e_q(S))\) on at most \(K-1\) intervals (proof:
+   \(\Phi(q)=\min_B\sum_bW_b(\mu_{\psi,b}-B\mu_{\lambda,b})^2\) attained at
+   \(B=B^*_q\) by the normal equation, \(e_b\) constant on groups, and
+   \(\sum_{b\in g}W_be_b=E[e_q1_{G_g}]\)); always \(\Phi(q)\le v_K\) (DS15
+   Lemma 1);
+4. nonemptiness: on \(N(0,I_2)\) the **sign-split family** — the threshold
+   cell \(\{S_\psi\ge0\}\) plus any zero-mean measurable split of the left
+   half by \(S_\lambda\) (e.g. \(\{S_\lambda>v\}\) vs \(\{S_\lambda\le v\}\))
+   — is bounded-packet stationary with \(B^*_q=0\), coincident left projected
+   centroids, \(I_q=\operatorname{diag}(2/\pi,\,I_{\lambda\lambda}(\text{split}))\succ0\),
+   \(\lambda_{\min}\) up to \(1/\pi\) (at \(v=0\)), and profiled value exactly
+   \(v_2=2/\pi\) for **every** member. The population constraint class
+   \(\{\lambda_{\min}(I_q)\ge\kappa\}\) of DS16's \(v^*(\kappa)\) is therefore
+   **nonempty** for \(\kappa\le1/\pi\) on the canonical law — the audit's
+   attainment subproblem has a nonvacuous feasible set — while every
+   inhabitant found is compile-dead by conclusion 2 and pays at least
+   \(v_3-v_2\approx0.1732\) (measured; \(=0.809826-2/\pi\)).
+
+Exact-rational verification: the \(K=3\) sign-split sibling of
+`CE-DS-POP-WASTED-CELLS-001` on the same 8-atom law has
+\(I_q=\operatorname{diag}(4,9/8)\), \(\Phi=4\) equal to the \(K'=2\) group
+between-value, projected centroids \((-2,-2,2)\), zero first-order violations,
+and singular reduced nuisance block — serialized as
+`CE-DS-LCM-SIGNSPLIT-MARGIN-001` and CI-pinned. Under bare (L), conclusion 1
+still holds (via Theorem DS17.1), while conclusion 2's rank collapse of the
+reduced rule is LCM-scoped: a non-LCM (L)-law may leave its reduced strips
+with a nonzero nuisance block, and only the fine configuration's coincidence
+is forced.
+
+### Corollary DS17.4 (the fixed-point gate, and what it costs off the class)
+
+For any atomless law with (M4): if OP30(a) full-triple inhabitation holds at
+\((\kappa,c_0,\gamma)\), then there exist \(|\beta|\le2M/\kappa\) and a
+Lloyd-**stationary** \(K\)-interval quantizer of \(\operatorname{law}(T_\beta)\)
+(any centroid-midpoint fixed point, not only the optimum) whose strip rule
+\(q\) satisfies the root equation \(E[h(T_\beta)S_\lambda]=0\) with
+\(\lambda_{\min}(I_q)\ge\kappa\), masses \(\ge c_0\), and \(t\)-mean
+separation \(\ge\gamma\). The gate is decided per law by the branch-tracked
+root scan of `py/ds_stable_basins.py popfix`; DS17.1 proves it empty on all of
+class (L). Off the class the gate can be inhabited **at zero price**: on mix3
+the root at \(\beta=0\) with cuts \(\pm1.00476\) is exactly the efficient
+\(\hat s\)-interval optimum, whose cluster structure carries
+\(I_{\lambda\lambda}=1.7364=\lambda_{\min}\) for free — the population object
+behind DS16's measured mix3 retention (\(\lambda_{\min}\approx1.70\)–\(1.74\),
+log-gap \(7\times10^{-5}\) at \(N\le1000\)) and the exact population face of
+OP29 branch (a).
+
+### Self-adversarial notes (protocol G)
+
+- **Strictness and ties.** Finite labelings may carry exact ties and
+  duplicates; nothing in DS17.2 constrains them — stability is a hypothesis.
+  Population tie sets are (M4)-null; the equality analysis in DS17.1 handles
+  conditionally degenerate \(S_\lambda\) explicitly.
+- **Singleton/empty cells.** Excluded at the population limit by (M2); finite
+  singletons are allowed and irrelevant.
+- **Duplicate scores.** Allowed; DS14's Steps 1–3 already cover split atoms.
+- **Singular information.** \(I\succ0\) is a hypothesis on the law;
+  post-move singular states never enter (DS13 covers them upstream in DS14).
+- **Nuisance singularity.** The conclusion *is* nuisance singularity; the
+  margin hypothesis (M3) uses \(\lambda_{\min}\le I_{\lambda\lambda}\), so the
+  contradiction is against the weaker block bound — no gap.
+- **Atomic laws.** DS17.1 needs atomlessness only through the strict
+  increase of interval means and DS12/DS14's own hypotheses; the 8-atom
+  fixture verifies algebra, never the population statement (DS12 necessity is
+  vacuous on atoms — wasted-cells precedent).
+- **Hidden compactness.** Only DS14's audited explicit compact class is used.
+- **First-order-to-finite jumps.** None: the finite half is DS14 verbatim;
+  DS17 adds population algebra plus the pathwise quantifier.
+- **Empirical-to-population jumps.** Only DS17.0's fixed-class events — the
+  audit-repaired uniform laws; no new uniform law is introduced.
+- **Score-estimation error.** Excluded; exact scores (P2 unchanged).
+- **New-event extension.** DS17 strengthens the refusal: on class (L) there
+  is asymptotically nothing to compile in the certified branch; no new
+  inductive claim is made.
+- **Why the census witnesses don't contradict DS17.2.** The margin-retaining
+  stable states at \(N\le14\) (`CE-DS-STABLE-MARGIN-RETAINING-001`) are
+  pre-asymptotic: DS17.2's \(N_0(\omega)\) is finite but not uniform, and the
+  grid laws are atomic emulations. The theorem predicts their margins die as
+  \(N\) grows — exactly the DS16 library measurement (funnel at
+  \(N=100\)–\(1000\)) and the geometry scan below.
+
+### Measured (gate scans; falsification evidence that failed to falsify)
+
+Instrument `py/ds_stable_basins.py` (closed-form Gaussian-mixture strip
+moments, validated in selftest against the public
+`scorequant.IntegrationSource` tensor Gauss–Legendre quadrature at
+\(10^{-9}\) and the exact 8-atom rationals; artifacts with full provenance
+under `WORK/artifacts/DS-STABLE-BASINS/`):
+
+- **Gaussian laws** (\(\rho\in\{0,0.6,0.9\}\) and an anisotropic case): at
+  every tilt on a 241-point grid, \(\lambda_{\min}(I_q(\beta))\le2.4\times10^{-16}\)
+  (exact rank one); the tilt-residual is zero-free (discriminant \(<0\));
+  the Möbius iteration never converges (elliptic orbit) — row
+  N-DS-BASINS-GAUSS.
+- **Product bimodal (L)-laws** (\(m\in\{0.75,1,1.5,2,3\}\), \(s=0.4\)): the
+  branch-tracked root scan over \(\beta\in[-2.5,2.5]\), tracking up to 3
+  Lloyd-stationary branches per tilt (asymmetric mode-splitting branches
+  included), finds **zero** self-consistent roots.
+- **Dependent (L)-laws** `xcorr(c)` (equal mixtures of \(\pm c\)-correlated
+  standard Gaussians, \(c\in\{0.5,0.8,0.95\}\); (L) by branch symmetry, LCM
+  fails off \(\beta=0\)): zero roots — both scans in row
+  N-DS-BASINS-CLASS-L-ROOTS. Eight
+  (L)-laws, three structural families, zero gate inhabitants: the theorem's
+  prediction, tested before its proof was trusted.
+- **Sign-split family** on \(N(0,I_2)\): \(\Phi-2/\pi=0\) to machine
+  precision across the split parameter \(v\in[-1,1]\), \(I_{\psi\lambda}=0\),
+  \(\lambda_{\min}\) maximal \(=1/\pi\) at \(v=0\); \(v_3-v_2=0.173206\) —
+  row N-DS-BASINS-SIGNSPLIT.
+- **mix3 (off-class control):** exactly one root — \(\beta=0\), cuts
+  \(\pm1.00476\), \(\lambda_{\min}=1.7364\), value \(2.68936=v_3\) to
+  \(10^{-6}\) (price \(\approx0\)), zero Monte-Carlo rule violations; the
+  finite-difference family Hessian at the root has gradient \(0\) and
+  eigenvalues \((-2.146,-0.258,-0.186)\): a **strict local maximum** of the
+  population value in the rule family, the second-order input any off-class
+  transfer theorem (OP29(a)) would consume — row N-DS-BASINS-MIX3.
+- **Seeded library ascent at scale** (public API, \(N\in\{300,1000,3000\}\),
+  3 reps): all 63 terminals exchange-stable. gauss06:
+  \(\lambda_{\min}\in[5\times10^{-5},0.012]\) with \(N\hat I_{11}\approx0.3\)–\(7\)
+  at every seed — the disproof's finite face. mix3: the
+  population-fixed-point seeding terminates at the **same** terminal as the
+  efficient and k-means seeds in 9/9 runs, with \(\lambda_{\min}=1.73\)–\(1.83\)
+  and log-gap \(\le10^{-5}\) at \(N\ge1000\); one random-seed run stranded at
+  a degenerate *inferior* terminal (\(\lambda_{\min}=5\times10^{-4}\), gap
+  \(0.21\)) — off-class margins are free at the good optimum, but bad local
+  terminals still exist — row N-DS-BASINS-LIBRARY.
+- **Geometry of the DS16 terminals** (420 recorded ascent terminals plus the
+  margin-retaining witness): the witness agrees **exactly** with its own
+  companion rule at \(N=8\) (\(\hat B^*=0.497\), separation \(0.325\)); on
+  centered06 only \(2\%\) of stable terminals are companion-exact (median
+  disagreement \(18\%\), median \(\lambda_{\min}=0.034\)), on mix3 \(61\%\)
+  are exact (median \(\lambda_{\min}=1.06\)) — the class boundary of DS17.1
+  visible in the finite states — row N-DS-BASINS-GEOMETRY.
+
+### Verdict: OP30(a) and the compile consequence
+
+- **Disproved, on the whole class.** On every (L)+(M1)+(M4) law — all of
+  DS15/DS16's class, jointly Gaussian and elliptical laws in particular — the
+  margin-certified branch is almost surely **eventually empty**: not merely
+  uninhabited by sequences, but devoid of any single margin-compatible
+  exchange-stable labeling for all large \(N\). The DS14 companion path on
+  this class is vacuous asymptotically; `compile_quantizer`'s refusal needs no
+  certificate carve-out there, and a margin-*constrained* solver (OP7/OP30(c))
+  cannot terminate at ordinary-stable margin states eventually — any terminal
+  it certifies is stable only under the constraint.
+- **The merged branch survives but compiles to nothing.** Dropping (M5),
+  margin-compatible stationary configurations exist on the canonical law
+  (sign-split family, \(\lambda_{\min}\) up to \(1/\pi\)), all wasted-cell
+  structures whose compilable reduction has \(\lambda_{\min}=0\) and whose
+  value is pinned at \(v_2\) in every scanned instance — retention is bought
+  only by spending cells on profiled-information-free splits.
+- **Off the class the branch is real and can be free.** mix3's gate
+  inhabitant is the efficient optimum itself (\(\lambda_{\min}=1.74\), price
+  \(\approx0\)): conditional centering, not binning, is what makes margins
+  expensive. The deployment-relevant remainder moves to OP29 branch (a)
+  (non-centered laws) with the DS17.4 gate identity as its population test,
+  and to the DS16 attainment question, whose feasible class DS17.3(4) proves
+  nonempty.
+- **Deployment statement (required by the packet).** An *inhabited DS14
+  sequence*: impossible on class (L) (this theorem). A *finite diagnostic*:
+  still legitimate as a diagnostic (the \(N=8\) witness is even
+  companion-exact) but now known to be transient on the class — it certifies
+  nothing asymptotic. A *constrained terminal*: the only object a
+  margin-constrained solver can deliver on the class, and it is **not**
+  ordinary-exchange-stable eventually; any future `ProfiledMarginPolicy`
+  surface must present it as constrained, priced (\(\hat v_K-\hat\Phi_s\)),
+  and non-inductive on this class.
+
+Stop condition **2 (disproved)** of the packet is hit on the packet's own
+class, with the obstruction's boundary serialized
+(`CE-DS-LCM-SIGNSPLIT-MARGIN-001`: (M5) is load-bearing) and the off-class
+escape measured (mix3 root). The isolated remainder is OP29(a)'s non-centered
+inhabitation/transfer, gated by DS17.4, plus DS16's constrained-value
+attainment — recorded in the OP30 rescope.

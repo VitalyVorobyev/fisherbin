@@ -7,11 +7,14 @@
   "level": "empirical_to_population",
   "status": "open",
   "publication_status": "open",
-  "statement": "On the DS15/DS16 class: (a) INHABITATION - do margin-compatible one-point exchange-stable sequences exist almost surely as N -> infinity, and does any such sequence satisfy DS14's full eventual hypotheses? Is v*(kappa) or v*+(kappa) attained by a margin-compatible population-stationary rule? A single finite state passing measured mass, conditioning, separation, and stability checks does not answer this sequence-level question. Measured: margin-retaining non-global stable states exist in every census instance at N <= 14, but the tested free-ascent terminals at N = 100..1000 lie in the funnel. (b) SELECTION - does exchange ascent from documented seeds converge in value to v_K almost surely, so DS16 forces terminal degeneracy? Finite runs support this but do not prove it. (c) DESIGN - construct a margin-constrained or penalized exchange method that reaches DS14-certified sequences with a stated gap to a correctly defined constrained value. DS16 proves a strict existential population price but neither constrained-value attainment nor one-sided continuity in kappa.",
+  "statement": "REROUTED by DS17 (30-31 Aug 2026). (a) INHABITATION on the DS15/DS16 class: RESOLVED NEGATIVELY - DS-STABLE-BASINS-CENTERED-OBSTRUCTION proves that on every atomless (L)-law with (M1)+(M4) (neither (S) nor (R) needed), almost surely, eventually NO one-point exchange-stable labeling satisfies (M2)+(M3)+(M5) at any fixed margins: the DS14 hypothesis set is asymptotically empty, and free-ascent funnel measurements were the finite face of this theorem, not a seeding artifact. What remains open here: (a') the (M5)-free merged branch - can exchange-stable empirical sequences track sign-split-type wasted-cell configurations (ties are knife-edge; DS-STABLE-BASINS-LCM-CLASSIFICATION gives the population family, value pinned at v_2 in every scanned instance), and does anything useful survive given that their compilable reductions have lambda_min = 0; (a'') attainment and one-sided continuity of v*(kappa)/v*+(kappa), whose feasible class {lambda_min(I_q) >= kappa} DS17.3(4) proves NONEMPTY for kappa <= 1/pi on the canonical law. (b) SELECTION: subsumed - DS16's funnel plus DS17's emptiness make terminal degeneracy on the class unconditional eventually; no seeding question remains on-class. (c) DESIGN: a margin-constrained exchange method on the class terminates only at constrained-stable states (ordinary-stable certified terminals eventually do not exist); design and gap reporting move to OP7 under the DS17 constraints. The live inhabitation/transfer question moves OFF the class to OP29 branch (a) (OPEN-DS-MARGINS-NONCENTERED), gated per law by DS-STABLE-BASINS-FIXED-POINT-GATE: mix3's root is the efficient optimum itself with lambda_min = 1.7364 at price ~ 0, and the empirical transfer from a root's basin to exact one-point stability (boundary noise vs O(1/N) move gains) is the isolated open condition.",
   "dependencies": [
     "DS-STABLE-MARGINS-PRICE",
     "DS-STABLE-STATE-SELECTION",
-    "OPEN-DS-FINITE-POP-BRIDGE"
+    "OPEN-DS-FINITE-POP-BRIDGE",
+    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
+    "DS-STABLE-BASINS-LCM-CLASSIFICATION",
+    "DS-STABLE-BASINS-FIXED-POINT-GATE"
   ],
   "proof_location": {
     "file": "OPEN_PROBLEMS.md",

@@ -146,6 +146,38 @@ canonical.
   summary, not a run-wise bound; an independent N=100 random-seed run reached
   0.075 while preserving the qualitative centered-law funnel.
 
+### Added 31 August 2026 (the stable-basins session)
+
+- **DS17 proves the margin-certified stable branch almost surely eventually
+  empty on the whole conditionally centered class.** The
+  conditional-centering obstruction — the exact tilt-residual identity
+  chained through the conditional Chebyshev association inequality under
+  (L), then the pathwise DS14′ lemma — shows that on every atomless (L)-law
+  with (M1)+(M4) (Gaussian/elliptical laws included) no one-point
+  exchange-stable labeling carries (M2)+(M3)+(M5) at any fixed margins for
+  all large \(N\) (`KNOWN_RESULTS/05b-ds-bridge.md` DS17). Any manuscript
+  passage presenting the DS14 companion path as a live conditional
+  deployment route on class (L) is now stale; it is a finite diagnostic
+  only, not a population certificate.
+- **The merged (M5)-free branch is classified, and it does not compile.**
+  Dropping the separation margin, margin-compatible stationary
+  configurations on class (L) survive only as wasted-cell structures: the
+  projected centroids coincide, the profiled value is pinned at \(v_2\) in
+  every scanned instance, and the compilable (merged) reduction always has
+  \(\lambda_{\min}=0\) — serialized exactly by the new fixture
+  `CE-DS-LCM-SIGNSPLIT-MARGIN-001`.
+- **Off the class the gate can be inhabited free of charge.** The
+  fixed-point gate scan finds mix3's unique self-consistent root is the
+  efficient interval optimum itself, carrying \(\lambda_{\min}=1.7364\) at
+  price \(\approx0\): conditional centering, not binning, is what makes
+  margins expensive.
+- **New claims and a rescoped open problem.**
+  `DS-STABLE-BASINS-CENTERED-OBSTRUCTION`, `DS-STABLE-BASINS-LCM-CLASSIFICATION`,
+  `DS-STABLE-BASINS-FIXED-POINT-GATE`, and `DS-STABLE-BASINS-GATE-SCANS` enter
+  the registry; `OPEN-DS-STABLE-BASINS`/OP30 is rerouted from "do
+  margin-compatible stable sequences exist" to the merged-branch,
+  attainment, and constrained-design remainders left open by DS17.
+
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of
 `protocols/audit.md`. It had no updater before workspace v4.0, which is why the

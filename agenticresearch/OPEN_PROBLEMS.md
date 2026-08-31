@@ -17,7 +17,7 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
 *Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 30 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 is resolved on the audited scalar DS15 class. OP29's deployment half is resolved by DS16 and hardened by `AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`: \(\hat I_{\lambda\lambda}\ge\kappa\) has a strict existential population price and every value-convergent sequence enters the nuisance-degenerate funnel. The projected rule is the only currently established unconditional compile path in the registry. A DS14 companion rule has an asymptotic guarantee only along exchange-stable sequences satisfying all DS14 law and eventual-margin hypotheses; one finite diagnostic is not a population certificate. The surviving gaps are OP29's mathematical branches, OP30, and OP7.*
+*Status 30 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 is resolved on the audited scalar DS15 class. OP29's deployment half is resolved by DS16 and hardened by `AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`: \(\hat I_{\lambda\lambda}\ge\kappa\) has a strict existential population price and every value-convergent sequence enters the nuisance-degenerate funnel. The projected rule is the only currently established unconditional compile path in the registry. A DS14 companion rule has an asymptotic guarantee only along exchange-stable sequences satisfying all DS14 law and eventual-margin hypotheses; one finite diagnostic is not a population certificate. The surviving gaps are OP29's mathematical branches, OP30, and OP7. Update 31 Aug 2026 (DS17, packet `DS-STABLE-BASINS`): OP30's inhabitation half is resolved **negatively on the whole conditionally centered class** — `DS-STABLE-BASINS-CENTERED-OBSTRUCTION` proves the margin-certified stable branch almost surely eventually empty on every atomless (L)-law with (M4), so the DS14 companion path is vacuous there and the funnel measurements were a theorem's finite face, not a seeding artifact; the (M5)-free escape is classified as compile-dead wasted cells (`DS-STABLE-BASINS-LCM-CLASSIFICATION`), and the live question moves off-class to OP29(a) behind the per-law scalar root gate `DS-STABLE-BASINS-FIXED-POINT-GATE` (mix3's root: margins free at price ~0).*
 
 ## OP29. Margins beyond conditional centering
 
@@ -32,6 +32,13 @@ class is open:
   the DS14 margins may hold at optima — prove or refute for a stated class.
   Measured: mix3/tiny\_cluster optima keep macroscopic binned nuisance blocks
   through \(N=18\) while the Gaussian blocks collapse (N-DS-MARGINS-TREND).
+  DS17 (31 Aug 2026) hands this branch the live inhabitation question and its
+  population tool: the tilt-residual gate \(E[h(T_\beta)S_\lambda]=0\) over
+  Lloyd-stationary branches (`DS-STABLE-BASINS-FIXED-POINT-GATE`); mix3's
+  unique root **is** the efficient interval optimum, carrying
+  \(\lambda_{\min}=1.7364\) at price \(\approx0\) (N-DS-BASINS-MIX3). The
+  open remainder: the empirical transfer from a nondegenerate root's basin to
+  exact one-point exchange stability against \(O(1/N)\)-scale boundary noise.
 - **\(d_\psi>1\)**: the DS15 reduction identifies the degenerate attainers,
   but the dichotomy needs uniqueness/rigidity for the vector D problem on the
   efficient score (ties into OP8/C2).
@@ -55,24 +62,35 @@ Target claim: `OPEN-DS-MARGINS-NONCENTERED`.
 
 ## OP30. Inhabitation and selection of margin-retaining stable states
 
-DS16 leaves the certificate branch's asymptotics explicitly open
-(`OPEN-DS-STABLE-BASINS`): (a) do margin-compatible exchange-stable
-sequences exist a.s. as \(N\to\infty\) — is the certified compile path
-non-vacuous asymptotically — and is \(v^*(\kappa)\) attained by
-margin-compatible stationary rules (ties into C2)? Measured:
-margin-retaining non-global stable states exist in every census instance at
-\(N\le14\) (`CE-DS-STABLE-MARGIN-RETAINING-001`), yet every free-ascent
-terminal at \(N=100\)–\(1000\) is in the funnel. (b) Does exchange ascent
-from the documented seeds converge in value to \(v_K\) a.s., so the DS16
-funnel forces terminal degeneracy? Measured yes through \(N=1000\),
-seed-independently in the tested runs. The DS16 audit corrected the census
-range to 5--944 and showed that the reported 0.004--0.046 library gap was an
-aggregate summary, not a per-run bound. (c) Design a margin-constrained
-exchange (or certified relaxation) terminating along sequences satisfying
-DS14's full hypotheses, with a stated gap to a correctly defined constrained
-value. A single finite state passing the measured triple plus stability is a
-diagnostic candidate, not a population certificate; attainment and one-sided
-continuity of \(v^{*+}(\kappa)\) and \(v^*(\kappa)\) remain open — feeds OP7.
+**Rerouted by DS17 (31 Aug 2026, packet `DS-STABLE-BASINS`).** The original
+branch (a) — do margin-compatible exchange-stable sequences exist a.s. on the
+DS15/DS16 class — is **resolved negatively in the strongest form**:
+`DS-STABLE-BASINS-CENTERED-OBSTRUCTION` (proof: the exact tilt-residual
+identity plus the conditional Chebyshev association inequality under (L),
+chained through the pathwise DS14′ lemma) shows that on every atomless
+(L)-law with (M1)+(M4), almost surely, for all large \(N\) **no** stable
+labeling carries (M2)+(M3)+(M5) at any fixed margins. Branch (b) is subsumed
+(terminal degeneracy is unconditional eventually, not a seeding law). The
+\(N\le14\) census witnesses are pre-asymptotic, exactly as blocker 3 of the
+packet warned. What remains open under this OP:
+
+- **(a′) the merged branch:** can exchange-stable sequences track
+  sign-split-type wasted-cell configurations ((M2)+(M3) without (M5); the
+  population family exists on the canonical law with \(\lambda_{\min}\) up to
+  \(1/\pi\), value pinned at \(v_2\) — `DS-STABLE-BASINS-LCM-CLASSIFICATION`),
+  their ties being knife-edge; and is anything deployable there, given the
+  compilable reductions have \(\lambda_{\min}=0\)?
+- **(a″) attainment:** attainment and one-sided continuity of
+  \(v^{*}(\kappa)\)/\(v^{*+}(\kappa)\) (DS16 conventions), whose feasible
+  class is now proved **nonempty** for \(\kappa\le1/\pi\) on the canonical
+  law (DS17.3(4)) — ties into C2.
+- **(c) design under the obstruction:** any margin-constrained exchange on
+  the class terminates at constrained-stable states only; its output must be
+  presented as constrained, priced by \(\hat v_K-\hat\Phi_s\), and
+  non-inductive — solver design and gap reporting live in OP7. The off-class
+  inhabitation/transfer question (where margins can be free) belongs to
+  OP29(a) with the `DS-STABLE-BASINS-FIXED-POINT-GATE` root equation as its
+  per-law population test.
 
 Target claim: `OPEN-DS-STABLE-BASINS`.
 
@@ -91,7 +109,12 @@ Benchmark a pipeline:
 Need robust Cholesky/block updates and held-out evaluation. The multivariate
 (\(d_\psi>1\)) certified upper problem — where the library currently refuses
 rather than approximates — belongs here: a certified convex relaxation with a
-stated gap would meet the project's standards.
+stated gap would meet the project's standards. DS17 constraint (31 Aug 2026):
+on the conditionally centered class a margin-constrained method cannot
+terminate at ordinary-stable margin states asymptotically (the certified
+class is eventually empty), so certified outputs there are
+constrained-stable, priced, and non-inductive by construction; off-class the
+solver should target `DS-STABLE-BASINS-FIXED-POINT-GATE` roots.
 
 ---
 

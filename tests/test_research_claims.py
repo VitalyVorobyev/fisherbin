@@ -1124,3 +1124,95 @@ def test_ds16_efficient_score_interval_seed_is_not_exchange_stable() -> None:
     info_after = _exact_binned_information(scores, labels_after, n_bins)
     assert info_after[1][1] == Fraction(exact["post_move_nuisance_block_I11"])
     assert info_after[1][1] > info_before[1][1]
+
+
+def test_ds17_signsplit_stationary_state_retains_margins_without_separation() -> None:
+    """A bounded-packet stationary K=3 state can retain (M2)+(M3) margins
+    with zero projected-centroid separation, i.e. without (M5).
+
+    The sign-split sibling of CE-DS-POP-WASTED-CELLS-001 on the same 8-atom
+    nuisance-sign-symmetric law splits the left half {s_psi < 0} by
+    sign(s_lambda) into two cells and leaves the right half as one cell.
+    The binned information is full rank with a macroscopic minimum
+    eigenvalue and minimum cell mass, yet the two left cells' projected
+    centroids exactly coincide - zero separation - and every atom still
+    satisfies the nearest-projected-centroid stationarity rule, with ties.
+    Merging the coincident pair collapses to the K=2 s_psi-threshold rule,
+    whose nuisance block is exactly singular: the compilable reduction
+    carries no margin (CE-DS-LCM-SIGNSPLIT-MARGIN-001).
+    """
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-LCM-SIGNSPLIT-MARGIN-001.json").read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    weights = [Fraction(value) for value in fixture["weights"]]
+    assert weights == [Fraction(1, 8)] * 8
+    labels = tuple(fixture["labels_before"])
+    assert labels == (0, 1, 0, 1, 2, 2, 2, 2)
+    n_rows, n_bins = len(scores), 3
+    exact = fixture["exact_quantities"]
+
+    # (1) cell masses.
+    masses, moments = _exact_ds_cells(scores, labels, n_bins)
+    assert masses == [Fraction(value) for value in exact["cell_masses"]]
+    assert masses == [Fraction(1, 4), Fraction(1, 4), Fraction(1, 2)]
+
+    # (2) binned information.
+    info = _exact_binned_information(scores, labels, n_bins)
+    assert info == [[Fraction(value) for value in row] for row in exact["binned_information"]]
+    assert info == [[Fraction(4), Fraction(0)], [Fraction(0), Fraction(9, 8)]]
+
+    # (3) profiled value and lambda_min (the off-diagonal is exactly zero,
+    # so lambda_min of the 2x2 block is the smaller diagonal entry).
+    profiled_value = info[0][0] - info[0][1] * info[1][0] / info[1][1]
+    assert profiled_value == Fraction(4)
+    assert profiled_value == Fraction(exact["profiled_value"])
+    assert info[0][1] == 0
+    lambda_min = min(info[0][0], info[1][1])
+    assert lambda_min == Fraction(9, 8)
+    assert lambda_min == Fraction(exact["lambda_min"])
+
+    # (4) slope, projected centroids, and the coincident pair's separation.
+    slope = info[0][1] / info[1][1]
+    assert slope == 0
+    projected = [
+        moments[b][0] / masses[b] - slope * moments[b][1] / masses[b] for b in range(n_bins)
+    ]
+    assert projected == [Fraction(-2), Fraction(-2), Fraction(2)]
+    assert projected == [Fraction(value) for value in exact["projected_centroids"]]
+    separation = min(
+        abs(projected[b] - projected[c]) for b in range(n_bins) for c in range(b + 1, n_bins)
+    )
+    assert separation == Fraction(0)
+
+    # (5) stationarity with ties: every atom is at least as close (in the
+    # efficient score e(s) = s_psi, since B* = 0) to its own cell's
+    # projected centroid as to any other cell's.
+    violations = 0
+    for row in range(n_rows):
+        e_row = scores[row][0] - slope * scores[row][1]
+        own_distance = abs(e_row - projected[labels[row]])
+        for cell in range(n_bins):
+            other_distance = abs(e_row - projected[cell])
+            assert own_distance <= other_distance
+            if other_distance < own_distance:
+                violations += 1
+    assert violations == 0
+    assert violations == exact["first_order_violations"]
+
+    # (6) the reduced rule: merging cells 0 and 1 gives the K=2
+    # s_psi-threshold rule, whose nuisance block is exactly singular.
+    reduced_labels = tuple(0 if label in (0, 1) else 1 for label in labels)
+    assert reduced_labels == (0, 0, 0, 0, 1, 1, 1, 1)
+    reduced_info = _exact_binned_information(scores, reduced_labels, 2)
+    assert reduced_info[1][1] == Fraction(0)
+
+    # (7) value identity: the K=3 profiled value equals the K'=2
+    # between-value of the projected law.
+    w_left = masses[0] + masses[1]
+    w_right = masses[2]
+    assert w_left == Fraction(1, 2)
+    assert w_right == Fraction(1, 2)
+    group_between = w_left * Fraction(-2) ** 2 + w_right * Fraction(2) ** 2
+    assert group_between == Fraction(4)
+    assert profiled_value == group_between

@@ -356,3 +356,39 @@ projected rule. Theory: `KNOWN_RESULTS/05b-ds-bridge.md` DS16.
 **Regression:** `tests/test_research_claims.py::test_ds16_efficient_score_interval_seed_is_not_exchange_stable`.
 
 ---
+
+## CE-DS-LCM-SIGNSPLIT-MARGIN-001 — a wasted-cell K=3 state can carry full-rank margins with zero projected-centroid separation
+
+**Status:** exact rational counterexample (population_quantizer level; boundary counterexample of DS17).
+
+**Claim falsified:**
+
+> The DS17 linear-conditional-mean obstruction extends to the (M5)-free
+> margin pair: on an LCM law every bounded-packet stationary K=3
+> configuration with positive cell masses has a rank-deficient binned
+> information matrix, so the conditioning margin (M3) alone already empties
+> the stationary class.
+
+The K=3 sign-split sibling of CE-DS-POP-WASTED-CELLS-001, on the same
+8-atom nuisance-sign-symmetric law: the left half \(\{s_\psi<0\}\) is split
+by \(\operatorname{sign}(s_\lambda)\) into cells A and B, and the right half
+\(\{s_\psi\ge0\}\) is left as one cell C. The binned information is full
+rank, \(I_q=\operatorname{diag}(4,9/8)\), with minimum cell mass \(1/4\);
+the projected centroids are \((-2,-2,2)\) — cells A and B coincide exactly,
+zero separation — yet every atom satisfies the nearest-projected-centroid
+stationarity rule with zero first-order violations (ties allowed). Merging
+the coincident pair collapses to the K=2 \(s_\psi\)-threshold rule, whose
+nuisance block is exactly singular: the compilable reduction carries no
+margin. The continuous counterpart on \(N(0,I_2)\) — any zero-mean
+measurable nuisance split of one threshold cell — is stationary with
+\(I_q=\operatorname{diag}(2/\pi,1/\pi)\) and profiled value exactly
+\(v_2=2/\pi\). Theory: `KNOWN_RESULTS/05b-ds-bridge.md` DS17.
+
+(M5) is load-bearing for the DS17 obstruction: without separation, margins
+survive only in wasted-cell configurations whose compilable reductions
+carry no margin.
+
+**Fixture:** `CE-DS-LCM-SIGNSPLIT-MARGIN-001.json`.
+**Regression:** `tests/test_research_claims.py::test_ds17_signsplit_stationary_state_retains_margins_without_separation`.
+
+---

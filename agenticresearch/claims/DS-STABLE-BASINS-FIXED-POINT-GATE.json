@@ -1,0 +1,39 @@
+{
+  "id": "DS-STABLE-BASINS-FIXED-POINT-GATE",
+  "title": "Inhabitation reduces to a scalar root equation per law",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "population_quantizer",
+  "status": "project_proved",
+  "publication_status": "internal",
+  "statement": "For d_psi = d_lambda = 1 and any partition q at tilt beta: B*(I_q) - beta = (sum_b W_b t_b mu_lambda_b) / I_lambdalambda with t_b = mu_psi_b - beta mu_lambda_b; for strip rules the numerator is E[h(T_beta) S_lambda] with h the increasing step function of T-cell means, and at any tilt-consistent pair the projected centroids equal the T-cell means identically, so self-consistency decomposes into Lloyd stationarity of the cuts for law(T_beta) plus the scalar root equation E[h(T_beta) S_lambda] = 0. GATE (necessity, from pathwise DS14'): for any atomless law with (M4), OP30(a) inhabitation at (kappa, c_0, gamma) requires a root with |beta| <= 2M/kappa, lambda_min(I_q) >= kappa, masses >= c_0, and t-mean separation >= gamma. The gate is decided per law by the branch-tracked root scan (py/ds_stable_basins.py popfix, Lloyd-stationary branches included, not only optima). DS-STABLE-BASINS-CENTERED-OBSTRUCTION proves the gate empty on all of class (L); on mix3 (off-class) the unique root is the efficient interval optimum itself with lambda_min = 1.7364 at price ~ 0 - the population face of OP29 branch (a): off the centered class, margins can be free.",
+  "assumptions": [
+    "d_psi = d_lambda = 1; the identity is exact for every law and partition; the strip/step-function form needs atomless P and positive cell masses (strictly increasing interval means)",
+    "necessity imports DS14 (audited) via the pathwise DS17.0 lemma; sufficiency (root => inhabited empirical sequences) is NOT claimed - the empirical transfer off class (L) is open and recorded in OP29(a)/OP30 rescope",
+    "the compact tilt bound |beta| <= 2M/kappa is the audited DS14 parameter-class bound"
+  ],
+  "dependencies": [
+    "OPEN-DS-FINITE-POP-BRIDGE",
+    "OPEN-DS-POP-COMMON-METRIC",
+    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION"
+  ],
+  "implies": [
+    "OPEN-DS-STABLE-BASINS",
+    "OPEN-DS-MARGINS-NONCENTERED",
+    "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER"
+  ],
+  "boundary_counterexamples": [],
+  "literature": [
+    "Tarpey-Flury-1996",
+    "Serinko-Babu-1992"
+  ],
+  "literature_search_status": "search_gap",
+  "proof_location": {
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS17. Inhabitation of the margin-certified branch: the conditional-centering obstruction and the fixed-point gate"
+  },
+  "programme": "P1",
+  "role": "the practical per-law test replacing the open-ended inhabitation question: one scalar root equation over Lloyd-stationary branches",
+  "warning": "A root is necessary, not sufficient: nothing here proves finite exchange-stable sequences reach a root's basin (blocker 4 of the packet stands, now scoped off-class). Roots on non-log-concave T-laws may sit on non-optimal Lloyd branches; the scan must enumerate stationary points, never only optima."
+}

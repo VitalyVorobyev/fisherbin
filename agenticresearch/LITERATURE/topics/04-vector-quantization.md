@@ -301,3 +301,29 @@ claim.
 **Caution:** ScoreQuant D objective is global/nonadditive, so Bregman/CVT results do not transfer automatically.
 
 ---
+
+## Principal points and self-consistency (31 Aug 2026)
+
+The DS17 packet (`DS-STABLE-BASINS`) registered the principal-points /
+self-consistency branch of this cluster. Flury introduces population
+\(k\)-means points and the elliptical programme; Tarpey–Flury define
+self-consistency \(E[X\mid Y]=Y\), the vocabulary DS17's tilt-consistent
+strip rules specialize; Tarpey–Li–Flury prove the forced principal-subspace
+alignment of self-consistent points under elliptical symmetry — the closest
+published structural cousin of DS17's conditional-centering obstruction
+(both are "self-consistency plus a symmetry/centering hypothesis forces a
+degenerate configuration" results), with no nuisance/profiled block, no
+self-regenerating tilt coefficient, and no conditional-mean-orthogonality
+hypothesis. Serinko–Babu is the nearest 1-D interval-partition asymptotics
+precedent: singular-Hessian degeneracy *at* a unique global k-means optimum
+with nonstandard rates — a per-law description of degeneracy when it occurs,
+never a class-wide forcing theorem. Triangulation:
+`LITERATURE/audits/DS-STABLE-BASINS-31-August-2026.md`.
+
+**Key:** Flury-1990
+
+**Key:** Tarpey-Flury-1996
+
+**Key:** Tarpey-Li-Flury-1995
+
+**Key:** Serinko-Babu-1992
