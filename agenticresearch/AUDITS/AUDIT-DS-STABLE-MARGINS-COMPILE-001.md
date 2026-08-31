@@ -428,7 +428,7 @@ existing boundary fixtures were independently recomputed from their raw score
 arrays and remain CI-pinned by
 `tests/test_research_claims.py::test_ds16_exchange_stable_state_can_retain_macroscopic_margins`
 and
-`tests/test_research_claims.py::test_ds16_interval_initializer_can_be_exchange_unstable`.
+`tests/test_research_claims.py::test_ds16_efficient_score_interval_seed_is_not_exchange_stable`.
 
 The audit adds four ledger rows:
 

@@ -1216,3 +1216,79 @@ def test_ds17_signsplit_stationary_state_retains_margins_without_separation() ->
     group_between = w_left * Fraction(-2) ** 2 + w_right * Fraction(2) ** 2
     assert group_between == Fraction(4)
     assert profiled_value == group_between
+
+
+def test_ds17_minimal_atomic_signsplit_is_only_a_boundary_witness() -> None:
+    """The N=3 sign-split algebra is minimal but outside DS17's hypotheses."""
+    fixture = json.loads(
+        (
+            RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-LCM-SIGNSPLIT-MINIMAL-001.json"
+        ).read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    weights = [Fraction(value) for value in fixture["weights"]]
+    labels = tuple(fixture["labels_before"])
+    n_rows, n_bins = len(scores), fixture["K"]
+    exact = fixture["exact_quantities"]
+
+    assert n_rows == n_bins == 3
+    assert weights == [Fraction(1, 3)] * 3
+    assert labels == (0, 1, 2)
+    assert [
+        sum(weight * score[column] for weight, score in zip(weights, scores, strict=True))
+        for column in range(2)
+    ] == [Fraction(value) for value in exact["weighted_score_mean"]]
+
+    masses, moments = _exact_ds_cells(scores, labels, n_bins)
+    assert masses == [Fraction(value) for value in exact["cell_masses"]]
+    info = _exact_binned_information(scores, labels, n_bins)
+    assert info == [[Fraction(value) for value in row] for row in exact["binned_information"]]
+    assert info == [[Fraction(2), Fraction(0)], [Fraction(0), Fraction(2, 3)]]
+
+    slope = info[0][1] / info[1][1]
+    projected = [
+        moments[cell][0] / masses[cell] - slope * moments[cell][1] / masses[cell]
+        for cell in range(n_bins)
+    ]
+    assert slope == 0
+    assert projected == [Fraction(value) for value in exact["projected_centroids"]]
+    assert projected == [Fraction(-1), Fraction(-1), Fraction(2)]
+    assert (
+        min(
+            abs(projected[first] - projected[second])
+            for first in range(n_bins)
+            for second in range(first + 1, n_bins)
+        )
+        == 0
+    )
+
+    profiled = info[0][0] - info[0][1] * info[1][0] / info[1][1]
+    assert profiled == Fraction(exact["profiled_value"])
+    assert min(info[0][0], info[1][1]) == Fraction(exact["lambda_min"])
+
+    admissible_moves = 0
+    for source in labels:
+        if labels.count(source) <= 1:
+            continue
+        for destination in range(n_bins):
+            if destination != source:
+                admissible_moves += 1
+    assert admissible_moves == exact["admissible_nonempty_preserving_one_point_moves"] == 0
+
+    reduced_labels = (0, 0, 1)
+    reduced_info = _exact_binned_information(scores, reduced_labels, 2)
+    assert reduced_info[1][1] == Fraction(exact["reduced_rule_nuisance_block"])
+
+    # An atom sits on its own zero-width slab with mass 1/3 for every positive
+    # width, so no uniform slab modulus can tend to zero: (M4) fails. The
+    # coincident projected centroids also make (M5) fail. These checks keep
+    # the fixture classified as a boundary witness, never a DS17 refutation.
+    slab_center = scores[0][0]
+    for width in (Fraction(1, 10), Fraction(1, 100), Fraction(1, 1000)):
+        slab_mass = sum(
+            weight
+            for weight, score in zip(weights, scores, strict=True)
+            if abs(score[0] - slab_center) <= width
+        )
+        assert slab_mass == Fraction(2, 3)
+    assert fixture["claim_falsified"].startswith("None:")

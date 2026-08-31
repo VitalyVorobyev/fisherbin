@@ -146,11 +146,11 @@ canonical.
   summary, not a run-wise bound; an independent N=100 random-seed run reached
   0.075 while preserving the qualitative centered-law funnel.
 
-### Added 31 August 2026 (the stable-basins session)
+### Added 31 August 2026 (the stable-basins session; audit-hardened)
 
 - **DS17 proves the margin-certified stable branch almost surely eventually
-  empty on the whole conditionally centered class.** The
-  conditional-centering obstruction — the exact tilt-residual identity
+  empty on its declared conditionally centered population class (L).** The
+  conditional-centering obstruction — the extended numerator/root identity
   chained through the conditional Chebyshev association inequality under
   (L), then the pathwise DS14′ lemma — shows that on every atomless (L)-law
   with (M1)+(M4) (Gaussian/elliptical laws included) no one-point
@@ -158,19 +158,32 @@ canonical.
   all large \(N\) (`KNOWN_RESULTS/05b-ds-bridge.md` DS17). Any manuscript
   passage presenting the DS14 companion path as a live conditional
   deployment route on class (L) is now stale; it is a finite diagnostic
-  only, not a population certificate.
+  only, not a population certificate. The audit distinguishes that numerator
+  equation, which remains meaningful at a singular nuisance block, from the
+  quotient identity \(B_q^*=\beta\), which requires
+  \(I_{\lambda\lambda}(q)>0\). Conditional centering is a property of the
+  population law; it is never permission to sample-center scores.
 - **The merged (M5)-free branch is classified, and it does not compile.**
   Dropping the separation margin, margin-compatible stationary
   configurations on class (L) survive only as wasted-cell structures: the
-  projected centroids coincide, the profiled value is pinned at \(v_2\) in
-  every scanned instance, and the compilable (merged) reduction always has
-  \(\lambda_{\min}=0\) — serialized exactly by the new fixture
-  `CE-DS-LCM-SIGNSPLIT-MARGIN-001`.
-- **Off the class the gate can be inhabited free of charge.** The
-  fixed-point gate scan finds mix3's unique self-consistent root is the
-  efficient interval optimum itself, carrying \(\lambda_{\min}=1.7364\) at
-  price \(\approx0\): conditional centering, not binning, is what makes
-  margins expensive.
+  projected centroids coincide, and the compilable merged reduction has
+  \(\lambda_{\min}=0\). The Gaussian sign-split family has value \(v_2\), but
+  that numerical identity is not a general LCM theorem. The eight-atom
+  fixture remains the structured construction; the audit adds the absolute
+  support-minimal three-atom boundary and records why neither atomic law
+  satisfies the theorem's atomless/margin hypotheses.
+- **Off the class the gate is a necessary diagnostic, not a certificate.**
+  A full declared-window independent multistart found one mix3
+  self-consistent root carrying \(\lambda_{\min}=1.7364\) and near-zero
+  measured price. It did not prove uniqueness, gate sufficiency, branch
+  completeness, or empirical transfer. Manuscript language asserting “free
+  certification” or finite-scan completeness is stale.
+- **The ingredients require classical attribution.** Efficient-score
+  orthogonality, conditional Chebyshev equality, and principal-point/Lloyd
+  self-consistency have established antecedents. The audit found no direct
+  source for DS17's compound eventual-nonexistence theorem, so that absence is
+  a `search_gap`, not novelty; the LCM/self-consistency component is marked
+  `prior_art_found`.
 - **New claims and a rescoped open problem.**
   `DS-STABLE-BASINS-CENTERED-OBSTRUCTION`, `DS-STABLE-BASINS-LCM-CLASSIFICATION`,
   `DS-STABLE-BASINS-FIXED-POINT-GATE`, and `DS-STABLE-BASINS-GATE-SCANS` enter

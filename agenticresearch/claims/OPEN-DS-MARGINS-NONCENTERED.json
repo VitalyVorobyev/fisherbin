@@ -7,13 +7,17 @@
   "level": "empirical_to_population",
   "status": "open",
   "publication_status": "open",
-  "statement": "Determine the asymptotic margin behaviour of global finite Ds optima outside DS15's class: (a) laws with E[S_lam|shat] != 0, where the projection tax has a Theta(1) population component on efficient-score intervals, so the population supremum may be attained at nondegenerate quantizers and the margins may hold at optima; (b) d_psi > 1, where the dichotomy reduces to the open uniqueness/rigidity theory of the vector D problem on the efficient score (ties into OP8/C2); (d) d_lambda >= 2 for conditionally centered laws, where the DS15 audit refuted the claim exactly at the rank-vacuous cardinality (CE-DS-MARGINS-RANK-VACUITY-001) and Proposition 6 needs a vector-(R) steering construction spanning the nuisance directions - the correct cardinality mechanism is sum_b m_b = mu_hat, so a centered sample needs n_bins > dimension, i.e. K >= d_psi + d_lambda + 1; the fixture's registered K >= d_lambda + 2 is the d_psi = 1 case of it (library commit 891bbf3, DS16 restatement). The former branch (c), exchange-stable non-global sequences, is RESOLVED for the conditionally centered class by DS16 (DS-STABLE-MARGINS-PRICE: margins price every labeling at delta(kappa) below v_K and value-convergence forces the DS15 degeneracy seed-independently; DS-PROFILED-COMPILE-CERTIFICATE for the deployment verdict); its asymptotic inhabitation/selection remainder is OPEN-DS-STABLE-BASINS (OP30). Measured: non-centered laws (mix3, tiny_cluster) keep macroscopic binned nuisance blocks at exact optima through N=18 while the Gaussian laws' blocks collapse (N-DS-MARGINS-TREND); at stable terminal states the same class boundary persists through N=1000 (N-DS-STABLE-LIBRARY). DS17 update (31 Aug 2026): branch (a) now owns the live inhabitation question - on class (L) it is disproved outright (DS-STABLE-BASINS-CENTERED-OBSTRUCTION), and off the class DS-STABLE-BASINS-FIXED-POINT-GATE reduces the population half to the scalar root equation E[h(T_beta) S_lambda] = 0 over Lloyd-stationary branches; mix3's unique root IS the efficient interval optimum, carrying lambda_min = 1.7364 at price ~ 0 (N-DS-BASINS-MIX3) - the population object behind every mix3 retention measurement. The open remainder of branch (a) is the empirical transfer: from a nondegenerate root's basin to exact one-point exchange stability, against boundary noise at the O(1/N) move-gain scale.",
+  "statement": "Determine asymptotic margin behavior outside the audited scalar conditionally centered class. Branch (a), E[S_lambda | shat] != 0, owns the live inhabitation question: DS-STABLE-BASINS-FIXED-POINT-GATE gives a necessary population root equation over all Lloyd-stationary branches, with a kappa-dependent compact tilt bound, but not a converse. Measured mix3 searches find a nondegenerate root near the efficient interval optimum with negligible observed price; they do not prove uniqueness, a model class, or empirical transfer. The immediate task is to state a non-centered law class, prove existence or absence of a nondegenerate root, then determine whether a strict population basin transfers to ordinary finite one-point exchange stability despite O(1/N) boundary-noise move gains. Branches d_psi > 1 and d_lambda >= 2 remain open under their audited cardinality and vector-steering restrictions.",
   "dependencies": [
-    "OPEN-DS-MARGINS-AT-OPTIMA"
+    "OPEN-DS-MARGINS-AT-OPTIMA",
+    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
+    "DS-STABLE-BASINS-FIXED-POINT-GATE",
+    "DS-STABLE-BASINS-GATE-SCANS"
   ],
   "proof_location": {
     "file": "OPEN_PROBLEMS.md",
     "section": "OP29. Margins beyond conditional centering"
   },
-  "programme": "P1"
+  "programme": "P1",
+  "warning": "The fixed-point gate is necessary, not sufficient. Numerical root searches are windowed measured evidence, and conditional centering is a population property rather than sample preprocessing."
 }
