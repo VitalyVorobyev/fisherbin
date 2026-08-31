@@ -417,6 +417,29 @@ packet-vacuous. It records only the smallest exact algebraic instance of the
 wasted-cell/sign-split boundary.
 
 **Fixture:** `CE-DS-LCM-SIGNSPLIT-MINIMAL-001.json`.
+
+---
+
+## CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001 — an exact population rule need not label a finite terminal
+
+**Status:** exact rational boundary counterexample, support-minimal for a
+nonempty-preserving move at (K=3).
+
+For the off-((L)) law (S=(X,3X^2-1+Z)), take
+(X=(-3/4,-1/4,1/4,3/4)) and (Z=(-1,-3/4,1,1)), with equal weights.
+The population cuts (pm1/3) give labels ((0,1,1,2)) and profiled value
+(363/2656). Moving row 2 from the middle to the right cell gives labels
+((0,1,2,2)), value (49/352), and exact positive gain (37/14608).
+
+This falsifies the tempting finite shortcut “label by the population rule and
+the result is already exchange-stable.” It does **not** challenge the
+almost-sure transfer through finite global optima: the post-move state is the
+global optimum of this table, and (N=4) is the smallest sample with three
+occupied cells and an admissible move.
+
+**Fixture:** `CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001.json`.
+**Regression:**
+`tests/test_research_claims.py::test_ds18_population_cut_labels_need_not_be_exchange_stable`.
 **Regression:** `tests/test_research_claims.py::test_ds17_minimal_atomic_signsplit_is_only_a_boundary_witness`.
 
 ---

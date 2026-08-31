@@ -293,7 +293,7 @@ literature/bridge nodes remain explicitly separate future audits.
 - `COUNTEREXAMPLES/CE-DS-LCM-SIGNSPLIT-MINIMAL-001.json`
 - `LITERATURE/audits/AUDIT-DS-STABLE-BASINS-31-August-2026.md`
 - `claims/AUDIT-DS-STABLE-BASINS.json`
-- `WORK/active/OPEN-DS-MARGINS-NONCENTERED.md`
+- `WORK/completed/OPEN-DS-MARGINS-NONCENTERED.md`
 
 ## Validation
 

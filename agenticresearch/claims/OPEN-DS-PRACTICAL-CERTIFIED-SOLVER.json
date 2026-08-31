@@ -7,18 +7,19 @@
   "level": "empirical_inductive_quantizer",
   "status": "open",
   "publication_status": "open",
-  "statement": "Synthesize efficient-score upper optimization, inductive fitting, exact Ds exchange refinement, held-out evaluation, and upper-bound gap reporting under the audited DS17 constraints. On the scalar population-conditionally-centered class (L), the full (M2)+(M3)+(M5) ordinary-stable class is eventually empty, so any margin-constrained output must be reported as constrained, priced by v_hat_K - Phi_hat_s, and non-inductive; the established compile route is the projected efficient-score interval rule with its DP ceiling. Off (L), a solver may use the fixed-point root equation only as a necessary population diagnostic. The measured mix3 root motivates OP29(a), but cheap certification, root uniqueness, and empirical basin transfer are unproved.",
+  "statement": "Synthesize efficient-score upper optimization, inductive fitting, exact Ds exchange refinement, held-out evaluation, and upper-bound gap reporting under the audited DS17 constraints. On the scalar population-conditionally-centered class (L), the full (M2)+(M3)+(M5) ordinary-stable class is eventually empty, so any margin-constrained output must be reported as constrained, priced by v_hat_K - Phi_hat_s, and non-inductive; the established compile route is the projected efficient-score interval rule with its DP ceiling. Off (L), DS18 proves that one exact non-centered law has a unique strict full-rank population optimum and almost-sure transfer through finite global regular Ds optimizers. The remaining practical problem is to select such a basin without global combinatorial optimization and to retain computable margins and value guarantees under perturbations of the law.",
   "dependencies": [
     "DS-EXACT-MOVE-ORACLE",
     "DS-SCALAR-EFFICIENT-DP",
     "DS-EFFICIENT-SCORE-GLOBAL-UPPER",
     "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
-    "DS-STABLE-BASINS-FIXED-POINT-GATE"
+    "DS-STABLE-BASINS-FIXED-POINT-GATE",
+    "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
   ],
   "proof_location": {
     "file": "OPEN_PROBLEMS.md",
     "section": "OP7. Best practical \\(D_s\\) solver with theorem-backed certificate"
   },
   "programme": "P1",
-  "warning": "Do not expose a gate root as a certificate: sufficiency and finite exchange-stable transfer remain open. No src/ implementation is authorized by DS17."
+  "warning": "Do not expose a generic gate root as a certificate. DS18 supplies sufficiency and finite exchange-stable transfer only through global regular optimization for its named exact law; it does not prove basin selection by local ascent or perturbation robustness. No src/ implementation is authorized before the fresh DS18 audit."
 }

@@ -7,17 +7,21 @@
   "level": "empirical_to_population",
   "status": "open",
   "publication_status": "open",
-  "statement": "Determine asymptotic margin behavior outside the audited scalar conditionally centered class. Branch (a), E[S_lambda | shat] != 0, owns the live inhabitation question: DS-STABLE-BASINS-FIXED-POINT-GATE gives a necessary population root equation over all Lloyd-stationary branches, with a kappa-dependent compact tilt bound, but not a converse. Measured mix3 searches find a nondegenerate root near the efficient interval optimum with negligible observed price; they do not prove uniqueness, a model class, or empirical transfer. The immediate task is to state a non-centered law class, prove existence or absence of a nondegenerate root, then determine whether a strict population basin transfers to ordinary finite one-point exchange stability despite O(1/N) boundary-noise move gains. Branches d_psi > 1 and d_lambda >= 2 remain open under their audited cardinality and vector-steering restrictions.",
+  "statement": "Asymptotic margin behavior outside the audited scalar conditionally centered class. DS18 resolves existence and empirical inhabitation positively for the exact off-(L) law X,Z iid Uniform[-1,1], S=(X,3X^2-1+Z), K=3: the +/-1/3 X-interval rule is a regular beta=0 DS17 root, the unique strict population global profiled optimum with fixed positive margins, and every sequence of exact global finite regular Ds optima converges to it and is exactly one-point exchange-stable. This proves that the DS14 margin-certified branch genuinely survives off (L), but only through a law-specific global-selection theorem. The literal population labels can be finite exchange-unstable (serialized boundary witness), practical ascent selection and robustness over a nontrivial law neighborhood remain open, and measured mix3 scans still do not prove uniqueness or branch completeness. Branches d_psi > 1 and d_lambda >= 2 remain open under their audited cardinality and vector-steering restrictions.",
   "dependencies": [
     "OPEN-DS-MARGINS-AT-OPTIMA",
     "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
     "DS-STABLE-BASINS-FIXED-POINT-GATE",
-    "DS-STABLE-BASINS-GATE-SCANS"
+    "DS-STABLE-BASINS-GATE-SCANS",
+    "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
+  ],
+  "boundary_counterexamples": [
+    "CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001"
   ],
   "proof_location": {
     "file": "OPEN_PROBLEMS.md",
     "section": "OP29. Margins beyond conditional centering"
   },
   "programme": "P1",
-  "warning": "The fixed-point gate is necessary, not sufficient. Numerical root searches are windowed measured evidence, and conditional centering is a population property rather than sample preprocessing."
+  "warning": "Partially resolved by DS18 on one exact bounded off-(L) law. The theorem uses finite global optima and does not make the fixed-point gate sufficient for generic laws, prove practical basin selection, or authorize sample centering. Numerical mix3 searches remain windowed measured evidence."
 }

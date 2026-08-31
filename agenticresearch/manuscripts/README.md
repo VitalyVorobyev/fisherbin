@@ -191,6 +191,29 @@ canonical.
   margin-compatible stable sequences exist" to the merged-branch,
   attainment, and constrained-design remainders left open by DS17.
 
+### Added 31 August 2026 (the exact non-centered basin session; audit pending)
+
+- **DS18 supplies one exact off-(L) positive theorem, but only through global
+  selection.** For independent uniform \(X,Z\), scores
+  \((S_\psi,S_\lambda)=(X,3X^2-1+Z)\), and \(K=3\), the cuts \(\pm1/3\)
+  give \(I_q=\operatorname{diag}(8/27,32/81)\), \(\beta=0\), and
+  \(D_s\)-efficiency \(8/9\). The rule is the unique strict population
+  optimum up to labels, and every sequence of finite global regular
+  \(D_s\) optimizers transfers to it almost surely and is exactly ordinary
+  one-point exchange-stable. Manuscript language saying that no off-(L)
+  transfer theorem exists is stale.
+- **Do not turn the result into a local-algorithm or raw-cut claim.** The
+  theorem is existential through global finite optimizers. The serialized
+  support-minimal \(N=4\) boundary fixture has a strict improving move from
+  the raw population-cut labels, so those labels need not be stable at finite
+  \(N\); generic exchange ascent selection remains open.
+- **No deployment consequence exists yet.** The DS18 claim is awaiting the
+  fresh independent audit queued in
+  `WORK/active/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER.md`. No `src/`, API,
+  or compile-path language may rely on it before that audit, and even a
+  successful audit would not prove practical basin selection or robustness
+  under perturbations of the law.
+
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of
 `protocols/audit.md`. It had no updater before workspace v4.0, which is why the

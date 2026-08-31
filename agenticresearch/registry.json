@@ -263,6 +263,11 @@
       "pdf": "https://www.jmlr.org/papers/volume21/18-804/18-804.pdf",
       "note": "JMLR 21(86):1-36. Lemma 10: strongly unimodal law has a unique stationary (hence optimal) scalar K-quantizer; Prop 11: positive-definite distortion Hessian at the optimum under strict log-concavity."
     },
+    "Sabin-Gray-1986": {
+      "title": "Global convergence and empirical consistency of the generalized Lloyd algorithm",
+      "doi": "10.1109/TIT.1986.1057168",
+      "note": "IEEE Trans. Inf. Theory 32(2):148-155. Establishes set convergence of generalized Lloyd fixed-point quantizers and empirical consistency under source-independent convex additive distortions. Structural precedent for empirical quantizer transfer, but not for a profiled Fisher objective, nuisance Schur complement, or exact finite one-point stability."
+    },
     "Garcia-Escudero-Gordaliza-1999": {
       "title": "Robustness Properties of k Means and Trimmed k Means",
       "doi": "10.1080/01621459.1999.10474200",
