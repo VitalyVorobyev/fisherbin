@@ -1,0 +1,744 @@
+{
+  "m4_sweep": {
+    "bounding_rectangle_diameter_squared": 29,
+    "interval_route_cross_check": [
+      {
+        "direction": [
+          "1",
+          "2"
+        ],
+        "exact_lower": 0.09175913216666666,
+        "exact_upper": 0.09195704875,
+        "monte_carlo": 0.09193,
+        "monte_carlo_draws": 200000,
+        "tau": "1/4"
+      },
+      {
+        "direction": [
+          "1",
+          "2"
+        ],
+        "exact_lower": 0.03736517041666667,
+        "exact_upper": 0.037450587,
+        "monte_carlo": 0.037555,
+        "monte_carlo_draws": 200000,
+        "tau": "1/10"
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "exact_lower": 0.06004716025,
+        "exact_upper": 0.06035966025,
+        "monte_carlo": 0.060855,
+        "monte_carlo_draws": 200000,
+        "tau": "1/4"
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "exact_lower": 0.02325139375,
+        "exact_upper": 0.02337639375,
+        "monte_carlo": 0.02329,
+        "monte_carlo_draws": 200000,
+        "tau": "1/10"
+      },
+      {
+        "direction": [
+          "0",
+          "1"
+        ],
+        "exact_lower": 0.1797468755,
+        "exact_upper": 0.1801218755,
+        "monte_carlo": 0.179755,
+        "monte_carlo_draws": 200000,
+        "tau": "1/4"
+      },
+      {
+        "direction": [
+          "0",
+          "1"
+        ],
+        "exact_lower": 0.0754804185,
+        "exact_upper": 0.0756304185,
+        "monte_carlo": 0.07572,
+        "monte_carlo_draws": 200000,
+        "tau": "1/10"
+      }
+    ],
+    "records": [
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 1.25e-05,
+        "mass_lower": 0.0157906755,
+        "mass_upper": 0.0158031755,
+        "offset": "1",
+        "phi_bound": 0.021286732957408003,
+        "satisfied": true,
+        "tau": "1/40",
+        "unit_half_width": 0.007905694150420948
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 2.5e-06,
+        "mass_lower": 0.00315810125,
+        "mass_upper": 0.00316060125,
+        "offset": "1",
+        "phi_bound": 0.0042573465914816,
+        "satisfied": true,
+        "tau": "1/200",
+        "unit_half_width": 0.0015811388300841897
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 5e-05,
+        "mass_lower": 0.0631579145,
+        "mass_upper": 0.0632079145,
+        "offset": "1",
+        "phi_bound": 0.08514693182963201,
+        "satisfied": true,
+        "tau": "1/10",
+        "unit_half_width": 0.03162277660168379
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 0.000125,
+        "mass_lower": 0.1578264205,
+        "mass_upper": 0.1579514205,
+        "offset": "1",
+        "phi_bound": 0.21286732957408003,
+        "satisfied": true,
+        "tau": "1/4",
+        "unit_half_width": 0.07905694150420949
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 1.25e-06,
+        "mass_lower": 0.001688947,
+        "mass_upper": 0.001690197,
+        "offset": "-3/2",
+        "phi_bound": 0.0025,
+        "satisfied": true,
+        "tau": "1/200",
+        "unit_half_width": 0.0009284766908852593
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 6.25e-06,
+        "mass_lower": 0.00844462675,
+        "mass_upper": 0.00845087675,
+        "offset": "-3/2",
+        "phi_bound": 0.0125,
+        "satisfied": true,
+        "tau": "1/40",
+        "unit_half_width": 0.004642383454426297
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 2.5e-05,
+        "mass_lower": 0.03377759875,
+        "mass_upper": 0.03380259875,
+        "offset": "-3/2",
+        "phi_bound": 0.05,
+        "satisfied": true,
+        "tau": "1/10",
+        "unit_half_width": 0.018569533817705187
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 6.25e-05,
+        "mass_lower": 0.08443567075,
+        "mass_upper": 0.08449817075,
+        "offset": "-3/2",
+        "phi_bound": 0.125,
+        "satisfied": true,
+        "tau": "1/4",
+        "unit_half_width": 0.046423834544262965
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 2.5e-06,
+        "mass_lower": 0.00286249425,
+        "mass_upper": 0.00286499425,
+        "offset": "3/2",
+        "phi_bound": 0.0042573465914816,
+        "satisfied": true,
+        "tau": "1/200",
+        "unit_half_width": 0.0015811388300841897
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 1.25e-05,
+        "mass_lower": 0.0143123605,
+        "mass_upper": 0.0143248605,
+        "offset": "3/2",
+        "phi_bound": 0.021286732957408003,
+        "satisfied": true,
+        "tau": "1/40",
+        "unit_half_width": 0.007905694150420948
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 5e-05,
+        "mass_lower": 0.05724125625,
+        "mass_upper": 0.05729125625,
+        "offset": "3/2",
+        "phi_bound": 0.08514693182963201,
+        "satisfied": true,
+        "tau": "1/10",
+        "unit_half_width": 0.03162277660168379
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 0.000125,
+        "mass_lower": 0.14298908625,
+        "mass_upper": 0.14311408625,
+        "offset": "3/2",
+        "phi_bound": 0.21286732957408003,
+        "satisfied": true,
+        "tau": "1/4",
+        "unit_half_width": 0.07905694150420949
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 6.25e-06,
+        "mass_lower": 0.00809267075,
+        "mass_upper": 0.00809892075,
+        "offset": "-2",
+        "phi_bound": 0.0125,
+        "satisfied": true,
+        "tau": "1/40",
+        "unit_half_width": 0.004642383454426297
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 2.5e-05,
+        "mass_lower": 0.03236993475,
+        "mass_upper": 0.03239493475,
+        "offset": "-2",
+        "phi_bound": 0.05,
+        "satisfied": true,
+        "tau": "1/10",
+        "unit_half_width": 0.018569533817705187
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 1.25e-06,
+        "mass_lower": 0.00161848125,
+        "mass_upper": 0.00161973125,
+        "offset": "-2",
+        "phi_bound": 0.0025,
+        "satisfied": true,
+        "tau": "1/200",
+        "unit_half_width": 0.0009284766908852593
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 6.25e-05,
+        "mass_lower": 0.08091443625,
+        "mass_upper": 0.08097693625,
+        "offset": "-2",
+        "phi_bound": 0.125,
+        "satisfied": true,
+        "tau": "1/4",
+        "unit_half_width": 0.046423834544262965
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 6.041658333333333e-05,
+        "mass_lower": 0.031443012916666666,
+        "mass_upper": 0.0315034295,
+        "offset": "-1",
+        "phi_bound": 0.05,
+        "satisfied": true,
+        "tau": "1/10",
+        "unit_half_width": 0.018569533817705187
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 1.875e-05,
+        "mass_lower": 0.0077412485,
+        "mass_upper": 0.0077599985,
+        "offset": "-1",
+        "phi_bound": 0.0125,
+        "satisfied": true,
+        "tau": "1/40",
+        "unit_half_width": 0.004642383454426297
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 3.75e-06,
+        "mass_lower": 0.0015450055,
+        "mass_upper": 0.0015487555,
+        "offset": "-1",
+        "phi_bound": 0.0025,
+        "satisfied": true,
+        "tau": "1/200",
+        "unit_half_width": 0.0009284766908852593
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 0.00013541658333333334,
+        "mass_lower": 0.07696075891666666,
+        "mass_upper": 0.0770961755,
+        "offset": "-1",
+        "phi_bound": 0.125,
+        "satisfied": true,
+        "tau": "1/4",
+        "unit_half_width": 0.046423834544262965
+      },
+      {
+        "direction": [
+          "2",
+          "1"
+        ],
+        "enclosure_width": 2.5e-06,
+        "mass_lower": 0.00361977125,
+        "mass_upper": 0.00362227125,
+        "offset": "-1/2",
+        "phi_bound": 0.006020797289396148,
+        "satisfied": true,
+        "tau": "1/200",
+        "unit_half_width": 0.00223606797749979
+      },
+      {
+        "direction": [
+          "2",
+          "1"
+        ],
+        "enclosure_width": 1.25e-05,
+        "mass_lower": 0.01809879625,
+        "mass_upper": 0.01811129625,
+        "offset": "-1/2",
+        "phi_bound": 0.03010398644698074,
+        "satisfied": true,
+        "tau": "1/40",
+        "unit_half_width": 0.011180339887498949
+      },
+      {
+        "direction": [
+          "2",
+          "1"
+        ],
+        "enclosure_width": 5e-05,
+        "mass_lower": 0.0723903295,
+        "mass_upper": 0.0724403295,
+        "offset": "-1/2",
+        "phi_bound": 0.12041594578792296,
+        "satisfied": true,
+        "tau": "1/10",
+        "unit_half_width": 0.044721359549995794
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 3.75e-06,
+        "mass_lower": 0.00249699775,
+        "mass_upper": 0.00250074775,
+        "offset": "2",
+        "phi_bound": 0.0042573465914816,
+        "satisfied": true,
+        "tau": "1/200",
+        "unit_half_width": 0.0015811388300841897
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 1.875e-05,
+        "mass_lower": 0.012464041,
+        "mass_upper": 0.012482791,
+        "offset": "2",
+        "phi_bound": 0.021286732957408003,
+        "satisfied": true,
+        "tau": "1/40",
+        "unit_half_width": 0.007905694150420948
+      }
+    ],
+    "records_retained": "all violations plus the 25 largest mass/half-width ratios",
+    "registered_constant_sqrt29_over_2": 2.692582403567252,
+    "sharper_constant_sqrt26_over_2": 2.5495097567963922,
+    "slabs_tested": 480,
+    "subdivisions": 2000,
+    "support_diameter_squared_exact": 26,
+    "violations": 0,
+    "violations_against_sharper_sqrt26_constant": 0,
+    "worst_mass_over_half_width": 1.9989611537348104,
+    "worst_slab": {
+      "direction": "(3, -1)",
+      "offset": "1",
+      "tau": "1/40"
+    }
+  },
+  "provenance": {
+    "audit": "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001",
+    "decimal_precision": 50,
+    "generated_utc": "2026-08-31T20:07:09.140152+00:00",
+    "git_revision": "7864348c19918a5d959377391e48d537be69c9fe",
+    "git_status_clean": false,
+    "grid_denominator": 1073741824,
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "python": "3.13.12 (main, Feb 12 2026, 01:06:02) [Clang 21.1.4 ]",
+    "script": "agenticresearch/py/audit_ds_noncentered_global_basin_transfer.py",
+    "script_sha256": "5bd4e6e40a1c6be773cee97e140c7645966b7e18334cc442f175f7b48f317c6f",
+    "seed_base": 20260831,
+    "seed_formula": "seed(n, rep) = SEED_BASE + 1000 * n + rep"
+  },
+  "route_a_exact": {
+    "binned_information": [
+      [
+        "8/27",
+        "0"
+      ],
+      [
+        "0",
+        "32/81"
+      ]
+    ],
+    "binned_regular": true,
+    "cell_edges": [
+      [
+        "-1",
+        "-1/3"
+      ],
+      [
+        "-1/3",
+        "1/3"
+      ],
+      [
+        "1/3",
+        "1"
+      ]
+    ],
+    "cell_masses": [
+      "1/3",
+      "1/3",
+      "1/3"
+    ],
+    "cell_means_lambda": [
+      "4/9",
+      "-8/9",
+      "4/9"
+    ],
+    "cell_means_psi": [
+      "-2/3",
+      "0",
+      "2/3"
+    ],
+    "conditional_nuisance_mean_polynomial": "3 x^2 - 1",
+    "conditional_nuisance_moments": [
+      "0",
+      "0",
+      "4/15"
+    ],
+    "conditional_orthogonality_residuals": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "ds_retention": "8/9",
+    "full_information": [
+      [
+        "1/3",
+        "0"
+      ],
+      [
+        "0",
+        "17/15"
+      ]
+    ],
+    "full_profiled_value": "1/3",
+    "full_regression_slope": "0",
+    "margins": {
+      "c0": "1/4",
+      "gamma": "1/2",
+      "kappa": "1/4",
+      "lambda_min_at_least_one_quarter": true,
+      "mass_slack": "1/12",
+      "min_mass": "1/3",
+      "projected_separation": "2/3",
+      "separation_slack": "1/6"
+    },
+    "profiled_value": "8/27",
+    "root_residual": "0",
+    "scalar_distortion_at_optimum": "1/27",
+    "scalar_gradient": [
+      "0",
+      "0",
+      "0"
+    ],
+    "scalar_gradient_alternate_step": [
+      "0",
+      "0",
+      "0"
+    ],
+    "scalar_gradient_steps_agree": true,
+    "scalar_hessian": [
+      [
+        "1/2",
+        "-1/6",
+        "0"
+      ],
+      [
+        "-1/6",
+        "1/3",
+        "-1/6"
+      ],
+      [
+        "0",
+        "-1/6",
+        "1/2"
+      ]
+    ],
+    "scalar_hessian_alternate_step": [
+      [
+        "1/2",
+        "-1/6",
+        "0"
+      ],
+      [
+        "-1/6",
+        "1/3",
+        "-1/6"
+      ],
+      [
+        "0",
+        "-1/6",
+        "1/2"
+      ]
+    ],
+    "scalar_hessian_lambda_min_determinant": "0",
+    "scalar_hessian_lambda_min_exact": "1/6",
+    "scalar_hessian_lambda_min_psd": true,
+    "scalar_hessian_psd_certificate": true,
+    "scalar_hessian_psd_floor": "1/7",
+    "scalar_hessian_steps_agree": true,
+    "scalar_upper_v2": "1/4",
+    "scalar_upper_v3": "8/27"
+  },
+  "route_b_all_agree": true,
+  "route_b_contains_route_a": {
+    "full_lambda_lambda": true,
+    "full_psi_lambda": true,
+    "full_psi_psi": true,
+    "m_lambda_0": true,
+    "m_lambda_1": true,
+    "m_lambda_2": true,
+    "m_psi_0": true,
+    "m_psi_1": true,
+    "m_psi_2": true,
+    "mass_0": true,
+    "mass_1": true,
+    "mass_2": true
+  },
+  "route_b_interval": {
+    "full_lambda_lambda": {
+      "hi": "1.1333340760740740740740740740740740740740740750990",
+      "lo": "1.1333325945925925925925925925925925925925925915666",
+      "width": "0.0000014814814814814814814814814814814814814835324"
+    },
+    "full_psi_lambda": {
+      "hi": "1.1111111111111111111111111111111111111111155225E-7",
+      "lo": "-1.1111111111111111111111111111111111111111155125E-7",
+      "width": "2.2222222222222222222222222222222222222222310350E-7"
+    },
+    "full_psi_psi": {
+      "hi": "0.33333333333333333333333333333333333333333333333405",
+      "lo": "0.33333333333333333333333333333333333333333333333257",
+      "width": "1.48E-48"
+    },
+    "m_lambda_0": {
+      "hi": "0.14814814814814814814814814814814814814814814814857",
+      "lo": "0.14814814814814814814814814814814814814814814814776",
+      "width": "8.1E-49"
+    },
+    "m_lambda_1": {
+      "hi": "-0.29629629629629629629629629629629629629629629629530",
+      "lo": "-0.29629629629629629629629629629629629629629629629720",
+      "width": "1.90E-48"
+    },
+    "m_lambda_2": {
+      "hi": "0.14814814814814814814814814814814814814814814814847",
+      "lo": "0.14814814814814814814814814814814814814814814814786",
+      "width": "6.1E-49"
+    },
+    "m_psi_0": {
+      "hi": "-0.22222222222222222222222222222222222222222222222221",
+      "lo": "-0.22222222222222222222222222222222222222222222222224",
+      "width": "3E-50"
+    },
+    "m_psi_1": {
+      "hi": "3.50E-51",
+      "lo": "-2.75E-51",
+      "width": "6.25E-51"
+    },
+    "m_psi_2": {
+      "hi": "0.22222222222222222222222222222222222222222222222224",
+      "lo": "0.22222222222222222222222222222222222222222222222221",
+      "width": "3E-50"
+    },
+    "mass_0": {
+      "hi": "0.33333333333333333333333333333333333333333333333338",
+      "lo": "0.33333333333333333333333333333333333333333333333332",
+      "width": "6E-50"
+    },
+    "mass_1": {
+      "hi": "0.33333333333333333333333333333333333333333333333338",
+      "lo": "0.33333333333333333333333333333333333333333333333332",
+      "width": "6E-50"
+    },
+    "mass_2": {
+      "hi": "0.33333333333333333333333333333333333333333333333338",
+      "lo": "0.33333333333333333333333333333333333333333333333332",
+      "width": "6E-50"
+    }
+  },
+  "route_c_monte_carlo": [
+    {
+      "binned_information": [
+        [
+          0.293810621282424,
+          -0.0010414349720470457
+        ],
+        [
+          -0.0010414349720470457,
+          0.4211916428706514
+        ]
+      ],
+      "cell_masses": [
+        0.3324,
+        0.3366,
+        0.331
+      ],
+      "ds_retention": 0.8889690907635441,
+      "full_information": [
+        [
+          0.330510508484546,
+          -0.002689377168941552
+        ],
+        [
+          -0.002689377168941552,
+          1.1522792147081768
+        ]
+      ],
+      "profiled_value": 0.2938080462389269,
+      "seed": 20270831,
+      "size": 10000
+    },
+    {
+      "binned_information": [
+        [
+          0.29660067517192695,
+          -0.00034744440228315197
+        ],
+        [
+          -0.00034744440228315197,
+          0.39589303901972656
+        ]
+      ],
+      "cell_masses": [
+        0.33224,
+        0.332275,
+        0.335485
+      ],
+      "ds_retention": 0.8888051210119267,
+      "full_information": [
+        [
+          0.3337068652444318,
+          -2.5286424175369313e-05
+        ],
+        [
+          -2.5286424175369313e-05,
+          1.1389366291401137
+        ]
+      ],
+      "profiled_value": 0.29660037024710945,
+      "seed": 20460831,
+      "size": 200000
+    }
+  ],
+  "scalar_codebook_scan": {
+    "best_non_optimal_codebook": [
+      "-2/3",
+      "-1/30",
+      "2/3"
+    ],
+    "best_non_optimal_distortion": "67/1800",
+    "codebooks_below_optimum": 0,
+    "codebooks_scanned": 35990,
+    "optimum": "1/27",
+    "spacing": "1/30",
+    "target_on_lattice": true
+  },
+  "seconds": 17.91,
+  "stage": "population"
+}
