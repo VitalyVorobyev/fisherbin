@@ -1203,9 +1203,7 @@ serialized (`CE-DS-STABLE-MARGIN-RETAINING-001`,
 
 ## DS17. Inhabitation of the margin-certified branch: the conditional-centering obstruction and the fixed-point gate — [PROJECT-PROVED theorem + MEASURED gate scans; \(d_\psi=d_\lambda=1\)]
 
-**Claims:** DS-STABLE-BASINS-CENTERED-OBSTRUCTION,
-DS-STABLE-BASINS-LCM-CLASSIFICATION, DS-STABLE-BASINS-FIXED-POINT-GATE,
-DS-STABLE-BASINS-GATE-SCANS
+**Claims:** DS-STABLE-BASINS-CENTERED-OBSTRUCTION, DS-STABLE-BASINS-LCM-CLASSIFICATION, DS-STABLE-BASINS-FIXED-POINT-GATE, DS-STABLE-BASINS-GATE-SCANS
 
 **Normalization (protocol A).** Criterion: in-bin profiled \(D_s\). Levels:
 `population_quantizer` (existence/non-existence of self-consistent rules) and
@@ -1506,10 +1504,11 @@ under `WORK/artifacts/DS-STABLE-BASINS/`):
 - **Product bimodal (L)-laws** (\(m\in\{0.75,1,1.5,2,3\}\), \(s=0.4\)): the
   branch-tracked root scan over \(\beta\in[-2.5,2.5]\), tracking up to 3
   Lloyd-stationary branches per tilt (asymmetric mode-splitting branches
-  included), finds **zero** self-consistent roots — row N-DS-BASINS-PRODUCT.
+  included), finds **zero** self-consistent roots.
 - **Dependent (L)-laws** `xcorr(c)` (equal mixtures of \(\pm c\)-correlated
   standard Gaussians, \(c\in\{0.5,0.8,0.95\}\); (L) by branch symmetry, LCM
-  fails off \(\beta=0\)): zero roots — row N-DS-BASINS-XCORR. Eight
+  fails off \(\beta=0\)): zero roots — both scans in row
+  N-DS-BASINS-CLASS-L-ROOTS. Eight
   (L)-laws, three structural families, zero gate inhabitants: the theorem's
   prediction, tested before its proof was trusted.
 - **Sign-split family** on \(N(0,I_2)\): \(\Phi-2/\pi=0\) to machine
@@ -1518,8 +1517,21 @@ under `WORK/artifacts/DS-STABLE-BASINS/`):
   row N-DS-BASINS-SIGNSPLIT.
 - **mix3 (off-class control):** exactly one root — \(\beta=0\), cuts
   \(\pm1.00476\), \(\lambda_{\min}=1.7364\), value \(2.68936=v_3\) to
-  \(10^{-6}\) (price \(\approx0\)), zero Monte-Carlo rule violations — row
-  N-DS-BASINS-MIX3.
+  \(10^{-6}\) (price \(\approx0\)), zero Monte-Carlo rule violations; the
+  finite-difference family Hessian at the root has gradient \(0\) and
+  eigenvalues \((-2.146,-0.258,-0.186)\): a **strict local maximum** of the
+  population value in the rule family, the second-order input any off-class
+  transfer theorem (OP29(a)) would consume — row N-DS-BASINS-MIX3.
+- **Seeded library ascent at scale** (public API, \(N\in\{300,1000,3000\}\),
+  3 reps): all 63 terminals exchange-stable. gauss06:
+  \(\lambda_{\min}\in[5\times10^{-5},0.012]\) with \(N\hat I_{11}\approx0.3\)–\(7\)
+  at every seed — the disproof's finite face. mix3: the
+  population-fixed-point seeding terminates at the **same** terminal as the
+  efficient and k-means seeds in 9/9 runs, with \(\lambda_{\min}=1.73\)–\(1.83\)
+  and log-gap \(\le10^{-5}\) at \(N\ge1000\); one random-seed run stranded at
+  a degenerate *inferior* terminal (\(\lambda_{\min}=5\times10^{-4}\), gap
+  \(0.21\)) — off-class margins are free at the good optimum, but bad local
+  terminals still exist — row N-DS-BASINS-LIBRARY.
 - **Geometry of the DS16 terminals** (420 recorded ascent terminals plus the
   margin-retaining witness): the witness agrees **exactly** with its own
   companion rule at \(N=8\) (\(\hat B^*=0.497\), separation \(0.325\)); on
