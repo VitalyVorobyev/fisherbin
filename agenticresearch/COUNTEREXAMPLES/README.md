@@ -392,3 +392,31 @@ carry no margin.
 **Regression:** `tests/test_research_claims.py::test_ds17_signsplit_stationary_state_retains_margins_without_separation`.
 
 ---
+
+## CE-DS-LCM-SIGNSPLIT-MINIMAL-001 — support-minimal atomic sign-split boundary
+
+**Status:** exact rational boundary witness; no DS17 claim is falsified.
+
+Three equally weighted atoms
+\((-1,1),(-1,-1),(2,0)\), one per cell, are exactly centered and give
+
+\[
+I_q=\operatorname{diag}(2,2/3),\qquad B_q^*=0,
+\]
+
+with projected centroids \((-1,-1,2)\). Thus the first two cells coincide in
+projection while the fine information remains full rank; merging them leaves
+the two-cell POI-threshold rule with nuisance block exactly zero. This is
+support-minimal for a three-cell construction because \(N=K=3\).
+
+This fixture is deliberately **not** a counterexample to DS17. The law is
+atomic, so atomlessness and (M4) fail; projected separation is zero, so (M5)
+fails; and every cell is a singleton, so there is no admissible
+nonempty-preserving one-point relocation and finite exchange stability is
+packet-vacuous. It records only the smallest exact algebraic instance of the
+wasted-cell/sign-split boundary.
+
+**Fixture:** `CE-DS-LCM-SIGNSPLIT-MINIMAL-001.json`.
+**Regression:** `tests/test_research_claims.py::test_ds17_minimal_atomic_signsplit_is_only_a_boundary_witness`.
+
+---
