@@ -443,3 +443,43 @@ occupied cells and an admissible move.
 **Regression:** `tests/test_research_claims.py::test_ds17_minimal_atomic_signsplit_is_only_a_boundary_witness`.
 
 ---
+
+## CE-DS-NONCENTERED-SINGULAR-DESTINATION-001 — a singular one-point destination beats the regular optimum
+
+**Status:** exact rational boundary counterexample (exhaustive enumeration),
+support-minimal at \(N=4\); a *convention* boundary, not a DS18 refutation.
+
+**Claim falsified:**
+
+> An exact global optimum over regular (nonsingular-nuisance) finite labelings
+> is one-point exchange-stable under any feasibility convention, so DS18.2's
+> finite stability step needs no convention.
+
+Four rows on the named off-((L)) law's support, exactly centered:
+\(X=(-1,0,\tfrac12,\tfrac12)\), \(Z=(-1,1,-\tfrac34,\tfrac14)\), giving
+\(S=[(-1,1),(0,0),(\tfrac12,-1),(\tfrac12,0)]\) with equal weights. The exact
+global optimum over regular labelings is \(1/12\), attained by exactly two
+labelings, \((0,0,1,2)\) and \((0,1,1,2)\). The single labeling with an exactly
+zero binned nuisance block, \((0,1,0,2)\), has
+\(\hat I=\bigl[\begin{smallmatrix}3/32&0\\0&0\end{smallmatrix}\bigr]\) and DS11
+pseudo-inverse value \(3/32\) — and **both** global regular optima reach it by
+one source-nonempty relocation with exact gain \(3/32-1/12=1/96>0\), while
+every other admissible move is non-improving.
+
+**Boundary resolution:** at \(d_\lambda=1\) a zero binned nuisance block forces
+every cell \(\lambda\)-sum to vanish, hence \(\sum_iS_{\lambda,i}=0\), an event
+of probability zero under the named continuous law. Almost surely every
+three-nonempty-cell labeling is regular, so this table cannot occur and DS18.2
+is untouched. What it fixes is the *statement*: the in-bin (DS9) feasibility
+convention — singular destinations are infeasible — is load-bearing and must be
+named, because the pseudo-inverse convention reverses the conclusion at the
+smallest support where any relocation exists. Distinct from
+`CE-DS-DEGENERATE-GLOBAL-TIE-001`, which compares values at \(N=8\); this one
+is an admissible one-point move from every global optimum.
+
+**Fixture:** `CE-DS-NONCENTERED-SINGULAR-DESTINATION-001.json`.
+**Regression:**
+`tests/test_research_claims.py::test_ds18_singular_destination_beats_the_regular_optimum`.
+**Audit:** `AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md` §8.4, §15.
+
+---

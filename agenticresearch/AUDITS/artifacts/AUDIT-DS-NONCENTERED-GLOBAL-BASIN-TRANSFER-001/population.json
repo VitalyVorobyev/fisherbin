@@ -69,6 +69,7 @@
         "tau": "1/10"
       }
     ],
+    "measured_support_diameter_constant": 2.553918557824427,
     "records": [
       {
         "direction": [
@@ -423,12 +424,13 @@
     ],
     "records_retained": "all violations plus the 25 largest mass/half-width ratios",
     "registered_constant_sqrt29_over_2": 2.692582403567252,
-    "sharper_constant_sqrt26_over_2": 2.5495097567963922,
     "slabs_tested": 480,
     "subdivisions": 2000,
-    "support_diameter_squared_exact": 26,
+    "support_diameter_squared_measured": 26.034495502232026,
+    "support_diameter_squared_upper_bound": "2609/100",
+    "support_diameter_stationarity": "corner (1, 3) against y = 3x^2 - 2 at the root of 18 x^3 - 29 x - 1",
     "violations": 0,
-    "violations_against_sharper_sqrt26_constant": 0,
+    "violations_against_measured_support_diameter_constant": 0,
     "worst_mass_over_half_width": 1.9989611537348104,
     "worst_slab": {
       "direction": "(3, -1)",
@@ -439,14 +441,14 @@
   "provenance": {
     "audit": "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001",
     "decimal_precision": 50,
-    "generated_utc": "2026-08-31T20:07:09.140152+00:00",
-    "git_revision": "7864348c19918a5d959377391e48d537be69c9fe",
+    "generated_utc": "2026-08-31T20:30:17.568922+00:00",
+    "git_revision": "8ab99909ffc72ee02661e5f47d4bbf8206eb22f5",
     "git_status_clean": false,
     "grid_denominator": 1073741824,
     "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
     "python": "3.13.12 (main, Feb 12 2026, 01:06:02) [Clang 21.1.4 ]",
     "script": "agenticresearch/py/audit_ds_noncentered_global_basin_transfer.py",
-    "script_sha256": "5bd4e6e40a1c6be773cee97e140c7645966b7e18334cc442f175f7b48f317c6f",
+    "script_sha256": "acdba34cfc008d6e19a78196fbe8fbfd180a8d7fa46e2f7a87f91236c64839a2",
     "seed_base": 20260831,
     "seed_formula": "seed(n, rep) = SEED_BASE + 1000 * n + rep"
   },
@@ -739,6 +741,6 @@
     "spacing": "1/30",
     "target_on_lattice": true
   },
-  "seconds": 17.91,
+  "seconds": 17.34,
   "stage": "population"
 }

@@ -191,7 +191,7 @@ canonical.
   margin-compatible stable sequences exist" to the merged-branch,
   attainment, and constrained-design remainders left open by DS17.
 
-### Added 31 August 2026 (the exact non-centered basin session; audit pending)
+### Added 31 August 2026 (the exact non-centered basin session; audit complete)
 
 - **DS18 supplies one exact off-(L) positive theorem, but only through global
   selection.** For independent uniform \(X,Z\), scores
@@ -207,12 +207,28 @@ canonical.
   support-minimal \(N=4\) boundary fixture has a strict improving move from
   the raw population-cut labels, so those labels need not be stable at finite
   \(N\); generic exchange ascent selection remains open.
-- **No deployment consequence exists yet.** The DS18 claim is awaiting the
-  fresh independent audit queued in
-  `WORK/active/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER.md`. No `src/`, API,
-  or compile-path language may rely on it before that audit, and even a
-  successful audit would not prove practical basin selection or robustness
-  under perturbations of the law.
+- **No deployment consequence exists.** The DS18 claim passed its fresh
+  independent adversarial audit on 31 August 2026
+  (`AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md`, **verified with
+  hardened assumptions**), and the verdict deliberately changes nothing for
+  deployment: no `src/`, API, or compile-path language may rely on it, and the
+  audit proves neither practical basin selection nor robustness under
+  perturbations of the law.
+- **Two DS18 statements the manuscript must not reproduce as written.**
+  (i) Any text attributing the scalar three-level uniqueness to a
+  strict-log-concavity result is stale: \(\operatorname{Unif}[-1,1]\) is
+  log-concave but not strictly so, and the correct antecedents are
+  Kieffer (1983) and Mease & Nair (2006). (ii) Any text citing DS15's Lemma 3
+  or Proposition 5 inside the DS18 proof is stale: those are registered for
+  class (L) with exactly centered empirical scores, both of which DS18 negates;
+  the audited proof is self-contained.
+- **The DS18 finite exchange-stability claim now names its convention.** The
+  in-bin (DS9) feasibility convention is load-bearing — under a DS11
+  pseudo-inverse comparison domain a global optimum over regular labelings need
+  not be exchange-stable at all
+  (`CE-DS-NONCENTERED-SINGULAR-DESTINATION-001`, \(N=4\), gain \(1/96\)).
+  Manuscript language saying "global optimum implies exchange stable" without
+  the convention is stale.
 
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of

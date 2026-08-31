@@ -31,14 +31,14 @@
   "provenance": {
     "audit": "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001",
     "decimal_precision": 50,
-    "generated_utc": "2026-08-31T20:07:27.071796+00:00",
-    "git_revision": "7864348c19918a5d959377391e48d537be69c9fe",
+    "generated_utc": "2026-08-31T20:30:34.930148+00:00",
+    "git_revision": "8ab99909ffc72ee02661e5f47d4bbf8206eb22f5",
     "git_status_clean": false,
     "grid_denominator": 1073741824,
     "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
     "python": "3.13.12 (main, Feb 12 2026, 01:06:02) [Clang 21.1.4 ]",
     "script": "agenticresearch/py/audit_ds_noncentered_global_basin_transfer.py",
-    "script_sha256": "5bd4e6e40a1c6be773cee97e140c7645966b7e18334cc442f175f7b48f317c6f",
+    "script_sha256": "acdba34cfc008d6e19a78196fbe8fbfd180a8d7fa46e2f7a87f91236c64839a2",
     "seed_base": 20260831,
     "seed_formula": "seed(n, rep) = SEED_BASE + 1000 * n + rep"
   },

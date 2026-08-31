@@ -331,6 +331,11 @@
       "title": "Weak limit theorems for univariate k-mean clustering under a nonregular condition",
       "pdf": "https://doi.org/10.1016/0047-259X(92)90070-V",
       "note": "J. Multivariate Anal. 41(2):273-296; primary PDF read verbatim. 1-D interval-partition (split-function) formulation of population k-means; the unique global optimizer with singular Hessian yields nonstandard n^{1/4} rates (double exponential, k=2). Nearest precedent for degeneracy AT a 1-D self-consistent partition optimum; describes what happens when degeneracy occurs for one law, never a class-wide forcing theorem like DS17."
+    },
+    "deCastro-Dorigo-2019": {
+      "title": "INFERNO: Inference-Aware Neural Optimisation",
+      "doi": "10.1016/j.cpc.2019.06.007",
+      "note": "Comput. Phys. Commun. 244:170. Differentiable Asimov-likelihood loss built from the inverse Hessian of a softened histogram -- a profiled-Fisher surrogate -- optimised over neural summaries. Closest applied statement of the DS18 objective; soft histogram, no hard partition and no optimality theorem (31 Aug 2026 DS18 audit)."
     }
   },
   "agent_usage": {
@@ -350,49 +355,49 @@
   },
   "programmes": {
     "P1": {
-      "title": "DS-POPULATION-BRIDGE — finish practical Ds theory",
+      "title": "DS-POPULATION-BRIDGE \u2014 finish practical Ds theory",
       "rank": 1,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P2": {
-      "title": "SCORE-ORACLE-ROBUSTNESS — estimated scores and classifiers",
+      "title": "SCORE-ORACLE-ROBUSTNESS \u2014 estimated scores and classifiers",
       "rank": 2,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P3": {
-      "title": "INFORMATION-BUDGET — how many bins does a target need",
+      "title": "INFORMATION-BUDGET \u2014 how many bins does a target need",
       "rank": 3,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P4": {
-      "title": "DEPLOYMENT-ROBUSTNESS — away from the reference point, with error bars",
+      "title": "DEPLOYMENT-ROBUSTNESS \u2014 away from the reference point, with error bars",
       "rank": 4,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P5": {
-      "title": "HEP-SPECIALIZATION — template fits made mathematically explicit",
+      "title": "HEP-SPECIALIZATION \u2014 template fits made mathematically explicit",
       "rank": 5,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P6": {
-      "title": "D-CORE-COMPLETION — the paper's remaining spine",
+      "title": "D-CORE-COMPLETION \u2014 the paper's remaining spine",
       "rank": 6,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P7": {
-      "title": "FOUNDATIONS — why D is special, complexity, randomization",
+      "title": "FOUNDATIONS \u2014 why D is special, complexity, randomization",
       "rank": 7,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P8": {
-      "title": "LITERATURE-GRAPH — coverage you can defend",
+      "title": "LITERATURE-GRAPH \u2014 coverage you can defend",
       "rank": 8,
       "readiness": "ready",
       "kind": "infrastructure"

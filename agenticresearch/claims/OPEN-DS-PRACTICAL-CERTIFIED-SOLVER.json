@@ -7,19 +7,20 @@
   "level": "empirical_inductive_quantizer",
   "status": "open",
   "publication_status": "open",
-  "statement": "Synthesize efficient-score upper optimization, inductive fitting, exact Ds exchange refinement, held-out evaluation, and upper-bound gap reporting under the audited DS17 constraints. On the scalar population-conditionally-centered class (L), the full (M2)+(M3)+(M5) ordinary-stable class is eventually empty, so any margin-constrained output must be reported as constrained, priced by v_hat_K - Phi_hat_s, and non-inductive; the established compile route is the projected efficient-score interval rule with its DP ceiling. Off (L), DS18 proves that one exact non-centered law has a unique strict full-rank population optimum and almost-sure transfer through finite global regular Ds optimizers. The remaining practical problem is to select such a basin without global combinatorial optimization and to retain computable margins and value guarantees under perturbations of the law.",
+  "statement": "Synthesize efficient-score upper optimization, inductive fitting, exact Ds exchange refinement, held-out evaluation, and upper-bound gap reporting under the audited DS17 constraints. On the scalar population-conditionally-centered class (L), the full (M2)+(M3)+(M5) ordinary-stable class is eventually empty, so any margin-constrained output must be reported as constrained, priced by v_hat_K - Phi_hat_s, and non-inductive; the established compile route is the projected efficient-score interval rule with its DP ceiling. Off (L), DS18 proves that one exact non-centered law has a unique strict full-rank population optimum and almost-sure transfer through finite global regular Ds optimizers. DS18 was independently audited on 31 Aug 2026 and verified with hardened assumptions; the audit supplies a computable finite-N certificate Delta_N = v_hat_3,N - Phi_hat(z*_N) that needs no combinatorial search and converts any labeling's value gap into a bound on its disagreement with the population rule. The remaining practical problem is therefore sharp: exhibit a polynomial-time labeling rule whose output satisfies Delta-consistency (v_hat_3,N - Phi_hat(z_tilde_N) -> 0 a.s.) on this law, which would inherit the whole transfer and turn the global-oracle theorem into a solver certificate, and extend that to computable margins and value guarantees under perturbations of the law.",
   "dependencies": [
     "DS-EXACT-MOVE-ORACLE",
     "DS-SCALAR-EFFICIENT-DP",
     "DS-EFFICIENT-SCORE-GLOBAL-UPPER",
     "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
     "DS-STABLE-BASINS-FIXED-POINT-GATE",
-    "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
+    "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER",
+    "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
   ],
   "proof_location": {
     "file": "OPEN_PROBLEMS.md",
     "section": "OP7. Best practical \\(D_s\\) solver with theorem-backed certificate"
   },
   "programme": "P1",
-  "warning": "Do not expose a generic gate root as a certificate. DS18 supplies sufficiency and finite exchange-stable transfer only through global regular optimization for its named exact law; it does not prove basin selection by local ascent or perturbation robustness. No src/ implementation is authorized before the fresh DS18 audit."
+  "warning": "Do not expose a generic gate root as a certificate. DS18 supplies sufficiency and finite exchange-stable transfer only through global regular optimization for its named exact law, under the in-bin (DS9) feasibility convention; it does not prove basin selection by local ascent or perturbation robustness. The DS18 audit is complete (AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md) and authorizes no src/ change."
 }

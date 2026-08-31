@@ -1071,8 +1071,12 @@ def m4_sweep(nx: int = 4000) -> dict[str, object]:
 
     The registered modulus is ``phi(t) = min(1, sqrt(29) t / 2)``, which comes
     from ``area(slab cap support) <= 2 t diam`` with ``diam`` the diameter of
-    the bounding rectangle ``[-1, 1] x [-2, 3]``.  The sharper constant
-    ``sqrt(26)`` is the diameter of the support itself.
+    the bounding rectangle ``[-1, 1] x [-2, 3]``.  The support's own diameter is
+    strictly smaller but is *not* ``sqrt(26)``: the farthest pair is a corner
+    ``(1, 3)`` against a point of the lower arc ``y = 3 x^2 - 2`` at the root of
+    ``18 x^3 - 29 x - 1 = 0`` near ``-0.0345``, giving ``diam^2 = 26.0345...``.
+    The rational bound ``diam^2 <= 2609 / 100`` is what this sweep tests as the
+    sharper constant; it is a measured refinement, not a registered claim.
     """
     directions = [
         (F(1), F(0)),
@@ -1096,7 +1100,7 @@ def m4_sweep(nx: int = 4000) -> dict[str, object]:
     worst_ratio = F(0)
     worst_record: dict[str, str] = {}
     modulus = rational_sqrt_upper(F(29)) / 2
-    sharper = rational_sqrt_upper(F(26)) / 2
+    sharper = rational_sqrt_upper(F(2609, 100)) / 2
     for p, q in directions:
         norm_upper = rational_sqrt_upper(p * p + q * q)
         for offset in offsets:
@@ -1158,12 +1162,14 @@ def m4_sweep(nx: int = 4000) -> dict[str, object]:
         "interval_route_cross_check": cross_check,
         "slabs_tested": len(records),
         "violations": violations,
-        "violations_against_sharper_sqrt26_constant": sharper_violations,
+        "violations_against_measured_support_diameter_constant": sharper_violations,
         "worst_mass_over_half_width": float(worst_ratio),
         "worst_slab": worst_record,
         "registered_constant_sqrt29_over_2": float(modulus),
-        "sharper_constant_sqrt26_over_2": float(sharper),
-        "support_diameter_squared_exact": 26,
+        "measured_support_diameter_constant": float(sharper),
+        "support_diameter_squared_upper_bound": "2609/100",
+        "support_diameter_squared_measured": 26.034495502232028,
+        "support_diameter_stationarity": "corner (1, 3) against y = 3x^2 - 2 at the root of 18 x^3 - 29 x - 1",
         "bounding_rectangle_diameter_squared": 29,
         "records_retained": "all violations plus the 25 largest mass/half-width ratios",
         "records": (
