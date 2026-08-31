@@ -1,6 +1,6 @@
 # AUDIT-DS-STABLE-BASINS — adversarial audit of DS17
 
-**Programme:** P1 · **Opened:** 31 August 2026 · **Status:** active
+**Programme:** P1 · **Opened:** 31 August 2026 · **Status:** completed
 **Source:** `research-ds-stable-basins` at `ce8d59d` (merged as PR #27, `7e20983`)
 
 ## Goal
@@ -253,3 +253,68 @@ nondegenerate root's basin to exact one-point exchange stability against
 \(O(1/N)\)-scale boundary noise (`OPEN-DS-MARGINS-NONCENTERED`, OP29(a))?
 If DS17 is refuted or reduced: what remains of OP30(a), and does
 `DS-PROFILED-COMPILE-CERTIFICATE` clause (c) revert to its pre-DS17 wording?
+
+## Outcome
+
+The audit hardened all four DS17 nodes; none was refuted or reduced to an
+unresolved proof assumption.
+
+- `DS-STABLE-BASINS-CENTERED-OBSTRUCTION`: **hardened**. The population
+  obstruction and the selection-independent “almost surely, for all large
+  \(N\), no labeling at all” quantifier survive. The statement now separates
+  the extended numerator/root equation from regular tilt consistency, which
+  requires a positive nuisance block.
+- `DS-STABLE-BASINS-LCM-CLASSIFICATION`: **hardened**. The merged-rule rank
+  collapse is LCM-scoped; the Gaussian sign-split family proves only closed
+  population feasibility. It does not prove attainment, continuity,
+  empirical stable tracking, or a universal numerical price.
+- `DS-STABLE-BASINS-FIXED-POINT-GATE`: **hardened**. The equation and compact
+  bound are necessary only. Root sufficiency and empirical transfer remain
+  open.
+- `DS-STABLE-BASINS-GATE-SCANS`: **hardened**, status `measured` retained.
+  “No root” and “unique root” language was replaced by finite-window “found”
+  language; the independent scan distinguishes singular numerator roots from
+  gate-admissible roots.
+
+Clause (c) of `DS-PROFILED-COMPILE-CERTIFICATE` is hardened consistently. The
+compile refusal remains justified only on the declared scalar population
+class (L), and conditional centering is never sample-centering preprocessing.
+The inherited measured dependency of the compile claim and the foundational
+literature/bridge nodes remain explicitly separate future audits.
+
+## Artifacts
+
+- `AUDITS/AUDIT-DS-STABLE-BASINS-001.md`
+- `py/audit_ds_stable_basins.py`
+- `AUDITS/artifacts/AUDIT-DS-STABLE-BASINS-001/exact.json`
+- `AUDITS/artifacts/AUDIT-DS-STABLE-BASINS-001/quadrature.json`
+- `AUDITS/artifacts/AUDIT-DS-STABLE-BASINS-001/search.json`
+- `AUDITS/artifacts/AUDIT-DS-STABLE-BASINS-001/library.json`
+- `COUNTEREXAMPLES/CE-DS-LCM-SIGNSPLIT-MINIMAL-001.json`
+- `LITERATURE/audits/AUDIT-DS-STABLE-BASINS-31-August-2026.md`
+- `claims/AUDIT-DS-STABLE-BASINS.json`
+- `WORK/active/OPEN-DS-MARGINS-NONCENTERED.md`
+
+## Validation
+
+All closure checks passed on 31 August 2026:
+
+- `uv sync --all-extras --all-groups --locked`
+- `uv run python agenticresearch/py/registry.py reindex`
+  (`indexes current` on the final validation pass)
+- `uv run python agenticresearch/py/registry.py validate` (`registry clean`)
+- `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
+  tests/test_research_claims.py tests/test_research_registry.py` — 24 passed
+- `uv run ruff check .` — passed
+- `uv run ruff format --check .` — 217 files formatted
+- `uv run ty check src` — passed
+- `uv build` — source distribution and wheel built
+- `uv run mkdocs build --strict` — passed
+- `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto -m
+  "not docs_execution"` — 385 passed
+- `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto -m
+  docs_execution` — 70 passed
+- `JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py` —
+  4 passed
+
+No validation command failed and no environmental waiver was used.
