@@ -7,8 +7,8 @@
           "1",
           "2"
         ],
-        "exact_lower": 0.09175913216666666,
-        "exact_upper": 0.09195704875,
+        "exact_lower": 0.09180865295833333,
+        "exact_upper": 0.09190761128125,
         "monte_carlo": 0.09193,
         "monte_carlo_draws": 200000,
         "tau": "1/4"
@@ -18,8 +18,8 @@
           "1",
           "2"
         ],
-        "exact_lower": 0.03736517041666667,
-        "exact_upper": 0.037450587,
+        "exact_lower": 0.03738641473958333,
+        "exact_upper": 0.0374291230625,
         "monte_carlo": 0.037555,
         "monte_carlo_draws": 200000,
         "tau": "1/10"
@@ -29,8 +29,8 @@
           "3",
           "-1"
         ],
-        "exact_lower": 0.06004716025,
-        "exact_upper": 0.06035966025,
+        "exact_lower": 0.0601253129375,
+        "exact_upper": 0.0602815629375,
         "monte_carlo": 0.060855,
         "monte_carlo_draws": 200000,
         "tau": "1/4"
@@ -40,8 +40,8 @@
           "3",
           "-1"
         ],
-        "exact_lower": 0.02325139375,
-        "exact_upper": 0.02337639375,
+        "exact_lower": 0.02328246265625,
+        "exact_upper": 0.02334496265625,
         "monte_carlo": 0.02329,
         "monte_carlo_draws": 200000,
         "tau": "1/10"
@@ -51,8 +51,8 @@
           "0",
           "1"
         ],
-        "exact_lower": 0.1797468755,
-        "exact_upper": 0.1801218755,
+        "exact_lower": 0.1798407803125,
+        "exact_upper": 0.1800282803125,
         "monte_carlo": 0.179755,
         "monte_carlo_draws": 200000,
         "tau": "1/4"
@@ -62,8 +62,8 @@
           "0",
           "1"
         ],
-        "exact_lower": 0.0754804185,
-        "exact_upper": 0.0756304185,
+        "exact_lower": 0.075517842875,
+        "exact_upper": 0.075592842875,
         "monte_carlo": 0.07572,
         "monte_carlo_draws": 200000,
         "tau": "1/10"
@@ -76,23 +76,9 @@
           "3",
           "-1"
         ],
-        "enclosure_width": 1.25e-05,
-        "mass_lower": 0.0157906755,
-        "mass_upper": 0.0158031755,
-        "offset": "1",
-        "phi_bound": 0.021286732957408003,
-        "satisfied": true,
-        "tau": "1/40",
-        "unit_half_width": 0.007905694150420948
-      },
-      {
-        "direction": [
-          "3",
-          "-1"
-        ],
-        "enclosure_width": 2.5e-06,
-        "mass_lower": 0.00315810125,
-        "mass_upper": 0.00316060125,
+        "enclosure_width": 1.25e-06,
+        "mass_lower": 0.0031587784375,
+        "mass_upper": 0.0031600284375,
         "offset": "1",
         "phi_bound": 0.0042573465914816,
         "satisfied": true,
@@ -104,9 +90,23 @@
           "3",
           "-1"
         ],
-        "enclosure_width": 5e-05,
-        "mass_lower": 0.0631579145,
-        "mass_upper": 0.0632079145,
+        "enclosure_width": 6.25e-06,
+        "mass_lower": 0.01579382596875,
+        "mass_upper": 0.01580007596875,
+        "offset": "1",
+        "phi_bound": 0.021286732957408003,
+        "satisfied": true,
+        "tau": "1/40",
+        "unit_half_width": 0.007905694150420948
+      },
+      {
+        "direction": [
+          "3",
+          "-1"
+        ],
+        "enclosure_width": 2.5e-05,
+        "mass_lower": 0.06317044146875,
+        "mass_upper": 0.06319544146875,
         "offset": "1",
         "phi_bound": 0.08514693182963201,
         "satisfied": true,
@@ -118,9 +118,9 @@
           "3",
           "-1"
         ],
-        "enclosure_width": 0.000125,
-        "mass_lower": 0.1578264205,
-        "mass_upper": 0.1579514205,
+        "enclosure_width": 6.25e-05,
+        "mass_lower": 0.15785755703125,
+        "mass_upper": 0.15792005703125,
         "offset": "1",
         "phi_bound": 0.21286732957408003,
         "satisfied": true,
@@ -132,9 +132,9 @@
           "5",
           "2"
         ],
-        "enclosure_width": 1.25e-06,
-        "mass_lower": 0.001688947,
-        "mass_upper": 0.001690197,
+        "enclosure_width": 6.25e-07,
+        "mass_lower": 0.00168923515625,
+        "mass_upper": 0.00168986015625,
         "offset": "-3/2",
         "phi_bound": 0.0025,
         "satisfied": true,
@@ -146,9 +146,9 @@
           "5",
           "2"
         ],
-        "enclosure_width": 6.25e-06,
-        "mass_lower": 0.00844462675,
-        "mass_upper": 0.00845087675,
+        "enclosure_width": 3.125e-06,
+        "mass_lower": 0.00844611790625,
+        "mass_upper": 0.00844924290625,
         "offset": "-3/2",
         "phi_bound": 0.0125,
         "satisfied": true,
@@ -160,9 +160,9 @@
           "5",
           "2"
         ],
-        "enclosure_width": 2.5e-05,
-        "mass_lower": 0.03377759875,
-        "mass_upper": 0.03380259875,
+        "enclosure_width": 1.25e-05,
+        "mass_lower": 0.03378381790625,
+        "mass_upper": 0.03379631790625,
         "offset": "-3/2",
         "phi_bound": 0.05,
         "satisfied": true,
@@ -174,9 +174,9 @@
           "5",
           "2"
         ],
-        "enclosure_width": 6.25e-05,
-        "mass_lower": 0.08443567075,
-        "mass_upper": 0.08449817075,
+        "enclosure_width": 3.125e-05,
+        "mass_lower": 0.0844512210625,
+        "mass_upper": 0.0844824710625,
         "offset": "-3/2",
         "phi_bound": 0.125,
         "satisfied": true,
@@ -188,9 +188,9 @@
           "3",
           "-1"
         ],
-        "enclosure_width": 2.5e-06,
-        "mass_lower": 0.00286249425,
-        "mass_upper": 0.00286499425,
+        "enclosure_width": 1.25e-06,
+        "mass_lower": 0.00286311734375,
+        "mass_upper": 0.00286436734375,
         "offset": "3/2",
         "phi_bound": 0.0042573465914816,
         "satisfied": true,
@@ -202,9 +202,9 @@
           "3",
           "-1"
         ],
-        "enclosure_width": 1.25e-05,
-        "mass_lower": 0.0143123605,
-        "mass_upper": 0.0143248605,
+        "enclosure_width": 6.25e-06,
+        "mass_lower": 0.01431546953125,
+        "mass_upper": 0.01432171953125,
         "offset": "3/2",
         "phi_bound": 0.021286732957408003,
         "satisfied": true,
@@ -216,9 +216,9 @@
           "3",
           "-1"
         ],
-        "enclosure_width": 5e-05,
-        "mass_lower": 0.05724125625,
-        "mass_upper": 0.05729125625,
+        "enclosure_width": 2.5e-05,
+        "mass_lower": 0.05725374825,
+        "mass_upper": 0.05727874825,
         "offset": "3/2",
         "phi_bound": 0.08514693182963201,
         "satisfied": true,
@@ -230,9 +230,9 @@
           "3",
           "-1"
         ],
-        "enclosure_width": 0.000125,
-        "mass_lower": 0.14298908625,
-        "mass_upper": 0.14311408625,
+        "enclosure_width": 6.25e-05,
+        "mass_lower": 0.1430203959375,
+        "mass_upper": 0.1430828959375,
         "offset": "3/2",
         "phi_bound": 0.21286732957408003,
         "satisfied": true,
@@ -244,9 +244,9 @@
           "5",
           "2"
         ],
-        "enclosure_width": 6.25e-06,
-        "mass_lower": 0.00809267075,
-        "mass_upper": 0.00809892075,
+        "enclosure_width": 3.125e-06,
+        "mass_lower": 0.0080942725625,
+        "mass_upper": 0.0080973975625,
         "offset": "-2",
         "phi_bound": 0.0125,
         "satisfied": true,
@@ -258,23 +258,9 @@
           "5",
           "2"
         ],
-        "enclosure_width": 2.5e-05,
-        "mass_lower": 0.03236993475,
-        "mass_upper": 0.03239493475,
-        "offset": "-2",
-        "phi_bound": 0.05,
-        "satisfied": true,
-        "tau": "1/10",
-        "unit_half_width": 0.018569533817705187
-      },
-      {
-        "direction": [
-          "5",
-          "2"
-        ],
-        "enclosure_width": 1.25e-06,
-        "mass_lower": 0.00161848125,
-        "mass_upper": 0.00161973125,
+        "enclosure_width": 6.25e-07,
+        "mass_lower": 0.00161883928125,
+        "mass_upper": 0.00161946428125,
         "offset": "-2",
         "phi_bound": 0.0025,
         "satisfied": true,
@@ -285,94 +271,94 @@
         "direction": [
           "5",
           "2"
-        ],
-        "enclosure_width": 6.25e-05,
-        "mass_lower": 0.08091443625,
-        "mass_upper": 0.08097693625,
-        "offset": "-2",
-        "phi_bound": 0.125,
-        "satisfied": true,
-        "tau": "1/4",
-        "unit_half_width": 0.046423834544262965
-      },
-      {
-        "direction": [
-          "5",
-          "2"
-        ],
-        "enclosure_width": 6.041658333333333e-05,
-        "mass_lower": 0.031443012916666666,
-        "mass_upper": 0.0315034295,
-        "offset": "-1",
-        "phi_bound": 0.05,
-        "satisfied": true,
-        "tau": "1/10",
-        "unit_half_width": 0.018569533817705187
-      },
-      {
-        "direction": [
-          "5",
-          "2"
-        ],
-        "enclosure_width": 1.875e-05,
-        "mass_lower": 0.0077412485,
-        "mass_upper": 0.0077599985,
-        "offset": "-1",
-        "phi_bound": 0.0125,
-        "satisfied": true,
-        "tau": "1/40",
-        "unit_half_width": 0.004642383454426297
-      },
-      {
-        "direction": [
-          "5",
-          "2"
-        ],
-        "enclosure_width": 3.75e-06,
-        "mass_lower": 0.0015450055,
-        "mass_upper": 0.0015487555,
-        "offset": "-1",
-        "phi_bound": 0.0025,
-        "satisfied": true,
-        "tau": "1/200",
-        "unit_half_width": 0.0009284766908852593
-      },
-      {
-        "direction": [
-          "5",
-          "2"
-        ],
-        "enclosure_width": 0.00013541658333333334,
-        "mass_lower": 0.07696075891666666,
-        "mass_upper": 0.0770961755,
-        "offset": "-1",
-        "phi_bound": 0.125,
-        "satisfied": true,
-        "tau": "1/4",
-        "unit_half_width": 0.046423834544262965
-      },
-      {
-        "direction": [
-          "2",
-          "1"
-        ],
-        "enclosure_width": 2.5e-06,
-        "mass_lower": 0.00361977125,
-        "mass_upper": 0.00362227125,
-        "offset": "-1/2",
-        "phi_bound": 0.006020797289396148,
-        "satisfied": true,
-        "tau": "1/200",
-        "unit_half_width": 0.00223606797749979
-      },
-      {
-        "direction": [
-          "2",
-          "1"
         ],
         "enclosure_width": 1.25e-05,
-        "mass_lower": 0.01809879625,
-        "mass_upper": 0.01811129625,
+        "mass_lower": 0.03237629446875,
+        "mass_upper": 0.03238879446875,
+        "offset": "-2",
+        "phi_bound": 0.05,
+        "satisfied": true,
+        "tau": "1/10",
+        "unit_half_width": 0.018569533817705187
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 3.125e-05,
+        "mass_lower": 0.08093017634375,
+        "mass_upper": 0.08096142634375,
+        "offset": "-2",
+        "phi_bound": 0.125,
+        "satisfied": true,
+        "tau": "1/4",
+        "unit_half_width": 0.046423834544262965
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 3.0208322916666666e-05,
+        "mass_lower": 0.03145810286458333,
+        "mass_upper": 0.0314883111875,
+        "offset": "-1",
+        "phi_bound": 0.05,
+        "satisfied": true,
+        "tau": "1/10",
+        "unit_half_width": 0.018569533817705187
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 9.375e-06,
+        "mass_lower": 0.00774595446875,
+        "mass_upper": 0.00775532946875,
+        "offset": "-1",
+        "phi_bound": 0.0125,
+        "satisfied": true,
+        "tau": "1/40",
+        "unit_half_width": 0.004642383454426297
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 1.875e-06,
+        "mass_lower": 0.00154594703125,
+        "mass_upper": 0.00154782203125,
+        "offset": "-1",
+        "phi_bound": 0.0025,
+        "satisfied": true,
+        "tau": "1/200",
+        "unit_half_width": 0.0009284766908852593
+      },
+      {
+        "direction": [
+          "5",
+          "2"
+        ],
+        "enclosure_width": 6.770832291666667e-05,
+        "mass_lower": 0.07699466477083333,
+        "mass_upper": 0.07706237309375,
+        "offset": "-1",
+        "phi_bound": 0.125,
+        "satisfied": true,
+        "tau": "1/4",
+        "unit_half_width": 0.046423834544262965
+      },
+      {
+        "direction": [
+          "2",
+          "1"
+        ],
+        "enclosure_width": 6.25e-06,
+        "mass_lower": 0.01810185384375,
+        "mass_upper": 0.01810810384375,
         "offset": "-1/2",
         "phi_bound": 0.03010398644698074,
         "satisfied": true,
@@ -384,9 +370,23 @@
           "2",
           "1"
         ],
-        "enclosure_width": 5e-05,
-        "mass_lower": 0.0723903295,
-        "mass_upper": 0.0724403295,
+        "enclosure_width": 1.25e-06,
+        "mass_lower": 0.0036203574375,
+        "mass_upper": 0.0036216074375,
+        "offset": "-1/2",
+        "phi_bound": 0.006020797289396148,
+        "satisfied": true,
+        "tau": "1/200",
+        "unit_half_width": 0.00223606797749979
+      },
+      {
+        "direction": [
+          "2",
+          "1"
+        ],
+        "enclosure_width": 2.5e-05,
+        "mass_lower": 0.0724027628125,
+        "mass_upper": 0.0724277628125,
         "offset": "-1/2",
         "phi_bound": 0.12041594578792296,
         "satisfied": true,
@@ -398,9 +398,9 @@
           "3",
           "-1"
         ],
-        "enclosure_width": 3.75e-06,
-        "mass_lower": 0.00249699775,
-        "mass_upper": 0.00250074775,
+        "enclosure_width": 1.875e-06,
+        "mass_lower": 0.0024979960625,
+        "mass_upper": 0.0024998710625,
         "offset": "2",
         "phi_bound": 0.0042573465914816,
         "satisfied": true,
@@ -412,9 +412,9 @@
           "3",
           "-1"
         ],
-        "enclosure_width": 1.875e-05,
-        "mass_lower": 0.012464041,
-        "mass_upper": 0.012482791,
+        "enclosure_width": 9.375e-06,
+        "mass_lower": 0.01246882925,
+        "mass_upper": 0.01247820425,
         "offset": "2",
         "phi_bound": 0.021286732957408003,
         "satisfied": true,
@@ -425,30 +425,30 @@
     "records_retained": "all violations plus the 25 largest mass/half-width ratios",
     "registered_constant_sqrt29_over_2": 2.692582403567252,
     "slabs_tested": 480,
-    "subdivisions": 2000,
+    "subdivisions": 4000,
     "support_diameter_squared_measured": 26.034495502232026,
     "support_diameter_squared_upper_bound": "2609/100",
     "support_diameter_stationarity": "corner (1, 3) against y = 3x^2 - 2 at the root of 18 x^3 - 29 x - 1",
     "violations": 0,
     "violations_against_measured_support_diameter_constant": 0,
-    "worst_mass_over_half_width": 1.9989611537348104,
+    "worst_mass_over_half_width": 1.998577466680608,
     "worst_slab": {
       "direction": "(3, -1)",
       "offset": "1",
-      "tau": "1/40"
+      "tau": "1/200"
     }
   },
   "provenance": {
     "audit": "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001",
     "decimal_precision": 50,
-    "generated_utc": "2026-08-31T20:30:17.568922+00:00",
-    "git_revision": "8ab99909ffc72ee02661e5f47d4bbf8206eb22f5",
+    "generated_utc": "2026-08-31T20:34:28.776655+00:00",
+    "git_revision": "d20184fbb5bcb3df53896d24d990d69994be7dc7",
     "git_status_clean": false,
     "grid_denominator": 1073741824,
     "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
     "python": "3.13.12 (main, Feb 12 2026, 01:06:02) [Clang 21.1.4 ]",
     "script": "agenticresearch/py/audit_ds_noncentered_global_basin_transfer.py",
-    "script_sha256": "acdba34cfc008d6e19a78196fbe8fbfd180a8d7fa46e2f7a87f91236c64839a2",
+    "script_sha256": "6c71bbcd6de40e8573e0683b19144569cf26e89eaa81945496e0b5699c10eefd",
     "seed_base": 20260831,
     "seed_formula": "seed(n, rep) = SEED_BASE + 1000 * n + rep"
   },
@@ -741,6 +741,6 @@
     "spacing": "1/30",
     "target_on_lattice": true
   },
-  "seconds": 17.34,
+  "seconds": 28.75,
   "stage": "population"
 }

@@ -180,7 +180,7 @@ one-point stability — was not located. Recorded as `search_gap`, never novelty
 Instrument: `py/audit_ds_noncentered_global_basin_transfer.py`, pure standard
 library, written from the law definition, importing neither the library nor
 `py/ds_noncentered_global_basin.py`. Artifacts with full provenance (git
-revision, script SHA-256 `acdba34c…`, interpreter, platform, exact counts,
+revision, script SHA-256 `6c71bbcd…`, interpreter, platform, exact counts,
 seed formula \(\mathrm{seed}(n,\mathrm{rep})=20260831+1000n+\mathrm{rep}\)) are
 under `AUDITS/artifacts/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001/`.
 

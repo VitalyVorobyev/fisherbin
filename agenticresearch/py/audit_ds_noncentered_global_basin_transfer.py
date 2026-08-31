@@ -1965,7 +1965,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--codebook-steps", type=int, default=30, help="1/spacing of the codebook lattice"
     )
     parser.add_argument(
-        "--slab-subdivisions", type=int, default=2000, help="(M4) sweep mesh in x"
+        "--slab-subdivisions", type=int, default=4000, help="(M4) sweep mesh in x"
     )
     parser.add_argument(
         "--no-minimality-search",
