@@ -1,6 +1,6 @@
 # OPEN-DS-MARGINS-NONCENTERED — off-class stable basins and empirical transfer
 
-**Programme:** P1 · **Opened:** 31 August 2026 · **Status:** active
+**Programme:** P1 · **Opened:** 31 August 2026 · **Completed:** 31 August 2026 · **Status:** completed
 
 ## Goal
 
@@ -37,7 +37,7 @@ diagnostic.
 - `DS-STABLE-BASINS-CENTERED-OBSTRUCTION`
 - `DS-STABLE-BASINS-LCM-CLASSIFICATION`
 - `DS-PROFILED-COMPILE-CERTIFICATE`
-- `DS-EXCHANGE-IMPLIES-COMPANION`
+- `OPEN-DS-FINITE-POP-BRIDGE`
 
 ## Known blockers
 
@@ -92,17 +92,81 @@ diagnostic.
 - A separate publication-grade audit packet before any new compile path is
   copied into `src/`.
 
+## Outcome
+
+The packet stop condition is **PROVED for an explicit off-(L) law**. Let
+
+\[
+X,Z\stackrel{\mathrm{iid}}{\sim}\operatorname{Unif}[-1,1],\qquad
+S_\psi=X,\qquad S_\lambda=3X^2-1+Z,
+\]
+
+and use \(K=3\). The equal-third rule with cuts \(\pm1/3\) is, up to labels,
+the unique population global \(D_s\) optimizer. Its exact data are
+
+\[
+I_{\rm full}=\operatorname{diag}(1/3,17/15),\qquad
+I_q=\operatorname{diag}(8/27,32/81),\qquad
+\beta=0,qquad \eta_{D_s}=8/9.
+\]
+
+The cell masses are \(1/3\), the minimum projected-centroid separation is
+\(2/3\), and the eventual margins \(c_0=1/4\), \(\kappa=1/4\), and
+\(\gamma=1/2\) are valid. The law lies off (L) because
+\(E[S_\lambda\mid X]=3X^2-1\) is not zero.
+
+The proof first sandwiches every profiled rule by the scalar between-cell
+variance of \(X\), then proves that the uniform scalar three-cell optimum is
+uniquely the three equal intervals. The stated rule attains equality in the
+sandwich and is therefore a strictly isolated global optimum. Empirically,
+the fixed population rule supplies a lower bound and the empirical scalar
+three-bin optimum supplies the upper bound. DS15 grouping rigidity then
+forces, almost surely, every sequence of finite global regular \(D_s\)
+optimizers to converge in labels and moments, up to relabeling. Finite global
+optimality itself gives exact ordinary one-point exchange stability. No score
+is sample-centered.
+
+This does **not** prove that raw population-cut labels are stable at finite
+\(N\), or that generic local exchange ascent selects the basin. The exact
+support-minimal \(N=4\) fixture
+`CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001` has a strict improving move
+of size \(37/14608\) from the raw population-cut labeling.
+
+## Falsification and provenance
+
+- `py/ds_noncentered_global_basin.py` uses pure-stdlib `Fraction` arithmetic.
+  It verifies the exact population moments and the minimized boundary
+  counterexample, then enumerates 13,744 canonical midpoint partitions,
+  10,386 product-grid partitions, and 428 adversarial partitions through
+  \(N=10\), including unequal weights, duplicates, singletons, ties, and
+  singular nuisance blocks. It found no sandwich or claimed-global-bound
+  violation.
+- `WORK/artifacts/OPEN-DS-MARGINS-NONCENTERED/exact-falsification.json`
+  records the run and exact fractions.
+- `tests/test_research_claims.py` pins both the theorem arithmetic and the
+  counterexample.
+- `LITERATURE/audits/OPEN-DS-MARGINS-NONCENTERED-31-August-2026.md`
+  triangulates the five nearest classical sources. The combined profiled
+  information/global-isolation/empirical-transfer statement remains a
+  `search_gap`, not a novelty claim.
+
+## Deployment boundary
+
+`DS-NONCENTERED-GLOBAL-BASIN-TRANSFER` is a population and empirical
+existence theorem. It authorizes no `src/` or public API change. A fresh
+independent audit is queued in
+`WORK/active/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER.md`; no compile surface
+may consume DS18 before that audit is hardened.
+
 ## Stop conditions
 
-Stop when the off-(L) root-and-transfer statement is proved, disproved with a
-minimized serialized counterexample, or reduced to explicitly named
-regularity, isolation, and empirical-selection assumptions. Split off a new
-packet if root existence is settled but empirical transfer remains
-independent.
+Satisfied by `DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`: **PROVED for an explicit
+off-(L) law**, with an exact nondegenerate gate root and almost-sure exact
+exchange-stable empirical labelings supplied by finite global regular
+optimizers. Practical basin selection is outside this result.
 
 ## Next dependency-blocking question
 
-Does `OPEN-DS-MARGINS-NONCENTERED` admit a nondegenerate isolated solution of
-the `DS-STABLE-BASINS-FIXED-POINT-GATE` system on a stated off-(L) law class,
-and does that basin transfer to exact empirical one-point exchange stability
-against \(O(1/N)\)-scale boundary noise?
+Can a practical profiled solver be proved to select this full-rank basin
+without global combinatorial optimization, while retaining computable
+margins and value guarantees under perturbations of the law?

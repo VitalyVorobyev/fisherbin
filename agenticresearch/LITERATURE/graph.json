@@ -199,6 +199,29 @@
     "The Tarpey-Li-Flury 1995 primary proof and Tarpey-Loperfido 2015 primary theorem text remained library-access restricted; exact theorem scope was cross-checked against Tarpey-Flury 1996 primary text and explicit later theorem restatements.",
     "This was a theorem-targeted one-hop traversal, not a field-wide saturation round; the verdict is a search gap, never a novelty claim."
    ]
+  },
+  {
+   "round": 6,
+   "date": "2026-08-31",
+   "mode": "targeted-packet-triangulation",
+   "scope": "OPEN-DS-MARGINS-NONCENTERED per-theorem triangulation for the frozen DS18 claim. Five nearest sources were compared across score-function Fisher quantization, scalar optimal-quantizer uniqueness and empirical consistency, generalized Lloyd set convergence, nonregular split-point asymptotics, and finite Hartigan relocation. No broad field-coverage or saturation claim is made.",
+   "sources": [
+    "Venkitasubramaniam-Tong-Swami-2006",
+    "Liu-Pages-2020",
+    "Sabin-Gray-1986",
+    "Serinko-Babu-1992",
+    "Telgarsky-Vattani-2010"
+   ],
+   "relevant_count": 5,
+   "papers_added": [
+    "liu-pages-2020",
+    "sabin-gray-1986"
+   ],
+   "verdict": "search_gap",
+   "limitations": [
+    "This was a theorem-targeted triangulation, not a citation-saturation round.",
+    "No located source combines profiled Fisher information, strict global isolation for the named off-(L) law, convergence of every finite global optimizer, and exact finite one-point exchange stability; absence is recorded only as a search gap."
+   ]
   }
  ],
  "papers": [
@@ -258,7 +281,8 @@
    "research_area": "fisher-quantization",
    "relevant_claims": [
     "FI-QUANT-IDENTITY",
-    "TRACE-WHITENED-KMEANS"
+    "TRACE-WHITENED-KMEANS",
+    "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
    ],
    "status": "deeply_reviewed"
   },
@@ -613,7 +637,8 @@
     "D-EXCHANGE-IMPLIES-VORONOI",
     "D-VORONOI-NOT-EXCHANGE",
     "D-GUARDED-LLOYD",
-    "DS-STABLE-STATE-SELECTION"
+    "DS-STABLE-STATE-SELECTION",
+    "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
    ],
    "status": "deeply_reviewed",
    "note": "Primary PMLR full text reviewed 30 Aug 2026: direct precedent for one-point Hartigan terminal geometry, but no profiled objective, nuisance block, or empirical-to-population funnel."
@@ -1849,7 +1874,8 @@
    "cited_by_relevant": [],
    "research_area": "vector-quantization",
    "relevant_claims": [
-    "DS-STABLE-BASINS-FIXED-POINT-GATE"
+    "DS-STABLE-BASINS-FIXED-POINT-GATE",
+    "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
    ],
    "status": "deeply_reviewed",
    "note": "Primary PDF read verbatim 31 Aug 2026: split-function formulation of 1-D k-means over ordered cutpoints, unique global optimum, singular-Hessian nonregular case with n^{1/4} rates. Per-law degeneracy asymptotics, not a class-wide forcing theorem."
@@ -1938,6 +1964,46 @@
    ],
    "status": "deeply_reviewed",
    "note": "Primary text and proof read verbatim 31 Aug 2026. Theorem 1.2 is exactly the monotone-covariance equality condition, proved via an iid-copy product identity. It supports DS17's conditional equality step after conditioning; the cell-measurability and rank consequences remain project-specific."
+  },
+  {
+   "id": "liu-pages-2020",
+   "title": "Convergence rate of optimal quantization and application to the clustering performance of the empirical measure",
+   "year": 2020,
+   "authors": [
+    "Y. Liu",
+    "G. Pagès"
+   ],
+   "bibliography_key": "Liu-Pages-2020",
+   "source_of_discovery": "targeted-packet-triangulation",
+   "cites_relevant": [],
+   "cited_by_relevant": [],
+   "research_area": "vector-quantization",
+   "relevant_claims": [
+    "OPEN-DS-MARGINS-AT-OPTIMA",
+    "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
+   ],
+   "status": "deeply_reviewed",
+   "note": "Primary JMLR text used for optimal-codebook consistency and scalar uniqueness/positive-Hessian context. Its additive quadratic-distortion results do not supply DS18's profiled Fisher sandwich, equality chain, or exact finite exchange stability."
+  },
+  {
+   "id": "sabin-gray-1986",
+   "title": "Global convergence and empirical consistency of the generalized Lloyd algorithm",
+   "year": 1986,
+   "authors": [
+    "M. J. Sabin",
+    "R. M. Gray"
+   ],
+   "bibliography_key": "Sabin-Gray-1986",
+   "source_of_discovery": "targeted-packet-triangulation",
+   "cites_relevant": [],
+   "cited_by_relevant": [],
+   "research_area": "vector-quantization",
+   "relevant_claims": [
+    "OPEN-DS-FINITE-POP-BRIDGE",
+    "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
+   ],
+   "status": "screened",
+   "note": "Closest structural precedent for generalized Lloyd set convergence and empirical consistency under source-independent convex additive distortion. It has no nuisance Schur complement, profiled-information equality chain, or exact finite ordinary-exchange conclusion."
   },
   {
    "id": "tarpey-loperfido-2015",

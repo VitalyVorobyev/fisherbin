@@ -95,6 +95,8 @@ no result covers a global nonlinear matrix functional of cell moments.
 
 ## Sabin & Gray (1986)
 
+**Key:** Sabin-Gray-1986
+
 **Paper:** *Global convergence and empirical consistency of the generalized
 Lloyd algorithm* (IEEE IT 32:148–155).
 

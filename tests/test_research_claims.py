@@ -1327,13 +1327,9 @@ def test_ds18_population_cut_labels_need_not_be_exchange_stable() -> None:
     ]
 
     before_value = (
-        before_information[0][0]
-        - before_information[0][1] ** 2 / before_information[1][1]
+        before_information[0][0] - before_information[0][1] ** 2 / before_information[1][1]
     )
-    after_value = (
-        after_information[0][0]
-        - after_information[0][1] ** 2 / after_information[1][1]
-    )
+    after_value = after_information[0][0] - after_information[0][1] ** 2 / after_information[1][1]
     assert before_value == Fraction(fixture["objective_before"])
     assert after_value == Fraction(fixture["objective_after"])
     assert after_value - before_value == Fraction(fixture["exact_quantities"]["exact_gain"])
@@ -1358,7 +1354,8 @@ def test_ds18_named_off_class_root_and_margins_are_exact() -> None:
     information = [
         [
             sum(
-                mass * (means_psi if first == 0 else means_lambda)[cell]
+                mass
+                * (means_psi if first == 0 else means_lambda)[cell]
                 * (means_psi if second == 0 else means_lambda)[cell]
                 for cell, mass in enumerate(masses)
             )
@@ -1378,12 +1375,11 @@ def test_ds18_named_off_class_root_and_margins_are_exact() -> None:
     assert min(information[0][0], information[1][1]) == Fraction(8, 27)
     assert information[0][1] == 0  # DS17 root residual and beta numerator
     assert means_psi == [Fraction(-2, 3), Fraction(0), Fraction(2, 3)]
-    assert [
-        (means_psi[index] + means_psi[index + 1]) / 2 for index in range(2)
-    ] == [Fraction(-1, 3), Fraction(1, 3)]
-    assert min(
-        means_psi[index + 1] - means_psi[index] for index in range(2)
-    ) == Fraction(2, 3)
+    assert [(means_psi[index] + means_psi[index + 1]) / 2 for index in range(2)] == [
+        Fraction(-1, 3),
+        Fraction(1, 3),
+    ]
+    assert min(means_psi[index + 1] - means_psi[index] for index in range(2)) == Fraction(2, 3)
     assert information[0][0] / full_information[0][0] == Fraction(8, 9)
     assert Fraction(1, 4) < min(masses)
     assert Fraction(1, 4) < min(information[0][0], information[1][1])

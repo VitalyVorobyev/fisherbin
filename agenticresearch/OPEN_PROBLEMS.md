@@ -1,6 +1,6 @@
 # Open problems — the research programme queue
 
-**Version:** 4.0 · 28 August 2026
+**Version:** 4.0 · 31 August 2026
 **Rule:** this file contains only genuinely unresolved questions. Results established in `KNOWN_RESULTS/` are inputs, not open tasks.
 
 This is the **single priority queue** of the project, organized as eight
@@ -17,7 +17,7 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
 *Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 30 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 is resolved on the audited scalar DS15 class. OP29's deployment half is resolved by DS16 and hardened by `AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`: \(\hat I_{\lambda\lambda}\ge\kappa\) has a strict existential population price and every value-convergent sequence enters the nuisance-degenerate funnel. The projected rule is the only currently established unconditional compile path in the registry. A DS14 companion rule has an asymptotic guarantee only along exchange-stable sequences satisfying all DS14 law and eventual-margin hypotheses; one finite diagnostic is not a population certificate. The surviving gaps are OP29's mathematical branches, OP30, and OP7. Update 31 Aug 2026 (DS17, hardened by `AUDITS/AUDIT-DS-STABLE-BASINS-001.md`): OP30's inhabitation half is resolved **negatively on the declared conditionally centered population class (L)** — `DS-STABLE-BASINS-CENTERED-OBSTRUCTION` proves the margin-certified stable branch almost surely eventually empty on every atomless (L)-law with (M4), so the DS14 companion path is vacuous there and the funnel measurements were a theorem's finite face, not a seeding artifact. The (M5)-free escape is classified as compile-dead wasted cells (`DS-STABLE-BASINS-LCM-CLASSIFICATION`). The live question moves off-class to OP29(a), where `DS-STABLE-BASINS-FIXED-POINT-GATE` is only a necessary per-law population test; an independent full-window multistart found one admissible mix3 root with macroscopic margins and near-zero measured price, but did not prove uniqueness, sufficiency, or empirical transfer.*
+*Status 31 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 is resolved on the audited scalar DS15 class. OP29's deployment half is resolved by DS16 and hardened by `AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`: \(\hat I_{\lambda\lambda}\ge\kappa\) has a strict existential population price and every value-convergent sequence enters the nuisance-degenerate funnel. DS17, hardened by `AUDITS/AUDIT-DS-STABLE-BASINS-001.md`, resolves OP30's inhabitation half negatively on the declared conditionally centered population class (L) and classifies the (M5)-free escape as compile-dead wasted cells. DS18 (`DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`) now proves the complementary existential fact off (L): for the exact law \(S_\psi=X\), \(S_\lambda=3X^2-1+Z\), every sequence of finite global regular \(D_s\) optimizers converges, up to labels, to the unique equal-third population rule and is exactly ordinary one-point exchange-stable, with fixed margins. This is a global-combinatorial selection theorem, not a practical ascent guarantee or a new compile path. The projected rule remains the only established unconditional compile path; the surviving gaps are practical off-(L) basin selection and perturbation robustness in OP29/OP7, the remaining OP30 branches, and the broader vector cases.*
 
 ## OP29. Margins beyond conditional centering
 
@@ -29,7 +29,11 @@ class is open:
 - **Non-centered laws** (\(E[S_\lambda\mid\hat s]\ne0\)): the projection tax
   has a \(\Theta(1)\) population component on efficient-score intervals, so
   the unrestricted supremum may be attained at *nondegenerate* quantizers and
-  the DS14 margins may hold at optima — prove or refute for a stated class.
+  the DS14 margins may hold at optima. DS18 resolves this **for one explicit
+  exact law**: with independent uniform \(X,Z\) and scores
+  \((X,3X^2-1+Z)\), the unique population optimum has cuts \(\pm1/3\),
+  efficiency \(8/9\), and fixed margins, and every sequence of finite global
+  regular optimizers transfers to it almost surely (`DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`).
   Measured: mix3/tiny\_cluster optima keep macroscopic binned nuisance blocks
   through \(N=18\) while the Gaussian blocks collapse (N-DS-MARGINS-TREND).
   DS17 (31 Aug 2026) hands this branch the live inhabitation question and its
@@ -39,10 +43,12 @@ class is open:
   found one admissible mix3 root at \(\beta=0\), carrying
   \(\lambda_{\min}=1.7364\) and near-zero measured price
   (N-DS-AUDIT17-ROOTS); that is evidence, not a uniqueness or sufficiency
-  theorem. The open remainder is to prove root existence and basin structure
-  on a stated off-(L) class, then transfer a nondegenerate population basin to
-  exact empirical one-point exchange stability against \(O(1/N)\)-scale
-  boundary noise.
+  theorem. The open remainder is no longer existential: prove that a practical
+  profiled solver selects the full-rank basin without global combinatorial
+  optimization, and retain computable margins and value guarantees under a
+  nontrivial perturbation class. Raw population-cut labels are not the answer:
+  `CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001` has a strict
+  \(O(1/N)\)-scale improving boundary move at the support-minimal \(N=4\).
 - **\(d_\psi>1\)**: the DS15 reduction identifies the degenerate attainers,
   but the dichotomy needs uniqueness/rigidity for the vector D problem on the
   efficient score (ties into OP8/C2).
@@ -120,8 +126,10 @@ terminate at ordinary-stable margin states asymptotically (the certified
 class is eventually empty), so certified outputs there are
 constrained-stable, priced, and non-inductive by construction; off-class the
   solver may use `DS-STABLE-BASINS-FIXED-POINT-GATE` roots as necessary
-  population diagnostics, never as certificates of sufficiency or finite-sample
-  completeness.
+  population diagnostics. DS18 upgrades one named law to a unique strict
+  population optimum with transfer through finite **global** optimizers; it
+  does not certify generic local exchange ascent, raw population-cut labels,
+  or robustness to perturbing the law.
 
 ---
 

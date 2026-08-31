@@ -1628,21 +1628,21 @@ selection theorem for exchange ascent.
 
 ### The named law and exact population rule
 
-Let (X,Z\stackrel{\mathrm{iid}}\sim\operatorname{Unif}[-1,1]) and define
+Let \(X,Z\stackrel{\mathrm{iid}}\sim\operatorname{Unif}[-1,1]\) and define
 
 \[
 S_\psi=X,\qquad S_\lambda=3X^2-1+Z.
 \]
 
-Then (ES=0), (E\|S\|^2<\infty), and
+Then \(ES=0\), \(E\|S\|^2<\infty\), and
 
 \[
 I_{\rm full}=E[SS^\top]
 =\begin{pmatrix}1/3&0\\0&17/15\end{pmatrix}\succ0.
 \]
 
-The full-data regression slope is (B^*=0), hence the efficient score is
-(\hat s=X). The law is strictly outside (L), because
+The full-data regression slope is \(B^*=0\), hence the efficient score is
+\(\hat s=X\). The law is strictly outside (L), because
 
 \[
 E[S_\lambda\mid\hat s=X]=3X^2-1\ne0\quad\text{a.s.}
@@ -1655,12 +1655,12 @@ It is atomless and satisfies (M4). Indeed its density is (1/4) on
 \subset[-1,1]\times[-2,3].
 \]
 
-For every unit (v), a width-(2t) slab intersects the bounding rectangle in
-area at most (2t\sqrt{29}); therefore one may take
-(\varphi(t)=\min(1,\sqrt{29}t/2)\downarrow0).
+For every unit \(v\), a width-\(2t\) slab intersects the bounding rectangle in
+area at most \(2t\sqrt{29}\); therefore one may take
+\(\varphi(t)=\min(1,\sqrt{29}t/2)\downarrow0\).
 
-Let (q^*) be the three-cell (X)-interval rule with cuts
-(-1/3,1/3). Direct integration gives
+Let \(q^*\) be the three-cell \(X\)-interval rule with cuts
+\((-1/3,1/3)\). Direct integration gives
 
 \[
 W_b=1/3,\qquad
@@ -1676,16 +1676,16 @@ I_{q^*}
 \Phi_{D_s}(q^*)=8/27.
 \]
 
-At (eta=0), the projected cell means are
-((-2/3,0,2/3)), whose midpoints are exactly the declared cuts. Thus (q^*)
-is Lloyd-stationary for (T_0=X), and the DS17.4 residual is
+At \(\beta=0\), the projected cell means are
+\((-2/3,0,2/3)\), whose midpoints are exactly the declared cuts. Thus \(q^*\)
+is Lloyd-stationary for \(T_0=X\), and the DS17.4 residual is
 
 \[
 E[h(X)S_\lambda]=I_{\psi\lambda}(q^*)=0.
 \]
 
-Since (I_{\lambda\lambda}(q^*)=32/81>0), this is a **regular** root with
-(B^*_{q^*}=0), not a singular numerator root. Its exact gate margins are
+Since \(I_{\lambda\lambda}(q^*)=32/81>0\), this is a **regular** root with
+\(B^*_{q^*}=0\), not a singular numerator root. Its exact gate margins are
 
 \[
 \min_bW_b=1/3,\qquad
@@ -1694,9 +1694,9 @@ Since (I_{\lambda\lambda}(q^*)=32/81>0), this is a **regular** root with
 \]
 
 In particular the fixed constants
-((c_0,\kappa,\gamma)=(1/4,1/4,1/2)) have strict slack. The root also obeys
-the DS17 compact tilt bound trivially because (eta=0). Relative to the
-unbinned profiled information (1/3), its scalar (D_s) retention is
+\((c_0,\kappa,\gamma)=(1/4,1/4,1/2)\) have strict slack. The root also obeys
+the DS17 compact tilt bound trivially because \(\beta=0\). Relative to the
+unbinned profiled information \(1/3\), its scalar \(D_s\) retention is
 
 \[
 \eta_{D_s}=\frac{8/27}{1/3}=\frac89.
@@ -1704,10 +1704,10 @@ unbinned profiled information (1/3), its scalar (D_s) retention is
 
 ### Theorem DS18.1 (unique strict population attainer)
 
-Among every measurable regular three-cell quantizer of (S), (q^*) is the
-unique population (D_s) maximizer up to cell relabeling. Moreover it is
-strictly isolated in decision distance: for every (arepsilon>0) there is
-(delta(\varepsilon)>0) such that
+Among every measurable regular three-cell quantizer of \(S\), \(q^*\) is the
+unique population \(D_s\) maximizer up to cell relabeling. Moreover it is
+strictly isolated in decision distance: for every \(\varepsilon>0\) there is
+\(\delta(\varepsilon)>0\) such that
 
 \[
 \min_{\pi}\sum_bP(A_b\mathbin\triangle A^*_{\pi(b)})\ge\varepsilon
@@ -1715,8 +1715,8 @@ strictly isolated in decision distance: for every (arepsilon>0) there is
 \Phi_{D_s}(q)\le 8/27-\delta(\varepsilon).
 \]
 
-*Proof.* DS11's variational form, evaluated at (B=0), and the scalar
-nearest-centroid reduction from DS15 Lemma 1 give, for every (q),
+*Proof.* DS11's variational form, evaluated at \(B=0\), and the scalar
+nearest-centroid reduction from DS15 Lemma 1 give, for every \(q\),
 
 \[
 \Phi_{D_s}(q)
@@ -1724,32 +1724,32 @@ nearest-centroid reduction from DS15 Lemma 1 give, for every (q),
 \le v_3(\operatorname{Unif}[-1,1]).
 \]
 
-For a uniform interval of length (\ell), the within-cell squared-error
-contribution (including density (1/2)) is (\ell^3/24). The three interval
-lengths sum to (2), so strict convexity gives the unique minimum at
-(\ell_1=\ell_2=\ell_3=2/3). Its total error is (1/27), and therefore
+For a uniform interval of length \(\ell\), the within-cell squared-error
+contribution (including density \(1/2\)) is \(\ell^3/24\). The three interval
+lengths sum to \(2\), so strict convexity gives the unique minimum at
+\(\ell_1=\ell_2=\ell_3=2/3\). Its total error is \(1/27\), and therefore
 
 \[
 v_3=E[X^2]-1/27=1/3-1/27=8/27.
 \]
 
-The exact calculation above shows (q^*) attains both bounds with a regular
+The exact calculation above shows \(q^*\) attains both bounds with a regular
 nuisance block. Equality in the nearest-centroid reduction forces assignment
 to a nearest member of the attaining scalar codebook; the uniform law charges
-neither midpoint, and the scalar codebook is unique, so (q=q^*) a.s. up to
+neither midpoint, and the scalar codebook is unique, so \(q=q^*\) a.s. up to
 labels. The quantitative isolation is the scalar grouping-rigidity argument
-of DS15 Lemma 3, specialized to bounded (X): otherwise a sequence a fixed
-decision distance away with values tending to (8/27) would have centroid
+of DS15 Lemma 3, specialized to bounded \(X\): otherwise a sequence a fixed
+decision distance away with values tending to \(8/27\) would have centroid
 subsequences converging to the unique scalar optimum and its cells would
 converge to the equal intervals, a contradiction. ∎
 
 ### Theorem DS18.2 (almost-sure exact empirical inhabitation)
 
-Let (S_1,S_2,\ldots) be i.i.d. from the named law, with equal weights
-(1/N) and **without sample centering**. For every sufficiently large (N),
-let (z^{(N)}) be any exact global maximizer of ordinary in-bin profiled
-(D_s) over the finite labelings with three nonempty cells and
-(hat I^z_{\lambda\lambda}>0). Then, on one probability-one event, after
+Let \(S_1,S_2,\ldots\) be i.i.d. from the named law, with equal weights
+\(1/N\) and **without sample centering**. For every sufficiently large \(N\),
+let \(z^{(N)}\) be any exact global maximizer of ordinary in-bin profiled
+\(D_s\) over the finite labelings with three nonempty cells and
+\(\hat I^z_{\lambda\lambda}>0\). Then, on one probability-one event, after
 relabeling,
 
 \[
@@ -1758,18 +1758,18 @@ P_N(z^{(N)}\ne q^*)\to0,\qquad
 \hat\Phi_{D_s}(z^{(N)})\to8/27.
 \]
 
-Consequently all sufficiently large (z^{(N)}) are exact ordinary
+Consequently all sufficiently large \(z^{(N)}\) are exact ordinary
 one-point exchange-stable and satisfy (M2)+(M3)+(M5) at the fixed constants
-((1/4,1/4,1/2)). Their companion slopes tend to (0), their projected
-centroids tend to ((-2/3,0,2/3)), and their companion rules converge to the
-deployable population rule (q^*).
+\((1/4,1/4,1/2)\). Their companion slopes tend to \(0\), their projected
+centroids tend to \((-2/3,0,2/3)\), and their companion rules converge to the
+deployable population rule \(q^*\).
 
-*Proof.* Label the sample by the fixed cuts of (q^*), writing the result as
-(z_N^*). The SLLN on these three fixed cells gives
-(hat I_N(z_N^*)\to I_{q^*}), so (z_N^*) is feasible eventually and
-(hat\Phi_{D_s}(z_N^*)\to8/27).
+*Proof.* Label the sample by the fixed cuts of \(q^*\), writing the result as
+\(z_N^*\). The SLLN on these three fixed cells gives
+\(\hat I_N(z_N^*)\to I_{q^*}\), so \(z_N^*\) is feasible eventually and
+\(\hat\Phi_{D_s}(z_N^*)\to8/27\).
 
-For any finite labeling (z), the same variational evaluation at (B=0)
+For any finite labeling \(z\), the same variational evaluation at \(B=0\)
 and scalar reassignment used above are exact sample algebra:
 
 \[
@@ -1778,10 +1778,10 @@ and scalar reassignment used above are exact sample algebra:
 \le \hat v_{3,N}(X),
 \]
 
-where (\hat v_{3,N}(X)) is the best three-group scalar between-value and is
-attained by intervals of the sorted (X_i). Bounded scalar quantization
+where \(\hat v_{3,N}(X)\) is the best three-group scalar between-value and is
+attained by intervals of the sorted \(X_i\). Bounded scalar quantization
 consistency (the scalar part of DS15 Proposition 5) gives
-(hat v_{3,N}(X)\to8/27) a.s. Global optimality therefore squeezes
+\(\hat v_{3,N}(X)\to8/27\) a.s. Global optimality therefore squeezes
 
 \[
 8/27\leftarrow\hat\Phi_{D_s}(z_N^*)
@@ -1791,22 +1791,22 @@ consistency (the scalar part of DS15 Proposition 5) gives
 \]
 
 The empirical form of DS15's scalar grouping rigidity, now simpler because
-(|S|) is bounded and the uniform optimum is unique, yields
-(P_N(z^{(N)}\ne q^*)\to0) after relabeling. The fixed-rule SLLN plus this
+\(|S|\) is bounded and the uniform optimum is unique, yields
+\(P_N(z^{(N)}\ne q^*)\to0\) after relabeling. The fixed-rule SLLN plus this
 vanishing disagreement gives convergence of every cell mass and score moment,
 hence of the information, slope, projected centroids, and objective. The
 strict limiting margins admit the displayed rational lower constants.
 
 Finally, an exact global feasible labeling has no admissible improving
 one-point relocation, so it is exact ordinary exchange-stable. This last step
-does not compare stochastic boundary distances with (1/N): globality signs
+does not compare stochastic boundary distances with \(1/N\): globality signs
 every exact move at once. ∎
 
 ### Boundary, scope, and deployment consequence
 
 The stronger finite assertion is false. On the support-minimal movable sample
-`CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001`, the raw (q^*) labels have
-an exact improving gain (37/14608). Thus (O(1/N))-scale boundary effects
+`CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001`, the raw \(q^*\) labels have
+an exact improving gain \(37/14608\). Thus \(O(1/N)\)-scale boundary effects
 are real; DS18.2 bypasses them through finite global selection rather than
 pretending they vanish pointwise.
 
@@ -1822,7 +1822,7 @@ excluded by feasibility and disappear under mass convergence; the limiting
 nuisance block is regular; bounded support supplies uniform integrability and
 (M4); duplicate full scores occur with probability zero; no first-order move
 approximation is used; exact scores and equal weights are load-bearing; no
-sample centering is performed. The exact root, exhaustive (N\le10)
+sample centering is performed. The exact root, exhaustive \(N\le10\)
 falsification, unequal-weight/duplicate/tie/tiny-cell/singular controls, and
 the boundary fixture are reproduced by
 `py/ds_noncentered_global_basin.py`.
