@@ -1,0 +1,48 @@
+{
+  "id": "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
+  "title": "Conditional centering empties the margin-certified stable branch",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "empirical_to_population",
+  "status": "project_proved",
+  "publication_status": "internal",
+  "statement": "For d_psi = d_lambda = 1 and any atomless law in class (L) (E[S_lambda | shat] = 0 a.s.) with E S = 0, E||S||^2 < oo, I > 0, and the DS14 slab margin (M4) - neither (S) nor (R) is needed: (POPULATION) every tilt-consistent strip rule, in particular every bounded-packet stationary rule with pairwise-distinct projected centroids, has binned nuisance block exactly zero, at every tilt and every K >= 2. Proof mechanism: the exact tilt-residual identity B*(I_q) - beta = E[h(T_beta) S_lambda] / I_lambdalambda with h the increasing step function of T-cell means, plus the conditional Chebyshev association inequality given shat, whose equality case forces shat-measurable cells and hence a zero nuisance block. (EMPIRICAL) chained through the pathwise DS14' lemma (selection-independent probability-one event): almost surely, for every rational kappa, c_0, gamma > 0, for all but finitely many N there exists NO one-point exchange-stable K-cell labeling satisfying (M2)+(M3)+(M5) at those constants at all. OP30(a) full-triple inhabitation is DISPROVED on the entire DS15/DS16 conditionally centered class - jointly Gaussian, elliptical (LCM rank-one collapse and the discriminant-negative Moebius fixed-point identity give an independent second proof there), and all product and dependent (L)-laws alike. The DS14 companion branch is asymptotically vacuous on this class.",
+  "assumptions": [
+    "d_psi = d_lambda = 1; K >= 2 for the population statement, K >= 3 for margin nonvacuity (centered-sample cardinality, commit 891bbf3)",
+    "(L) conditional centering; atomless P; E S = 0; E||S||^2 < oo; full I > 0; (M4) uniform slab margin for the empirical chain (automatic for atomless elliptical laws with nonsingular scatter, with an explicit phi(t))",
+    "(S) and (R) are NOT assumed; the empirical chain imports DS14 (OPEN-DS-FINITE-POP-BRIDGE) with its audited hypotheses, restated pathwise via the fixed-class uniform-law events (DS17.0), and the DS14 Step-4 identification (not bare DS12) to exclude coincident projected centroids under (M5)",
+    "i.i.d. equal weights; exact scores (estimated scores are P2); ordinary one-point exchange stability, never stability-under-constraint",
+    "the disproof concerns the full margin triple (M2)+(M3)+(M5); dropping (M5) the merged branch survives and is classified by DS-STABLE-BASINS-LCM-CLASSIFICATION"
+  ],
+  "dependencies": [
+    "OPEN-DS-FINITE-POP-BRIDGE",
+    "OPEN-DS-POP-COMMON-METRIC",
+    "DS-STABLE-MARGINS-PRICE",
+    "DS-PROFILED-VARIATIONAL"
+  ],
+  "implies": [
+    "OPEN-DS-STABLE-BASINS",
+    "DS-PROFILED-COMPILE-CERTIFICATE",
+    "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+    "OPEN-DS-MARGINS-NONCENTERED"
+  ],
+  "boundary_counterexamples": [
+    "CE-DS-LCM-SIGNSPLIT-MARGIN-001",
+    "CE-DS-STABLE-MARGIN-RETAINING-001"
+  ],
+  "literature": [
+    "Tarpey-Flury-1996",
+    "Flury-1990",
+    "Rakhlin-Caponnetto-2006",
+    "Telgarsky-Vattani-2010"
+  ],
+  "literature_search_status": "search_gap",
+  "proof_location": {
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS17. Inhabitation of the margin-certified branch: the conditional-centering obstruction and the fixed-point gate"
+  },
+  "programme": "P1",
+  "role": "resolves OP30(a) on the packet's class: the strongest form of the DS15/DS16 degeneracy - the certified branch is not merely priced but eventually empty",
+  "warning": "The theorem is about the conditionally centered class only: off (L) the gate can be inhabited at zero price (mix3 root, N-DS-BASINS-MIX3), so no conclusion transfers to non-centered laws (OP29 branch (a)). The finite N <= 14 margin-retaining witnesses are pre-asymptotic and consistent with the theorem (N_0(omega) is finite but not uniform). Goes to independent adversarial audit before any src/ change."
+}
