@@ -1348,3 +1348,58 @@ def test_ds18_population_cut_labels_need_not_be_exchange_stable() -> None:
         value = information[0][0] - information[0][1] ** 2 / information[1][1]
         regular_values.append((value, labels))
     assert max(regular_values) == (after_value, after)
+
+
+def test_ds18_named_off_class_root_and_margins_are_exact() -> None:
+    """The bounded off-(L) law has the registered regular DS17 root exactly."""
+    masses = [Fraction(1, 3)] * 3
+    means_psi = [Fraction(-2, 3), Fraction(0), Fraction(2, 3)]
+    means_lambda = [Fraction(4, 9), Fraction(-8, 9), Fraction(4, 9)]
+    information = [
+        [
+            sum(
+                mass * (means_psi if first == 0 else means_lambda)[cell]
+                * (means_psi if second == 0 else means_lambda)[cell]
+                for cell, mass in enumerate(masses)
+            )
+            for second in range(2)
+        ]
+        for first in range(2)
+    ]
+    full_information = [
+        [Fraction(1, 3), Fraction(0)],
+        [Fraction(0), Fraction(17, 15)],
+    ]
+
+    assert information == [
+        [Fraction(8, 27), Fraction(0)],
+        [Fraction(0), Fraction(32, 81)],
+    ]
+    assert min(information[0][0], information[1][1]) == Fraction(8, 27)
+    assert information[0][1] == 0  # DS17 root residual and beta numerator
+    assert means_psi == [Fraction(-2, 3), Fraction(0), Fraction(2, 3)]
+    assert [
+        (means_psi[index] + means_psi[index + 1]) / 2 for index in range(2)
+    ] == [Fraction(-1, 3), Fraction(1, 3)]
+    assert min(
+        means_psi[index + 1] - means_psi[index] for index in range(2)
+    ) == Fraction(2, 3)
+    assert information[0][0] / full_information[0][0] == Fraction(8, 9)
+    assert Fraction(1, 4) < min(masses)
+    assert Fraction(1, 4) < min(information[0][0], information[1][1])
+    assert Fraction(1, 2) < Fraction(2, 3)
+
+    artifact = json.loads(
+        (
+            RESEARCH_WORKSPACE
+            / "WORK"
+            / "artifacts"
+            / "OPEN-DS-MARGINS-NONCENTERED"
+            / "exact-falsification.json"
+        ).read_text()
+    )
+    exact = artifact["population_exact"]
+    assert exact["binned_information"] == [["8/27", "0"], ["0", "32/81"]]
+    assert exact["full_information"] == [["1/3", "0"], ["0", "17/15"]]
+    assert exact["root_residual"] == "0"
+    assert exact["ds_retention"] == "8/9"
