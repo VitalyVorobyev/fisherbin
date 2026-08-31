@@ -239,3 +239,98 @@ retaining computable margins and value guarantees under perturbations of the
 law? If DS18 is refuted or reduced: what is the weakest corrected off-(L)
 root-to-empirical transfer statement, and which OP29/compile-certificate
 consequences must be withdrawn?
+
+---
+
+## Outcome
+
+**Verdict: verified, with hardened assumptions.** The complete registered
+statement of `DS-NONCENTERED-GLOBAL-BASIN-TRANSFER` survives independent
+adversarial attack — the population optimum and its uniqueness, the strict
+isolation in decision distance, the almost-sure transfer of **every** sequence
+of exact finite global optimizers on one selection-independent probability-one
+event, the finite ordinary one-point exchange stability, and the fixed rational
+margins \((1/4,1/4,1/2)\). No counterexample to the theorem was found in 65,924
+exactly enumerated canonical partitions across 39 tables, 24 exhaustive global
+optimisations at \(N=4\ldots11\), a 480-slab exact (M4) sweep, a 35,990-codebook
+lattice scan, and a two-route recomputation of the population law.
+
+Five hardenings were required and are now folded into the claim node, the
+`KNOWN_RESULTS` prose, and the downstream wording:
+
+- **H1 — off-hypothesis lemma imports removed.** DS18 cited DS15 Lemma 3 and
+  Proposition 5, which are registered for class (L) under a chapter convention
+  of exactly centered empirical scores. DS18's law is off (L) by construction
+  and DS18.2 explicitly does not centre. The cited *content* survives, the
+  citations do not; the scalar uniqueness, rigidity and consistency steps are
+  now proved directly for this law.
+- **H2 — the feasibility convention is named.** The ordinary comparison domain
+  is the in-bin (DS9) one. A zero binned nuisance block at \(d_\lambda=1\)
+  forces \(\sum_iS_{\lambda,i}=0\), a null event, so regularity is a.s. vacuous
+  and the theorem is untouched; but the convention is load-bearing off that
+  null set, which the new fixture serializes.
+- **H3 — uniqueness is a.s. up to labels *and null sets*,** with the half-open
+  reference labeling stated.
+- **H4 — the probability-one event is exhibited** as an explicit
+  selection-independent intersection, and the transfer now carries the
+  computable finite-\(N\) rate
+  \(P_N(z\ne q^*)\le3\Delta_N/\eta+P_N(\text{band }\eta)\) with
+  \(\Delta_N=\hat v_{3,N}-\hat\Phi_{D_s}(z^*_N)\).
+- **H5 — (M3) is \(\lambda_{\min}(\hat I_N)\ge\kappa\)**, not
+  \(\det/\operatorname{tr}\); under the latter reading the registered
+  \(\kappa=1/4\) would fail, since \(\det I_{q^*}/\operatorname{tr}I_{q^*}=32/189\).
+
+Two prior-art defects were repaired: six direct antecedents already in the
+project's own bibliography were unlinked from the node, and the uniqueness
+citation was mis-scoped to a strict-log-concavity result that
+\(\operatorname{Unif}[-1,1]\) fails. One incidental correction: the support's
+diameter is \(\sqrt{26.0345\ldots}\), not \(\sqrt{26}\); the registered (M4)
+constant \(\sqrt{29}\) remains valid and was verified exactly.
+
+**Deployment consequence: unchanged.** No `src/`, public API, example, or
+documentation-API file was touched. DS18 stays a global-oracle existence
+theorem for one named law, `publication_status: internal`,
+`literature_search_status: search_gap`.
+
+## Artifacts
+
+- `AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md` — the 16-item report
+- `py/audit_ds_noncentered_global_basin_transfer.py` — the independent instrument
+- `AUDITS/artifacts/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001/{population,exact,search,boundary,transfer}.json`
+- `claims/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER.json` — new audit node
+- `COUNTEREXAMPLES/CE-DS-NONCENTERED-SINGULAR-DESTINATION-001.json` — new exact boundary fixture
+- `LITERATURE/audits/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-31-August-2026.md`
+- patched: `claims/DS-NONCENTERED-GLOBAL-BASIN-TRANSFER.json`,
+  `claims/OPEN-DS-MARGINS-NONCENTERED.json`,
+  `claims/DS-PROFILED-COMPILE-CERTIFICATE.json`,
+  `claims/OPEN-DS-PRACTICAL-CERTIFIED-SOLVER.json`,
+  `KNOWN_RESULTS/05b-ds-bridge.md` (DS18), `OPEN_PROBLEMS.md` (OP29 + status),
+  `manuscripts/README.md`, `NUMERICAL_EVIDENCE.md` (four `N-DS-AUDIT18-*` rows),
+  `COUNTEREXAMPLES/README.md`, `registry.json`, `LITERATURE/{graph.json,reviewed.md,gaps.md,topics/05-hep-inference-aware.md}`,
+  `tests/test_research_claims.py` (three new exact regressions)
+
+## Validation
+
+All closure checks green on 31 August 2026:
+
+- `uv sync --all-extras --all-groups --locked`
+- `uv run python agenticresearch/py/audit_ds_noncentered_global_basin_transfer.py all`
+- `uv run python agenticresearch/py/registry.py reindex` (`indexes current` on
+  the final pass) and `validate` (`registry clean`)
+- `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py
+  tests/test_research_registry.py`
+- `uv run ruff check .`, `uv run ruff format --check .`, `uv run ty check src`
+- `uv build`, `uv run mkdocs build --strict`
+- the CLAUDE.md handoff tiers: `pytest -n auto -m "not docs_execution"`,
+  `pytest -n auto -m docs_execution`, and the float32 path
+
+## Next dependency-blocking question
+
+Is there a **polynomial-time** labeling rule whose output \(\tilde z_N\)
+satisfies \(\hat v_{3,N}-\hat\Phi_{D_s}(\tilde z_N)\to0\) almost surely on this
+law? Any such rule inherits the audited finite-\(N\) bound verbatim, and with it
+the whole transfer, converting DS18 from a global-oracle theorem into a solver
+certificate. The finite obstruction to attack first is measured in this audit:
+at \(N\le11\) the exact optimum still disagrees with the population rule on up
+to four rows, and the raw population-cut labels are not a terminal, so the seed
+cannot be the population cuts.

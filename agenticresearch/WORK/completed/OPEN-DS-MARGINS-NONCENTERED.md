@@ -153,10 +153,13 @@ of size \(37/14608\) from the raw population-cut labeling.
 ## Deployment boundary
 
 `DS-NONCENTERED-GLOBAL-BASIN-TRANSFER` is a population and empirical
-existence theorem. It authorizes no `src/` or public API change. A fresh
-independent audit is queued in
-`WORK/active/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER.md`; no compile surface
-may consume DS18 before that audit is hardened.
+existence theorem. It authorizes no `src/` or public API change. The fresh
+independent audit ran on 31 August 2026 and closed as **verified with hardened
+assumptions**
+(`WORK/completed/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER.md`,
+`AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md`); the verdict
+deliberately leaves the deployment boundary where it was, so no compile surface
+may consume DS18.
 
 ## Stop conditions
 
