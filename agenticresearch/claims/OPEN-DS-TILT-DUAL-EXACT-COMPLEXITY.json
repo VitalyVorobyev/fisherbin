@@ -1,0 +1,30 @@
+{
+  "id": "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY",
+  "title": "Exact bit complexity of the variable-dimension tilt-DP dual",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "finite_assignment",
+  "status": "open",
+  "publication_status": "open",
+  "statement": "Determine whether min_beta v_K(S_psi-beta S_lambda), with K and d_lambda part of the rational input, admits exact algebraic optimization in polynomial bit complexity using the fixed-tilt interval-DP oracle, including active tie refinements, without materializing a potentially large parametric-DP envelope. Fixed-tilt exact evaluation, polynomial certified-epsilon minimization, and exact fixed-(K,d_lambda) computation are already settled by DS-TILT-DUAL-CERTIFICATE.",
+  "assumptions": [
+    "positive rational weights; exact-K nonempty cells; rational score table",
+    "exact means an algebraic optimizer/value with checkable comparisons, not a crossings grid or epsilon approximation",
+    "common empirical nuisance-null directions may be quotiented before optimization"
+  ],
+  "dependencies": [
+    "DS-TILT-DUAL-CERTIFICATE"
+  ],
+  "literature": [
+    "Fisher-1958",
+    "Gajjar-Radhakrishnan-2019"
+  ],
+  "literature_search_status": "search_gap",
+  "proof_location": {
+    "file": "OPEN_PROBLEMS.md",
+    "section": "OP31. Exact bit complexity of the tilt-DP dual"
+  },
+  "programme": "P7",
+  "warning": "General parametric-shortest-path envelope lower bounds do not automatically transfer to the special scalar grouping DP. A valid hardness reduction or a structure-exploiting exact algorithm is required."
+}

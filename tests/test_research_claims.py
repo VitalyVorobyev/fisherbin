@@ -276,12 +276,15 @@ def test_global_e_partition_can_violate_simple_eigenvector_rule() -> None:
 
 
 def _exact_ds_cells(
-    scores: list[list[Fraction]], labels: tuple[int, ...], n_bins: int
+    scores: list[list[Fraction]],
+    labels: tuple[int, ...],
+    n_bins: int,
+    weights: list[Fraction] | None = None,
 ) -> tuple[list[Fraction], list[list[Fraction]]]:
-    weight = Fraction(1, len(scores))
+    row_weights = weights or [Fraction(1, len(scores))] * len(scores)
     masses = [Fraction(0)] * n_bins
     moments = [[Fraction(0), Fraction(0)] for _ in range(n_bins)]
-    for row, label in enumerate(labels):
+    for row, (label, weight) in enumerate(zip(labels, row_weights, strict=True)):
         masses[label] += weight
         for column in range(2):
             moments[label][column] += weight * scores[row][column]
@@ -289,9 +292,12 @@ def _exact_ds_cells(
 
 
 def _exact_binned_information(
-    scores: list[list[Fraction]], labels: tuple[int, ...], n_bins: int
+    scores: list[list[Fraction]],
+    labels: tuple[int, ...],
+    n_bins: int,
+    weights: list[Fraction] | None = None,
 ) -> list[list[Fraction]]:
-    masses, moments = _exact_ds_cells(scores, labels, n_bins)
+    masses, moments = _exact_ds_cells(scores, labels, n_bins, weights)
     return [
         [
             sum(
@@ -1721,9 +1727,7 @@ def test_ds19_tilt_dual_has_a_support_minimal_exact_positive_gap() -> None:
         dual_value = max(tilted.values())
         for value, labels in values:
             assert value <= tilted[labels] <= dual_value
-        mixed_value = (
-            mixture[0] * beta * beta + mixture[1] * beta + mixture[2]
-        )
+        mixed_value = mixture[0] * beta * beta + mixture[1] * beta + mixture[2]
         assert dual_value >= mixed_value >= lower
 
     # K=3, N=3 has only the all-singleton partition, so the bracket closes and
@@ -1743,9 +1747,7 @@ def _exact_scalar_between_for_ds19(
         masses[label] += weight
         moments[label] += weight * value
     return sum(
-        moment * moment / mass
-        for moment, mass in zip(moments, masses, strict=True)
-        if mass > 0
+        moment * moment / mass for moment, mass in zip(moments, masses, strict=True) if mass > 0
     )
 
 
@@ -1770,9 +1772,7 @@ def _exact_tie_interval_optimum_ds19(
         for cuts in combinations(range(1, len(values)), n_bins - 1):
             bounds = (0, *cuts, len(values))
             labels = [0] * len(values)
-            for cell, (start, stop) in enumerate(
-                zip(bounds, bounds[1:], strict=False)
-            ):
+            for cell, (start, stop) in enumerate(zip(bounds, bounds[1:], strict=False)):
                 for position in range(start, stop):
                     labels[order[position]] = cell
             candidate = _canonicalize_ds19(tuple(labels))
@@ -1794,10 +1794,12 @@ def test_ds19_weak_duality_and_scalar_contiguity_survive_adversarial_ties() -> N
             [Fraction(1, 4)] * 4,
         ),
         (
-            [[Fraction(-3, 4), Fraction(-5, 16)],
-             [Fraction(-1, 4), Fraction(-25, 16)],
-             [Fraction(1, 4), Fraction(3, 16)],
-             [Fraction(3, 4), Fraction(27, 16)]],
+            [
+                [Fraction(-3, 4), Fraction(-5, 16)],
+                [Fraction(-1, 4), Fraction(-25, 16)],
+                [Fraction(1, 4), Fraction(3, 16)],
+                [Fraction(3, 4), Fraction(27, 16)],
+            ],
             [Fraction(1, 10), Fraction(1, 5), Fraction(3, 10), Fraction(2, 5)],
         ),
         (
@@ -1805,8 +1807,12 @@ def test_ds19_weak_duality_and_scalar_contiguity_survive_adversarial_ties() -> N
             [Fraction(1, 3)] * 3,
         ),
         (
-            [[-1, 0], [Fraction(-1, 2), Fraction(1, 1000)],
-             [Fraction(1, 2), Fraction(-1, 1000)], [1, 0]],
+            [
+                [-1, 0],
+                [Fraction(-1, 2), Fraction(1, 1000)],
+                [Fraction(1, 2), Fraction(-1, 1000)],
+                [1, 0],
+            ],
             [Fraction(1, 4)] * 4,
         ),
     ]
@@ -1822,11 +1828,9 @@ def test_ds19_weak_duality_and_scalar_contiguity_survive_adversarial_ties() -> N
             interval = _exact_tie_interval_optimum_ds19(tilted_values, weights, 3)
             assert interval == brute
             for labels in partitions:
-                information = _exact_binned_information(scores, labels, 3)
+                information = _exact_binned_information(scores, labels, 3, weights)
                 profiled = _ds18_profiled_value(information)
-                same_labels = _exact_scalar_between_for_ds19(
-                    tilted_values, weights, labels, 3
-                )
+                same_labels = _exact_scalar_between_for_ds19(tilted_values, weights, labels, 3)
                 assert profiled <= same_labels <= brute
 
     # Split-weight duplication is exactly invariant after pooling identical
@@ -1846,6 +1850,45 @@ def test_ds19_weak_duality_and_scalar_contiguity_survive_adversarial_ties() -> N
     assert sorted(pooled.values()) == sorted(Fraction(value) for value in fixture["weights"])
 
 
+def test_ds19_saddle_closure_pseudoinverse_scope_and_centered_cardinality() -> None:
+    """The closure equation is exact, while DS11 and centered cardinality keep their scopes."""
+    weights = [Fraction(1, 3)] * 3
+    scores = [[Fraction(-1), Fraction(-1)], [Fraction(0), Fraction(1)], [Fraction(2), Fraction(0)]]
+    singleton = (0, 1, 2)
+    information = _exact_binned_information(scores, singleton, 3)
+    beta = information[0][1] / information[1][1]
+    profiled = _ds18_profiled_value(information)
+    tilted = [row[0] - beta * row[1] for row in scores]
+    dual = _exact_scalar_between_for_ds19(tilted, weights, singleton, 3)
+    assert beta == Fraction(1, 2)
+    assert beta * information[1][1] == information[0][1]
+    assert profiled == dual == Fraction(3, 2)
+    assert _canonical_partitions(3, 3) == [singleton]
+
+    # The singular table remains in DS11's pseudo-inverse comparison class,
+    # while DS9's regular class is empty at K=N=3.
+    singular_scores = [
+        [Fraction(-1), Fraction(0)],
+        [Fraction(0), Fraction(0)],
+        [Fraction(1), Fraction(0)],
+    ]
+    singular_information = _exact_binned_information(singular_scores, singleton, 3)
+    assert singular_information[1][1] == singular_information[0][1] == 0
+    assert _ds18_profiled_value(singular_information) == Fraction(2, 3)
+
+    # With centered two-dimensional rows and only K=2 cells, the binned
+    # information is a sum of two opposite rank-one cell moments and cannot
+    # be positive definite. This pins the K >= d+1 cardinality boundary.
+    centered = [
+        [Fraction(-1), Fraction(0)],
+        [Fraction(0), Fraction(-1)],
+        [Fraction(1), Fraction(1)],
+    ]
+    for labels in _canonical_partitions(3, 2):
+        matrix = _exact_binned_information(centered, labels, 2)
+        assert matrix[0][0] * matrix[1][1] - matrix[0][1] ** 2 == 0
+
+
 def test_ds19_ds18_empirical_projection_tax_identity_is_exact_on_practical_cases() -> None:
     """The DS18 strip-primal inputs satisfy the exact empirical tax identity partitionwise."""
     cases: list[tuple[list[list[Fraction]], list[Fraction]]] = []
@@ -1860,20 +1903,21 @@ def test_ds19_ds18_empirical_projection_tax_identity_is_exact_on_practical_cases
     checked = 0
     for scores, weights in cases:
         full_cross = sum(
-            weight * row[0] * row[1]
-            for weight, row in zip(weights, scores, strict=True)
+            weight * row[0] * row[1] for weight, row in zip(weights, scores, strict=True)
         )
         full_nuisance = sum(
-            weight * row[1] * row[1]
-            for weight, row in zip(weights, scores, strict=True)
+            weight * row[1] * row[1] for weight, row in zip(weights, scores, strict=True)
         )
         assert full_nuisance > 0
         beta_hat = full_cross / full_nuisance
         efficient = [row[0] - beta_hat * row[1] for row in scores]
-        assert sum(
-            weight * value * row[1]
-            for weight, value, row in zip(weights, efficient, scores, strict=True)
-        ) == 0
+        assert (
+            sum(
+                weight * value * row[1]
+                for weight, value, row in zip(weights, efficient, scores, strict=True)
+            )
+            == 0
+        )
 
         for labels in _canonical_partitions(len(scores), 3):
             information = _exact_binned_information(scores, labels, 3)
@@ -1907,9 +1951,7 @@ def test_ds19_matrix_tilt_outer_map_is_not_quasiconvex() -> None:
     """Tier B exact midpoint violation (CE-DS-MATRIX-TILT-NONQUASICONVEX-001)."""
     fixture = json.loads(
         (
-            RESEARCH_WORKSPACE
-            / "COUNTEREXAMPLES"
-            / "CE-DS-MATRIX-TILT-NONQUASICONVEX-001.json"
+            RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-MATRIX-TILT-NONQUASICONVEX-001.json"
         ).read_text()
     )
     scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
@@ -1929,8 +1971,7 @@ def test_ds19_matrix_tilt_outer_map_is_not_quasiconvex() -> None:
         for row in range(4)
     ]
     assert information == [
-        [Fraction(int(row == column)) for column in range(4)]
-        for row in range(4)
+        [Fraction(int(row == column)) for column in range(4)] for row in range(4)
     ]
 
     def determinant_at(matrix: list[list[Fraction]]) -> Fraction:

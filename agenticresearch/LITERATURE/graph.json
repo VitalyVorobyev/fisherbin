@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-08-31",
+  "updated": "2026-09-01",
   "purpose": "Reproducible literature-discovery state for citation snowballing (protocols/literature.md). One record per paper; papers link to claim ids, never merely to 'ScoreQuant'.",
   "record_schema": {
     "id": "short-slug",
@@ -1000,6 +1000,30 @@
       "status": "deeply_reviewed"
     },
     {
+      "id": "li-mathias-2000",
+      "title": "Extremal Characterizations of the Schur Complement and Resulting Inequalities",
+      "year": 2000,
+      "authors": [
+        "C.-K. Li",
+        "R. Mathias"
+      ],
+      "bibliography_key": "Li-Mathias-2000",
+      "source_of_discovery": "targeted-audit-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "other",
+      "relevant_claims": [
+        "DS-PROFILED-VARIATIONAL",
+        "AUDIT-DS-POPULATION-BRIDGE",
+        "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
+        "DS-MATRIX-TILT-NONQUASICONVEX"
+      ],
+      "status": "deeply_reviewed",
+      "note": "SIAM Review 42(2):233-246, Theorem 2.2. Exact generalized-Schur Loewner minimum and attainment set for a fixed PSD block matrix; no minimax interchange over hard partitions."
+    },
+    {
       "id": "silvey-titterington-1973",
       "title": "A Geometric Approach to Optimal Design Theory",
       "year": 1973,
@@ -1018,9 +1042,13 @@
       "research_area": "optimal-design",
       "relevant_claims": [
         "DS-CLASSICAL-DESIGN-THEORY",
-        "DS-SCHUR"
+        "DS-SCHUR",
+        "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "DS-TILT-DUAL-STRONG-DUALITY-FAILS"
       ],
-      "status": "deeply_reviewed"
+      "status": "deeply_reviewed",
+      "note": "Biometrika 60(1):21-32. D and Ds equivalence via Strong Lagrangian Theory on the convex approximate-design simplex; certificate precedent, not hard-partition strong duality."
     },
     {
       "id": "silvey-titterington-torsney-1978",
@@ -1784,10 +1812,36 @@
         "AUDIT-DS-MARGINS-AT-OPTIMA",
         "DS-SCALAR-EFFICIENT-DP",
         "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER",
-        "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
+        "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER",
+        "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
+        "DS-STRIP-DP-DELTA-CONSISTENCY",
+        "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY"
       ],
       "status": "screened",
       "note": "Verbatim (Brown scan pp. 789-792): optimal 1-D weighted SSE partitions are contiguous (appendix proof); the classical anchor for DS8 and DS15 Prop 4's interval-optimum leg."
+    },
+    {
+      "id": "gajjar-radhakrishnan-2019",
+      "title": "Parametric Shortest Paths in Planar Graphs",
+      "year": 2019,
+      "authors": [
+        "K. Gajjar",
+        "J. Radhakrishnan"
+      ],
+      "bibliography_key": "Gajjar-Radhakrishnan-2019",
+      "source_of_discovery": "concept-search:parametric-dp-boundary",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "other",
+      "relevant_claims": [
+        "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY"
+      ],
+      "status": "screened",
+      "note": "FOCS 2019:876-895; primary author preprint and publisher metadata checked 1 Sep 2026. Linear-parameter planar shortest paths can have n^{Omega(log n)} envelope pieces. Boundary warning only: not a lower bound for the restricted interval-segmentation DAG with quadratic costs."
     },
     {
       "id": "mease-nair-2006-unique",

@@ -36,7 +36,6 @@
     "section": "DS17. Inhabitation of the margin-certified branch: the conditional-centering obstruction and the fixed-point gate"
   },
   "audit": "AUDITS/AUDIT-DS-STABLE-BASINS-001.md",
-  "programme": "P1",
   "role": "a necessary per-law population test for inhabitation: one scalar root equation over all Lloyd-stationary branches",
   "warning": "Audit-hardened. A root is necessary, not sufficient: nothing proves finite exchange-stable sequences reach a root's basin. The compact beta window depends on the declared kappa; a hard-coded [-2.5,2.5] scan is not the theorem's full range. Dense or branch-tracked numerical searches cannot certify absence or uniqueness without a separate root-count proof."
 }

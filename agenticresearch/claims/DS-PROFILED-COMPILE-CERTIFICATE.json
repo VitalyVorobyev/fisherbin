@@ -1,46 +1,36 @@
 {
   "id": "DS-PROFILED-COMPILE-CERTIFICATE",
-  "title": "Profiled compile verdict: projected rule unconditionally, DS14 companion rule only along certified sequences",
-  "criterion": [
-    "Ds"
-  ],
+  "title": "Profiled compile verdict is selected by an observable certificate state",
+  "criterion": ["Ds"],
   "level": "empirical_inductive_quantizer",
   "status": "project_proved",
   "publication_status": "internal",
-  "statement": "On the population-conditionally-centered scalar class (d_psi = d_lambda = 1): (a) the projected efficient-score interval rule is the only CURRENTLY ESTABLISHED unconditional compile path in the registered theory, not a mathematical uniqueness theorem. By the DS16 funnel, every asymptotically value-convergent free-optimizer sequence is nuisance-degenerate, so refusal to compile a free profiled terminal remains the safe default. (b) DS14 supplies only a sequence-conditional companion-rule theorem; one finite stable fit passing measured margins remains diagnostic, not a population certificate. Report the observable finite gap v_hat_K - Phi_hat_s; delta(kappa) is existential. (c) Audit-hardened DS17 proves that, on atomless (L)+(M1)+(M4) laws, almost surely all sufficiently large samples have no ordinary exchange-stable labeling satisfying fixed (M2)+(M3)+(M5), so the full-triple DS14 path is asymptotically vacuous there. With (M5) dropped, LCM stationary configurations may retain margins only in coincident projected-centroid splits whose compilable reduction has rank at most one. Outside (L), DS18 now proves one exact positive case: for S=(X,3X^2-1+Z) with iid uniform X,Z and K=3, every finite global regular profiled-optimum sequence converges to a full-rank companion basin with fixed margins. This is a law-specific global-oracle existence theorem, not a practical compile guarantee; raw population labels can be finite exchange-unstable, and general/mix3 selection remains open. DS18 has now passed its independent adversarial audit (AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER, 31 Aug 2026) and is verified with hardened assumptions; the audit changes no compile verdict, and it adds one requirement for any future profiled surface: the in-bin (DS9) feasibility convention must be stated, because under a pseudo-inverse comparison domain a global optimum over regular labelings need not be exchange-stable at all (CE-DS-NONCENTERED-SINGULAR-DESTINATION-001). The projected rule attains v_K only in the distinct formulation with nuisance information supplied externally or unbinned.",
+  "statement": "The registered theory gives five observable cases. (1) A concrete regular tilt-DP saddle closes p_reg=g_reg=d and certifies a finite global in-bin labeling; a singular saddle certifies only the generalized DS11 problem. (2) A nonclosed bracket reports its named interval and does not authorize the word optimal. (3) The projected full-efficient-score interval rule remains the currently established unconditional compiler for the distinct projected problem with nuisance information supplied externally. (4) A profiled DS14 companion rule is theorem-backed only along sequences satisfying every audited DS14 law, stability, mass, conditioning, compactness, and projected-separation hypothesis; one measured floor or finite root is diagnostic only. (5) Otherwise compilation of a profiled terminal is refused. On class (L), DS16/DS17 keep the full-triple ordinary-stable companion branch priced and eventually empty. Off (L), DS18 plus DS19 prove that the beta-zero interval DP is Delta-consistent on one exact law, but this value transfer is deliberately not a compile authorization. Strong tilt duality can fail by order one, and the multivariate outer problem is nonquasiconvex.",
   "assumptions": [
-    "class (L)+(S), d_psi = d_lambda = 1, equal weights, exact scores; the conditional path's asymptotic guarantee is DS14's and inherits (M1)-(M5), or the merged variant, along a sequence",
-    "a per-fit measured triple plus exact exchange stability is diagnostic only and is not a finite-sample population certificate",
-    "off class (L), DS18 proves an exact K=3 bounded-law global-optimum transfer, audited and hardened 31 Aug 2026 under the in-bin (DS9) feasibility convention; practical local-solver selection and robust law classes remain open"
+    "every bracket reports whether it uses the DS11 pseudo-inverse or ordinary DS9 in-bin comparison domain and whether its exhibited primal state is regular",
+    "a finite saddle certificate proves finite globality only; population or held-out claims need their own theorem",
+    "the projected-rule and in-bin profiled formulations remain distinct",
+    "the DS14 companion path inherits all audited DS14 sequence assumptions; a measured nuisance floor alone never suffices",
+    "exact scores and raw score-space origin conventions are preserved"
   ],
   "dependencies": [
     "DS-STABLE-MARGINS-PRICE",
     "OPEN-DS-FINITE-POP-BRIDGE",
     "OPEN-DS-MARGINS-AT-OPTIMA",
-    "DS-EXCHANGE-LEVERAGE-BOUND",
-    "DS-PROJECTED-K-REQUIREMENT",
-    "DS-STABLE-STATE-SELECTION",
     "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
     "DS-STABLE-BASINS-LCM-CLASSIFICATION",
-    "DS-STABLE-BASINS-FIXED-POINT-GATE",
     "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER",
-    "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
+    "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER",
+    "DS-TILT-DUAL-CERTIFICATE",
+    "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
+    "DS-STRIP-DP-DELTA-CONSISTENCY",
+    "DS-MATRIX-TILT-NONQUASICONVEX"
   ],
-  "implies": [
-    "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
-    "OPEN-DS-STABLE-BASINS"
-  ],
-  "proof_location": {
-    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
-    "section": "DS16. Margin price at arbitrary labelings, the value funnel, and the profiled compile verdict"
-  },
-  "audit": "AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md",
-  "literature": [
-    "Alsing-Wandelt-2019",
-    "Rakhlin-Caponnetto-2006"
-  ],
+  "boundary_counterexamples": ["CE-DS-NONCENTERED-SINGULAR-DESTINATION-001", "CE-DS-TILT-DUAL-GAP-001", "CE-DS-MATRIX-TILT-NONQUASICONVEX-001"],
+  "literature": ["Alsing-Wandelt-2019", "Rakhlin-Caponnetto-2006", "Li-Mathias-2000", "Silvey-Titterington-1973", "Fisher-1958"],
   "literature_search_status": "search_gap",
-  "programme": "P1",
-  "role": "the deployment verdict OP29's packet was opened for; the target of the independent adversarial audit that gates any compile_quantizer change",
-  "warning": "The on-(L) portion is hardened by AUDIT-DS-STABLE-MARGINS-COMPILE-001 and the DS17 audit; the DS18 off-class extension is now audited (AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER) and verified with hardened assumptions, but stays internal and authorizes no compile path. 'Only' is registry-relative, not impossibility of another compiler. Conditional centering is a population-law assumption, not sample recentering. The exact off-class result assumes global finite optimization and does not justify compiling arbitrary library terminals. The inherited direct dependency on measured DS-STABLE-STATE-SELECTION remains a separate audit task. No src/ surface is implemented."
+  "proof_location": {"file": "KNOWN_RESULTS/05b-ds-bridge.md", "section": "DS19. The tilt-DP bracket: weak certification, an order-one gap, and a value-consistent DS18 primal"},
+  "audit": "AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md",
+  "role": "deployment decision table; DS19 requires a fresh audit before any library landing",
+  "warning": "The recorded audit covers the inherited DS16 portion, not DS19. DS19 is internal and authorizes no src change until independently audited. 'Only currently established' is registry-relative, not an impossibility theorem. Delta-consistency, a finite floor, a gate root, and an epsilon-tight numerical bracket are not compile authorizations."
 }

@@ -1959,3 +1959,293 @@ compile surface. The next dependency-blocking question is now sharp — is there
 a polynomial-time labeling rule whose output \(\tilde z_N\) satisfies
 \(\hat v_{3,N}-\hat\Phi_{D_s}(\tilde z_N)\to0\) a.s. on this law? Any such
 rule inherits the displayed finite-\(N\) bound and hence the whole transfer.
+
+## DS19. The tilt-DP bracket: weak certification, an order-one gap, and a value-consistent DS18 primal — [PROJECT-PROVED reduction + COUNTEREXAMPLES]
+
+**Claims:** DS-TILT-DUAL-CERTIFICATE, DS-TILT-DUAL-STRONG-DUALITY-FAILS, DS-STRIP-DP-DELTA-CONSISTENCY, DS-MATRIX-TILT-NONQUASICONVEX, DS-PROFILED-COMPILE-CERTIFICATE, OPEN-DS-PRACTICAL-CERTIFIED-SOLVER
+
+**Normalization (protocol A).** Tier A has \(d_\psi=1\), arbitrary
+\(d_\lambda\ge1\), and finite positive rational weights. All empirical second
+moments are about the score-space origin: scores are not sample-centered. The
+decision variable on the comparison side is a nonempty \(K\)-cell labeling.
+The generalized comparison domain uses DS11's pseudo-inverse value
+\(\Phi^+(z)\); the ordinary in-bin domain is its subset with a nonsingular
+nuisance block. For \(\beta\in\mathbb R^{d_\lambda}\), put
+
+\[
+T_{\beta i}=s_{\psi i}-\beta s_{\lambda i},\qquad
+V_z(\beta)=\sum_b\frac{\bigl(\sum_{i:z_i=b}w_iT_{\beta i}\bigr)^2}
+{\sum_{i:z_i=b}w_i}.
+\]
+
+Let \(v_K(\beta)=\max_zV_z(\beta)\). By scalar contiguity this value is
+returned by the exact interval DP after sorting \(T_\beta\). Let
+
+\[
+g^+=\max_z\Phi^+(z),\quad
+g_{\rm reg}=\max_{z:I_{\lambda\lambda}(z)\succ0}\Phi(z),\quad
+d=\min_\beta v_K(\beta).
+\]
+
+For the primal, a tie policy is part of the object. If \({\cal D}(\beta)\)
+is the set of DP-optimal labelings at \(\beta\), define
+
+\[
+p^+=\max_{\beta,\,z\in{\cal D}(\beta)}\Phi^+(z),\qquad
+p_{\rm reg}=\max_{\beta,\,z\in{\cal D}(\beta),\,
+I_{\lambda\lambda}(z)\succ0}\Phi(z).
+\]
+
+An implementation may use one deterministic member of \({\cal D}(\beta)\);
+that only weakens its lower bound. The information-loss implication is a
+finite train-sample \(D_s\) value interval. It supplies no held-out or
+population retention statement except in the named DS18 corollary below.
+
+### Theorem DS19.1 (the valid bracket and its exact closure gate)
+
+On the generalized domain,
+
+\[
+\boxed{p^+\le g^+\le d.}
+\]
+
+On the ordinary in-bin domain,
+
+\[
+\boxed{p_{\rm reg}\le g_{\rm reg}\le g^+\le d.}
+\]
+
+Thus the same dual is a ceiling on the *whole* DS11 pseudo-inverse class and,
+a fortiori, on DS9. A singular DP state is a valid generalized lower bound but
+is not an in-bin lower bound; the regular filter in \(p_{\rm reg}\) is
+load-bearing.
+
+Moreover the generalized bracket closes, \(p^+=g^+=d\), iff there are
+\((\beta^*,z^*)\) such that
+
+\[
+z^*\in{\cal D}(\beta^*),\qquad
+\beta^*I_{\lambda\lambda}(z^*)=I_{\psi\lambda}(z^*).
+\]
+
+Equivalently, \(z^*\) maximizes \(V_z(\beta^*)\) over labelings and
+\(\beta^*\) minimizes \(V_{z^*}(\beta)\): it is a saddle pair. If in addition
+\(I_{\lambda\lambda}(z^*)\succ0\), the same equality certifies \(z^*\) as an
+ordinary in-bin global optimum. At a singular block only the normal equation
+is meaningful; no quotient slope is asserted.
+
+*Proof.* DS11 gives \(\Phi^+(z)=\min_\gamma V_z(\gamma)\). Hence for every
+\(z,\beta\),
+
+\[
+\Phi^+(z)\le V_z(\beta)\le\max_{z'}V_{z'}(\beta)=v_K(\beta).
+\]
+
+Taking the indicated maxima and minimum proves weak duality and both lower
+bounds. If a saddle pair exists, all inequalities are equalities. Conversely,
+if \(g^+=d\), choose a primal maximizer \(z^*\) and a dual minimizer
+\(\beta^*\). Then
+
+\[
+d=\min_\gamma V_{z^*}(\gamma)
+\le V_{z^*}(\beta^*)
+\le v_K(\beta^*)=d.
+\]
+
+Thus both inequalities are equalities: \(z^*\) is DP-optimal at \(\beta^*\),
+and DS11's attainment set makes \(\beta^*\) satisfy exactly the displayed
+normal equation. The same pair also gives an attained \(p^+=d\). The finite
+maximum of nonnegative convex quadratics attains its infimum after quotienting
+directions that are null for every empirical nuisance moment. ∎
+
+**Ties and duplicate tilts.** Scalar contiguity supplies the exact value
+\(v_K(\beta)\) even when equal tilted values are pooled. At a crossing,
+different row-level refinements can have the same DP value and different
+derivatives. Any active derivative is a valid subgradient of \(v_K\), but a
+closure certificate must exhibit the concrete labeling whose normal equation
+is checked. A deterministic score-only quantizer must be constant on an exact
+duplicate-score class; unrestricted finite row assignment is a larger
+comparison domain and must be named separately.
+
+### Theorem DS19.2 (what is polynomial, and the exact-computation reduction)
+
+For a supplied rational \(\beta\), \(v_K(\beta)\), one active labeling, its
+exact rational gradient, and the regular/generalized primal values are
+computable in \(O(KN^2)\) rational operations by sorted interval DP. The map
+\(v_K\) is a finite maximum of convex quadratics, hence convex. With rational
+input, full empirical nuisance span, and a requested rational tolerance
+\(\varepsilon>0\), a standard separation-oracle convex method therefore
+returns certified rational lower/upper bounds on \(d\) of width
+\(\varepsilon\) in time polynomial in the input bit length and
+\(\log(1/\varepsilon)\). A search radius is observable: singleton-versus-rest
+nuisance partitions give a positive quadratic coercivity bound on the
+effective nuisance span; common-null directions are first quotiented out.
+
+Exact algebraic computation is established only when \(K\) and
+\(d_\lambda\) are fixed. The \(O(N^{2d_\lambda})\) tilt-order arrangement,
+including its tie faces, has polynomial size then; each cell has
+\(\binom{N-1}{K-1}\) contiguous candidates, and fixed-dimensional
+real-algebraic comparison of their quadratic envelopes returns the exact
+minimum. This is not polynomial jointly in variable \(K,d_\lambda\).
+
+The packet's requested general exact polynomial-time claim is therefore
+**reduced** to one explicit assumption/question:
+
+> **(EXACT-PARAMETRIC-DP)** Does the oracle-defined convex envelope
+> \(\min_\beta v_K(\beta)\), with \(K\) and \(d_\lambda\) part of the input,
+> admit exact algebraic optimization in polynomial bit complexity, including
+> active tie refinements, without materializing its potentially large
+> parametric-DP envelope?
+
+No exact-computation claim is inferred from crossings-plus-midpoints or from
+an \(\varepsilon\)-accurate convex solve.
+
+### Counterexample DS19.3 (strong duality can fail by order one)
+
+`CE-DS-TILT-DUAL-GAP-001` is the equal-weight table
+
+\[
+(-11/2,39/8),\quad(3/2,-65/8),\quad
+(7/2,31/8),\quad(9/2,-49/8),
+\]
+
+with \(K=3\). All six canonical nonempty partitions are regular, so DS9 and
+DS11 coincide. Exact enumeration gives
+
+\[
+g=g^+=g_{\rm reg}=\frac{116805}{11816}.
+\]
+
+For \(z_1=(0,0,1,2)\) and \(z_2=(0,1,2,2)\),
+
+\[
+q_1(\beta)=\frac{925}{64}\beta^2+\frac{15}{4}\beta+\frac{81}{8},
+\quad
+q_2(\beta)=\frac{1477}{64}\beta^2+24\beta+\frac{129}{8}.
+\]
+
+With \(\alpha=14/25\), \(v_K(\beta)\ge
+\alpha q_1(\beta)+(1-\alpha)q_2(\beta)\). The mixed quadratic has vertex
+\(-10128/29197\) and minimum \(61717893/5839400\). Therefore
+
+\[
+\boxed{
+d-g\ge
+\frac{61717893}{5839400}-\frac{116805}{11816}
+=\frac{105329256}{154014175}>0.68 .}
+\]
+
+Since \(p^+\le g\), the proposed primal-dual bracket has at least the same
+gap. The witness is support-minimal: \(N=3,K=3\) has only the singleton
+partition.
+
+This is genuinely \(\Theta(1)\), not merely a fixed-size notation. For
+\(r\to\infty\), give the four displayed atoms total mass \(1-1/r\) and add
+\(r\) distinct bounded rational atoms of total mass \(1/r\). Cellwise
+Cauchy--Schwarz bounds show uniformly, for \(\beta\) in a compact set, that
+every added-only cell contributes \(O(1/r)\), while every cell containing a
+base atom perturbs its quadratic by \(O(1/r)\). The mixed quadratic above is
+coercive, so all dual minimizers remain in one compact interval. The same
+cellwise argument applied to the scalar Schur formula (a base-singular cell
+has cross term \(O(1/r)\) and nuisance term \(O(1/r)\)) gives
+\(d_r\to d\) and \(g_r^+\to g^+\). Hence \(d_r-g_r^+\) stays bounded below
+by a positive constant. This construction uses positive weights and makes no
+split-duplicate assumption.
+
+### Theorem DS19.4 (the DS18 strip DP is \(\Delta\)-consistent)
+
+On the exact DS18 law, let \(\tilde z_N\) be the exact three-interval DP
+labeling of the uncentered scalar values \(X_i=T_{0,i}\). It is computable in
+polynomial time. Almost surely, it is regular eventually and
+
+\[
+0\le\Delta_N
+:=\hat v_{3,N}(X)-\hat\Phi_{D_s}(\tilde z_N)
+=\frac{\hat I_{\psi\lambda}(\tilde z_N)^2}
+{\hat I_{\lambda\lambda}(\tilde z_N)}\longrightarrow0.
+\]
+
+*Proof.* DP optimality gives
+\(\hat I_{\psi\psi}(\tilde z_N)=\hat v_{3,N}(X)\), so the equality is the
+ordinary scalar Schur formula, with no centering. DS18's selection-independent
+uniform codebook event and the unique equal-third scalar optimum imply that
+the DP cells converge, up to labels, to the fixed cuts \(\pm1/3\). Bounded
+scores then transfer all cell moments. Consequently
+\(\hat I_{\psi\lambda}(\tilde z_N)\to0\) and
+\(\hat I_{\lambda\lambda}(\tilde z_N)\to32/81\), proving regularity and the
+limit. ∎
+
+The audited DS18 disagreement inequality therefore applies to
+\(\tilde z_N\). This is strictly a **value statement**. The interval seed can
+be one-point exchange-unstable (`CE-DS-INTERVAL-SEED-UNSTABLE-001`), and raw
+population-cut labels can be unstable
+(`CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001`). Nothing here proves local
+ascent selects the basin, exchange stability of \(\tilde z_N\), perturbation
+robustness, or a compile authorization.
+
+### Tier B: the matrix-tilt outer problem is not quasiconvex
+
+Weak duality still holds for \(d_\psi>1\). Convexity and even quasiconvexity
+of the proposed outer log-determinant map fail. In
+`CE-DS-MATRIX-TILT-NONQUASICONVEX-001`, take the eight centered equal-weight
+rows \(\{\pm2e_j:j=1,\ldots,4\}\), split the first two coordinates as POI and
+the last two as nuisance, and take \(K=N=8\). The singleton partition is the
+only nonempty partition and its blocks are \(I_2,0,I_2\). Hence
+
+\[
+f(B)=\log\det(I_2+BB^\top).
+\]
+
+For \(B_0=\operatorname{diag}(4,0)\),
+\(B_1=\operatorname{diag}(0,4)\), and
+\(B_{1/2}=(B_0+B_1)/2=\operatorname{diag}(2,2)\), the exact determinants are
+\(17,17,25\). Thus
+\(f(B_{1/2})>\max(f(B_0),f(B_1))\), disproving quasiconvexity and therefore
+convexity. The certified ceiling remains valid, but minimizing it is a
+nonconvex outer problem in general. Tier B closes **disproved**; no library
+approximation follows.
+
+### Observable decision rule and deployment boundary
+
+1. A regular exhibited saddle pair closes the bracket and certifies finite
+   global optimality on both domains. A singular saddle certifies only the
+   generalized DS11 problem.
+2. A nonzero bracket reports the interval \([p_{\rm reg},d]\) (or
+   \([p^+,d]\) when explicitly generalized). It does not authorize the word
+   “optimal”. The counterexample proves the interval may stay macroscopically
+   open.
+3. The projected full-efficient-score interval rule remains the currently
+   established unconditional projected-problem compiler. It is not silently
+   relabeled as an in-bin profiled solution.
+4. A DS14 companion rule requires the complete audited sequence hypotheses
+   and margins (M1)--(M5). A measured nuisance floor, one finite root, or
+   \(\Delta\)-consistency alone is diagnostic only.
+5. In every other state the correct profiled compile action is refusal.
+
+This result authorizes no `src/` or public API change. The theorem and both
+counterexamples require a fresh independent audit before any compile surface
+can consume them.
+
+**Self-adversarial notes.** The dual ceiling, primal lower bound, and closure
+condition name their comparison domains separately. Exact-K nonempty cells are
+used; empty-cell conventions are not hidden. The fixed-tilt value tolerates
+ties, but a concrete closure labeling is mandatory. The order-one family does
+not use duplicate splitting. Cardinality remains
+\(K\ge d_\psi+d_\lambda+1\) for centered regular samples. The DS18 proof uses
+the raw rows and only a value limit. Estimated scores, score-estimation error,
+held-out performance, and law perturbations remain outside the claim.
+
+**Stop-condition verdict.** **TIER A REDUCED.** Validity on both named domains,
+the exact saddle closure condition, an exact \(\Theta(1)\) duality-gap
+counterexample, polynomial certified-accuracy computation, and DS18
+\(\Delta\)-consistency are settled. General exact polynomial bit-complexity is
+reduced precisely to (EXACT-PARAMETRIC-DP). **TIER B DISPROVED:** the outer
+matrix-tilt map need not be quasiconvex. The deployment question is answered:
+finite brackets are honest diagnostics/certificates at closure, while compile
+authorization remains projected-rule, full DS14 companion hypotheses, or
+refusal.
+
+**Next dependency-blocking question.** Does (EXACT-PARAMETRIC-DP) hold for
+variable \(K,d_\lambda\), including exact tie refinements? Independently of
+that academic complexity question, the next deployment action is a fresh
+adversarial audit of DS19 before any `src/` landing.

@@ -87,8 +87,7 @@ def binned_information(
     return (
         sum(first * first / mass for first, mass in zip(poi, masses, strict=True)),
         sum(
-            first * second / mass
-            for first, second, mass in zip(poi, nuisance, masses, strict=True)
+            first * second / mass for first, second, mass in zip(poi, nuisance, masses, strict=True)
         ),
         sum(second * second / mass for second, mass in zip(nuisance, masses, strict=True)),
     )
@@ -127,13 +126,10 @@ def quadratic_minimum(quadratic: Quadratic) -> tuple[Fraction, Fraction]:
     return beta, quadratic_value(quadratic, beta)
 
 
-def mix_quadratics(
-    first: Quadratic, second: Quadratic, alpha: Fraction
-) -> Quadratic:
+def mix_quadratics(first: Quadratic, second: Quadratic, alpha: Fraction) -> Quadratic:
     """Return ``alpha * first + (1-alpha) * second``."""
     return tuple(
-        alpha * left + (1 - alpha) * right
-        for left, right in zip(first, second, strict=True)
+        alpha * left + (1 - alpha) * right for left, right in zip(first, second, strict=True)
     )  # type: ignore[return-value]
 
 
@@ -310,9 +306,7 @@ def dual_witness() -> tuple[dict[str, object], dict[str, object]]:
     assert mixture_lower == F(61717893, 5839400)
     assert gap == F(105329256, 154014175) > 0
 
-    weak = weak_duality_report(
-        scores, weights, (F(-1), mixture_beta, F(0), F(1))
-    )
+    weak = weak_duality_report(scores, weights, (F(-1), mixture_beta, F(0), F(1)))
     assert weak["violations"] == 0
 
     fixture = {
@@ -365,7 +359,7 @@ def dual_witness() -> tuple[dict[str, object], dict[str, object]]:
             "Splitting every weight among identical duplicate rows preserves the witness "
             "under ScoreQuant's duplicate-collapsed atom semantics.",
             "No preservation claim is made for an unmerged row-assignment domain, which "
-            "can split identical rows across cells."
+            "can split identical rows across cells.",
         ],
         "order_one_family": {
             "construction": (
@@ -468,9 +462,7 @@ def adversarial_report(max_size: int = 10) -> dict[str, object]:
     for name, scores, weights in cases:
         weak = weak_duality_report(scores, weights, (F(-1), F(0), F(1)))
         global_report = global_profiled_report(scores, weights)
-        local_disagreements = sum(
-            not row["contiguity_agrees"] for row in weak["betas"]
-        )
+        local_disagreements = sum(not row["contiguity_agrees"] for row in weak["betas"])
         reports.append(
             {
                 "name": name,
@@ -491,11 +483,9 @@ def adversarial_report(max_size: int = 10) -> dict[str, object]:
     )
     base_scores = [tuple(row) for row in fixture["scores"]]
     base_weights = list(fixture["weights"])
-    collapsed_invariant = (
-        collapsed_scores == sorted(base_scores)
-        and sorted(zip(collapsed_scores, collapsed_weights, strict=True))
-        == sorted(zip(base_scores, base_weights, strict=True))
-    )
+    collapsed_invariant = collapsed_scores == sorted(base_scores) and sorted(
+        zip(collapsed_scores, collapsed_weights, strict=True)
+    ) == sorted(zip(base_scores, base_weights, strict=True))
     return {
         "cases": reports,
         "max_size": max_size,
@@ -523,11 +513,7 @@ def ds18_product(size: int) -> tuple[list[Score], list[Fraction]]:
     """Return the existing exact X-midpoint by Z=+-1/2 product family."""
     x_count = size // 2
     xs = [F(2 * index + 1 - x_count, x_count) for index in range(x_count)]
-    scores = [
-        ds18_score(x_value, z_value)
-        for x_value in xs
-        for z_value in (F(-1, 2), F(1, 2))
-    ]
+    scores = [ds18_score(x_value, z_value) for x_value in xs for z_value in (F(-1, 2), F(1, 2))]
     return scores, [F(1, size)] * size
 
 
@@ -541,10 +527,13 @@ def empirical_projection(
         raise ValueError("empirical nuisance second moment is singular")
     beta = cross / nuisance
     efficient = [psi - beta * lam for psi, lam in scores]
-    assert sum(
-        weight * value * lam
-        for value, (_, lam), weight in zip(efficient, scores, weights, strict=True)
-    ) == 0
+    assert (
+        sum(
+            weight * value * lam
+            for value, (_, lam), weight in zip(efficient, scores, weights, strict=True)
+        )
+        == 0
+    )
     return beta, efficient
 
 
@@ -570,8 +559,7 @@ def projection_tax(
 def beta_probe_points(scores: Sequence[Score], beta_hat: Fraction) -> list[Fraction]:
     """Return crossings, order-cell midpoints, exterior probes, zero, and beta_hat."""
     crossings = {
-        (scores[first][0] - scores[second][0])
-        / (scores[first][1] - scores[second][1])
+        (scores[first][0] - scores[second][0]) / (scores[first][1] - scores[second][1])
         for first, second in combinations(range(len(scores)), 2)
         if scores[first][1] != scores[second][1]
     }
@@ -580,10 +568,7 @@ def beta_probe_points(scores: Sequence[Score], beta_hat: Fraction) -> list[Fract
     points.update((F(0), beta_hat))
     if ordered:
         points.update((ordered[0] - 1, ordered[-1] + 1))
-        points.update(
-            (left + right) / 2
-            for left, right in zip(ordered, ordered[1:], strict=False)
-        )
+        points.update((left + right) / 2 for left, right in zip(ordered, ordered[1:], strict=False))
     return sorted(points)
 
 

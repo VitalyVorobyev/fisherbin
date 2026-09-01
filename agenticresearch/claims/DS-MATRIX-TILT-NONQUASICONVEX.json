@@ -1,0 +1,31 @@
+{
+  "id": "DS-MATRIX-TILT-NONQUASICONVEX",
+  "title": "The multivariate-POI matrix-tilt outer ceiling need not be quasiconvex",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "finite_assignment",
+  "status": "counterexample",
+  "publication_status": "internal",
+  "statement": "For d_psi=d_lambda=2, the centered equal-weight table of the eight rows +/-2e_j with K=N=8 has one nonempty singleton partition and outer objective f(B)=log det(I_2+B B^T). At B_0=diag(4,0), B_1=diag(0,4), and their midpoint diag(2,2), the exact determinants are 17,17,25. Thus f(midpoint)>max(f(B_0),f(B_1)), so the outer map is not quasiconvex and hence not convex in general.",
+  "assumptions": [
+    "d_psi=d_lambda=2; K=N=8; positive equal weights; exactly K nonempty cells",
+    "the inner D value is evaluated exactly; log monotonicity reduces the comparison to rational determinants"
+  ],
+  "dependencies": [
+    "DS-PROFILED-VARIATIONAL"
+  ],
+  "counterexamples": [
+    "CE-DS-MATRIX-TILT-NONQUASICONVEX-001"
+  ],
+  "literature": [
+    "Li-Mathias-2000"
+  ],
+  "literature_search_status": "search_gap",
+  "proof_location": {
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS19. The tilt-DP bracket: weak certification, an order-one gap, and a value-consistent DS18 primal"
+  },
+  "artifact": "COUNTEREXAMPLES/CE-DS-MATRIX-TILT-NONQUASICONVEX-001.json",
+  "warning": "Weak matrix-tilt duality remains valid. This counterexample only kills convex/quasiconvex outer minimization and authorizes no approximation or src change."
+}

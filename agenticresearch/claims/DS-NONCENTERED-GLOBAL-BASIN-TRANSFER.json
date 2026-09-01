@@ -54,7 +54,6 @@
     "section": "DS18. Exact off-class global basin and empirical stable transfer"
   },
   "artifact": "py/ds_noncentered_global_basin.py",
-  "programme": "P1",
   "role": "first proved off-(L) inhabitation and exact empirical-transfer instance for the DS17 gate",
   "warning": "Audited 31 Aug 2026 (AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md): verified with hardened assumptions, publication_status still internal. The transfer uses exact finite GLOBAL optima; it does not prove persistence of a generic local root, stability of raw population labels, branch completeness, mix3 uniqueness, or robustness to law or score estimation, and it does not prove that exchange ascent selects the basin. The uniqueness citation to Liu-Pages-2020 was mis-scoped (its conditioning result needs STRICT log-concavity, which Uniform[-1,1] fails); Kieffer-1983 and Mease-Nair-2006 are the correct antecedents. No src/ compile surface is authorized by the audit.",
   "audit": "AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md"

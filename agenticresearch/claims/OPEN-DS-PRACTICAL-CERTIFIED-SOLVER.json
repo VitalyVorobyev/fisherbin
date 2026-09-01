@@ -1,26 +1,40 @@
 {
   "id": "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
   "title": "Best practical Ds solver with theorem-backed certificate",
-  "criterion": [
-    "Ds"
-  ],
+  "criterion": ["Ds"],
   "level": "empirical_inductive_quantizer",
-  "status": "open",
-  "publication_status": "open",
-  "statement": "Synthesize efficient-score upper optimization, inductive fitting, exact Ds exchange refinement, held-out evaluation, and upper-bound gap reporting under the audited DS17 constraints. On the scalar population-conditionally-centered class (L), the full (M2)+(M3)+(M5) ordinary-stable class is eventually empty, so any margin-constrained output must be reported as constrained, priced by v_hat_K - Phi_hat_s, and non-inductive; the established compile route is the projected efficient-score interval rule with its DP ceiling. Off (L), DS18 proves that one exact non-centered law has a unique strict full-rank population optimum and almost-sure transfer through finite global regular Ds optimizers. DS18 was independently audited on 31 Aug 2026 and verified with hardened assumptions; the audit supplies a computable finite-N certificate Delta_N = v_hat_3,N - Phi_hat(z*_N) that needs no combinatorial search and converts any labeling's value gap into a bound on its disagreement with the population rule. The remaining practical problem is therefore sharp: exhibit a polynomial-time labeling rule whose output satisfies Delta-consistency (v_hat_3,N - Phi_hat(z_tilde_N) -> 0 a.s.) on this law, which would inherit the whole transfer and turn the global-oracle theorem into a solver certificate, and extend that to computable margins and value guarantees under perturbations of the law.",
+  "status": "project_proved",
+  "publication_status": "internal",
+  "statement": "DS19 closes the deployment-facing question by reduction. For d_psi=1 the tilt-DP construction gives a valid generalized bracket p^+<=g^+<=d and a regular in-bin bracket p_reg<=g_reg<=d, with exact closure iff a concrete DP-optimal labeling satisfies the tilt normal equation. Strong duality is false by an exact order-one N=4 counterexample. Fixed-tilt exact DP evaluation and polynomial certified-epsilon dual minimization are available; exact general polynomial bit complexity is isolated as OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY. On the exact DS18 law, the beta-zero interval DP is Delta-consistent almost surely and inherits the audited value-to-disagreement transfer, but not exchange stability, local-ascent selection, or compile authorization. For d_psi>1 the matrix-tilt outer map need not even be quasiconvex. The observable compile decision is therefore: an exhibited regular saddle certifies finite globality; an open bracket reports a bounded interval; projected efficient-score compilation remains the currently established unconditional projected route; a DS14 companion requires all audited sequence hypotheses; otherwise refuse.",
+  "assumptions": [
+    "Tier A certificate: d_psi=1, d_lambda>=1, positive rational finite weights, exact-K nonempty cells, raw uncentered score rows",
+    "the generalized DS11 pseudo-inverse and ordinary DS9 in-bin comparison domains are reported separately",
+    "the exact DS18 Delta-consistency corollary uses only the named bounded law, K=3, beta=0, iid equal weights, and exact scores",
+    "no src or public compile surface is authorized before an independent audit of DS19"
+  ],
   "dependencies": [
     "DS-EXACT-MOVE-ORACLE",
     "DS-SCALAR-EFFICIENT-DP",
     "DS-EFFICIENT-SCORE-GLOBAL-UPPER",
-    "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
-    "DS-STABLE-BASINS-FIXED-POINT-GATE",
+    "DS-PROFILED-VARIATIONAL",
     "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER",
-    "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
+    "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER",
+    "DS-TILT-DUAL-CERTIFICATE",
+    "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
+    "DS-STRIP-DP-DELTA-CONSISTENCY",
+    "DS-MATRIX-TILT-NONQUASICONVEX"
   ],
-  "proof_location": {
-    "file": "OPEN_PROBLEMS.md",
-    "section": "OP7. Best practical \\(D_s\\) solver with theorem-backed certificate"
-  },
-  "programme": "P1",
-  "warning": "Do not expose a generic gate root as a certificate. DS18 supplies sufficiency and finite exchange-stable transfer only through global regular optimization for its named exact law, under the in-bin (DS9) feasibility convention; it does not prove basin selection by local ascent or perturbation robustness. The DS18 audit is complete (AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md) and authorizes no src/ change."
+  "implies": ["DS-PROFILED-COMPILE-CERTIFICATE", "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY"],
+  "counterexamples": ["CE-DS-TILT-DUAL-GAP-001", "CE-DS-MATRIX-TILT-NONQUASICONVEX-001"],
+  "boundary_counterexamples": [
+    "CE-DS-NONCENTERED-SINGULAR-DESTINATION-001",
+    "CE-DS-INTERVAL-SEED-UNSTABLE-001",
+    "CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001"
+  ],
+  "literature": ["Li-Mathias-2000", "Silvey-Titterington-1973", "Fisher-1958", "Gajjar-Radhakrishnan-2019"],
+  "literature_search_status": "search_gap",
+  "proof_location": {"file": "KNOWN_RESULTS/05b-ds-bridge.md", "section": "DS19. The tilt-DP bracket: weak certification, an order-one gap, and a value-consistent DS18 primal"},
+  "artifact": "py/ds_practical_certified_solver.py",
+  "role": "reduced Tier A verdict answering P1's deployment question and isolating the remaining exact-complexity question in P7",
+  "warning": "Tier A is REDUCED, not a proof of exact polynomial computation for variable K,d_lambda. Delta-consistency is value-only. The Tier B outer map is nonquasiconvex. No generic gate root, local optimizer terminal, measured nuisance floor, or open bracket authorizes compilation."
 }

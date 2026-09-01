@@ -40,7 +40,6 @@
     "section": "DS16. Margin price at arbitrary labelings, the value funnel, and the profiled compile verdict"
   },
   "audit": "AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md",
-  "programme": "P1",
   "role": "resolves OP29's deployment half: prices every margin-certified state and extends DS15's degeneracy from global optima to all value-convergent sequences",
   "warning": "Audit-hardened: the compact tilt-codebook uniform law is load-bearing; a pointwise SLLN at a random subsequential centroid is invalid. The cap is over ALL labelings, so it neither needs nor delivers existence of margin-carrying exchange-stable sequences; that inhabitation question is OPEN-DS-STABLE-BASINS. No attainment or one-sided continuity of v*+(kappa) or v*(kappa) is proved. Class (L)+(S), d_psi = d_lambda = 1, equal weights, exact raw scores with centered empirical moments only."
 }
