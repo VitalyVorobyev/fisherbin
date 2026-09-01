@@ -17,7 +17,7 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 *Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
 *Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 31 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 is resolved on the audited scalar DS15 class. OP29's deployment half is resolved by DS16 and hardened by `AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`: \(\hat I_{\lambda\lambda}\ge\kappa\) has a strict existential population price and every value-convergent sequence enters the nuisance-degenerate funnel. DS17, hardened by `AUDITS/AUDIT-DS-STABLE-BASINS-001.md`, resolves OP30's inhabitation half negatively on the declared conditionally centered population class (L) and classifies the (M5)-free escape as compile-dead wasted cells. DS18 (`DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`) now proves the complementary existential fact off (L): for the exact law \(S_\psi=X\), \(S_\lambda=3X^2-1+Z\), every sequence of finite global regular \(D_s\) optimizers converges, up to labels, to the unique equal-third population rule and is exactly ordinary one-point exchange-stable, with fixed margins. This is a global-combinatorial selection theorem, not a practical ascent guarantee or a new compile path. The projected rule remains the only established unconditional compile path; the surviving gaps are practical off-(L) basin selection and perturbation robustness in OP29/OP7, the remaining OP30 branches, and the broader vector cases.*
+*Status 31 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 is resolved on the audited scalar DS15 class. OP29's deployment half is resolved by DS16 and hardened by `AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`: \(\hat I_{\lambda\lambda}\ge\kappa\) has a strict existential population price and every value-convergent sequence enters the nuisance-degenerate funnel. DS17, hardened by `AUDITS/AUDIT-DS-STABLE-BASINS-001.md`, resolves OP30's inhabitation half negatively on the declared conditionally centered population class (L) and classifies the (M5)-free escape as compile-dead wasted cells. DS18 (`DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`), independently audited on 31 Aug 2026 (`AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md`, **verified with hardened assumptions**), proves the complementary existential fact off (L): for the exact law \(S_\psi=X\), \(S_\lambda=3X^2-1+Z\), every sequence of finite global \(D_s\) optimizers converges, up to labels and null sets, to the unique equal-third population rule and is exactly ordinary one-point exchange-stable under the in-bin (DS9) feasibility convention, with fixed margins. This is a global-combinatorial selection theorem, not a practical ascent guarantee or a new compile path. The projected rule remains the only established unconditional compile path; the surviving gaps are practical off-(L) basin selection and perturbation robustness in OP29/OP7, the remaining OP30 branches, and the broader vector cases.*
 
 ## OP29. Margins beyond conditional centering
 
@@ -33,7 +33,18 @@ class is open:
   exact law**: with independent uniform \(X,Z\) and scores
   \((X,3X^2-1+Z)\), the unique population optimum has cuts \(\pm1/3\),
   efficiency \(8/9\), and fixed margins, and every sequence of finite global
-  regular optimizers transfers to it almost surely (`DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`).
+  optimizers transfers to it almost surely (`DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`).
+  The independent audit (31 Aug 2026) **verified it with hardened
+  assumptions**: the scalar steps are now self-contained rather than imported
+  from the (L)-conditioned DS15 lemmas, the probability-one event is exhibited
+  and is selection-independent, regularity is shown a.s. vacuous, and the
+  transfer carries the computable finite-\(N\) rate
+  \(P_N(z\ne q^*)\le3\Delta_N/\eta+P_N(\text{band }\eta)\) with
+  \(\Delta_N=\hat v_{3,N}-\hat\Phi_{D_s}(z^*_N)\). The audit also serialized
+  `CE-DS-NONCENTERED-SINGULAR-DESTINATION-001`: the in-bin (DS9) feasibility
+  convention is load-bearing, because under a pseudo-inverse comparison domain
+  every global regular optimum of an \(N=4\) table on this law's own support
+  escapes by one admissible move with gain \(1/96\).
   Measured: mix3/tiny\_cluster optima keep macroscopic binned nuisance blocks
   through \(N=18\) while the Gaussian blocks collapse (N-DS-MARGINS-TREND).
   DS17 (31 Aug 2026) hands this branch the live inhabitation question and its
@@ -46,7 +57,12 @@ class is open:
   theorem. The open remainder is no longer existential: prove that a practical
   profiled solver selects the full-rank basin without global combinatorial
   optimization, and retain computable margins and value guarantees under a
-  nontrivial perturbation class. Raw population-cut labels are not the answer:
+  nontrivial perturbation class. The audit sharpens the first half into a
+  concrete target: exhibit a polynomial-time labeling rule whose output
+  \(\tilde z_N\) satisfies \(\hat v_{3,N}-\hat\Phi_{D_s}(\tilde z_N)\to0\)
+  a.s.; any such rule inherits the finite-\(N\) bound above and hence the whole
+  transfer, converting the global-oracle theorem into a solver certificate.
+  Raw population-cut labels are not the answer:
   `CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001` has a strict
   \(O(1/N)\)-scale improving boundary move at the support-minimal \(N=4\).
 - **\(d_\psi>1\)**: the DS15 reduction identifies the degenerate attainers,

@@ -14,9 +14,21 @@
 
 ## de Castro & Dorigo (2019) — INFERNO
 
+**Key:** deCastro-Dorigo-2019
+
 **Paper:** *INFERNO: Inference-Aware Neural Optimisation*  
 **Idea:** differentiable optimization of binned summaries against an inference objective.  
 **Use:** practical adjacent categorization method; not exact hard D partition theory.
+
+**DS18 audit (31 Aug 2026):** registered a bibliography key here because this is
+the closest *applied* statement of the DS18 objective. INFERNO's loss is the
+inverse Hessian of an Asimov binned-Poisson likelihood — a profiled-Fisher
+surrogate — but the feasible set is a **soft**, differentiable histogram of a
+neural summary. **What transfers:** the objective family and the confirmation
+that nuisance-aware binning is the target practitioners want. **What does not:**
+hard partitions, exactness, uniqueness, strict isolation in decision distance,
+empirical-to-population transfer, and finite one-point exchange stability —
+INFERNO reports no optimality theorem at all.
 
 - DOI: https://doi.org/10.1016/j.cpc.2019.06.007
 

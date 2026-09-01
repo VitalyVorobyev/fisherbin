@@ -1399,3 +1399,259 @@ def test_ds18_named_off_class_root_and_margins_are_exact() -> None:
     assert exact["full_information"] == [["1/3", "0"], ["0", "17/15"]]
     assert exact["root_residual"] == "0"
     assert exact["ds_retention"] == "8/9"
+
+
+def _ds18_law_scores(xs: tuple[Fraction, ...], zs: tuple[Fraction, ...]) -> list[list[Fraction]]:
+    """Build DS18 score rows from the law S = (X, 3X^2 - 1 + Z), never from a fixture."""
+    return [[x, 3 * x * x - 1 + z] for x, z in zip(xs, zs, strict=True)]
+
+
+def _ds18_integrate(
+    poly: dict[tuple[int, int], Fraction], x_lo: Fraction, x_hi: Fraction
+) -> Fraction:
+    """Exact E[poly(X, Z) 1{x_lo <= X <= x_hi}] for X, Z iid Uniform[-1, 1].
+
+    The joint density is 1/4 on the square and the shear to score space has
+    unit Jacobian, so this integrates the law itself rather than any stored
+    constant.
+    """
+    total = Fraction(0)
+    for (i, j), coefficient in poly.items():
+        x_part = (x_hi ** (i + 1) - x_lo ** (i + 1)) / (i + 1)
+        z_part = (Fraction(1) ** (j + 1) - Fraction(-1) ** (j + 1)) / (j + 1)
+        total += coefficient * x_part * z_part
+    return total / 4
+
+
+def _ds18_multiply(
+    left: dict[tuple[int, int], Fraction], right: dict[tuple[int, int], Fraction]
+) -> dict[tuple[int, int], Fraction]:
+    out: dict[tuple[int, int], Fraction] = {}
+    for (i0, j0), a in left.items():
+        for (i1, j1), b in right.items():
+            key = (i0 + i1, j0 + j1)
+            out[key] = out.get(key, Fraction(0)) + a * b
+    return out
+
+
+def _ds18_profiled_value(information: list[list[Fraction]]) -> Fraction:
+    """In-bin profiled value, with the DS11 pseudo-inverse extension at a singular block."""
+    if information[1][1] == 0:
+        return information[0][0]
+    return information[0][0] - information[0][1] ** 2 / information[1][1]
+
+
+def _ds18_between(scores: list[list[Fraction]], labels: tuple[int, ...], n_bins: int) -> Fraction:
+    """Uncentered between-value of the POI column: sum_b (sum_{i in b} w s_psi)^2 / W_b."""
+    masses, moments = _exact_ds_cells(scores, labels, n_bins)
+    return sum(
+        (
+            moments[label][0] * moments[label][0] / masses[label]
+            for label in range(n_bins)
+            if masses[label] > 0
+        ),
+        Fraction(0),
+    )
+
+
+def _ds18_scalar_distortion(codebook: list[Fraction]) -> Fraction:
+    """Exact E[min_b (X - c_b)^2] for X ~ Uniform[-1, 1]."""
+    points = sorted(codebook)
+    edges = [Fraction(-1)]
+    for left, right in zip(points, points[1:], strict=False):
+        edges.append(min(Fraction(1), max(Fraction(-1), (left + right) / 2)))
+    edges.append(Fraction(1))
+    total = Fraction(0)
+    for index, centre in enumerate(points):
+        lo, hi = edges[index], edges[index + 1]
+        if hi > lo:
+            total += ((hi - centre) ** 3 - (lo - centre) ** 3) / 6
+    return total
+
+
+def test_ds18_population_law_integrates_to_the_registered_optimum() -> None:
+    """DS18's population constants follow from the law, not from stored numbers."""
+    psi = {(1, 0): Fraction(1)}
+    lam = {(2, 0): Fraction(3), (0, 0): Fraction(-1), (0, 1): Fraction(1)}
+    one = {(0, 0): Fraction(1)}
+    cut = Fraction(1, 3)
+
+    full = [
+        [_ds18_integrate(_ds18_multiply(psi, psi), Fraction(-1), Fraction(1))],
+        [_ds18_integrate(_ds18_multiply(lam, lam), Fraction(-1), Fraction(1))],
+    ]
+    cross = _ds18_integrate(_ds18_multiply(psi, lam), Fraction(-1), Fraction(1))
+    assert full[0][0] == Fraction(1, 3)
+    assert full[1][0] == Fraction(17, 15)
+    assert cross == 0  # B* = 0, so the efficient score is X itself
+
+    # The law is outside class (L): E[S_lambda | X] = 3X^2 - 1, verified by orthogonality.
+    residual = {(2, 0): Fraction(3), (0, 0): Fraction(-1), (0, 1): Fraction(1)}
+    for power in range(6):
+        against = {(power, 0): Fraction(1)}
+        conditional = _ds18_integrate(
+            _ds18_multiply({(2, 0): Fraction(3), (0, 0): Fraction(-1)}, against),
+            Fraction(-1),
+            Fraction(1),
+        )
+        assert _ds18_integrate(_ds18_multiply(residual, against), Fraction(-1), Fraction(1)) == (
+            conditional
+        )
+
+    edges = ((Fraction(-1), -cut), (-cut, cut), (cut, Fraction(1)))
+    masses = [_ds18_integrate(one, lo, hi) for lo, hi in edges]
+    mean_psi = [
+        _ds18_integrate(psi, lo, hi) / mass for (lo, hi), mass in zip(edges, masses, strict=True)
+    ]
+    mean_lam = [
+        _ds18_integrate(lam, lo, hi) / mass for (lo, hi), mass in zip(edges, masses, strict=True)
+    ]
+    assert masses == [Fraction(1, 3)] * 3
+    assert mean_psi == [Fraction(-2, 3), Fraction(0), Fraction(2, 3)]
+    assert mean_lam == [Fraction(4, 9), Fraction(-8, 9), Fraction(4, 9)]
+
+    information = [[Fraction(0), Fraction(0)], [Fraction(0), Fraction(0)]]
+    for mass, first, second in zip(masses, mean_psi, mean_lam, strict=True):
+        information[0][0] += mass * first * first
+        information[0][1] += mass * first * second
+        information[1][0] += mass * first * second
+        information[1][1] += mass * second * second
+    assert information == [[Fraction(8, 27), Fraction(0)], [Fraction(0), Fraction(32, 81)]]
+    assert _ds18_profiled_value(information) == Fraction(8, 27)
+    assert Fraction(8, 27) / full[0][0] == Fraction(8, 9)
+
+    # The scalar upper problem: v_3 = 8/27 uniquely, and v_2 = 1/4 is strictly worse.
+    assert _ds18_scalar_distortion(mean_psi) == Fraction(1, 27)
+    assert full[0][0] - _ds18_scalar_distortion(mean_psi) == Fraction(8, 27)
+    two_cell = full[0][0] - _ds18_scalar_distortion([Fraction(-1, 2), Fraction(1, 2)])
+    assert two_cell == Fraction(1, 4) < Fraction(8, 27)
+
+    # (M3) is lambda_min, not det/tr: the det/tr reading would fail kappa = 1/4.
+    assert min(information[0][0], information[1][1]) > Fraction(1, 4)
+    determinant = information[0][0] * information[1][1]
+    assert determinant / (information[0][0] + information[1][1]) == Fraction(32, 189)
+    assert Fraction(32, 189) < Fraction(1, 4)
+
+
+def test_ds18_profiled_scalar_sandwich_holds_on_every_small_partition() -> None:
+    """Profiled <= uncentered between <= best three-group value, on arbitrary cells."""
+    n_bins = 3
+    cases = [
+        (
+            (Fraction(-3, 4), Fraction(-1, 4), Fraction(1, 4), Fraction(3, 4), Fraction(-1, 2)),
+            (Fraction(-1), Fraction(-3, 4), Fraction(1), Fraction(1), Fraction(1, 2)),
+        ),
+        (
+            (
+                Fraction(-1),
+                Fraction(-1, 3),
+                Fraction(1, 3),
+                Fraction(1),
+                Fraction(0),
+                Fraction(1, 2),
+            ),
+            (Fraction(1), Fraction(-1), Fraction(1, 4), Fraction(-1), Fraction(0), Fraction(3, 4)),
+        ),
+        (
+            (
+                Fraction(-1),
+                Fraction(0),
+                Fraction(1, 2),
+                Fraction(1, 2),
+                Fraction(1),
+                Fraction(-1, 2),
+            ),
+            (Fraction(-1), Fraction(1), Fraction(-3, 4), Fraction(1, 4), Fraction(-1), Fraction(0)),
+        ),
+    ]
+    for xs, zs in cases:
+        scores = _ds18_law_scores(xs, zs)
+        n_rows = len(scores)
+        partitions = _canonical_partitions(n_rows, n_bins)
+        upper = max(_ds18_between(scores, labels, n_bins) for labels in partitions)
+        for labels in partitions:
+            information = _exact_binned_information(scores, labels, n_bins)
+            value = _ds18_profiled_value(information)
+            between = _ds18_between(scores, labels, n_bins)
+            assert value <= between <= upper
+            if information[1][1] > 0:
+                # The Schur value equals the minimum of the DS11 variational form.
+                masses, moments = _exact_ds_cells(scores, labels, n_bins)
+                slope = information[0][1] / information[1][1]
+                variational = sum(
+                    (
+                        (moments[label][0] - slope * moments[label][1]) ** 2 / masses[label]
+                        for label in range(n_bins)
+                        if masses[label] > 0
+                    ),
+                    Fraction(0),
+                )
+                assert variational == value
+
+
+def test_ds18_singular_destination_beats_the_regular_optimum() -> None:
+    """The in-bin feasibility convention is load-bearing at the minimal support."""
+    fixture = json.loads(
+        (
+            RESEARCH_WORKSPACE
+            / "COUNTEREXAMPLES"
+            / "CE-DS-NONCENTERED-SINGULAR-DESTINATION-001.json"
+        ).read_text()
+    )
+    xs = tuple(Fraction(value) for value in fixture["construction_x"])
+    zs = tuple(Fraction(value) for value in fixture["construction_z"])
+    scores = _ds18_law_scores(xs, zs)
+    n_bins = fixture["K"]
+
+    assert [[str(value) for value in row] for row in scores] == fixture["scores"]
+    assert all(abs(x) <= 1 and abs(z) <= 1 for x, z in zip(xs, zs, strict=True))
+    weight = Fraction(1, len(scores))
+    assert [sum(weight * row[column] for row in scores) for column in range(2)] == [
+        Fraction(0),
+        Fraction(0),
+    ]
+
+    partitions = _canonical_partitions(len(scores), n_bins)
+    assert len(partitions) == fixture["exact_quantities"]["canonical_partitions"]
+    regular: list[tuple[Fraction, tuple[int, ...]]] = []
+    singular: list[tuple[Fraction, tuple[int, ...]]] = []
+    for labels in partitions:
+        information = _exact_binned_information(scores, labels, n_bins)
+        value = _ds18_profiled_value(information)
+        (regular if information[1][1] > 0 else singular).append((value, labels))
+    best = max(value for value, _ in regular)
+    optima = sorted(labels for value, labels in regular if value == best)
+    assert best == Fraction(fixture["objective_before"])
+    assert optima == sorted(
+        tuple(labels) for labels in fixture["exact_quantities"]["global_regular_optima_labels"]
+    )
+    assert [labels for _, labels in singular] == [
+        tuple(labels) for labels in fixture["exact_quantities"]["singular_labelings"]
+    ]
+    assert singular[0][0] == Fraction(fixture["objective_after"])
+    assert singular[0][0] - best == Fraction(fixture["exact_quantities"]["exact_gain"])
+
+    # Every global regular optimum escapes into the singular labeling by one move
+    # whose source stays nonempty, and no regular destination improves.
+    for optimum in optima:
+        counts = [optimum.count(label) for label in range(n_bins)]
+        escapes = 0
+        for row, source in enumerate(optimum):
+            if counts[source] <= 1:
+                continue
+            for destination in range(n_bins):
+                if destination == source:
+                    continue
+                moved = list(optimum)
+                moved[row] = destination
+                information = _exact_binned_information(scores, tuple(moved), n_bins)
+                gain = _ds18_profiled_value(information) - best
+                if information[1][1] > 0:
+                    assert gain <= 0
+                elif gain > 0:
+                    escapes += 1
+        assert escapes == 1
+
+    # A zero binned nuisance block forces every cell lambda-sum, hence the total, to
+    # vanish -- which is why this table can host one and why the law cannot, a.s.
+    assert sum(row[1] for row in scores) == 0

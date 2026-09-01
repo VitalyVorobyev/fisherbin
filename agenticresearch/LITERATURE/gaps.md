@@ -56,3 +56,15 @@ Communities, venues, or periods suspected under-covered by the current graph.
   used as a fallback for missing edges. Per-source counts and limitations are
   retained in `graph.json`; they should not be presented as a saturation
   claim.
+- **Almost-minimizer rigidity is under-traversed (31 Aug 2026, DS18 audit).**
+  `Rakhlin-Caponnetto-2006` is the only registered source for the
+  near-optimal-value ⟹ near-optimal-partition step that DS18.1 and DS18.2 both
+  consume, and no forward-citation round has been run on it or on
+  `Mease-Nair-2006`. A saturation round on the k-means stability/margin
+  community (Ben-David–von Luxburg–Pál, Meilă, Levrard, and the perturbation
+  stability line) is the next literature task for this branch.
+- **Survey-sampling optimal stratification was never swept.** The
+  Dalenius–Hodges line optimises a different variance functional over interval
+  strata and may hold a rigidity lemma in exactly the form DS18 needs. It sits
+  on a terminology island from the quantization literature and is invisible to
+  the standing vocabulary in `protocols/literature.md`.

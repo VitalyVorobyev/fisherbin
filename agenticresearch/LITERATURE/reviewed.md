@@ -251,3 +251,41 @@ its structural conclusion (1), while its reduced-rule rank collapse, value
 identity, sign-split family, and noncompilability conclusions remain unmatched.
 The claim should be split or its literature status should explicitly record
 that partial prior art.
+
+## Round 7 — independent DS18 audit triangulation (31 August 2026)
+
+Target: `DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`; report
+`AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md`; full six-field
+table in
+`LITERATURE/audits/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-31-August-2026.md`.
+
+- **Kieffer (1983), `Kieffer-1983`:** the correct uniqueness citation for the
+  named law. Log-concavity of the *density* suffices, and \(\operatorname{Unif}[-1,1]\)
+  is log-concave; the strict-log-concavity routes (Fleischer 1964, Liu–Pagès
+  Prop 11) do **not** cover it. Now linked to DS18 and to its audit.
+- **Mease & Nair (2006), `Mease-Nair-2006`:** second independent uniqueness
+  route under log-concavity of the density, plus the standing warning that
+  Eubank-type weakenings are known-broken. Linked to DS18.
+- **Pollard (1981), `Pollard-1981`:** supplies the empirical scalar
+  consistency and, crucially for DS18's "**every** sequence of global
+  optimizers" quantifier, a *selection-independent* almost-sure event. It does
+  not connect the profiled maximiser to the distortion minimiser; DS18's own
+  sandwich does that, and no source was found for it.
+- **Rakhlin & Caponnetto (2006), `Rakhlin-Caponnetto-2006`:** the published
+  template for DS18.1's strict isolation and DS18.2's empirical rigidity.
+  Their almost-minimizer geometry lives in codebook space; DS18 needs it in
+  the decision distance on partitions, starting from arbitrary
+  \((X,Z)\)-measurable cells.
+- **de Castro & Dorigo (2019), `deCastro-Dorigo-2019`:** newly key-registered.
+  Closest applied statement of the DS18 objective (Asimov inverse Hessian, a
+  profiled-Fisher surrogate) but over soft differentiable histograms, with no
+  optimality theorem.
+
+### Search verdict
+
+The compound DS18 statement remains `search_gap` after an independent query
+path. Two attribution defects in the frozen node were found and repaired: six
+direct antecedents already in this project's bibliography were unlinked, and
+the uniqueness citation was mis-scoped to a strict-log-concavity result that
+the named law fails. The audit supplies the missing conditioning fact itself
+(exact distortion Hessian with minimum eigenvalue \(1/6\)).

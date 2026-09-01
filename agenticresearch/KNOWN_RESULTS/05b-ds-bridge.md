@@ -1619,6 +1619,32 @@ attainment — recorded in the OP30 rescope.
 
 **Claims:** DS-NONCENTERED-GLOBAL-BASIN-TRANSFER
 
+**Independent audit (31 Aug 2026,
+`AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md`).** **Verified with
+hardened assumptions.** The population optimum, its uniqueness, the strict
+isolation, the almost-sure transfer of *every* global-optimizer sequence, the
+finite exchange stability and the fixed margins all survive independent
+adversarial attack, with 65,924 exactly enumerated canonical partitions and a
+two-route recomputation of the law. Five hardenings, all folded into the text
+below. **(H1)** The proof no longer cites DS15 Lemma 3 or Proposition 5: both
+are registered for class (L) — which this law violates by construction — under
+a chapter convention of exactly centered empirical scores, which DS18.2
+explicitly negates. The scalar steps are now proved here for this law.
+**(H2)** The ordinary comparison domain is the **in-bin (DS9)** one; a zero
+binned nuisance block is shown to be null under the law, so the regularity
+restriction is a.s. vacuous, while
+`CE-DS-NONCENTERED-SINGULAR-DESTINATION-001` shows the convention is
+load-bearing off that null set. **(H3)** Population uniqueness is a.s. up to
+labels *and null sets*. **(H4)** The probability-one event is exhibited
+explicitly and the transfer is given a computable finite-\(N\) rate.
+**(H5)** (M3) is \(\lambda_{\min}(\hat I_N)\ge\kappa\), not
+\(\det/\operatorname{tr}\) — under the latter reading the registered
+\(\kappa=1/4\) would fail, since \(\det I_{q^*}/\operatorname{tr}I_{q^*}=32/189\).
+The audit also repaired two prior-art defects: six direct antecedents already
+in the project bibliography were unlinked, and the uniqueness citation was
+mis-scoped to a strict-log-concavity result that \(\operatorname{Unif}[-1,1]\)
+fails.
+
 DS17 left two logically separate gaps off class (L): exhibit a regular root
 with fixed margins, and show that an empirical sequence can inhabit it despite
 boundary-scale one-point gains. Both gaps are resolved here for one explicit
@@ -1715,12 +1741,19 @@ strictly isolated in decision distance: for every \(\varepsilon>0\) there is
 \Phi_{D_s}(q)\le 8/27-\delta(\varepsilon).
 \]
 
-*Proof.* DS11's variational form, evaluated at \(B=0\), and the scalar
-nearest-centroid reduction from DS15 Lemma 1 give, for every \(q\),
+*Proof (audit form; self-contained).* At \(d_\lambda=1\) the first inequality
+needs no variational machinery: \(\Phi_{D_s}(q)=I_{\psi\psi}(q)-I_{\psi\lambda}(q)^2/I_{\lambda\lambda}(q)\le I_{\psi\psi}(q)\),
+and at a singular block \(I_{\psi\lambda}(q)=0\) too, so the DS11
+pseudo-inverse extension gives equality — the bound holds under **both**
+conventions. The second is the nearest-codepoint reduction, which uses only the
+pointwise inequality \((X-m_{q(S)})^2\ge\min_b(X-m_b)^2\) with
+\(m_b=E[X\mid q=b]\) and therefore holds for **arbitrary measurable cells**,
+including cells that depend on \(Z\) and are not \(X\)-measurable:
 
 \[
 \Phi_{D_s}(q)
 \le \sum_bW_bE[X\mid q=b]^2
+= E[X^2]-E[(X-m_q)^2]
 \le v_3(\operatorname{Unif}[-1,1]).
 \]
 
@@ -1734,14 +1767,33 @@ v_3=E[X^2]-1/27=1/3-1/27=8/27.
 \]
 
 The exact calculation above shows \(q^*\) attains both bounds with a regular
-nuisance block. Equality in the nearest-centroid reduction forces assignment
-to a nearest member of the attaining scalar codebook; the uniform law charges
-neither midpoint, and the scalar codebook is unique, so \(q=q^*\) a.s. up to
-labels. The quantitative isolation is the scalar grouping-rigidity argument
-of DS15 Lemma 3, specialized to bounded \(X\): otherwise a sequence a fixed
-decision distance away with values tending to \(8/27\) would have centroid
-subsequences converging to the unique scalar optimum and its cells would
-converge to the equal intervals, a contradiction. ∎
+nuisance block. Equality forces the centroid set to be an optimal codebook,
+hence \(\{-2/3,0,2/3\}\) — in particular three distinct centroids — and then
+forces \(m_{q(S)}\) to be a nearest codepoint a.s.; the uniform law charges
+neither midpoint \(\pm1/3\), so \(q=q^*\) **a.s. up to labels and null
+sets** (H3). A cell of zero mass is excluded because
+\(v_2=1/3-1/12=1/4<8/27\), and a singular \(q\) is excluded because the unique
+attainer \(q^*\) has \(I_{\lambda\lambda}=32/81>0\); regularity is therefore
+not load-bearing for uniqueness.
+
+The quantitative isolation is proved directly (H1), not imported. Let
+\(G(c)=E[\min_b(X-c_b)^2]-1/27\ge0\) on \([-1,1]^3\); it is continuous and
+vanishes only at \(c^*\), so by compactness
+\(g(\rho)=\inf\{G(c):\|c-c^*\|_\infty\ge\rho\}>0\) for every \(\rho>0\).
+If \(\Phi_{D_s}(q)\ge8/27-\delta\) then \(G(m)\le\delta\), so
+\(\|m-c^*\|_\infty<\rho\) once \(\delta<g(\rho)\). Taking
+\(\rho=\eta/8\), every \(x\) with \(|x\mp1/3|>\eta\) keeps a margin
+\(>\tfrac43\eta-8\rho=\tfrac13\eta\) for its correct codepoint, so
+\(P(q\ne q^*,|X\mp1/3|>\eta)\le3\delta/\eta\) while the two boundary bands
+carry mass \(2\eta\). Hence
+\(d(q,q^*)\le2(3\delta/\eta+2\eta)\) whenever \(\delta<g(\eta/8)\), which
+is the claimed \(\delta(\varepsilon)\) in contrapositive. The local face of
+\(g\) is exact: the distortion Hessian at \(c^*\) is
+\(\bigl[\begin{smallmatrix}1/2&-1/6&0\\-1/6&1/3&-1/6\\0&-1/6&1/2\end{smallmatrix}\bigr]\)
+with \(\lambda_{\min}=1/6\) — a fact the cited `Liu-Pages-2020` route does
+**not** supply here, since its Proposition 11 assumes strict log-concavity.
+Scalar uniqueness itself is classical for log-concave densities
+(`Kieffer-1983`, `Mease-Nair-2006`). ∎
 
 ### Theorem DS18.2 (almost-sure exact empirical inhabitation)
 
@@ -1764,7 +1816,24 @@ one-point exchange-stable and satisfy (M2)+(M3)+(M5) at the fixed constants
 centroids tend to \((-2/3,0,2/3)\), and their companion rules converge to the
 deployable population rule \(q^*\).
 
-*Proof.* Label the sample by the fixed cuts of \(q^*\), writing the result as
+*Proof (audit form).* The probability-one event is exhibited explicitly (H4)
+and is **selection-independent** — none of its four members mentions a
+labeling, which is exactly what licenses the "every sequence" quantifier:
+\(\Omega_0=\Omega_1\cap\Omega_2\cap\Omega_3\cap\Omega_4\) with
+\(\Omega_1=\{\sup_{c\in[-1,1]^3}|P_Nf_c-Pf_c|\to0\}\) for
+\(f_c(x)=\min_b(x-c_b)^2\) (bounded by \(4\) and \(4\)-Lipschitz in \(c\) on
+the cube, so a finite net plus the SLLN suffices);
+\(\Omega_2\) the SLLN on the finitely many fixed functionals
+\(1_{A^*_b},X1_{A^*_b},S_\lambda1_{A^*_b},X^2\);
+\(\Omega_3=\{P_N(|X\mp1/3|\le\eta)\to\eta\ \forall\eta\in\mathbb Q\cap(0,1/3)\}\);
+and \(\Omega_4=\{\sum_{i\le N}S_{\lambda,i}\ne0\ \forall N\}\). The last is
+where regularity is settled: at \(d_\lambda=1\),
+\(\hat I_{\lambda\lambda}=0\) forces every cell \(\lambda\)-sum, hence the
+total, to vanish, and \(\sum_iS_{\lambda,i}\) is absolutely continuous, so on
+\(\Omega_4\) **every** three-nonempty-cell labeling is regular (H2).
+
+Label the sample by the fixed cuts of \(q^*\) — half-open,
+\(\{X<-1/3\},\{-1/3\le X<1/3\},\{X\ge1/3\}\) — writing the result as
 \(z_N^*\). The SLLN on these three fixed cells gives
 \(\hat I_N(z_N^*)\to I_{q^*}\), so \(z_N^*\) is feasible eventually and
 \(\hat\Phi_{D_s}(z_N^*)\to8/27\).
@@ -1778,10 +1847,13 @@ and scalar reassignment used above are exact sample algebra:
 \le \hat v_{3,N}(X),
 \]
 
-where \(\hat v_{3,N}(X)\) is the best three-group scalar between-value and is
-attained by intervals of the sorted \(X_i\). Bounded scalar quantization
-consistency (the scalar part of DS15 Proposition 5) gives
-\(\hat v_{3,N}(X)\to8/27\) a.s. Global optimality therefore squeezes
+where — **uncentered, about the origin, since the sample is never centered** —
+\(\hat v_{3,N}(X)=P_N[X^2]-\hat D_{3,N}\) with
+\(\hat D_{3,N}=\min_cP_N\min_b(X-c_b)^2\), attained by intervals of the sorted
+\(X_i\). On \(\Omega_1\), \(\hat D_{3,N}\to1/27\) and \(P_N[X^2]\to1/3\), so
+\(\hat v_{3,N}(X)\to8/27\) a.s. (H1: this replaces the citation to DS15
+Proposition 5, whose statement carries an estimated tilt and an exact-centering
+shift, neither of which exists here). Global optimality therefore squeezes
 
 \[
 8/27\leftarrow\hat\Phi_{D_s}(z_N^*)
@@ -1790,17 +1862,46 @@ consistency (the scalar part of DS15 Proposition 5) gives
 \le\hat v_{3,N}(X)\to8/27.
 \]
 
-The empirical form of DS15's scalar grouping rigidity, now simpler because
-\(|S|\) is bounded and the uniform optimum is unique, yields
-\(P_N(z^{(N)}\ne q^*)\to0\) after relabeling. The fixed-rule SLLN plus this
-vanishing disagreement gives convergence of every cell mass and score moment,
-hence of the information, slope, projected centroids, and objective. The
-strict limiting margins admit the displayed rational lower constants.
+Rigidity is then quantitative rather than asymptotic (H4). Put
+
+\[
+\Delta_N:=\hat v_{3,N}-\hat\Phi_{D_s}(z_N^*)\ \ge0 ,
+\]
+
+computable from the sample with no search over labelings. Every labeling with
+\(\hat\Phi_{D_s}(z)\ge\hat\Phi_{D_s}(z_N^*)\) — in particular every global
+optimum — has own-codebook excess \(\le\Delta_N\) and a
+\(\Delta_N\)-optimal codebook, so on \(\Omega_1\) its centroids converge to
+\((-2/3,0,2/3)\) and the §DS18.1 margin argument transfers verbatim to
+\(P_N\):
+
+\[
+P_N\bigl(z^{(N)}\ne q^*\bigr)
+\;\le\;\frac{3\Delta_N}{\eta}+P_N\bigl(|X-\tfrac13|\le\eta\bigr)+P_N\bigl(|X+\tfrac13|\le\eta\bigr)
+\]
+
+for every rational \(\eta\in(0,1/3)\) and all large \(N\); letting
+\(N\to\infty\) on \(\Omega_3\) and then \(\eta\downarrow0\) gives
+\(P_N(z^{(N)}\ne q^*)\to0\) after relabeling. Because \(|S_\psi|\le1\) and
+\(|S_\lambda|\le3\), uniform integrability is free and the fixed-rule SLLN
+plus this vanishing disagreement gives convergence of every cell mass and score
+moment, hence of the information, slope, projected centroids, and objective.
+The strict limiting margins \((1/3,\,8/27,\,2/3)\) admit the displayed
+rational lower constants — with (M3) read as
+\(\lambda_{\min}(\hat I_N)\ge\kappa\) (H5).
 
 Finally, an exact global feasible labeling has no admissible improving
-one-point relocation, so it is exact ordinary exchange-stable. This last step
-does not compare stochastic boundary distances with \(1/N\): globality signs
-every exact move at once. ∎
+one-point relocation, so it is exact ordinary exchange-stable — at **every**
+\(N\) on \(\Omega_4\), not merely eventually; only the margins need
+"eventually". This last step does not compare stochastic boundary distances
+with \(1/N\): globality signs every exact move at once. Two families of moves
+are checked separately (H2). A move that empties its source is inadmissible by
+the in-bin convention, and could not improve anyway, since the result is a
+*coarsening* and DS11(b) refinement monotonicity is one-directional. A move
+into a destination with \(\hat I_{\lambda\lambda}=0\) leaves the DS9-feasible
+class; it is inadmissible in-bin, and on \(\Omega_4\) no such destination
+exists at all. Under the DS11 pseudo-inverse convention it would be evaluable
+and could strictly beat the optimum — see the boundary fixture below. ∎
 
 ### Boundary, scope, and deployment consequence
 
@@ -1809,6 +1910,19 @@ The stronger finite assertion is false. On the support-minimal movable sample
 an exact improving gain \(37/14608\). Thus \(O(1/N)\)-scale boundary effects
 are real; DS18.2 bypasses them through finite global selection rather than
 pretending they vanish pointwise.
+
+The **feasibility convention is load-bearing**, which the audit serialized as
+`CE-DS-NONCENTERED-SINGULAR-DESTINATION-001`. On four exactly centered rows of
+this law's own support — \(X=(-1,0,\tfrac12,\tfrac12)\),
+\(Z=(-1,1,-\tfrac34,\tfrac14)\) — the exact global value over regular
+labelings is \(1/12\), attained twice, and **both** attainers reach the single
+nuisance-singular labeling by one source-nonempty relocation whose DS11
+pseudo-inverse value is \(3/32\), an exact gain of \(1/96\). Under a
+pseudo-inverse comparison domain no global regular optimum of that table is
+exchange-stable. DS18.2 is untouched — such tables are null under the law — but
+the statement must name the in-bin (DS9) convention, and any future
+`ProfiledMarginPolicy` surface must name it too. \(N=4\) is minimal: at
+\(K=3\), \(N=3\) has three singleton cells and zero admissible relocations.
 
 The theorem proves that the DS14 margin-certified branch is genuinely
 inhabited off (L), and gives a law-specific theorem-backed limiting companion
@@ -1820,14 +1934,28 @@ fresh independent audit and a practical selection theorem.
 Self-adversarial checks: population ties are null; empirical empty cells are
 excluded by feasibility and disappear under mass convergence; the limiting
 nuisance block is regular; bounded support supplies uniform integrability and
-(M4); duplicate full scores occur with probability zero; no first-order move
-approximation is used; exact scores and equal weights are load-bearing; no
-sample centering is performed. The exact root, exhaustive \(N\le10\)
-falsification, unequal-weight/duplicate/tie/tiny-cell/singular controls, and
-the boundary fixture are reproduced by
-`py/ds_noncentered_global_basin.py`.
+(M4) with \(\varphi(t)=\min(1,\sqrt{29}\,t/2)\) — audit-verified on 480 exactly
+computed slabs with worst measured ratio \(1.9986\), and note the support's own
+diameter is \(\sqrt{26.0345\ldots}\), *not* \(\sqrt{26}\); duplicate full
+scores occur with probability zero; no first-order move approximation is used;
+exact scores and equal weights are load-bearing; no sample centering is
+performed, so every empirical second moment is about the origin. The exact
+root, exhaustive \(N\le10\) falsification,
+unequal-weight/duplicate/tie/tiny-cell/singular controls, and the boundary
+fixture are reproduced by `py/ds_noncentered_global_basin.py`; the independent
+audit reproduces all of them from the law definition, plus the exact slab
+sweep, the codebook lattice scan, the \(N\le11\) global optima and the
+finite-\(N\) certificate, with
+`py/audit_ds_noncentered_global_basin_transfer.py`.
 
-**Stop-condition verdict.** **PROVED for an explicit off-(L) law.** A regular
-DS17 root with fixed positive margins is the unique strict population global
-basin, and every sequence of finite global profiled optima transfers almost
-surely to exact exchange-stable empirical inhabitants of that basin.
+**Stop-condition verdict.** **PROVED for an explicit off-(L) law, and
+independently audited.** A regular DS17 root with fixed positive margins is the
+unique strict population global basin, and every sequence of finite global
+profiled optima transfers almost surely to exact exchange-stable empirical
+inhabitants of that basin, under the in-bin feasibility convention and at the
+computable rate above. The audit changes no deployment verdict: this remains a
+global-oracle existence theorem for one named law, and authorizes no `src/`
+compile surface. The next dependency-blocking question is now sharp — is there
+a polynomial-time labeling rule whose output \(\tilde z_N\) satisfies
+\(\hat v_{3,N}-\hat\Phi_{D_s}(\tilde z_N)\to0\) a.s. on this law? Any such
+rule inherits the displayed finite-\(N\) bound and hence the whole transfer.
