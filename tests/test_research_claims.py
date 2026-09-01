@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from fractions import Fraction
-from itertools import product
+from itertools import combinations, permutations, product
 from pathlib import Path
 
 import numpy as np
@@ -1655,3 +1655,296 @@ def test_ds18_singular_destination_beats_the_regular_optimum() -> None:
     # A zero binned nuisance block forces every cell lambda-sum, hence the total, to
     # vanish -- which is why this table can host one and why the law cannot, a.s.
     assert sum(row[1] for row in scores) == 0
+
+
+def test_ds19_tilt_dual_has_a_support_minimal_exact_positive_gap() -> None:
+    """Two tilt quadratics certify a strict gap without locating the algebraic minimizer."""
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-TILT-DUAL-GAP-001.json").read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    weights = [Fraction(value) for value in fixture["weights"]]
+    assert weights == [Fraction(1, 4)] * 4
+    n_bins = fixture["K"]
+    first = tuple(fixture["labels_before"])
+    optimum = tuple(fixture["labels_after_or_optimum"])
+    exact = fixture["exact_quantities"]
+
+    partitions = _canonical_partitions(len(scores), n_bins)
+    assert len(partitions) == exact["canonical_partitions"] == 6
+    values: list[tuple[Fraction, tuple[int, ...]]] = []
+    quadratics: dict[tuple[int, ...], tuple[Fraction, Fraction, Fraction]] = {}
+    for labels in partitions:
+        information = _exact_binned_information(scores, labels, n_bins)
+        assert information[1][1] > 0
+        value = information[0][0] - information[0][1] ** 2 / information[1][1]
+        values.append((value, labels))
+        quadratics[labels] = (
+            information[1][1],
+            -2 * information[0][1],
+            information[0][0],
+        )
+
+    global_value, global_labels = max(values)
+    assert global_labels == optimum
+    assert global_value == Fraction(exact["global_profiled_value"])
+    assert global_value == Fraction(116805, 11816)
+    assert quadratics[first] == tuple(
+        Fraction(value) for value in exact["first_tilt_quadratic_ABC"]
+    )
+    assert quadratics[optimum] == tuple(
+        Fraction(value) for value in exact["optimum_tilt_quadratic_ABC"]
+    )
+
+    alpha = Fraction(exact["convex_mixture_alpha_on_first"])
+    mixture = tuple(
+        alpha * left + (1 - alpha) * right
+        for left, right in zip(quadratics[first], quadratics[optimum], strict=True)
+    )
+    assert mixture == tuple(Fraction(value) for value in exact["mixture_quadratic_ABC"])
+    a_value, b_value, c_value = mixture
+    vertex = -b_value / (2 * a_value)
+    lower = a_value * vertex * vertex + b_value * vertex + c_value
+    gap = lower - global_value
+    assert vertex == Fraction(exact["mixture_vertex_beta"])
+    assert lower == Fraction(exact["mixture_global_minimum"])
+    assert gap == Fraction(exact["certified_duality_gap_lower_bound"])
+    assert gap == Fraction(105329256, 154014175) > 0
+
+    # Weak duality itself survives: every partition's profiled value is no
+    # larger than its own tilted between-value, hence no larger than the dual.
+    for beta in (Fraction(-1), vertex, Fraction(0), Fraction(1)):
+        tilted = {
+            labels: quadratic[0] * beta * beta + quadratic[1] * beta + quadratic[2]
+            for labels, quadratic in quadratics.items()
+        }
+        dual_value = max(tilted.values())
+        for value, labels in values:
+            assert value <= tilted[labels] <= dual_value
+        mixed_value = (
+            mixture[0] * beta * beta + mixture[1] * beta + mixture[2]
+        )
+        assert dual_value >= mixed_value >= lower
+
+    # K=3, N=3 has only the all-singleton partition, so the bracket closes and
+    # N=4 is the first support size where a strict gap is possible.
+    assert _canonical_partitions(3, 3) == [(0, 1, 2)]
+
+
+def _exact_scalar_between_for_ds19(
+    values: list[Fraction],
+    weights: list[Fraction],
+    labels: tuple[int, ...],
+    n_bins: int,
+) -> Fraction:
+    masses = [Fraction(0)] * n_bins
+    moments = [Fraction(0)] * n_bins
+    for value, weight, label in zip(values, weights, labels, strict=True):
+        masses[label] += weight
+        moments[label] += weight * value
+    return sum(
+        moment * moment / mass
+        for moment, mass in zip(moments, masses, strict=True)
+        if mass > 0
+    )
+
+
+def _canonicalize_ds19(labels: tuple[int, ...]) -> tuple[int, ...]:
+    mapping: dict[int, int] = {}
+    out = []
+    for label in labels:
+        if label not in mapping:
+            mapping[label] = len(mapping)
+        out.append(mapping[label])
+    return tuple(out)
+
+
+def _exact_tie_interval_optimum_ds19(
+    values: list[Fraction], weights: list[Fraction], n_bins: int
+) -> Fraction:
+    """Exhaust total orders inside exact tie blocks, then every interval cut."""
+    best: Fraction | None = None
+    for order in permutations(range(len(values))):
+        if any(values[order[index]] > values[order[index + 1]] for index in range(len(order) - 1)):
+            continue
+        for cuts in combinations(range(1, len(values)), n_bins - 1):
+            bounds = (0, *cuts, len(values))
+            labels = [0] * len(values)
+            for cell, (start, stop) in enumerate(
+                zip(bounds, bounds[1:], strict=False)
+            ):
+                for position in range(start, stop):
+                    labels[order[position]] = cell
+            candidate = _canonicalize_ds19(tuple(labels))
+            value = _exact_scalar_between_for_ds19(values, weights, candidate, n_bins)
+            best = value if best is None else max(best, value)
+    assert best is not None
+    return best
+
+
+def test_ds19_weak_duality_and_scalar_contiguity_survive_adversarial_ties() -> None:
+    """Duplicates, unequal weights, singular nuisance, and tilt ties do not break the ceiling."""
+    cases = [
+        (
+            [[-1, 0], [-1, 0], [0, 1], [1, 0], [1, 0]],
+            [Fraction(1, 5)] * 5,
+        ),
+        (
+            [[-1, -1], [0, 0], [1, 1], [2, 0]],
+            [Fraction(1, 4)] * 4,
+        ),
+        (
+            [[Fraction(-3, 4), Fraction(-5, 16)],
+             [Fraction(-1, 4), Fraction(-25, 16)],
+             [Fraction(1, 4), Fraction(3, 16)],
+             [Fraction(3, 4), Fraction(27, 16)]],
+            [Fraction(1, 10), Fraction(1, 5), Fraction(3, 10), Fraction(2, 5)],
+        ),
+        (
+            [[-1, 0], [0, 0], [1, 0]],
+            [Fraction(1, 3)] * 3,
+        ),
+        (
+            [[-1, 0], [Fraction(-1, 2), Fraction(1, 1000)],
+             [Fraction(1, 2), Fraction(-1, 1000)], [1, 0]],
+            [Fraction(1, 4)] * 4,
+        ),
+    ]
+    for raw_scores, weights in cases:
+        scores = [[Fraction(value) for value in row] for row in raw_scores]
+        partitions = _canonical_partitions(len(scores), 3)
+        for beta in (Fraction(-1), Fraction(0), Fraction(1)):
+            tilted_values = [row[0] - beta * row[1] for row in scores]
+            brute = max(
+                _exact_scalar_between_for_ds19(tilted_values, weights, labels, 3)
+                for labels in partitions
+            )
+            interval = _exact_tie_interval_optimum_ds19(tilted_values, weights, 3)
+            assert interval == brute
+            for labels in partitions:
+                information = _exact_binned_information(scores, labels, 3)
+                profiled = _ds18_profiled_value(information)
+                same_labels = _exact_scalar_between_for_ds19(
+                    tilted_values, weights, labels, 3
+                )
+                assert profiled <= same_labels <= brute
+
+    # Split-weight duplication is exactly invariant after pooling identical
+    # full-score atoms, which is the ScoreQuant default on these small tables.
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-TILT-DUAL-GAP-001.json").read_text()
+    )
+    pooled: dict[tuple[Fraction, Fraction], Fraction] = {}
+    for row, raw_weight in zip(fixture["scores"], fixture["weights"], strict=True):
+        score = tuple(Fraction(value) for value in row)
+        weight = Fraction(raw_weight)
+        for _ in range(2):
+            pooled[score] = pooled.get(score, Fraction(0)) + weight / 2
+    assert sorted(pooled) == sorted(
+        tuple(Fraction(value) for value in row) for row in fixture["scores"]
+    )
+    assert sorted(pooled.values()) == sorted(Fraction(value) for value in fixture["weights"])
+
+
+def test_ds19_ds18_empirical_projection_tax_identity_is_exact_on_practical_cases() -> None:
+    """The DS18 strip-primal inputs satisfy the exact empirical tax identity partitionwise."""
+    cases: list[tuple[list[list[Fraction]], list[Fraction]]] = []
+    for size in range(4, 9):
+        xs = [Fraction(2 * index + 1 - size, size) for index in range(size)]
+        scores = _ds18_law_scores(tuple(xs), tuple(Fraction(0) for _ in xs))
+        cases.append((scores, [Fraction(1, size)] * size))
+    boundary_x = (Fraction(-3, 4), Fraction(-1, 4), Fraction(1, 4), Fraction(3, 4))
+    boundary_z = (Fraction(-1), Fraction(-3, 4), Fraction(1), Fraction(1))
+    cases.append((_ds18_law_scores(boundary_x, boundary_z), [Fraction(1, 4)] * 4))
+
+    checked = 0
+    for scores, weights in cases:
+        full_cross = sum(
+            weight * row[0] * row[1]
+            for weight, row in zip(weights, scores, strict=True)
+        )
+        full_nuisance = sum(
+            weight * row[1] * row[1]
+            for weight, row in zip(weights, scores, strict=True)
+        )
+        assert full_nuisance > 0
+        beta_hat = full_cross / full_nuisance
+        efficient = [row[0] - beta_hat * row[1] for row in scores]
+        assert sum(
+            weight * value * row[1]
+            for weight, value, row in zip(weights, efficient, scores, strict=True)
+        ) == 0
+
+        for labels in _canonical_partitions(len(scores), 3):
+            information = _exact_binned_information(scores, labels, 3)
+            profiled = _ds18_profiled_value(information)
+            between = _exact_scalar_between_for_ds19(efficient, weights, labels, 3)
+            cross = information[0][1] - beta_hat * information[1][1]
+            if information[1][1] == 0:
+                assert cross == 0
+                assert profiled == between
+            else:
+                assert profiled == between - cross * cross / information[1][1]
+            assert profiled <= between
+            checked += 1
+
+    assert checked == 1394
+    artifact = json.loads(
+        (
+            RESEARCH_WORKSPACE
+            / "WORK"
+            / "artifacts"
+            / "DS-PRACTICAL-CERTIFIED-SOLVER"
+            / "ds18-search.json"
+        ).read_text()
+    )
+    assert artifact["summary"]["tax_identity_violations"] == 0
+    assert artifact["summary"]["contiguity_disagreements"] == 0
+    assert artifact["summary"]["positive_probe_gaps"] == 1
+
+
+def test_ds19_matrix_tilt_outer_map_is_not_quasiconvex() -> None:
+    """Tier B exact midpoint violation (CE-DS-MATRIX-TILT-NONQUASICONVEX-001)."""
+    fixture = json.loads(
+        (
+            RESEARCH_WORKSPACE
+            / "COUNTEREXAMPLES"
+            / "CE-DS-MATRIX-TILT-NONQUASICONVEX-001.json"
+        ).read_text()
+    )
+    scores = [[Fraction(value) for value in row] for row in fixture["scores"]]
+    weights = [Fraction(value) for value in fixture["weights"]]
+    assert all(
+        sum(weight * row[column] for row, weight in zip(scores, weights, strict=True)) == 0
+        for column in range(4)
+    )
+    information = [
+        [
+            sum(
+                weight * score[row] * score[column]
+                for score, weight in zip(scores, weights, strict=True)
+            )
+            for column in range(4)
+        ]
+        for row in range(4)
+    ]
+    assert information == [
+        [Fraction(int(row == column)) for column in range(4)]
+        for row in range(4)
+    ]
+
+    def determinant_at(matrix: list[list[Fraction]]) -> Fraction:
+        # V(B)=I_2+B B^T for this unique singleton partition.
+        first = 1 + matrix[0][0] ** 2 + matrix[0][1] ** 2
+        second = 1 + matrix[1][0] ** 2 + matrix[1][1] ** 2
+        cross = matrix[0][0] * matrix[1][0] + matrix[0][1] * matrix[1][1]
+        return first * second - cross * cross
+
+    first = [[Fraction(4), Fraction(0)], [Fraction(0), Fraction(0)]]
+    second = [[Fraction(0), Fraction(0)], [Fraction(0), Fraction(4)]]
+    midpoint = [
+        [(left + right) / 2 for left, right in zip(left_row, right_row, strict=True)]
+        for left_row, right_row in zip(first, second, strict=True)
+    ]
+    assert determinant_at(first) == determinant_at(second) == Fraction(17)
+    assert determinant_at(midpoint) == Fraction(25) > Fraction(17)
