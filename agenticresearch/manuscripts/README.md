@@ -230,6 +230,32 @@ canonical.
   Manuscript language saying "global optimum implies exchange stable" without
   the convention is stale.
 
+### Added 1 September 2026 (the practical certified-solver session)
+
+- **DS19 closes P1 by reduction, not by universal strong duality.** For
+  \(d_\psi=1\), the tilt-DP construction gives valid generalized and regular
+  two-sided brackets and an observable saddle closure test. Fixed-tilt exact
+  evaluation, polynomial certified-accuracy minimization, and exact
+  fixed-\((K,d_\lambda)\) computation are established; exact polynomial bit
+  complexity with variable \((K,d_\lambda)\) remains OP31. The manuscript must
+  not describe the bracket as generically exact: `CE-DS-TILT-DUAL-GAP-001`
+  has an exact order-one gap greater than 0.68.
+- **The DS18 interval-DP primal is value-consistent, and only value-consistent.**
+  On the named DS18 law the raw \(X\)-interval DP has
+  \(\Delta_N\to0\) almost surely and inherits the audited disagreement bound.
+  This does not imply exchange stability, local-ascent basin selection,
+  perturbation robustness, or permission to compile a profiled terminal.
+- **The vector tilt outer problem is not quasiconvex in general.**
+  `DS-MATRIX-TILT-NONQUASICONVEX` disproves Tier B's convex/quasiconvex route
+  by an exact \(d_\psi=d_\lambda=2\) witness. Weak matrix-tilt duality remains
+  valid; no approximation or library surface follows.
+- **Deployment remains audit-gated.** A regular closed saddle certifies finite
+  globality; a nonclosed bracket reports an interval; the projected
+  efficient-score rule remains the established unconditional route for its
+  distinct formulation; a DS14 companion still requires all audited sequence
+  assumptions; otherwise compilation is refused. DS19 is internal until a
+  fresh independent audit.
+
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of
 `protocols/audit.md`. It had no updater before workspace v4.0, which is why the

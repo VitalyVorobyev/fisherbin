@@ -1,9 +1,9 @@
 # Open problems — the research programme queue
 
-**Version:** 4.0 · 31 August 2026
+**Version:** 4.0 · 1 September 2026
 **Rule:** this file contains only genuinely unresolved questions. Results established in `KNOWN_RESULTS/` are inputs, not open tasks.
 
-This is the **single priority queue** of the project, organized as eight
+This is the **single priority queue** of the project, organized as seven live
 research programmes (the narrative and goal live in
 `research-plan-proposal.md`). Ordering is **product-first**: programmes whose
 theorems unblock shippable ScoreQuant capabilities outrank purely academic
@@ -13,139 +13,23 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 ---
 
-# P1 · DS-POPULATION-BRIDGE — finish practical \(D_s\) theory
+## Closed programme P1 — deployment verdict (1 September 2026)
 
-*Descends from research-plan-proposal.md Session 8 (moved to "Now" by the product-first decision).*
-*Product payoff: unlocks `compile_quantizer` for profiled criteria — the largest math-gated library feature.*
-*Status 31 Aug 2026: OP4, OP5, and the fixed-\(q\)/asymptotic parts of OP6 are resolved (`KNOWN_RESULTS/05b-ds-bridge.md` DS11–DS14; packet `WORK/completed/DS-POPULATION-BRIDGE.md`); DS14 passed its independent adversarial audit (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`). OP28 is resolved on the audited scalar DS15 class. OP29's deployment half is resolved by DS16 and hardened by `AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md`: \(\hat I_{\lambda\lambda}\ge\kappa\) has a strict existential population price and every value-convergent sequence enters the nuisance-degenerate funnel. DS17, hardened by `AUDITS/AUDIT-DS-STABLE-BASINS-001.md`, resolves OP30's inhabitation half negatively on the declared conditionally centered population class (L) and classifies the (M5)-free escape as compile-dead wasted cells. DS18 (`DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`), independently audited on 31 Aug 2026 (`AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md`, **verified with hardened assumptions**), proves the complementary existential fact off (L): for the exact law \(S_\psi=X\), \(S_\lambda=3X^2-1+Z\), every sequence of finite global \(D_s\) optimizers converges, up to labels and null sets, to the unique equal-third population rule and is exactly ordinary one-point exchange-stable under the in-bin (DS9) feasibility convention, with fixed margins. This is a global-combinatorial selection theorem, not a practical ascent guarantee or a new compile path. The projected rule remains the only established unconditional compile path; the surviving gaps are practical off-(L) basin selection and perturbation robustness in OP29/OP7, the remaining OP30 branches, and the broader vector cases.*
+P1 is complete and is no longer a live programme. DS19 closes its deployment
+question with a **Tier A REDUCED** verdict: the scalar tilt-DP bracket is valid,
+has an exact saddle closure condition, admits fixed-tilt exact evaluation and
+polynomial certified-accuracy minimization, and its DS18 interval-DP primal is
+value-consistent; exact polynomial bit complexity for variable
+\((K,d_\lambda)\) is isolated as OP31. Strong duality fails by an exact
+order-one gap. The observable decision is therefore to certify an exhibited
+regular saddle, report a nonclosed bracket without claiming optimality, use the
+distinct projected efficient-score route where authorized, apply a DS14
+companion only under all audited sequence hypotheses, and otherwise refuse.
+No public compile surface is authorized before an independent DS19 audit.
 
-## OP29. Margins beyond conditional centering
-
-DS15 settles the margin behaviour of exact global finite \(D_s\) optima for
-\(d_\psi=d_\lambda=1\) and conditionally centered laws
-(\(E[S_\lambda\mid\hat s]=0\): Gaussian, elliptical). Everything outside that
-class is open:
-
-- **Non-centered laws** (\(E[S_\lambda\mid\hat s]\ne0\)): the projection tax
-  has a \(\Theta(1)\) population component on efficient-score intervals, so
-  the unrestricted supremum may be attained at *nondegenerate* quantizers and
-  the DS14 margins may hold at optima. DS18 resolves this **for one explicit
-  exact law**: with independent uniform \(X,Z\) and scores
-  \((X,3X^2-1+Z)\), the unique population optimum has cuts \(\pm1/3\),
-  efficiency \(8/9\), and fixed margins, and every sequence of finite global
-  optimizers transfers to it almost surely (`DS-NONCENTERED-GLOBAL-BASIN-TRANSFER`).
-  The independent audit (31 Aug 2026) **verified it with hardened
-  assumptions**: the scalar steps are now self-contained rather than imported
-  from the (L)-conditioned DS15 lemmas, the probability-one event is exhibited
-  and is selection-independent, regularity is shown a.s. vacuous, and the
-  transfer carries the computable finite-\(N\) rate
-  \(P_N(z\ne q^*)\le3\Delta_N/\eta+P_N(\text{band }\eta)\) with
-  \(\Delta_N=\hat v_{3,N}-\hat\Phi_{D_s}(z^*_N)\). The audit also serialized
-  `CE-DS-NONCENTERED-SINGULAR-DESTINATION-001`: the in-bin (DS9) feasibility
-  convention is load-bearing, because under a pseudo-inverse comparison domain
-  every global regular optimum of an \(N=4\) table on this law's own support
-  escapes by one admissible move with gain \(1/96\).
-  Measured: mix3/tiny\_cluster optima keep macroscopic binned nuisance blocks
-  through \(N=18\) while the Gaussian blocks collapse (N-DS-MARGINS-TREND).
-  DS17 (31 Aug 2026) hands this branch the live inhabitation question and its
-  population tool: the tilt-residual gate \(E[h(T_\beta)S_\lambda]=0\) over
-  Lloyd-stationary branches (`DS-STABLE-BASINS-FIXED-POINT-GATE`). An
-  independent dense-grid/Sobol multistart over the full declared gate window
-  found one admissible mix3 root at \(\beta=0\), carrying
-  \(\lambda_{\min}=1.7364\) and near-zero measured price
-  (N-DS-AUDIT17-ROOTS); that is evidence, not a uniqueness or sufficiency
-  theorem. The open remainder is no longer existential: prove that a practical
-  profiled solver selects the full-rank basin without global combinatorial
-  optimization, and retain computable margins and value guarantees under a
-  nontrivial perturbation class. The audit sharpens the first half into a
-  concrete target: exhibit a polynomial-time labeling rule whose output
-  \(\tilde z_N\) satisfies \(\hat v_{3,N}-\hat\Phi_{D_s}(\tilde z_N)\to0\)
-  a.s.; any such rule inherits the finite-\(N\) bound above and hence the whole
-  transfer, converting the global-oracle theorem into a solver certificate.
-  Raw population-cut labels are not the answer:
-  `CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001` has a strict
-  \(O(1/N)\)-scale improving boundary move at the support-minimal \(N=4\).
-- **\(d_\psi>1\)**: the DS15 reduction identifies the degenerate attainers,
-  but the dichotomy needs uniqueness/rigidity for the vector D problem on the
-  efficient score (ties into OP8/C2).
-- ~~Exchange-stable non-global sequences~~ — **resolved for the
-  conditionally centered class** (DS16, 30 Aug 2026): margins price every
-  labeling at \(\delta(\kappa)\) below \(v_K\), value convergence forces the
-  DS15 degeneracy regardless of stability or seeding, and the compile
-  verdict is certificate-gated (`DS-STABLE-MARGINS-PRICE`,
-  `DS-PROFILED-COMPILE-CERTIFICATE`). The inhabitation/selection remainder
-  is OP30.
-- **\(d_\lambda\ge2\)** (audit finding, 30 Aug 2026): at the rank-vacuous
-  cardinality the dichotomy is exactly false — every feasible labeling has
-  profiled value zero (`CE-DS-MARGINS-RANK-VACUITY-001`). The correct
-  mechanism is \(\sum_b m_b=\hat\mu\): a centered sample needs
-  `n_bins > dimension`, i.e. \(K\ge d_\psi+d_\lambda+1\) — the fixture's
-  \(K\ge d_\lambda+2\) is its \(d_\psi=1\) case (commit `891bbf3`; DS16
-  restatement). Above that cardinality the dichotomy is open and needs a
-  vector-(R) steering construction spanning the nuisance directions.
-
-Target claim: `OPEN-DS-MARGINS-NONCENTERED`.
-
-## OP30. Inhabitation and selection of margin-retaining stable states
-
-**Rerouted by DS17 (31 Aug 2026, packet `DS-STABLE-BASINS`).** The original
-branch (a) — do margin-compatible exchange-stable sequences exist a.s. on the
-DS15/DS16 class — is **resolved negatively in the strongest form**:
-`DS-STABLE-BASINS-CENTERED-OBSTRUCTION` (proof: the exact tilt-residual
-identity plus the conditional Chebyshev association inequality under (L),
-chained through the pathwise DS14′ lemma) shows that on every atomless
-(L)-law with (M1)+(M4), almost surely, for all large \(N\) **no** stable
-labeling carries (M2)+(M3)+(M5) at any fixed margins. Branch (b) is subsumed
-(terminal degeneracy is unconditional eventually, not a seeding law). The
-\(N\le14\) census witnesses are pre-asymptotic, exactly as blocker 3 of the
-packet warned. What remains open under this OP:
-
-- **(a′) the merged branch:** can exchange-stable sequences track
-  sign-split-type wasted-cell configurations ((M2)+(M3) without (M5); the
-  population family exists on the canonical Gaussian law with
-  \(\lambda_{\min}\) up to \(1/\pi\), and that family has value \(v_2\) —
-  `DS-STABLE-BASINS-LCM-CLASSIFICATION`),
-  their ties being knife-edge; and is anything deployable there, given the
-  compilable reductions have \(\lambda_{\min}=0\)?
-- **(a″) attainment:** attainment and one-sided continuity of
-  \(v^{*}(\kappa)\)/\(v^{*+}(\kappa)\) (DS16 conventions), whose feasible
-  class is now proved **nonempty** for \(\kappa\le1/\pi\) on the canonical
-  law (DS17.3(4)) — ties into C2.
-- **(c) design under the obstruction:** any margin-constrained exchange on
-  the class terminates at constrained-stable states only; its output must be
-  presented as constrained, priced by \(\hat v_K-\hat\Phi_s\), and
-  non-inductive — solver design and gap reporting live in OP7. The off-class
-  inhabitation/transfer question (where margins may be inexpensive) belongs to
-  OP29(a) with the `DS-STABLE-BASINS-FIXED-POINT-GATE` root equation as its
-  per-law population test.
-
-Target claim: `OPEN-DS-STABLE-BASINS`.
-
-## OP7. Best practical \(D_s\) solver with theorem-backed certificate
-
-This is now an algorithm-engineering/theory synthesis task, not a request to re-derive the exact move oracle.
-
-Benchmark a pipeline:
-
-1. full-data efficient score;
-2. exact/projected D upper problem (DP if \(d_\psi=1\));
-3. soft/affine inductive \(D_s\) fit;
-4. exact finite \(D_s\) exchange audit/refinement where well posed;
-5. report upper-bound gap and geometric-disagreement gap.
-
-Need robust Cholesky/block updates and held-out evaluation. The multivariate
-(\(d_\psi>1\)) certified upper problem — where the library currently refuses
-rather than approximates — belongs here: a certified convex relaxation with a
-stated gap would meet the project's standards. DS17 constraint (31 Aug 2026):
-on the conditionally centered class a margin-constrained method cannot
-terminate at ordinary-stable margin states asymptotically (the certified
-class is eventually empty), so certified outputs there are
-constrained-stable, priced, and non-inductive by construction; off-class the
-  solver may use `DS-STABLE-BASINS-FIXED-POINT-GATE` roots as necessary
-  population diagnostics. DS18 upgrades one named law to a unique strict
-  population optimum with transfer through finite **global** optimizers; it
-  does not certify generic local exchange ascent, raw population-cut labels,
-  or robustness to perturbing the law.
+Tier B is **DISPROVED**: the multivariate matrix-tilt outer objective need not
+be quasiconvex (`DS-MATRIX-TILT-NONQUASICONVEX`). The remaining academic
+margins and stable-basin questions are OP29 in P6 and OP30 in P7.
 
 ---
 
@@ -312,6 +196,25 @@ The programme also carries the empirical half of the paper story (proposal
 Session 7): the controlled D-versus-trace/k-means benchmark establishing
 *when* D differs, not merely that it wins on its own objective.
 
+## OP29. Margins beyond conditional centering
+
+The deployment-facing scalar remainder is closed by DS19. Two vector academic
+branches remain:
+
+- **\(d_\psi>1\):** complete the uniqueness and rigidity theory for vector-D
+  quantization of the efficient score before transferring DS15's
+  degenerate-attainer dichotomy.
+- **\(d_\lambda\ge2\):** above the load-bearing centered-sample threshold
+  \(K\ge d_\psi+d_\lambda+1\), construct or refute a vector-(R) steering
+  mechanism spanning all nuisance directions. At
+  \(K=d_\psi+d_\lambda\), `CE-DS-MARGINS-RANK-VACUITY-001` already shows
+  that every feasible profiled value is zero.
+
+These are P6 consistency/rigidity questions, not deployment blockers. Do not
+reopen the audited scalar DS15, DS18, or DS19 claims.
+
+Target claim: `OPEN-DS-MARGINS-NONCENTERED`.
+
 ---
 
 # P7 · FOUNDATIONS — why D is special, complexity, randomization
@@ -399,6 +302,47 @@ Separate:
 - objective convergence for a fixed parameter path;
 - convergence of global optima;
 - convergence of local stationary branches.
+
+## OP30. Inhabitation and selection of margin-retaining stable states
+
+DS17 already proves that the full (M2)+(M3)+(M5) ordinary-stable branch is
+eventually empty on its scalar conditionally centered class. Two foundational
+remainders survive in P7:
+
+- **(M5)-free tracking:** decide whether empirical exchange-stable sequences
+  can track coincident-projected-centroid wasted-cell configurations.
+- **Constrained-value regularity:** prove or refute attainment and one-sided
+  continuity of \(v^*(\kappa)\) and \(v^{*+}(\kappa)\) under their distinct
+  DS16 conventions. The Gaussian sign-split family proves nonemptiness for
+  the closed constraint when \(\kappa\le1/\pi\), not attainment or
+  continuity.
+
+Solver design and non-centered value transfer are closed out of this OP by
+DS19. No wasted-cell state becomes deployable merely by retaining a nuisance
+floor.
+
+Target claim: `OPEN-DS-STABLE-BASINS`.
+
+## OP31. Exact bit complexity of the tilt-DP dual
+
+For positive rational weights and a rational score table, with \(K\) and
+\(d_\lambda\) part of the input, decide whether
+
+\[
+\min_\beta \hat v_K(S_\psi-\beta S_\lambda)
+\]
+
+admits exact algebraic optimization in polynomial bit complexity using the
+fixed-tilt interval-DP oracle, including ties and active refinements, without
+materializing a potentially superpolynomial parametric-DP envelope.
+
+DS19 already proves exact fixed-tilt evaluation, polynomial
+certified-\(\varepsilon\) minimization, and exact computation for fixed
+\((K,d_\lambda)\). General parametric-shortest-path envelope lower bounds do
+not automatically transfer to this restricted grouping DP; closure requires a
+valid hardness reduction or a structure-exploiting exact algorithm.
+
+Target claim: `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`.
 
 ---
 

@@ -1,6 +1,32 @@
 # DS-PRACTICAL-CERTIFIED-SOLVER — a polynomial-time profiled solver with a two-sided certificate
 
-**Programme:** P1 · **Opened:** 1 September 2026 · **Status:** active
+**Programme:** P1 (closed) · **Opened:** 1 September 2026 · **Closed:** 1 September 2026 · **Status:** completed
+
+## Outcome
+
+**Tier A — REDUCED.** DS19 proves the scalar tilt-DP weak certificate on the
+generalized DS11 and regular DS9 domains, gives the exact saddle closure gate,
+settles fixed-tilt exact evaluation and polynomial certified-accuracy
+minimization, and proves the DS18 beta-zero interval-DP primal
+\(\Delta\)-consistent. Universal strong duality is false by the exact
+order-one fixture `CE-DS-TILT-DUAL-GAP-001`. Exact polynomial bit complexity
+when \(K\) and \(d_\lambda\) vary is isolated as
+`OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY` (OP31, P7), so the proved Tier A theorem
+is a reduction rather than the packet's fully exact polynomial-time option.
+The registered compile decision remains observable and conservative: certify
+an exhibited regular saddle, report an open bracket without claiming
+optimality, use the distinct projected route where authorized, require all
+audited DS14 sequence hypotheses for a companion rule, and otherwise refuse.
+
+**Tier B — DISPROVED.** `DS-MATRIX-TILT-NONQUASICONVEX` and
+`CE-DS-MATRIX-TILT-NONQUASICONVEX-001` show that the matrix-tilt outer
+objective need not be quasiconvex, hence need not be convex. Weak matrix-tilt
+duality survives, but the proposed convex/quasiconvex outer solver does not.
+
+P1's deployment question is answered and the programme is closed. Its
+academic vector-margin remainders move to P6 (OP29), wasted-cell tracking and
+constrained-value attainment move to P7 (OP30), and P2 becomes the rank-1 live
+programme. No `src/` or public API change is authorized by this packet.
 
 ## Goal
 
@@ -238,7 +264,10 @@ A numerical scan, however wide, is not a verdict for either tier.
 
 ## Next dependency-blocking question
 
-To be filled by the session. Required by `protocols/theorem.md`; do not close
-this packet without it. If Tier A proves, the expected successor is the audit
-packet for the registered claim, followed by the `src/` landing named in
-`docs/roadmap.md:324-332`.
+Does `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY` hold: can the
+variable-\((K,d_\lambda)\) tilt-DP dual be optimized exactly in polynomial bit
+complexity, including tie refinements, or is there a valid hardness
+obstruction? This is the named assumption to which Tier A is reduced. It does
+not reopen P1's deployment decision. Separately, any future `src/` landing
+still requires a fresh independent adversarial audit of DS19's domain split,
+saddle gate, reduction, \(\Delta\)-consistency chain, and refusal table.
