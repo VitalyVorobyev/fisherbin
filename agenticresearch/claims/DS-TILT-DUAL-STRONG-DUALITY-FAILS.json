@@ -1,0 +1,34 @@
+{
+  "id": "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
+  "title": "The scalar-POI tilt dual can have an order-one strong-duality gap",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "finite_assignment",
+  "status": "counterexample",
+  "publication_status": "internal",
+  "statement": "An exact equal-weight N=4, K=3, d_psi=d_lambda=1 table has all six nonempty partitions regular, global profiled value 116805/11816, and tilt dual at least 61717893/5839400 by an exact convex mixture of two active partition quadratics. Hence d-g >= 105329256/154014175 > 0.68 even though the DS9 and DS11 domains coincide. A positive-weight bounded augmentation family with vanishing added mass preserves the gap asymptotically, so the gap is Theta(1), not a finite-grid artifact.",
+  "assumptions": [
+    "uncentered finite score table with positive rational weights and exactly three nonempty cells",
+    "the asymptotic family uses distinct bounded rational added atoms of vanishing total mass and does not assume unrestricted split-duplicate invariance"
+  ],
+  "dependencies": [
+    "DS-PROFILED-VARIATIONAL",
+    "DS-SCALAR-EFFICIENT-DP"
+  ],
+  "counterexamples": [
+    "CE-DS-TILT-DUAL-GAP-001"
+  ],
+  "literature": [
+    "Li-Mathias-2000",
+    "Silvey-Titterington-1973",
+    "Fisher-1958"
+  ],
+  "literature_search_status": "search_gap",
+  "proof_location": {
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS19. The tilt-DP bracket: weak certification, an order-one gap, and a value-consistent DS18 primal"
+  },
+  "artifact": "COUNTEREXAMPLES/CE-DS-TILT-DUAL-GAP-001.json",
+  "warning": "This falsifies universal strong duality, not weak validity of the ceiling. The Theta(1) extension uses a vanishing-total-mass perturbation proof; unrestricted duplication of rows can change a finite assignment optimum."
+}

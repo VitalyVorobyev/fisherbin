@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0",
   "project": "ScoreQuant",
-  "updated": "2026-08-31",
+  "updated": "2026-09-01",
   "canonical_problem_file": "PROBLEM.md",
   "human_readable_ledger": "KNOWN_RESULTS/",
   "open_problem_ledger": "OPEN_PROBLEMS.md",
@@ -125,7 +125,8 @@
     },
     "Silvey-Titterington-1973": {
       "title": "A Geometric Approach to Optimal Design Theory",
-      "doi": "10.1093/biomet/60.1.21"
+      "doi": "10.1093/biomet/60.1.21",
+      "note": "Biometrika 60(1):21-32. The publisher summary identifies D- and Ds-equivalence as duality theorems proved through Strong Lagrangian Theory on the approximate-design feasible set; this does not transfer strong duality to hard partitions."
     },
     "Silvey-Titterington-Torsney-1978": {
       "title": "An Algorithm for Optimal Designs on a Design Space",
@@ -198,6 +199,13 @@
       "title": "Extremal Characterizations of the Schur Complement and Resulting Inequalities",
       "doi": "10.1137/S0036144599337290",
       "note": "SIAM Review 42(2):233-246. Theorem 2.2 is the DS11 identity (Loewner-minimal generalized Schur complement with exact attainment set); attributed to M. G. Krein (1947) and Anderson's shorted operator (1971)."
+    },
+    "Gajjar-Radhakrishnan-2019": {
+      "title": "Parametric Shortest Paths in Planar Graphs",
+      "doi": "10.1109/FOCS.2019.00057",
+      "arxiv": "1811.05115",
+      "pdf": "https://arxiv.org/pdf/1811.05115",
+      "note": "FOCS 2019:876-895. Constructs linear-parameter planar shortest-path instances with n^{Omega(log n)} optimal-cost pieces. This is a parametric-DP envelope-complexity warning, not a lower bound for the restricted tilted interval-segmentation DP."
     },
     "Valassi-2020": {
       "title": "Optimising HEP parameter fits via Monte Carlo weight derivative regression",
@@ -354,51 +362,45 @@
     ]
   },
   "programmes": {
-    "P1": {
-      "title": "DS-POPULATION-BRIDGE \u2014 finish practical Ds theory",
-      "rank": 1,
-      "readiness": "ready",
-      "kind": "theorem"
-    },
     "P2": {
       "title": "SCORE-ORACLE-ROBUSTNESS \u2014 estimated scores and classifiers",
-      "rank": 2,
+      "rank": 1,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P3": {
       "title": "INFORMATION-BUDGET \u2014 how many bins does a target need",
-      "rank": 3,
+      "rank": 2,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P4": {
       "title": "DEPLOYMENT-ROBUSTNESS \u2014 away from the reference point, with error bars",
-      "rank": 4,
+      "rank": 3,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P5": {
       "title": "HEP-SPECIALIZATION \u2014 template fits made mathematically explicit",
-      "rank": 5,
+      "rank": 4,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P6": {
       "title": "D-CORE-COMPLETION \u2014 the paper's remaining spine",
-      "rank": 6,
+      "rank": 5,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P7": {
       "title": "FOUNDATIONS \u2014 why D is special, complexity, randomization",
-      "rank": 7,
+      "rank": 6,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P8": {
       "title": "LITERATURE-GRAPH \u2014 coverage you can defend",
-      "rank": 8,
+      "rank": 7,
       "readiness": "ready",
       "kind": "infrastructure"
     }

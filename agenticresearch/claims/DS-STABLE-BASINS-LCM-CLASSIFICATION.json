@@ -43,7 +43,6 @@
     "section": "DS17. Inhabitation of the margin-certified branch: the conditional-centering obstruction and the fixed-point gate"
   },
   "audit": "AUDITS/AUDIT-DS-STABLE-BASINS-001.md",
-  "programme": "P1",
   "role": "classifies the (M5)-free escape of the obstruction: margins survive only by wasting cells on profiled-information-free splits, and feed the DS16 attainment question a nonvacuous feasible class",
   "warning": "Audit-hardened. Nonemptiness of the closed population class {lambda_min >= kappa} does not prove attainment or continuity of v*(kappa), identify v*+(kappa), or produce empirical exchange-stable sequences. The N=3 exact boundary is support-minimal but atomically packet-vacuous; the N=8 fixture is a structured symmetric control, not globally minimal. The reduced-rule rank conclusion is LCM-scoped."
 }

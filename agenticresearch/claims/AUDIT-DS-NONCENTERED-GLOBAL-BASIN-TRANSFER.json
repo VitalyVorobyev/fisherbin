@@ -39,6 +39,5 @@
     "section": "Publication-grade audit of the exact off-(L) global basin and empirical transfer"
   },
   "artifact": "py/audit_ds_noncentered_global_basin_transfer.py",
-  "programme": "P1",
   "role": "independent publication-grade verification and hardening of the first exact off-(L) population-to-empirical transfer theorem"
 }

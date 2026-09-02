@@ -34,7 +34,6 @@
   },
   "audit": "AUDITS/AUDIT-DS-STABLE-BASINS-001.md",
   "artifact": "py/audit_ds_stable_basins.py",
-  "programme": "P1",
   "role": "windowed falsification evidence that did not falsify DS17.1, plus a measured off-class witness that scopes it",
   "warning": "Audit-hardened measured node. No numerical no-root or unique-root statement carries theorem authority; the centered obstruction is proved independently. Search windows must be tied to an explicit kappa, and observed mix3 behavior is per-law evidence only."
 }

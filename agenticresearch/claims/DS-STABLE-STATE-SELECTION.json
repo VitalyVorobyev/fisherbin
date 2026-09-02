@@ -34,7 +34,6 @@
     "Telgarsky-Vattani-2010"
   ],
   "literature_search_status": "search_gap",
-  "programme": "P1",
   "audit": "AUDITS/AUDIT-DS-STABLE-MARGINS-COMPILE-001.md",
   "role": "the selection-effects evidence separating properties of stable states from properties of the seeding (packet blocker 5)",
   "warning": "Audit-hardened measured claim. The stable-count range is 5-944. The 0.004-0.046 researcher gap range is aggregate, not a universal per-run range; an independent N=100 random seed produced 0.075. Atomic grid laws and finite optimizer runs do not prove asymptotic basin selection."

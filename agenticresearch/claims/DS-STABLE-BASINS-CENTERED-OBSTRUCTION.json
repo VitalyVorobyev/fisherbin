@@ -49,7 +49,6 @@
     "section": "DS17. Inhabitation of the margin-certified branch: the conditional-centering obstruction and the fixed-point gate"
   },
   "audit": "AUDITS/AUDIT-DS-STABLE-BASINS-001.md",
-  "programme": "P1",
   "role": "resolves OP30(a) on the packet's class: the strongest form of the DS15/DS16 degeneracy - the certified branch is not merely priced but eventually empty",
   "warning": "Audit-hardened. The theorem is only about population conditional centering (L), not sample-centered scores and not the general template/HEP model class. Off (L), one measured mix3 root has negligible price, but no general free-certification claim follows. Finite N <= 14 atomic witnesses are pre-asymptotic; N_0(omega) is finite but not uniform."
 }

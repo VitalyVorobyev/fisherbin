@@ -1,0 +1,44 @@
+{
+  "id": "DS-TILT-DUAL-CERTIFICATE",
+  "title": "Scalar-POI tilt-DP gives a valid two-sided certificate with an exact saddle closure gate",
+  "criterion": [
+    "Ds"
+  ],
+  "level": "finite_assignment",
+  "status": "project_proved",
+  "publication_status": "internal",
+  "statement": "For d_psi=1 and positive finite weights, write V_z(beta)=btw(S_psi-beta S_lambda;z), v_K(beta)=max_z V_z(beta), and Phi^+(z)=min_beta V_z(beta). The DP-active generalized primal p^+, generalized global value g^+, regular in-bin primal p_reg, regular global value g_reg, and dual d=min_beta v_K(beta) obey p^+ <= g^+ <= d and p_reg <= g_reg <= g^+ <= d. Equality holds exactly when an exhibited DP-optimal labeling z at beta also satisfies beta I_lambdalambda(z)=I_psilambda(z); if its nuisance block is nonsingular it certifies an ordinary in-bin global optimum, otherwise only the DS11 pseudo-inverse problem. Fixed-tilt exact rational value/subgradient evaluation is O(KN^2), and certified epsilon-minimization is polynomial in input bits and log(1/epsilon) after quotienting common nuisance-null directions. Exact algebraic minimization is proved polynomial only for fixed K and fixed d_lambda; exact polynomial bit complexity with variable K,d_lambda is OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY.",
+  "assumptions": [
+    "d_psi=1; d_lambda>=1; finite score table; positive rational weights; exactly K nonempty cells",
+    "all empirical second moments are about the score-space origin; no sample centering is performed",
+    "the generalized domain uses DS11's Moore-Penrose value; the ordinary in-bin domain separately requires a nonsingular binned nuisance block",
+    "a deterministic implementation's tie policy is part of its primal; closure requires the concrete active labeling and exact normal equation",
+    "polynomial certified-accuracy optimization assumes rational input and a requested rational epsilon; exact fixed-(K,d_lambda) output uses a real-algebraic representation"
+  ],
+  "dependencies": [
+    "DS-PROFILED-VARIATIONAL",
+    "DS-SCALAR-EFFICIENT-DP"
+  ],
+  "implies": [
+    "DS-PROFILED-COMPILE-CERTIFICATE",
+    "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+    "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY"
+  ],
+  "boundary_counterexamples": [
+    "CE-DS-TILT-DUAL-GAP-001",
+    "CE-DS-NONCENTERED-SINGULAR-DESTINATION-001"
+  ],
+  "literature": [
+    "Li-Mathias-2000",
+    "Silvey-Titterington-1973",
+    "Fisher-1958",
+    "Gajjar-Radhakrishnan-2019"
+  ],
+  "literature_search_status": "search_gap",
+  "proof_location": {
+    "file": "KNOWN_RESULTS/05b-ds-bridge.md",
+    "section": "DS19. The tilt-DP bracket: weak certification, an order-one gap, and a value-consistent DS18 primal"
+  },
+  "artifact": "py/ds_practical_certified_solver.py",
+  "warning": "The dual is a ceiling on both domains, but a singular DP state is not an in-bin lower bound. Strong duality is false by CE-DS-TILT-DUAL-GAP-001. Crossings-plus-midpoints and epsilon-accurate convex optimization are not exact algebraic solvers. This internal result authorizes no src change before independent audit."
+}

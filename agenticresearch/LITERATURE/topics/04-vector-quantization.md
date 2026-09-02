@@ -198,6 +198,27 @@ values and unequal weights.
 **Does not transfer:** one-dimensional SSE only; nothing about matrix
 criteria or feasibility constraints.
 
+## Parametric shortest-path envelope complexity (1 Sep 2026)
+
+**Key:** Gajjar-Radhakrishnan-2019
+
+Gajjar & Radhakrishnan (FOCS 2019:876–895, arXiv:1811.05115) construct
+parameterized planar shortest-path instances with linear edge weights whose
+optimal-cost envelope has \(n^{\Omega(\log n)}\) pieces. This is the closest
+complexity warning for an attempt to enumerate every optimizer change of a
+scalar interval DP as a tilt varies: a fixed-order segmentation DP is a
+shortest-path computation on a DAG, and polynomially many changes in the
+input ordering do not by themselves bound the number of optimal DP paths.
+
+**Use:** forces any polynomial exact algorithm for the tilted ScoreQuant dual
+to prove structure specific to the interval-segmentation DAG and its quadratic
+segment costs.
+
+**Does not transfer:** the published lower bound is not for that restricted
+DAG/cost family, so it neither proves hardness nor rules out a polynomial
+algorithm for the ScoreQuant problem. See the targeted triangulation in
+`LITERATURE/audits/OPEN-DS-PRACTICAL-CERTIFIED-SOLVER-1-September-2026.md`.
+
 ## Constraint-restored consistency of empirical clustering (30 Aug 2026)
 
 **Key:** Blanchard-Jaffe-Zhivotovskiy-2025

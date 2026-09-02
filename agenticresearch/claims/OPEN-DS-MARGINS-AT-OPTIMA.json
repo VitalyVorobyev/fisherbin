@@ -46,7 +46,6 @@
     "section": "DS15. Margins dichotomy at global finite \\(D_s\\) optima"
   },
   "audit": "AUDITS/AUDIT-DS-MARGINS-AT-OPTIMA-001.md",
-  "programme": "P1",
   "role": "resolves OP28 for the conditionally centered scalar-nuisance class; redirects profiled-criterion compilation to the projected efficient-score rule",
   "warning": "Audited 30 Aug 2026 (AUDITS/AUDIT-DS-MARGINS-AT-OPTIMA-001.md): verified for d_psi = d_lambda = 1 with Proposition 6 hardened from a sketch, the conclusion-(3) Glivenko-Cantelli import corrected, and Proposition 5's Lipschitz bound supplied; the registered d_lambda-generality was refuted (boundary fixture). The (M3) failure is at FREE global optima: margin-certified exchange-stable labelings remain governed by DS14 at a quantified information cost delta(kappa) = v_K - v*(kappa) > 0. Class (L), d_psi = d_lambda = 1 only; the complement (non-centered laws, d_psi > 1, d_lambda >= 2 steering, non-global sequences) is OPEN-DS-MARGINS-NONCENTERED (OP29). Measured support: N-DS-MARGINS-TREND (fine-grid exact optima; its N>=14 instances are float-screen-selected and remain uncertified, though the audit validated the screen mechanism itself exhaustively at N=12-16 on independent instances), N-DS-SCALAR-MASS (float DP, now exactly anchored at N=1000), N-DS-MARGINS-EXACT-ANCHOR, and the audit-side N-DS-AUDIT15 rows."
 }

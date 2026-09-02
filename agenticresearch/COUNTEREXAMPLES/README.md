@@ -483,3 +483,46 @@ is an admissible one-point move from every global optimum.
 **Audit:** `AUDITS/AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER-001.md` §8.4, §15.
 
 ---
+
+## CE-DS-TILT-DUAL-GAP-001 — the scalar tilt dual can stay macroscopically open
+
+**Status:** exact rational counterexample, support-minimal at (N=4,K=3).
+
+All six nonempty partitions of the equal-weight table
+
+\[
+(-11/2,39/8),\ (3/2,-65/8),\ (7/2,31/8),\ (9/2,-49/8)
+\]
+
+are nuisance-regular, so the in-bin and pseudo-inverse comparison domains
+coincide. Exhaustion gives global profiled value (116805/11816). An exact
+convex mixture of the tilt quadratics for labels ((0,0,1,2)) and
+((0,1,2,2)) lower-bounds the dual by (61717893/5839400), leaving gap at
+least (105329256/154014175>0.68). Adding bounded rational atoms with
+vanishing total mass extends the witness to a positive-weight
+(Theta(1))-gap family without assuming that unrestricted duplicate rows
+must share labels.
+
+**Fixture:** `CE-DS-TILT-DUAL-GAP-001.json`.
+**Regression:**
+`tests/test_research_claims.py::test_ds19_tilt_dual_has_a_support_minimal_exact_positive_gap`.
+
+---
+
+## CE-DS-MATRIX-TILT-NONQUASICONVEX-001 — the matrix-tilt outer map is not quasiconvex
+
+**Status:** exact rational counterexample for Tier B.
+
+For the centered equal-weight rows ({\pm2e_j:j=1,\ldots,4}), split two
+coordinates as POI and two as nuisance and take (K=N=8). The unique
+singleton partition gives (V(B)=I_2+BB^\top). At
+(B_0=\operatorname{diag}(4,0)), (B_1=\operatorname{diag}(0,4)), and their
+midpoint (operatorname{diag}(2,2)), the exact determinants are (17,17,25).
+The midpoint therefore exceeds both endpoints, violating quasiconvexity and,
+a fortiori, convexity.
+
+**Fixture:** `CE-DS-MATRIX-TILT-NONQUASICONVEX-001.json`.
+**Regression:**
+`tests/test_research_claims.py::test_ds19_matrix_tilt_outer_map_is_not_quasiconvex`.
+
+---
