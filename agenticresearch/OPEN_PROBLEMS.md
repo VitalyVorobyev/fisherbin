@@ -356,7 +356,8 @@ variable \(d_\lambda\). General parametric-shortest-path envelope lower
 bounds do not transfer to this grouping DP, and parametric search shows the
 envelope need not be materialized.
 
-Target claim: `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`.
+Target claim: `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`. Active packet:
+`WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` (opened 2 September 2026).
 
 ---
 
