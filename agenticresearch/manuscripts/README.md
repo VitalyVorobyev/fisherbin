@@ -256,6 +256,27 @@ canonical.
   assumptions; otherwise compilation is refused. DS19 is internal until a
   fresh independent audit.
 
+### Added 2 September 2026 (the DS19 audit session)
+
+- **DS19 is audited and hardened; the manuscript must carry the hardened
+  wording.** The tilt-DP bracket, the saddle gate, the certified bracket,
+  \(\Delta\)-consistency and the Tier B witness survived an independent
+  adversarial audit (`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`).
+  Five hardenings apply: the tie lemma (ties do not cost tie-order
+  enumeration); the closure gate is set-valued and a reported open bracket is
+  not a gap certificate (`CE-DS-TILT-DUAL-TIE-MASK-001`); the bit model of the
+  certified bracket is explicit; support minimality of the gap witness is for
+  \(K=3\) only — the overall minimum is \(N=3,K=2\)
+  (`CE-DS-TILT-DUAL-GAP-002`, gap \(1/6\)); zero-weight rows are excluded.
+- **Do not describe exact computation as fixed-\((K,d_\lambda)\) only.** At
+  \(d_\lambda=1\) the exact dual minimiser is bit-polynomial for every
+  \(K\) (audit §7.5); for fixed \(d_\lambda\ge2\) it is
+  arithmetic-polynomial by Toledo (1993). The fixed-tilt DP is \(O(KN)\)
+  after sorting (Grønlund et al. 2017), not only \(O(KN^2)\). Both are
+  attribution facts that must reach any submission.
+- **Deployment remains audit-gated by the compile table, not by this audit.**
+  Verification authorizes no compile surface.
+
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of
 `protocols/audit.md`. It had no updater before workspace v4.0, which is why the
