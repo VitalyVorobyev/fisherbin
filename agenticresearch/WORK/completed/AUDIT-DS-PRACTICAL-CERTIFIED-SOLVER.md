@@ -1,6 +1,6 @@
 # AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER — independent adversarial audit of DS19
 
-**Programme:** P1 (closed; audit gate) · **Opened:** 2 September 2026 · **Status:** active
+**Programme:** P1 (closed; audit gate) · **Opened:** 2 September 2026 · **Closed:** 2 September 2026 · **Status:** completed
 **Source frozen:** `research-ds-practical-certified-solver` at `2c9cb77`
 
 ## Goal
@@ -320,7 +320,89 @@ A numerical sweep without an algebraic verdict is not completion. A verified
 weak ceiling does not verify exact polynomial computation. A verified
 \(\Delta\)-value statement does not verify exchange stability or compilation.
 
+
+## Outcome
+
+**Verified with hardened assumptions (Tier A); verified (DS18 value chain and
+Tier B); umbrella reduced with a narrower remainder.** Every component
+received an independent adversarial decision
+(`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`, sixteen items):
+
+- **Weak ceiling and domain split** — verified on both the DS11 and DS9
+  domains; 125,491 canonical partitions, zero violations; singular DP states
+  never counted as in-bin bounds; five tables where the generalized value
+  exceeds the regular one.
+- **Saddle iff** — re-proved in both directions without minimax interchange;
+  exact on 54/54 tables with exact algebraic dual minima. **H2:** the gate is
+  set-valued; a deterministic DP tie policy can hide a closure
+  (`CE-DS-TILT-DUAL-TIE-MASK-001`, \(N=3,K=2\)), so an open *reported*
+  bracket is not a gap certificate.
+- **Three computation guarantees** — fixed-tilt DP verified, with the missing
+  **tie lemma** supplied (H1) and the bound tightened to \(O(KN)\) after
+  sorting; certified-\(\varepsilon\) bracket verified with an explicit bit
+  model (H3: radius, LP certificate, rounding); exact computation **widened**:
+  polynomial-bit exact minimisation at \(d_\lambda=1\) for every \(K\)
+  (audit proof, implemented and certified), arithmetic-polynomial for fixed
+  \(d_\lambda\ge2\) by Toledo (1993). OP31 narrowed accordingly.
+- **Order-one family** — verified as an asymptotic global-versus-dual
+  statement; constants recorded; primal convergence explicitly not claimed.
+- **Scalar witness** — all rationals reproduced; exact \(d=44729/4232\),
+  exact gap \(534361/781333\). **H4:** support minimality is \(K=3\)-only;
+  the overall minimum `CE-DS-TILT-DUAL-GAP-002` (\(N=3,K=2\), gap \(1/6\))
+  is serialized.
+- **DS18 \(\Delta\)-value chain** — verified; the uncentered/centered
+  identity makes the strip DP the empirical 3-means labeling, DS18's
+  selection-independent event applies, and the finite-\(N\) bound holds with
+  the labeling's own \(\Delta_N\) (exact on 12 samples to \(N=4096\)).
+- **Tier B** — verified from raw rows; weak matrix duality intact.
+- **Observable refusal table** — verified with the tie-mask caveat on row (2).
+
+No `src/`, public API, example, benchmark, or compile-path change was made;
+the audit removes the "unaudited" warnings and nothing more.
+
+## Artifacts
+
+- `AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md` — the 16-item report
+- `py/audit_ds_practical_certified_solver.py` — the independent instrument
+  (stages `witness`, `ceiling`, `saddle`, `ties`, `compute`, `family`,
+  `ds18`, `tierb`, `invariances`, `fixtures`)
+- `AUDITS/artifacts/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001/*.json` — ten
+  provenance-stamped records
+- `claims/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER.json` — new audit node
+- `COUNTEREXAMPLES/CE-DS-TILT-DUAL-GAP-002.json`,
+  `COUNTEREXAMPLES/CE-DS-TILT-DUAL-TIE-MASK-001.json` — new exact fixtures
+- `LITERATURE/audits/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-2-September-2026.md`
+  and six new bibliography keys (`Toledo-1993`, `Megiddo-1983`,
+  `Gronlund-etal-2017`, `Wang-Song-2011`, `Pukelsheim-Titterington-1983`,
+  `Carstensen-1983`)
+- patched: `claims/{DS-TILT-DUAL-CERTIFICATE,DS-TILT-DUAL-STRONG-DUALITY-FAILS,DS-STRIP-DP-DELTA-CONSISTENCY,DS-MATRIX-TILT-NONQUASICONVEX,DS-PROFILED-COMPILE-CERTIFICATE,OPEN-DS-PRACTICAL-CERTIFIED-SOLVER,OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY}.json`,
+  `KNOWN_RESULTS/05b-ds-bridge.md` (DS19), `OPEN_PROBLEMS.md` (P1 block,
+  OP31), `manuscripts/README.md`, `NUMERICAL_EVIDENCE.md` (seven
+  `N-DS-AUDIT19-*` rows), `COUNTEREXAMPLES/README.md`, `registry.json`,
+  `LITERATURE/{graph.json,reviewed.md,gaps.md,topics/01-optimal-design.md,topics/04-vector-quantization.md}`,
+  `tests/test_research_claims.py` (eight new exact regressions)
+
+## Validation
+
+All closure checks green on 2 September 2026:
+
+- `uv run python agenticresearch/py/audit_ds_practical_certified_solver.py all`
+- `uv run python agenticresearch/py/registry.py reindex` (`indexes current`)
+  and `validate` (`registry clean`)
+- `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py tests/test_research_registry.py`
+- `uv run ruff check .`, `uv run ruff format --check .`, `uv run ty check src`
+- `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest -n auto`
+- `JAX_ENABLE_X64=0 MPLBACKEND=Agg uv run pytest tests/test_float32.py`
+- `uv build`, `uv run mkdocs build --strict`
+
 ## Next dependency-blocking question
+
+**Answered branch: verified and hardened.** The remaining question is the
+narrowed OP31: does `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY` admit a polynomial
+*bit* algorithm for fixed \(d_\lambda\ge2\) with variable \(K\), and is
+variable \(d_\lambda\) hard? The deployment-facing blocker is a selection
+theorem for the labeling a practical solver returns. The original packet text
+follows.
 
 If DS19 is verified or hardened, does
 `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY` admit an exact polynomial-bit algorithm

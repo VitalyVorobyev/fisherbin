@@ -289,3 +289,38 @@ direct antecedents already in this project's bibliography were unlinked, and
 the uniqueness citation was mis-scoped to a strict-log-concavity result that
 the named law fails. The audit supplies the missing conditioning fact itself
 (exact distortion Hessian with minimum eigenvalue \(1/6\)).
+
+## Round 8 — independent DS19 audit triangulation (2 September 2026)
+
+Target: `OPEN-DS-PRACTICAL-CERTIFIED-SOLVER` and the DS19 components; report
+`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`; full six-field table in
+`LITERATURE/audits/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-2-September-2026.md`.
+
+- **Toledo (1993), `Toledo-1993`:** primary text read. Fixed-dimension
+  concave maximisation with an evaluator whose comparisons are signs of
+  bounded-degree polynomials, in time polynomial in the evaluator's arithmetic
+  operations. The fixed-tilt interval DP qualifies with degree 2, so exact
+  minimisation of the tilt dual is arithmetic-polynomial for fixed
+  \(d_\lambda\) and *variable* \(K\) — wider than DS19.2's registered
+  fixed-\((K,d_\lambda)\) scope. Bit complexity is not covered.
+- **Megiddo (1983), `Megiddo-1983`:** the one-dimensional parametric-search
+  template; at \(d_\lambda=1\) the audit's own root-separation bisection turns
+  it into a polynomial-*bit* exact algorithm (report §7.5).
+- **Grønlund et al. (2017), `Gronlund-etal-2017`** and **Wang & Song (2011),
+  `Wang-Song-2011`:** the fixed-tilt DP is the classical 1-D \(k\)-means DP;
+  \(O(KN)\) after sorting; weighted points covered; ties not treated.
+- **Pukelsheim & Titterington (1983), `Pukelsheim-Titterington-1983`:**
+  design-side subgradient/Lagrangian duality on the convex design-measure set;
+  template only, the hard-partition interchange fails.
+- **Carstensen (1983), `Carstensen-1983`:** secondary record; the original
+  superpolynomial parametric shortest-path breakpoint construction.
+
+### Search verdict
+
+The compound DS19 statement remains `search_gap` after an independent query
+path. One scope repair: the exact-computation clause of
+`DS-TILT-DUAL-CERTIFICATE` is widened to fixed \(d_\lambda\), variable \(K\)
+(arithmetic complexity, prior art) and to \(d_\lambda=1\) in polynomial bit
+complexity (audit proof); `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY` is narrowed
+accordingly. One complexity repair: fixed-tilt evaluation is \(O(KN)\) after
+sorting.

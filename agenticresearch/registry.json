@@ -344,6 +344,37 @@
       "title": "INFERNO: Inference-Aware Neural Optimisation",
       "doi": "10.1016/j.cpc.2019.06.007",
       "note": "Comput. Phys. Commun. 244:170. Differentiable Asimov-likelihood loss built from the inverse Hessian of a softened histogram -- a profiled-Fisher surrogate -- optimised over neural summaries. Closest applied statement of the DS18 objective; soft histogram, no hard partition and no optimality theorem (31 Aug 2026 DS18 audit)."
+    },
+    "Pukelsheim-Titterington-1983": {
+      "title": "General Differential and Lagrangian Theory for Optimal Experimental Design",
+      "doi": "10.1214/aos/1176346321",
+      "note": "Ann. Statist. 11(4):1060-1068 (primary record checked 2 Sep 2026). Subgradient and Lagrangian duality for information functionals, including subset-parameter (D_s) criteria, over the convex set of design measures. Comparison template for DS19's certificate; its strong duality needs the convex feasible set that hard partitions lack."
+    },
+    "Megiddo-1983": {
+      "title": "Applying Parallel Computation Algorithms in the Design of Serial Algorithms",
+      "doi": "10.1145/2157.322410",
+      "note": "J. ACM 30(4):852-865 (primary record checked 2 Sep 2026). Parametric search: simulate a comparison algorithm at the unknown optimal parameter and resolve comparisons at polynomial roots with a monotone sign oracle. At d_lambda=1 it lifts the fixed-tilt interval DP to an arithmetic-polynomial exact minimiser of the tilt dual; bit complexity is not analysed there (AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER supplies it)."
+    },
+    "Toledo-1993": {
+      "title": "Maximizing Non-Linear Concave Functions in Fixed Dimension",
+      "doi": "10.1109/SFCS.1992.267783",
+      "pdf": "https://www.tau.ac.il/~stoledo/Bib/Pubs/concave.pdf",
+      "note": "In Complexity in Numerical Optimization (Pardalos ed.), World Scientific 1993, pp. 429-447; extended abstract FOCS 1992. Primary text (abstract, section 1, section 2 definitions) read 2 Sep 2026. Fixed dimension d, piecewise polynomial concave F over a convex set, evaluator whose branches depend on signs of bounded-degree polynomials: max F and a maximiser in time polynomial in the evaluator's arithmetic operations (RAM model). With F=-v_K and the degree-2 interval DP as evaluator this settles fixed d_lambda, variable K exact minimisation of the tilt dual in arithmetic complexity; bit complexity is not covered."
+    },
+    "Gronlund-etal-2017": {
+      "title": "Fast Exact k-Means, k-Medians and Bregman Divergence Clustering in 1D",
+      "arxiv": "1701.07204",
+      "pdf": "https://arxiv.org/pdf/1701.07204",
+      "note": "Gronlund, Larsen, Mathiasen, Nielsen, Schneider, Song; arXiv:1701.07204 v4 (2018). Primary text pp. 1-2 read 2 Sep 2026. The contiguous 1-D k-means DP runs in O(kn^2), and in O(n log n + kn) (O(kn) on sorted input) by monotone-matrix search; the weighted discrete scalar quantization form is covered. Improves DS19.2's fixed-tilt O(KN^2) evaluation bound to O(KN) after sorting."
+    },
+    "Wang-Song-2011": {
+      "title": "Ckmeans.1d.dp: Optimal k-means Clustering in One Dimension by Dynamic Programming",
+      "doi": "10.32614/RJ-2011-015",
+      "note": "The R Journal 3(2):29-33 (primary record checked 2 Sep 2026). The O(kn^2)-time, O(kn)-space contiguous DP that DS19.2's fixed-tilt evaluation describes."
+    },
+    "Carstensen-1983": {
+      "title": "Complexity of some parametric integer and network programming problems",
+      "note": "Ph.D. thesis, University of Michigan, 1983. Secondary record only (2 Sep 2026): cited by Gajjar-Radhakrishnan 2019 and by the 2025 linear-parametric optimisation survey arXiv:2501.11544 for n^{Omega(log n)} breakpoints of a linear-parametric shortest path with matching n^{O(log n)} upper bound. Envelope-materialisation warning; no bound for the tilted interval-segmentation DP."
     }
   },
   "agent_usage": {
@@ -363,43 +394,43 @@
   },
   "programmes": {
     "P2": {
-      "title": "SCORE-ORACLE-ROBUSTNESS \u2014 estimated scores and classifiers",
+      "title": "SCORE-ORACLE-ROBUSTNESS — estimated scores and classifiers",
       "rank": 1,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P3": {
-      "title": "INFORMATION-BUDGET \u2014 how many bins does a target need",
+      "title": "INFORMATION-BUDGET — how many bins does a target need",
       "rank": 2,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P4": {
-      "title": "DEPLOYMENT-ROBUSTNESS \u2014 away from the reference point, with error bars",
+      "title": "DEPLOYMENT-ROBUSTNESS — away from the reference point, with error bars",
       "rank": 3,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P5": {
-      "title": "HEP-SPECIALIZATION \u2014 template fits made mathematically explicit",
+      "title": "HEP-SPECIALIZATION — template fits made mathematically explicit",
       "rank": 4,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P6": {
-      "title": "D-CORE-COMPLETION \u2014 the paper's remaining spine",
+      "title": "D-CORE-COMPLETION — the paper's remaining spine",
       "rank": 5,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P7": {
-      "title": "FOUNDATIONS \u2014 why D is special, complexity, randomization",
+      "title": "FOUNDATIONS — why D is special, complexity, randomization",
       "rank": 6,
       "readiness": "ready",
       "kind": "theorem"
     },
     "P8": {
-      "title": "LITERATURE-GRAPH \u2014 coverage you can defend",
+      "title": "LITERATURE-GRAPH — coverage you can defend",
       "rank": 7,
       "readiness": "ready",
       "kind": "infrastructure"

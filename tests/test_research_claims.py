@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from fractions import Fraction
 from itertools import combinations, permutations, product
 from pathlib import Path
@@ -1989,3 +1990,525 @@ def test_ds19_matrix_tilt_outer_map_is_not_quasiconvex() -> None:
     ]
     assert determinant_at(first) == determinant_at(second) == Fraction(17)
     assert determinant_at(midpoint) == Fraction(25) > Fraction(17)
+
+
+# --------------------------------------------------------------------------- #
+# AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER: independent DS19 regressions (2 Sep 2026)
+# --------------------------------------------------------------------------- #
+def _audit19_info(
+    scores: list[list[Fraction]],
+    weights: list[Fraction],
+    labels: tuple[int, ...],
+    n_bins: int,
+) -> tuple[Fraction, Fraction, Fraction]:
+    masses = [Fraction(0)] * n_bins
+    poi = [Fraction(0)] * n_bins
+    lam = [Fraction(0)] * n_bins
+    for row, weight, label in zip(scores, weights, labels, strict=True):
+        masses[label] += weight
+        poi[label] += weight * row[0]
+        lam[label] += weight * row[1]
+    assert all(mass > 0 for mass in masses)
+    return (
+        sum(p * p / m for p, m in zip(poi, masses, strict=True)),
+        sum(p * q / m for p, q, m in zip(poi, lam, masses, strict=True)),
+        sum(q * q / m for q, m in zip(lam, masses, strict=True)),
+    )
+
+
+def _audit19_phi(info: tuple[Fraction, Fraction, Fraction]) -> tuple[Fraction, bool]:
+    poi, cross, lam = info
+    if lam == 0:
+        assert cross == 0
+        return poi, False
+    return poi - cross * cross / lam, True
+
+
+def _audit19_quadratic(
+    info: tuple[Fraction, Fraction, Fraction],
+) -> tuple[Fraction, Fraction, Fraction]:
+    poi, cross, lam = info
+    return lam, -2 * cross, poi
+
+
+def _audit19_eval(quad: tuple[Fraction, Fraction, Fraction], beta: Fraction) -> Fraction:
+    a, b, c = quad
+    return a * beta * beta + b * beta + c
+
+
+def _audit19_interval_dp(
+    values: list[Fraction],
+    weights: list[Fraction],
+    n_bins: int,
+    tie_key: list[Fraction] | None = None,
+) -> tuple[Fraction, tuple[int, ...]]:
+    """Exact O(K N^2) contiguous DP in the sorted order with a supplied tie key."""
+    order = sorted(
+        range(len(values)),
+        key=lambda i: (values[i], Fraction(0) if tie_key is None else tie_key[i], i),
+    )
+    n = len(order)
+    pw = [Fraction(0)]
+    pm = [Fraction(0)]
+    for idx in order:
+        pw.append(pw[-1] + weights[idx])
+        pm.append(pm[-1] + weights[idx] * values[idx])
+    best: list[list[Fraction | None]] = [[None] * (n + 1) for _ in range(n_bins + 1)]
+    arg = [[-1] * (n + 1) for _ in range(n_bins + 1)]
+    best[0][0] = Fraction(0)
+    for cell in range(1, n_bins + 1):
+        for j in range(cell, n + 1):
+            for i in range(cell - 1, j):
+                prev = best[cell - 1][i]
+                if prev is None:
+                    continue
+                moment = pm[j] - pm[i]
+                cand = prev + moment * moment / (pw[j] - pw[i])
+                current = best[cell][j]
+                if current is None or cand > current:
+                    best[cell][j] = cand
+                    arg[cell][j] = i
+    value = best[n_bins][n]
+    assert value is not None
+    labels = [0] * n
+    j = n
+    for cell in range(n_bins, 0, -1):
+        i = arg[cell][j]
+        for pos in range(i, j):
+            labels[order[pos]] = cell - 1
+        j = i
+    return value, _canonicalize_ds19(tuple(labels))
+
+
+def _audit19_exact_dual_min(
+    scores: list[list[Fraction]], weights: list[Fraction], n_bins: int
+) -> tuple[Fraction, Fraction, list[tuple[int, ...]]]:
+    """Exact rational dual minimizer for tables whose envelope minimum is rational.
+
+    Enumerates every labeling quadratic, every vertex and every rational
+    pairwise crossing, and certifies a candidate by the subgradient condition
+    ``min active derivative <= 0 <= max active derivative``.
+    """
+    partitions = _canonical_partitions(len(scores), n_bins)
+    quads = {z: _audit19_quadratic(_audit19_info(scores, weights, z, n_bins)) for z in partitions}
+    candidates: set[Fraction] = set()
+    for a, b, _c in quads.values():
+        if a > 0:
+            candidates.add(-b / (2 * a))
+    items = list(quads.values())
+    for first, second in combinations(items, 2):
+        da, db, dc = (x - y for x, y in zip(first, second, strict=True))
+        if da == 0:
+            if db != 0:
+                candidates.add(-dc / db)
+            continue
+        disc = db * db - 4 * da * dc
+        if disc < 0:
+            continue
+        num, den = disc.numerator, disc.denominator
+        root_num = math.isqrt(num)
+        root_den = math.isqrt(den)
+        if root_num * root_num == num and root_den * root_den == den:
+            sqrt_disc = Fraction(root_num, root_den)
+            candidates.add((-db - sqrt_disc) / (2 * da))
+            candidates.add((-db + sqrt_disc) / (2 * da))
+    for beta in sorted(candidates):
+        values = {z: _audit19_eval(q, beta) for z, q in quads.items()}
+        top = max(values.values())
+        active = [z for z, v in values.items() if v == top]
+        derivs = [2 * quads[z][0] * beta + quads[z][1] for z in active]
+        if min(derivs) <= 0 <= max(derivs):
+            return beta, top, active
+    raise AssertionError("no rational certified minimizer among the candidates")
+
+
+def test_ds19_audit_exact_dual_minimum_of_gap_witness() -> None:
+    """The exact envelope minimum of the N=4 gap witness is rational and above the certificate."""
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-TILT-DUAL-GAP-001.json").read_text()
+    )
+    scores = [[Fraction(v) for v in row] for row in fixture["scores"]]
+    weights = [Fraction(v) for v in fixture["weights"]]
+    n_bins = fixture["K"]
+    partitions = _canonical_partitions(len(scores), n_bins)
+    g_plus = max(_audit19_phi(_audit19_info(scores, weights, z, n_bins))[0] for z in partitions)
+    beta_star, d_exact, active = _audit19_exact_dual_min(scores, weights, n_bins)
+    assert beta_star == Fraction(-8, 23)
+    assert d_exact == Fraction(44729, 4232)
+    assert sorted(active) == [(0, 0, 1, 2), (0, 1, 2, 2)]
+    assert g_plus == Fraction(116805, 11816)
+    certificate = Fraction(fixture["exact_quantities"]["certified_duality_gap_lower_bound"])
+    assert d_exact - g_plus == Fraction(534361, 781333) >= certificate
+    # the DP at beta* reproduces the envelope value in both perturbation orders
+    tilted = [row[0] - beta_star * row[1] for row in scores]
+    lam = [row[1] for row in scores]
+    for key in ([-x for x in lam], lam):
+        value, _labels = _audit19_interval_dp(tilted, weights, n_bins, key)
+        assert value == d_exact
+    # the bracket is open: no labeling is DP-optimal at its own normal-equation tilt
+    for z in partitions:
+        info = _audit19_info(scores, weights, z, n_bins)
+        beta_z = info[1] / info[2]
+        tilted_z = [row[0] - beta_z * row[1] for row in scores]
+        brute = max(
+            _exact_scalar_between_for_ds19(tilted_z, weights, labels, n_bins)
+            for labels in partitions
+        )
+        assert _exact_scalar_between_for_ds19(tilted_z, weights, z, n_bins) < brute
+
+
+def test_ds19_audit_support_minimal_gap_fixture_002() -> None:
+    """CE-DS-TILT-DUAL-GAP-002: an N=3, K=2 gap with a fully rational proof of d=1/2."""
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-TILT-DUAL-GAP-002.json").read_text()
+    )
+    scores = [[Fraction(v) for v in row] for row in fixture["scores"]]
+    weights = [Fraction(v) for v in fixture["weights"]]
+    assert scores == [[-1, 0], [0, -1], [1, 0]]
+    assert weights == [Fraction(1, 3)] * 3
+    n_bins = fixture["K"]
+    assert n_bins == 2
+    partitions = _canonical_partitions(3, 2)
+    assert len(partitions) == 3
+    phis = {z: _audit19_phi(_audit19_info(scores, weights, z, 2)) for z in partitions}
+    assert all(regular for _, regular in phis.values())
+    g_plus = max(v for v, _ in phis.values())
+    assert (
+        g_plus == Fraction(1, 3) == Fraction(fixture["exact_quantities"]["global_profiled_value"])
+    )
+    beta_star, d_exact, active = _audit19_exact_dual_min(scores, weights, 2)
+    assert beta_star == 0 and d_exact == Fraction(1, 2)
+    assert sorted(active) == [(0, 0, 1), (0, 1, 1)]
+    assert (
+        d_exact - g_plus
+        == Fraction(1, 6)
+        == Fraction(fixture["exact_quantities"]["exact_duality_gap"])
+    )
+    # rational mixture proof: alpha = 1/2 of the two active quadratics is beta^2/6 + 1/2
+    quads = {z: _audit19_quadratic(_audit19_info(scores, weights, z, 2)) for z in partitions}
+    mixture = tuple(
+        (left + right) / 2 for left, right in zip(quads[(0, 0, 1)], quads[(0, 1, 1)], strict=True)
+    )
+    assert mixture == (Fraction(1, 6), Fraction(0), Fraction(1, 2))
+    # weak duality on every labeling at every probe tilt and at beta*
+    for beta in (Fraction(-1), Fraction(-1, 2), Fraction(0), Fraction(1, 2), Fraction(1)):
+        tilted = [row[0] - beta * row[1] for row in scores]
+        brute = max(_exact_scalar_between_for_ds19(tilted, weights, z, 2) for z in partitions)
+        assert brute >= d_exact
+        for z in partitions:
+            assert phis[z][0] <= _exact_scalar_between_for_ds19(tilted, weights, z, 2) <= brute
+    # support minimality: N=2 (K=2) and N=3 (K=3) admit a single labeling
+    assert _canonical_partitions(2, 2) == [(0, 1)]
+    assert _canonical_partitions(3, 3) == [(0, 1, 2)]
+
+
+def test_ds19_audit_tie_masked_closure_fixture() -> None:
+    """CE-DS-TILT-DUAL-TIE-MASK-001: the bracket closes but one DP tie order hides it."""
+    fixture = json.loads(
+        (RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-TILT-DUAL-TIE-MASK-001.json").read_text()
+    )
+    scores = [[Fraction(v) for v in row] for row in fixture["scores"]]
+    weights = [Fraction(v) for v in fixture["weights"]]
+    assert scores == [[-1, -1], [0, -2], [0, 0]]
+    n_bins = fixture["K"]
+    partitions = _canonical_partitions(3, n_bins)
+    infos = {z: _audit19_info(scores, weights, z, n_bins) for z in partitions}
+    phis = {z: _audit19_phi(infos[z]) for z in partitions}
+    assert all(regular for _, regular in phis.values())
+    g_plus = max(v for v, _ in phis.values())
+    beta_star, d_exact, active = _audit19_exact_dual_min(scores, weights, n_bins)
+    assert beta_star == Fraction(1, 3) and d_exact == Fraction(2, 9) == g_plus
+    assert sorted(active) == [(0, 1, 0), (0, 1, 1)]
+    tilted = [row[0] - beta_star * row[1] for row in scores]
+    assert len(set(tilted)) == 3  # a DP value tie, not a tilted-value tie
+    quads = {z: _audit19_quadratic(infos[z]) for z in partitions}
+    derivative = {z: 2 * quads[z][0] * beta_star + quads[z][1] for z in active}
+    assert derivative[(0, 1, 1)] == 0 and derivative[(0, 1, 0)] == Fraction(2, 3)
+    assert phis[(0, 1, 1)][0] == g_plus and phis[(0, 1, 0)][0] == Fraction(4, 27) < g_plus
+    # normal equation holds only for the saddle labeling
+    assert beta_star * infos[(0, 1, 1)][2] == infos[(0, 1, 1)][1]
+    assert beta_star * infos[(0, 1, 0)][2] != infos[(0, 1, 0)][1]
+    # both members are contiguous in the (tie-free) sorted order and both attain the
+    # DP value, so a deterministic tie policy decides which one is reported
+    order = sorted(range(3), key=lambda i: tilted[i])
+    for z in active:
+        cells = [z[i] for i in order]
+        assert cells == sorted(cells) or cells == sorted(cells, reverse=True)
+        assert _exact_scalar_between_for_ds19(tilted, weights, z, n_bins) == d_exact
+    dp_value, dp_labels = _audit19_interval_dp(tilted, weights, n_bins)
+    assert dp_value == d_exact and dp_labels in active
+    # a policy preferring the larger one-sided derivative (the member active on the
+    # right of beta*) returns the non-closing labeling and reports an open interval
+    preferred = max(active, key=lambda z: derivative[z])
+    assert preferred == (0, 1, 0)
+    reported = [phis[preferred][0], d_exact]
+    assert reported[0] < reported[1]  # an open reported interval on a closed bracket
+    shifted = [row[0] - (beta_star + Fraction(1, 10**6)) * row[1] for row in scores]
+    right_value = max(
+        _exact_scalar_between_for_ds19(shifted, weights, z, n_bins) for z in partitions
+    )
+    assert _exact_scalar_between_for_ds19(shifted, weights, preferred, n_bins) == right_value
+
+
+def test_ds19_audit_weak_ceiling_and_domain_split_on_adversarial_tables() -> None:
+    """Weak duality, the DS11 identity, and the DS9/DS11 split on the audit's attack tables."""
+    tables: list[tuple[list[list[Fraction]], list[Fraction], int]] = [
+        (
+            [
+                [Fraction(-2), Fraction(1)],
+                [Fraction(-1), Fraction(-1)],
+                [Fraction(1), Fraction(-1)],
+                [Fraction(2), Fraction(1)],
+            ],
+            [Fraction(1, 4)] * 4,
+            2,
+        ),
+        (
+            [
+                [Fraction(-1), Fraction(1)],
+                [Fraction(0), Fraction(0)],
+                [Fraction(1), Fraction(-1)],
+                [Fraction(2), Fraction(0)],
+                [Fraction(1, 2), Fraction(2)],
+            ],
+            [Fraction(2, 7), Fraction(1, 7), Fraction(2, 7), Fraction(1, 7), Fraction(1, 7)],
+            3,
+        ),
+        (
+            [
+                [Fraction(0), Fraction(0)],
+                [Fraction(1), Fraction(1)],
+                [Fraction(2), Fraction(2)],
+                [Fraction(3), Fraction(3)],
+                [Fraction(1), Fraction(-1)],
+            ],
+            [Fraction(1, 15), Fraction(2, 15), Fraction(3, 15), Fraction(4, 15), Fraction(5, 15)],
+            3,
+        ),
+    ]
+    split_seen = False
+    singular_dp_state_seen = False
+    for scores, weights, n_bins in tables:
+        partitions = _canonical_partitions(len(scores), n_bins)
+        infos = {z: _audit19_info(scores, weights, z, n_bins) for z in partitions}
+        phis = {z: _audit19_phi(infos[z]) for z in partitions}
+        g_plus = max(v for v, _ in phis.values())
+        regular_values = [v for v, regular in phis.values() if regular]
+        g_reg = max(regular_values) if regular_values else None
+        if g_reg is not None and g_plus > g_reg:
+            split_seen = True
+        for beta in (Fraction(-2), Fraction(-1), Fraction(0), Fraction(1), Fraction(2)):
+            tilted = [row[0] - beta * row[1] for row in scores]
+            brute = max(
+                _exact_scalar_between_for_ds19(tilted, weights, z, n_bins) for z in partitions
+            )
+            dp_value, dp_labels = _audit19_interval_dp(tilted, weights, n_bins)
+            assert dp_value == brute  # contiguity, including exact ties at beta = 1
+            if not phis[dp_labels][1]:
+                singular_dp_state_seen = True
+            for z in partitions:
+                info = infos[z]
+                tilted_form = _audit19_eval(_audit19_quadratic(info), beta)
+                assert phis[z][0] <= tilted_form <= brute
+                # DS11 completion of squares: V_z(beta) - Phi+(z) = (beta - beta_z)^2 I_ll
+                if info[2] > 0:
+                    beta_z = info[1] / info[2]
+                    assert tilted_form - phis[z][0] == (beta - beta_z) ** 2 * info[2]
+                else:
+                    assert tilted_form == phis[z][0]
+            assert g_plus <= brute
+    assert split_seen
+    assert singular_dp_state_seen
+
+
+def test_ds19_audit_saddle_closure_iff_on_small_tables() -> None:
+    """Closure <=> a DP-optimal labeling solving its normal equation, on exact small tables."""
+    tables: list[tuple[list[list[Fraction]], list[Fraction], int]] = [
+        ([[-1, 0], [0, -1], [1, 0]], [Fraction(1, 3)] * 3, 2),  # open
+        ([[-1, -1], [0, -2], [0, 0]], [Fraction(1, 3)] * 3, 2),  # closed, regular saddle
+        ([[-2, 1], [-1, -1], [1, -1], [2, 1]], [Fraction(1, 4)] * 4, 2),  # closed, singular saddle
+        ([[-1, -1], [0, 1], [2, 0]], [Fraction(1, 3)] * 3, 3),  # K = N closes
+        (
+            [
+                [Fraction(-11, 2), Fraction(39, 8)],
+                [Fraction(3, 2), Fraction(-65, 8)],
+                [Fraction(7, 2), Fraction(31, 8)],
+                [Fraction(9, 2), Fraction(-49, 8)],
+            ],
+            [Fraction(1, 4)] * 4,
+            3,
+        ),  # open
+    ]
+    outcomes = []
+    for raw_scores, weights, n_bins in tables:
+        scores = [[Fraction(v) for v in row] for row in raw_scores]
+        partitions = _canonical_partitions(len(scores), n_bins)
+        infos = {z: _audit19_info(scores, weights, z, n_bins) for z in partitions}
+        phis = {z: _audit19_phi(infos[z]) for z in partitions}
+        g_plus = max(v for v, _ in phis.values())
+        beta_star, d_exact, active = _audit19_exact_dual_min(scores, weights, n_bins)
+        closed = g_plus == d_exact
+        assert g_plus <= d_exact
+        saddles = []
+        for z in partitions:
+            info = infos[z]
+            if info[2] > 0:
+                beta_z = info[1] / info[2]
+                tilted = [row[0] - beta_z * row[1] for row in scores]
+                brute = max(
+                    _exact_scalar_between_for_ds19(tilted, weights, y, n_bins) for y in partitions
+                )
+                if _exact_scalar_between_for_ds19(tilted, weights, z, n_bins) == brute:
+                    saddles.append(z)
+            elif phis[z][0] == d_exact:
+                saddles.append(z)
+        assert bool(saddles) == closed
+        if closed:
+            # every Phi+-maximiser is active at beta* with zero derivative
+            for z in partitions:
+                if phis[z][0] == g_plus:
+                    assert z in active
+                    assert beta_star * infos[z][2] == infos[z][1]
+        outcomes.append((closed, any(phis[z][1] for z in saddles)))
+    assert outcomes == [(False, False), (True, True), (True, False), (True, True), (False, False)]
+
+
+def test_ds19_audit_tie_order_independence_and_one_sided_derivatives() -> None:
+    """Tie lemma: every tie order gives v_K; perturbation orders give one-sided derivatives."""
+    scores = [
+        [Fraction(0), Fraction(0)],
+        [Fraction(1), Fraction(1)],
+        [Fraction(2), Fraction(2)],
+        [Fraction(3), Fraction(3)],
+        [Fraction(1), Fraction(-1)],
+    ]
+    weights = [Fraction(1, 15), Fraction(2, 15), Fraction(3, 15), Fraction(4, 15), Fraction(5, 15)]
+    beta = Fraction(1)
+    tilted = [row[0] - beta * row[1] for row in scores]
+    assert tilted[:4] == [0, 0, 0, 0]  # a four-way exact tie with unequal weights
+    for n_bins in (2, 3, 4):
+        partitions = _canonical_partitions(5, n_bins)
+        brute = max(_exact_scalar_between_for_ds19(tilted, weights, z, n_bins) for z in partitions)
+        values = set()
+        for order in permutations(range(4)):
+            key = [Fraction(order.index(i)) if i < 4 else Fraction(0) for i in range(5)]
+            value, _ = _audit19_interval_dp(tilted, weights, n_bins, key)
+            values.add(value)
+        assert values == {brute}
+        # one-sided derivatives: the labeling with the extreme derivative (and, among
+        # equal derivatives, the largest curvature) is contiguous in the perturbation
+        # order and stays optimal on its side of beta
+        quads = {
+            z: _audit19_quadratic(_audit19_info(scores, weights, z, n_bins)) for z in partitions
+        }
+        active = [z for z in partitions if _audit19_eval(quads[z], beta) == brute]
+        lam = [row[1] for row in scores]
+        h = Fraction(1, 10**6)
+        for sign, key in ((1, [-x for x in lam]), (-1, lam)):
+            extreme = max(
+                active, key=lambda z: (sign * (2 * quads[z][0] * beta + quads[z][1]), quads[z][0])
+            )
+            order = sorted(range(5), key=lambda i: (tilted[i], key[i], i))
+            cells = [extreme[i] for i in order]
+            assert len(set(cells)) == n_bins
+            # contiguity in the perturbation order: each cell occupies one run
+            runs = 1 + sum(cells[i] != cells[i + 1] for i in range(4))
+            assert runs == n_bins
+            shifted = [row[0] - (beta + sign * h) * row[1] for row in scores]
+            side_value = max(
+                _exact_scalar_between_for_ds19(shifted, weights, z, n_bins) for z in partitions
+            )
+            assert _exact_scalar_between_for_ds19(shifted, weights, extreme, n_bins) == side_value
+    # the convexity step behind the lemma: g -> (M + t g)^2 / (W + g) is convex on g >= 0
+    M, t, W = Fraction(3, 2), Fraction(-2), Fraction(5, 4)
+    f = [(M + t * g) ** 2 / (W + g) for g in (Fraction(0), Fraction(1, 2), Fraction(2))]
+    assert f[1] <= f[0] + Fraction(1, 4) * (f[2] - f[0])
+
+
+def test_ds19_audit_ds18_strip_dp_delta_chain_on_seeded_sample() -> None:
+    """On an exact dyadic DS18 sample the beta-zero DP labeling obeys the Delta chain exactly."""
+    size = 96
+    state = 20260902 + 1000 * size
+    denominator = 1 << 16
+    xs: list[Fraction] = []
+    zs: list[Fraction] = []
+    for _ in range(size):
+        state = (state * 6364136223846793005 + 1442695040888963407) % (1 << 64)
+        xs.append(Fraction(2 * ((state >> 33) % denominator) + 1, denominator) - 1)
+        state = (state * 6364136223846793005 + 1442695040888963407) % (1 << 64)
+        zs.append(Fraction(2 * ((state >> 33) % denominator) + 1, denominator) - 1)
+    scores = _ds18_law_scores(tuple(xs), tuple(zs))
+    weights = [Fraction(1, size)] * size
+    v_hat, labels = _audit19_interval_dp(xs, weights, 3)
+    info = _audit19_info(scores, weights, labels, 3)
+    phi, regular = _audit19_phi(info)
+    assert regular
+    delta = v_hat - phi
+    assert delta == info[1] ** 2 / info[2] >= 0
+    # uncentered between value = centered between value + xbar^2 (labeling independent)
+    xbar = sum(xs) / size
+    centered = _exact_scalar_between_for_ds19([x - xbar for x in xs], weights, labels, 3)
+    assert v_hat == centered + xbar * xbar
+    # DS18's finite-N disagreement bound with the labeling's own Delta
+    third = Fraction(1, 3)
+    population = tuple(0 if x < -third else (1 if x < third else 2) for x in xs)
+    disagreement = Fraction(sum(a != b for a, b in zip(labels, population, strict=True)), size)
+    for eta in (Fraction(1, 10), Fraction(1, 20)):
+        band = Fraction(sum(abs(x - third) <= eta or abs(x + third) <= eta for x in xs), size)
+        assert disagreement <= 3 * delta / eta + band
+    # the DP cells are intervals whose cuts sit near +/-1/3 and the nuisance block near 32/81
+    order = sorted(range(size), key=lambda i: xs[i])
+    cells = [labels[i] for i in order]
+    assert cells == sorted(cells)
+    assert abs(info[2] - Fraction(32, 81)) < Fraction(1, 5)
+    assert abs(info[1]) < Fraction(1, 5)
+
+
+def test_ds19_audit_matrix_tilt_midpoint_violation_by_direct_evaluation() -> None:
+    """Tier B: V(B) evaluated directly from the tilted form, not from the closed form."""
+    fixture = json.loads(
+        (
+            RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-DS-MATRIX-TILT-NONQUASICONVEX-001.json"
+        ).read_text()
+    )
+    scores = [[Fraction(v) for v in row] for row in fixture["scores"]]
+    weights = [Fraction(v) for v in fixture["weights"]]
+    assert fixture["K"] == len(scores) == 8
+    assert _canonical_partitions(8, 8) == [tuple(range(8))]
+    info = [
+        [sum(w * s[r] * s[c] for s, w in zip(scores, weights, strict=True)) for c in range(4)]
+        for r in range(4)
+    ]
+
+    def tilted_form(matrix: list[list[Fraction]]) -> list[list[Fraction]]:
+        # V(B) = I_pp - B I_lp - I_pl B^T + B I_ll B^T with psi = {0,1}, lambda = {2,3}
+        out = [[Fraction(0)] * 2 for _ in range(2)]
+        for r in range(2):
+            for c in range(2):
+                value = info[r][c]
+                for k in range(2):
+                    value -= matrix[r][k] * info[2 + k][c] + info[r][2 + k] * matrix[c][k]
+                for k in range(2):
+                    for m in range(2):
+                        value += matrix[r][k] * info[2 + k][2 + m] * matrix[c][m]
+                out[r][c] = value
+        return out
+
+    def det(matrix: list[list[Fraction]]) -> Fraction:
+        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+
+    b_first = [[Fraction(4), Fraction(0)], [Fraction(0), Fraction(0)]]
+    b_second = [[Fraction(0), Fraction(0)], [Fraction(0), Fraction(4)]]
+    b_mid = [[Fraction(2), Fraction(0)], [Fraction(0), Fraction(2)]]
+    dets = [det(tilted_form(b)) for b in (b_first, b_second, b_mid)]
+    assert dets == [Fraction(17), Fraction(17), Fraction(25)]
+    assert dets[2] > max(dets[:2])
+    # weak matrix-tilt duality: det S+ = det I_2 = 1 <= every det V(B)
+    assert all(d >= 1 for d in dets)
+    # and the generic closed form V(B) = I_2 + B B^T at a non-diagonal probe
+    probe = [[Fraction(1), Fraction(-2)], [Fraction(3), Fraction(1, 2)]]
+    expected = [
+        [(1 if r == c else 0) + sum(probe[r][k] * probe[c][k] for k in range(2)) for c in range(2)]
+        for r in range(2)
+    ]
+    assert tilted_form(probe) == expected

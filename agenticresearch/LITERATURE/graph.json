@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-09-01",
+  "updated": "2026-09-02",
   "purpose": "Reproducible literature-discovery state for citation snowballing (protocols/literature.md). One record per paper; papers link to claim ids, never merely to 'ScoreQuant'.",
   "record_schema": {
     "id": "short-slug",
@@ -148,7 +148,7 @@
         }
       },
       "limitations": [
-        "Pukelsheim (1993/2006) and Sp\u00e4th (1985) lack stable canonical OpenAlex work records; their bibliographies require manual backward traversal.",
+        "Pukelsheim (1993/2006) and Späth (1985) lack stable canonical OpenAlex work records; their bibliographies require manual backward traversal.",
         "Fedorov (1972) has no indexed OpenAlex reference list and is forward-heavy.",
         "Learning to bin was manually checked from arXiv:2601.07756 because OpenAlex had no canonical record during the primary snapshot.",
         "Community counts overlap and are not summed; the globally deduplicated candidate_count comes from the stated fallback scope."
@@ -249,6 +249,48 @@
         "Theorem-targeted triangulation, not a citation-saturation round.",
         "No forward-citation traversal was run on Rakhlin-Caponnetto-2006 or Mease-Nair-2006; the rigidity sub-problem saturation gap is logged in gaps.md."
       ]
+    },
+    {
+      "round": 8,
+      "date": "2026-09-02",
+      "mode": "independent-audit-triangulation",
+      "scope": "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER independent per-theorem search. Six query families aimed separately at the ingredients the audit's algebraic reduction isolates in DS19: design-side D_s/Lagrangian duality on a convex feasible set; exact 1-D k-means DP and its fastest variants (weighted points, ties); one-dimensional and fixed-dimensional parametric search with polynomial comparisons; parametric shortest-path breakpoint complexity; minimax over finite actions with quadratic payoffs; weighted scalar grouping with ties. The research session's 1 September triangulation was read only afterwards, as comparison material.",
+      "sources": [
+        "web search over publisher, arXiv, ACM DL, Project Euclid, IEEE Xplore, The R Journal and author repositories",
+        "primary-text reads of the Toledo author preprint and the Gronlund et al. arXiv preprint",
+        "the workspace's own LITERATURE/topics annotations, verified against the queries"
+      ],
+      "query_count": 6,
+      "candidate_count": 52,
+      "candidate_count_scope": "Distinct scholarly title/DOI records across the visible first-page results of the six logged query families, before deduplication against the workspace's existing graph.",
+      "relevant_count": 6,
+      "papers_added": [
+        "pukelsheim-titterington-1983",
+        "megiddo-1983",
+        "toledo-1993",
+        "gronlund-etal-2017",
+        "wang-song-2011",
+        "carstensen-1983"
+      ],
+      "keys_registered": [
+        "Pukelsheim-Titterington-1983",
+        "Megiddo-1983",
+        "Toledo-1993",
+        "Gronlund-etal-2017",
+        "Wang-Song-2011",
+        "Carstensen-1983"
+      ],
+      "verdict": "search_gap",
+      "findings": [
+        "Exact minimisation of the tilt dual for fixed d_lambda and variable K is already covered in arithmetic complexity by parametric search (Megiddo 1983 at d_lambda=1; Toledo 1993 in fixed dimension with polynomial comparisons); DS19.2's exact-computation scope (fixed K and fixed d_lambda) was narrower than the literature allows. Bit complexity is not covered by either source.",
+        "The fixed-tilt interval DP is the classical 1-D k-means DP (Wang-Song 2011) and runs in O(KN) after sorting (Gronlund et al. 2017), improving DS19.2's O(KN^2) statement; weighted points are covered there, exact ties are not.",
+        "Design-side D_s duality (Silvey-Titterington 1973; Pukelsheim-Titterington 1983) is a convex-feasible-set template only; the hard-partition interchange fails by exact witnesses at N=3."
+      ],
+      "limitations": [
+        "Theorem-targeted triangulation, not a citation-saturation round.",
+        "Carstensen 1983 is a secondary record (thesis not read).",
+        "No forward-citation traversal was run on Toledo 1993; later fixed-dimension parametric-search and real-RAM-to-bit-complexity results may exist and are logged in gaps.md."
+      ]
     }
   ],
   "papers": [
@@ -321,7 +363,7 @@
       "authors": [
         "L. P. Barnes",
         "Y. Han",
-        "A. \u00d6zg\u00fcr"
+        "A. Özgür"
       ],
       "bibliography_key": "Barnes-Han-Ozgur-2018",
       "source_of_discovery": "seed",
@@ -363,7 +405,7 @@
       "title": "On the Optimality of Sufficient Statistics-Based Quantizers",
       "year": 2023,
       "authors": [
-        "B. D\u00fclek"
+        "B. Dülek"
       ],
       "bibliography_key": "Dulek-2023",
       "source_of_discovery": "seed",
@@ -572,7 +614,7 @@
       "title": "Computational Experiences with the Exchange Method",
       "year": 1977,
       "authors": [
-        "H. Sp\u00e4th"
+        "H. Späth"
       ],
       "bibliography_key": "Spaeth-1977",
       "source_of_discovery": "seed",
@@ -590,7 +632,7 @@
       "title": "Cluster Dissection and Analysis: Theory, FORTRAN Programs, Examples",
       "year": 1985,
       "authors": [
-        "H. Sp\u00e4th"
+        "H. Späth"
       ],
       "bibliography_key": "Spaeth-1985",
       "source_of_discovery": "seed",
@@ -942,7 +984,7 @@
       "authors": [
         "L. P. Barnes",
         "Y. Han",
-        "A. \u00d6zg\u00fcr"
+        "A. Özgür"
       ],
       "bibliography_key": "Barnes-Han-Ozgur-2020",
       "source_of_discovery": "forward:barnes-han-ozgur-2018",
@@ -1018,7 +1060,8 @@
         "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
         "DS-TILT-DUAL-CERTIFICATE",
         "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
-        "DS-MATRIX-TILT-NONQUASICONVEX"
+        "DS-MATRIX-TILT-NONQUASICONVEX",
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER"
       ],
       "status": "deeply_reviewed",
       "note": "SIAM Review 42(2):233-246, Theorem 2.2. Exact generalized-Schur Loewner minimum and attainment set for a fixed PSD block matrix; no minimax interchange over hard partitions."
@@ -1045,7 +1088,8 @@
         "DS-SCHUR",
         "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
         "DS-TILT-DUAL-CERTIFICATE",
-        "DS-TILT-DUAL-STRONG-DUALITY-FAILS"
+        "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER"
       ],
       "status": "deeply_reviewed",
       "note": "Biometrika 60(1):21-32. D and Ds equivalence via Strong Lagrangian Theory on the convex approximate-design simplex; certificate precedent, not hard-partition strong duality."
@@ -1276,7 +1320,7 @@
       "year": 2021,
       "authors": [
         "S. Wunsch",
-        "S. J\u00f6rger",
+        "S. Jörger",
         "R. Wolf",
         "G. Quast"
       ],
@@ -1366,7 +1410,7 @@
       "authors": [
         "L. P. Barnes",
         "W. Chen",
-        "A. \u00d6zg\u00fcr"
+        "A. Özgür"
       ],
       "source_of_discovery": "forward:barnes-han-ozgur-2018",
       "cites_relevant": [
@@ -1591,7 +1635,7 @@
       "year": 2020,
       "authors": [
         "S. Wunsch",
-        "S. J\u00f6rger",
+        "S. Jörger",
         "R. Wolf",
         "G. Quast"
       ],
@@ -1687,7 +1731,8 @@
         "AUDIT-DS-MARGINS-AT-OPTIMA",
         "OPEN-DS-FINITE-POP-BRIDGE",
         "DS-NONCENTERED-GLOBAL-BASIN-TRANSFER",
-        "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER"
+        "AUDIT-DS-NONCENTERED-GLOBAL-BASIN-TRANSFER",
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER"
       ],
       "status": "deeply_reviewed",
       "note": "Verbatim (full Yale scan, 30 Aug 2026): a.s. Hausdorff consistency of empirical optimal centers and value, under uniqueness for EVERY j <= k and a phi-moment; the engine of DS15 Prop 5 and conclusions (2)-(3)."
@@ -1817,7 +1862,8 @@
         "DS-TILT-DUAL-CERTIFICATE",
         "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
         "DS-STRIP-DP-DELTA-CONSISTENCY",
-        "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY"
+        "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY",
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER"
       ],
       "status": "screened",
       "note": "Verbatim (Brown scan pp. 789-792): optimal 1-D weighted SSE partitions are contiguous (appendix proof); the classical anchor for DS8 and DS15 Prop 4's interval-optimum leg."
@@ -1832,13 +1878,16 @@
       ],
       "bibliography_key": "Gajjar-Radhakrishnan-2019",
       "source_of_discovery": "concept-search:parametric-dp-boundary",
-      "cites_relevant": [],
+      "cites_relevant": [
+        "carstensen-1983"
+      ],
       "cited_by_relevant": [],
       "research_area": "other",
       "relevant_claims": [
         "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
         "DS-TILT-DUAL-CERTIFICATE",
-        "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY"
+        "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY",
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER"
       ],
       "status": "screened",
       "note": "FOCS 2019:876-895; primary author preprint and publisher metadata checked 1 Sep 2026. Linear-parameter planar shortest paths can have n^{Omega(log n)} envelope pieces. Boundary warning only: not a lower bound for the restricted interval-segmentation DAG with quadratic costs."
@@ -2072,7 +2121,7 @@
       "year": 2020,
       "authors": [
         "Y. Liu",
-        "G. Pag\u00e8s"
+        "G. Pagès"
       ],
       "bibliography_key": "Liu-Pages-2020",
       "source_of_discovery": "targeted-packet-triangulation",
@@ -2130,6 +2179,148 @@
       ],
       "status": "screened",
       "note": "Missed forward source from round 4. Generalizes principal-subspace results through self-consistency to location-mixture/skew-normal settings. It is closer on the beyond-elliptical axis, but the objective remains squared approximation error and no nuisance/profiled fixed point appears. Primary theorem text remains library-access pending."
+    },
+    {
+      "id": "pukelsheim-titterington-1983",
+      "title": "General Differential and Lagrangian Theory for Optimal Experimental Design",
+      "year": 1983,
+      "authors": [
+        "F. Pukelsheim",
+        "D. M. Titterington"
+      ],
+      "bibliography_key": "Pukelsheim-Titterington-1983",
+      "source_of_discovery": "concept-search:ds-design-duality-audit19",
+      "cites_relevant": [
+        "silvey-titterington-1973"
+      ],
+      "cited_by_relevant": [],
+      "research_area": "optimal-design",
+      "relevant_claims": [
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "DS-TILT-DUAL-STRONG-DUALITY-FAILS"
+      ],
+      "status": "screened",
+      "note": "Ann. Statist. 11(4):1060-1068; primary record checked 2 Sep 2026. Subgradient/Lagrangian duality over the convex design-measure set; comparison template only, since hard partitions defeat the interchange (CE-DS-TILT-DUAL-GAP-001/-002)."
+    },
+    {
+      "id": "megiddo-1983",
+      "title": "Applying Parallel Computation Algorithms in the Design of Serial Algorithms",
+      "year": 1983,
+      "authors": [
+        "N. Megiddo"
+      ],
+      "bibliography_key": "Megiddo-1983",
+      "source_of_discovery": "concept-search:parametric-search-audit19",
+      "cites_relevant": [],
+      "cited_by_relevant": [
+        "toledo-1993"
+      ],
+      "research_area": "other",
+      "relevant_claims": [
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY"
+      ],
+      "status": "screened",
+      "note": "J. ACM 30(4):852-865; primary record checked 2 Sep 2026. Parametric search; lifts the fixed-tilt interval DP to an arithmetic-polynomial exact dual minimiser at d_lambda=1."
+    },
+    {
+      "id": "toledo-1993",
+      "title": "Maximizing Non-Linear Concave Functions in Fixed Dimension",
+      "year": 1993,
+      "authors": [
+        "S. Toledo"
+      ],
+      "bibliography_key": "Toledo-1993",
+      "source_of_discovery": "concept-search:parametric-search-audit19",
+      "cites_relevant": [
+        "megiddo-1983"
+      ],
+      "cited_by_relevant": [],
+      "research_area": "other",
+      "relevant_claims": [
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "OPEN-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY"
+      ],
+      "status": "deeply_reviewed",
+      "note": "Complexity in Numerical Optimization (1993) pp. 429-447; FOCS 1992 extended abstract. Primary text read 2 Sep 2026 (abstract, section 1, section 2 definitions): fixed dimension, piecewise polynomial concave F, evaluator with bounded-degree polynomial comparisons; maximum in time polynomial in the evaluator's arithmetic operations. Settles fixed d_lambda, variable K exact minimisation of the tilt dual in arithmetic (not bit) complexity."
+    },
+    {
+      "id": "gronlund-etal-2017",
+      "title": "Fast Exact k-Means, k-Medians and Bregman Divergence Clustering in 1D",
+      "year": 2017,
+      "authors": [
+        "A. Gronlund",
+        "K. G. Larsen",
+        "A. Mathiasen",
+        "J. S. Nielsen",
+        "S. Schneider",
+        "M. Song"
+      ],
+      "bibliography_key": "Gronlund-etal-2017",
+      "source_of_discovery": "concept-search:1d-kmeans-exact-audit19",
+      "cites_relevant": [
+        "wang-song-2011",
+        "fisher-1958-grouping"
+      ],
+      "cited_by_relevant": [],
+      "research_area": "vector-quantization",
+      "relevant_claims": [
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "DS-SCALAR-EFFICIENT-DP",
+        "DS-STRIP-DP-DELTA-CONSISTENCY"
+      ],
+      "status": "screened",
+      "note": "arXiv:1701.07204; primary text pp. 1-2 read 2 Sep 2026. Contiguous DP O(kn^2); O(n log n + kn) / O(kn) sorted via monotone-matrix search; weighted scalar quantization form covered."
+    },
+    {
+      "id": "wang-song-2011",
+      "title": "Ckmeans.1d.dp: Optimal k-means Clustering in One Dimension by Dynamic Programming",
+      "year": 2011,
+      "authors": [
+        "H. Wang",
+        "M. Song"
+      ],
+      "bibliography_key": "Wang-Song-2011",
+      "source_of_discovery": "concept-search:1d-kmeans-exact-audit19",
+      "cites_relevant": [],
+      "cited_by_relevant": [
+        "gronlund-etal-2017"
+      ],
+      "research_area": "vector-quantization",
+      "relevant_claims": [
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "DS-SCALAR-EFFICIENT-DP"
+      ],
+      "status": "screened",
+      "note": "The R Journal 3(2):29-33; primary record checked 2 Sep 2026. The O(kn^2) contiguous DP of DS19.2."
+    },
+    {
+      "id": "carstensen-1983",
+      "title": "Complexity of some parametric integer and network programming problems",
+      "year": 1983,
+      "authors": [
+        "P. J. Carstensen"
+      ],
+      "bibliography_key": "Carstensen-1983",
+      "source_of_discovery": "backward:gajjar-radhakrishnan-2019",
+      "cites_relevant": [],
+      "cited_by_relevant": [
+        "gajjar-radhakrishnan-2019"
+      ],
+      "research_area": "other",
+      "relevant_claims": [
+        "AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER",
+        "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY"
+      ],
+      "status": "screened",
+      "note": "Ph.D. thesis, University of Michigan; secondary record only (2 Sep 2026). n^{Omega(log n)} parametric shortest-path breakpoints with matching upper bound; envelope warning, not a bound for the tilted interval DP."
     }
   ]
 }

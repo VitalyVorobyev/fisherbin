@@ -16,6 +16,23 @@ Communities, venues, or periods suspected under-covered by the current graph.
   not known"); no theory community identified yet — watch
   Blanchard–Jaffe–Zhivotovskiy (arXiv:2507.06226) and its citers.
 
+## After the independent DS19 audit — 2 September 2026
+
+- **Bit complexity of fixed-dimension parametric search is not in the graph.**
+  Toledo (1993) and Megiddo (1983) are real-RAM/arithmetic results; no source
+  was found that converts fixed-dimension parametric search with polynomial
+  comparisons into a polynomial *bit* bound. The audit proves the
+  \(d_\lambda=1\) case directly; \(d_\lambda\ge2\) is exactly the open
+  remainder of `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`. A forward-citation round
+  on Toledo (1993) is the next literature task for OP31.
+- **Carstensen (1983) is a secondary record.** The thesis was not read; its
+  bound is quoted through Gajjar–Radhakrishnan (2019) and the 2025 survey
+  arXiv:2501.11544.
+- **Tie handling in exact 1-D grouping is undocumented in the located
+  sources.** Fisher (1958), Wang–Song (2011) and Grønlund et al. (2017) do not
+  treat exact value ties with unequal weights; the audit's tie lemma has no
+  located antecedent and is recorded as project-level.
+
 ## After the independent DS17 audit — 31 August 2026
 
 - **Two primary theorem texts remain library-access gaps:** Tarpey, Li & Flury

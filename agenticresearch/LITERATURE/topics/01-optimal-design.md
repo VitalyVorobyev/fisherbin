@@ -80,6 +80,24 @@
 
 - SIAM chapter DOI: https://doi.org/10.1137/1.9780898719109.ch7
 
+## Pukelsheim & Titterington (1983) — subgradient and Lagrangian duality (2 Sep 2026)
+
+**Key:** Pukelsheim-Titterington-1983
+
+*General Differential and Lagrangian Theory for Optimal Experimental Design*,
+Ann. Statist. 11(4):1060–1068 (primary record checked by the DS19 audit).
+Duality by subgradients and by Lagrangian theory for information functionals
+of the design moment matrix, including singular designs and subset-parameter
+(\(K'\theta\), hence \(D_s\)) criteria, over the **convex** set of design
+measures on a compact design space.
+
+**Use:** the comparison template for DS19's tilt certificate — a dual
+multiplier certifies optimality.
+
+**Does not transfer:** strong duality relies on the convex feasible set; on
+hard partitions the minimax interchange fails by exact \(N=3\) witnesses
+(`CE-DS-TILT-DUAL-GAP-002`).
+
 ## Nguyen & Miller (1992) — exchange algorithms
 
 **Paper:** *A review of some exchange algorithms for constructing discrete D-optimal designs*  

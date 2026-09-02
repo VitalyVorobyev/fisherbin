@@ -350,3 +350,36 @@ never a class-wide forcing theorem. Triangulation:
 **Key:** Tarpey-Li-Flury-1995
 
 **Key:** Serinko-Babu-1992
+
+## Exact 1-D grouping DP and parametric minimisation of the tilt dual (2 Sep 2026)
+
+**Key:** Wang-Song-2011, Gronlund-etal-2017, Megiddo-1983, Toledo-1993, Carstensen-1983
+
+Added by the independent DS19 audit (`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`).
+
+- **Wang & Song (2011)** implement the contiguous 1-D \(k\)-means DP in
+  \(O(kn^2)\) time and \(O(kn)\) space — exactly the fixed-tilt evaluation
+  DS19.2 describes.
+- **Grønlund et al. (2017, arXiv:1701.07204; pp. 1–2 read)** survey the exact
+  1-D problem: the DP recurrence runs in \(O(n\log n+kn)\), or \(O(kn)\) on
+  sorted input, by monotone-matrix search, and the weighted discrete scalar
+  quantization form is covered. **Transfers:** the fixed-tilt bound is
+  \(O(KN)\) after sorting. **Does not transfer:** exact ties of tilted values
+  are not treated; the audit's tie lemma (report §7.2) shows the DP value is
+  tie-order independent.
+- **Megiddo (1983)** parametric search and **Toledo (1993; primary text
+  read)** fixed-dimension concave maximisation with polynomial comparisons.
+  With \(F=-v_K\) and the interval DP as a degree-2 evaluator, the exact tilt
+  dual minimum is computable with polynomially many arithmetic operations for
+  **fixed \(d_\lambda\) and variable \(K\)**. **Does not transfer:** neither
+  source bounds bit complexity; at \(d_\lambda=1\) the audit's root-separation
+  bisection supplies a polynomial-bit algorithm (report §7.5), and
+  `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY` retains the bit question for fixed
+  \(d_\lambda\ge2\) and the whole question for variable \(d_\lambda\).
+- **Carstensen (1983; secondary record)** is the original \(n^{\Omega(\log n)}\)
+  parametric shortest-path breakpoint construction behind the
+  Gajjar–Radhakrishnan warning: the envelope must not be materialised, which
+  parametric search avoids.
+
+See `LITERATURE/audits/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-2-September-2026.md`
+for the six-field table.
