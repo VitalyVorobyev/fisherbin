@@ -526,3 +526,51 @@ a fortiori, convexity.
 `tests/test_research_claims.py::test_ds19_matrix_tilt_outer_map_is_not_quasiconvex`.
 
 ---
+
+---
+
+## CE-DS-TILT-DUAL-GAP-002 — support-minimal scalar tilt-dual gap (N=3, K=2)
+
+**Status:** exact rational counterexample (independent DS19 audit, 2 Sep 2026).
+
+**Claim falsified:**
+
+> The scalar-POI tilt-dual duality gap needs \(N\ge4\) (support minimality of
+> `CE-DS-TILT-DUAL-GAP-001` across all \(K\)).
+
+Rows \((-1,0),(0,-1),(1,0)\), equal weights \(1/3\), \(K=2\), all three
+labelings regular. \(g^+=1/3\) (attained twice); at \(\beta^*=0\) the DP
+value is \(v_2(0)=1/2\) with active set \(\{(0,0,1),(0,1,1)\}\) whose
+derivatives are \(\mp1/3\), so \(d=1/2\) exactly; the mixture
+\(\alpha=1/2\) of the two active quadratics is \(\tfrac16\beta^2+\tfrac12\),
+a fully rational proof of \(d\ge1/2\). Exact gap \(1/6\). \(N=3,K=2\) is the
+smallest exact-\(K\) problem with more than one labeling.
+
+**Fixture:** `CE-DS-TILT-DUAL-GAP-002.json`.
+**Regression:** `tests/test_research_claims.py::test_ds19_audit_support_minimal_gap_fixture_002`.
+
+---
+
+## CE-DS-TILT-DUAL-TIE-MASK-001 — a closed bracket that a deterministic DP reports open
+
+**Status:** exact rational boundary counterexample (independent DS19 audit, 2 Sep 2026).
+
+**Claim falsified:**
+
+> A deterministic tilt-DP implementation that reports an open bracket
+> \([\Phi^+(z_{\rm DP}),d]\) has exhibited a duality gap.
+
+Rows \((-1,-1),(0,-2),(0,0)\), equal weights, \(K=2\), all labelings
+regular. \(g^+=d=2/9\) at \(\beta^*=1/3\), where the tilted values
+\((-2/3,2/3,0)\) are pairwise distinct — a DP *value* tie, not a
+tilted-value tie: \((0,1,1)\) (\(\Phi=2/9\), derivative \(0\), the
+saddle) and \((0,1,0)\) (\(\Phi=4/27\), derivative \(2/3\)) both attain
+\(v_2(\beta^*)\). The right-perturbation tie order returns \((0,1,0)\) and
+would report \([4/27,2/9]\) although the bracket closes. Of 6,688 exhaustive
+equal-weight integer tables at \(N\le4\), 362 show the phenomenon, 184 with a
+regular saddle. Consequence: certify only an exhibited labeling whose normal
+equation holds, and never read an open reported interval as a gap.
+
+**Fixture:** `CE-DS-TILT-DUAL-TIE-MASK-001.json`.
+**Regression:** `tests/test_research_claims.py::test_ds19_audit_tie_masked_closure_fixture`.
+

@@ -25,7 +25,14 @@ order-one gap. The observable decision is therefore to certify an exhibited
 regular saddle, report a nonclosed bracket without claiming optimality, use the
 distinct projected efficient-score route where authorized, apply a DS14
 companion only under all audited sequence hypotheses, and otherwise refuse.
-No public compile surface is authorized before an independent DS19 audit.
+DS19 was independently audited on 2 September 2026
+(`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`): verified with hardened
+assumptions; two exact boundary fixtures added (`CE-DS-TILT-DUAL-GAP-002`,
+`CE-DS-TILT-DUAL-TIE-MASK-001`); the exact-computation scope widened to
+\(d_\lambda=1\) for every \(K\) (polynomial bit complexity) and to fixed
+\(d_\lambda\) (arithmetic complexity, Toledo 1993). No public compile
+surface follows from the audit; compilation remains governed by
+`DS-PROFILED-COMPILE-CERTIFICATE`.
 
 Tier B is **DISPROVED**: the multivariate matrix-tilt outer objective need not
 be quasiconvex (`DS-MATRIX-TILT-NONQUASICONVEX`). The remaining academic
@@ -336,13 +343,21 @@ admits exact algebraic optimization in polynomial bit complexity using the
 fixed-tilt interval-DP oracle, including ties and active refinements, without
 materializing a potentially superpolynomial parametric-DP envelope.
 
-DS19 already proves exact fixed-tilt evaluation, polynomial
-certified-\(\varepsilon\) minimization, and exact computation for fixed
-\((K,d_\lambda)\). General parametric-shortest-path envelope lower bounds do
-not automatically transfer to this restricted grouping DP; closure requires a
-valid hardness reduction or a structure-exploiting exact algorithm.
+DS19 and its audit (2 Sep 2026) already prove exact fixed-tilt evaluation
+(\(O(KN)\) after sorting, ties tolerated), polynomial certified-\(\varepsilon\)
+minimization, exact **polynomial-bit** minimization at \(d_\lambda=1\) for
+every \(K\) (root-separation bisection on the one-sided DP derivatives), and
+exact minimization in polynomially many arithmetic operations for fixed
+\(d_\lambda\ge2\) with variable \(K\) (Toledo 1993 parametric search). What
+remains: a polynomial *bit* bound for fixed \(d_\lambda\ge2\) — a
+root-separation argument for the conic breakpoint arrangement carried through
+the parametric search — and any exact statement or hardness obstruction for
+variable \(d_\lambda\). General parametric-shortest-path envelope lower
+bounds do not transfer to this grouping DP, and parametric search shows the
+envelope need not be materialized.
 
-Target claim: `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`.
+Target claim: `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`. Active packet:
+`WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` (opened 2 September 2026).
 
 ---
 

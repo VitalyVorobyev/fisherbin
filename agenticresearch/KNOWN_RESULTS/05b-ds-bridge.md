@@ -1964,6 +1964,42 @@ rule inherits the displayed finite-\(N\) bound and hence the whole transfer.
 
 **Claims:** DS-TILT-DUAL-CERTIFICATE, DS-TILT-DUAL-STRONG-DUALITY-FAILS, DS-STRIP-DP-DELTA-CONSISTENCY, DS-MATRIX-TILT-NONQUASICONVEX, DS-PROFILED-COMPILE-CERTIFICATE, OPEN-DS-PRACTICAL-CERTIFIED-SOLVER
 
+**Independent audit (2 Sep 2026,
+`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`).** **Verified with
+hardened assumptions** (Tier A), **verified** (T5, Tier B), umbrella
+**reduced** with a narrower remainder. Independent exact falsification over
+125,491 canonical partitions found zero weak-duality, DS11, contiguity or
+refinement violations; closure \(\Leftrightarrow\) saddle held on 54/54
+exact-\(d\) tables. Five hardenings, folded into the text below:
+**(H1)** the *tie lemma* — at a fixed tilt an optimal labeling exists in which
+every group of equal tilted values is wholly in one cell or split only among
+pure-tied cells, so the interval-DP value is tie-order independent and the
+\(O(KN^2)\) bound (in fact \(O(KN)\) after sorting, Grønlund et al. 2017)
+holds *with* ties; the frozen text asserted this without proof.
+**(H2)** the saddle gate is set-valued: a deterministic DP tie policy can
+return a non-closing member of \(\mathcal D(\beta^*)\) when the bracket
+closes (`CE-DS-TILT-DUAL-TIE-MASK-001`, \(N=3,K=2\), pairwise-distinct
+tilted values), so a *reported* open interval is not a gap certificate.
+**(H3)** the certified-\(\varepsilon\) bracket's bit model is explicit:
+singleton-versus-rest coercivity radius, subgradient oracle, exact
+cutting-plane LP lower certificate, ellipsoid/GLS rounding discipline.
+**(H4)** "support-minimal" holds for \(K=3\) only; the overall minimum is
+`CE-DS-TILT-DUAL-GAP-002` (\(N=3,K=2\), \(g^+=1/3\), \(d=1/2\), gap
+\(1/6\)); the exact dual minimum of fixture 001 is \(44729/4232\) at the
+rational crossing \(\beta^*=-8/23\), exact gap \(534361/781333\), so the
+registered mixture bound is a lower certificate, as stated.
+**(H5)** zero-weight rows are excluded and the collapsed-atom versus
+unrestricted-row domain is named. **Scope widened (audit §7.5):** at
+\(d_\lambda=1\) the exact dual minimiser is computable in **polynomial bit
+complexity for every \(K\)** — the breakpoints are roots of degree-\(\le2\)
+polynomials of polynomial height, so a bisection on the exact one-sided DP
+derivatives certifies a rational or quadratic-irrational minimiser after
+polynomially many probes; for fixed \(d_\lambda\ge2\) and variable \(K\)
+exact minimisation is arithmetic-polynomial by Toledo (1993) parametric
+search. The (EXACT-PARAMETRIC-DP) question below is therefore narrowed to a
+polynomial *bit* bound for fixed \(d_\lambda\ge2\) and to variable
+\(d_\lambda\). The audit authorizes no `src/` change.
+
 **Normalization (protocol A).** Tier A has \(d_\psi=1\), arbitrary
 \(d_\lambda\ge1\), and finite positive rational weights. All empirical second
 moments are about the score-space origin: scores are not sample-centered. The
@@ -1997,7 +2033,9 @@ I_{\lambda\lambda}(z)\succ0}\Phi(z).
 \]
 
 An implementation may use one deterministic member of \({\cal D}(\beta)\);
-that only weakens its lower bound. The information-loss implication is a
+that only weakens its lower bound. (Audit H2: it can also hide a closure — the
+member it holds need not be the saddle even when \(g^+=d\); an open reported
+interval therefore certifies nothing about the gap.) The information-loss implication is a
 finite train-sample \(D_s\) value interval. It supplies no held-out or
 population retention statement except in the named DS18 corollary below.
 
@@ -2059,7 +2097,12 @@ maximum of nonnegative convex quadratics attains its infimum after quotienting
 directions that are null for every empirical nuisance moment. ∎
 
 **Ties and duplicate tilts.** Scalar contiguity supplies the exact value
-\(v_K(\beta)\) even when equal tilted values are pooled. At a crossing,
+\(v_K(\beta)\) even when equal tilted values are pooled (audit H1, tie
+lemma: each mixed cell's term \((M+tg)^2/(W+g)\) is convex in the tied mass
+\(g\) it receives, so an optimal labeling keeps every tied group in one cell
+or only in pure-tied cells, and every tie order yields the same DP value; the
+labeling active on \((\beta,\beta+\varepsilon)\) is contiguous in the order
+breaking ties by decreasing \(s_\lambda\)). At a crossing,
 different row-level refinements can have the same DP value and different
 derivatives. Any active derivative is a valid subgradient of \(v_K\), but a
 closure certificate must exhibit the concrete labeling whose normal equation
@@ -2081,8 +2124,11 @@ returns certified rational lower/upper bounds on \(d\) of width
 nuisance partitions give a positive quadratic coercivity bound on the
 effective nuisance span; common-null directions are first quotiented out.
 
-Exact algebraic computation is established only when \(K\) and
-\(d_\lambda\) are fixed. The \(O(N^{2d_\lambda})\) tilt-order arrangement,
+Exact algebraic computation was established in the frozen proof only when
+\(K\) and \(d_\lambda\) are fixed; the audit widens this (H-scope above):
+polynomial bit complexity at \(d_\lambda=1\) for every \(K\), and
+arithmetic-polynomial exact minimisation for fixed \(d_\lambda\ge2\),
+variable \(K\) (Toledo 1993). The fixed-\((K,d_\lambda)\) argument follows. The \(O(N^{2d_\lambda})\) tilt-order arrangement,
 including its tie faces, has polynomial size then; each cell has
 \(\binom{N-1}{K-1}\) contiguous candidates, and fixed-dimensional
 real-algebraic comparison of their quadratic envelopes returns the exact
@@ -2136,8 +2182,12 @@ d-g\ge
 \]
 
 Since \(p^+\le g\), the proposed primal-dual bracket has at least the same
-gap. The witness is support-minimal: \(N=3,K=3\) has only the singleton
-partition.
+gap. The witness is support-minimal *for \(K=3\)*: \(N=3,K=3\) has only the
+singleton partition. (Audit H4: over all \(K\) the minimum is \(N=3,K=2\),
+`CE-DS-TILT-DUAL-GAP-002`: rows \((-1,0),(0,-1),(1,0)\), equal weights,
+\(g^+=1/3\), \(d=1/2\) exactly at \(\beta^*=0\) by the mixture
+\(\tfrac16\beta^2+\tfrac12\), gap \(1/6\). The exact minimum of the
+\(N=4\) envelope is \(44729/4232\) at \(\beta^*=-8/23\).)
 
 This is genuinely \(\Theta(1)\), not merely a fixed-size notation. For
 \(r\to\infty\), give the four displayed atoms total mass \(1-1/r\) and add
@@ -2245,7 +2295,10 @@ finite brackets are honest diagnostics/certificates at closure, while compile
 authorization remains projected-rule, full DS14 companion hypotheses, or
 refusal.
 
-**Next dependency-blocking question.** Does (EXACT-PARAMETRIC-DP) hold for
-variable \(K,d_\lambda\), including exact tie refinements? Independently of
-that academic complexity question, the next deployment action is a fresh
-adversarial audit of DS19 before any `src/` landing.
+**Next dependency-blocking question.** After the audit, (EXACT-PARAMETRIC-DP)
+is settled at \(d_\lambda=1\) (bit-polynomial) and for fixed \(d_\lambda\)
+(arithmetic-polynomial); does a polynomial *bit* bound hold for fixed
+\(d_\lambda\ge2\) with variable \(K\), and is variable \(d_\lambda\) hard?
+The deployment blocker is a selection theorem: which certified or
+\(\Delta\)-consistent labeling does a practical solver return, and when does
+it inherit exchange stability.
