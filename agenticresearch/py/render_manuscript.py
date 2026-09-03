@@ -2,10 +2,10 @@
 # requires-python = ">=3.11"
 # dependencies = ["markdown>=3.7"]
 # ///
-"""Render a manuscript Markdown source to its HTML sibling.
+r"""Render a manuscript Markdown source to its HTML sibling.
 
 The manuscripts under ``agenticresearch/manuscripts/`` are authored in Markdown
-(MathJax delimiters ``\\(...\\)`` and ``\\[...\\]``, result boxes as
+(MathJax delimiters ``\(...\)`` and ``\[...\]``, result boxes as
 ``<div class="theorem" markdown="1">``, numeric citations ``[n]`` resolved
 against ``<span id="ref-n">`` anchors in the References list, novelty tags
 ``[novelty: <label>; ledger <row>]``). This script is the only sanctioned way
@@ -220,7 +220,9 @@ def render(source: str) -> str:
         f"<title>{html_lib.escape(plain_title)}</title>",
     ]
     if description:
-        head.append(f'<meta name="description" content="{html_lib.escape(description, quote=True)}">')
+        head.append(
+            f'<meta name="description" content="{html_lib.escape(description, quote=True)}">'
+        )
     head.extend([_MATHJAX, "<style>", _STYLE, "</style>", "</head>", "<body>"])
     return (
         "\n".join(head)
