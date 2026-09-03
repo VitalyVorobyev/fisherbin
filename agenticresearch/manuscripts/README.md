@@ -25,6 +25,7 @@ in the workspace, so this cannot regress. The `.html` needs its sibling
 | File | What it is | State |
 |---|---|---|
 | `score_space_quantization_article_v8.md` / `.html` | Main research article, v8, 26 Aug 2026: "Information-optimal hard quantization of multivariate score space" | Structurally complete draft; proofs compressed; behind the registry (see staleness) |
+| `NOVELTY_LEDGER.md` | Novelty ledger, 3 Sep 2026 (M12 session S2): one row per central v8 statement and per finding proved since v8, with novelty label, attribution and registry pointer | Current; the v9 draft (S5) is written from it |
 | `../archive/doptimal_event_categorization_hep.html` | Shorter HEP-facing companion: D-optimal event categorization for multi-parameter inference | Archived 3 Sep 2026 (M12 consolidation); not a revision input |
 | `../archive/scorequant_research_landscape_en.html` | Literature/landscape survey (history, key authors, software: MadMiner, INFERNO, ThickBrick, GATO, BOBR, OptBinning) | Archived 3 Sep 2026; superseded by `LITERATURE/` |
 
@@ -276,6 +277,21 @@ canonical.
   attribution facts that must reach any submission.
 - **Deployment remains audit-gated by the compile table, not by this audit.**
   Verification authorizes no compile surface.
+
+### Added 3 September 2026 (the M12 reconciliation session)
+
+- **`NOVELTY_LEDGER.md` now supersedes the item list above as the v9 input.**
+  Every item in this staleness list is carried in a ledger row's Notes column,
+  with a novelty label and attribution; the list stays as the historical
+  record and gets no further entries. Of 103 rows, 20 are `known`, 34 `direct
+  corollary`, 10 `adaptation`, 8 `apparently new` (each on a `search_gap`
+  only, pending the P8 adversarial literature review), and 31 `unresolved`
+  (open claims, audit records, and results with no recorded literature
+  search). The ledger's `unresolved` rows are the P8 worklist.
+- **v8 statements with no registry counterpart** (three-level framing;
+  the §8.2 "no differentiability theorem" absence; the §2.2 det W vs det B
+  remark; the §5.2/§5.3/§11 numerical rows) are listed in the ledger's
+  "Gaps" subsection; they are framing or measured evidence, not claims.
 
 **Who maintains this list.** The session that produces the result, as
 completion item 7 of `protocols/theorem.md` and the closing duty of

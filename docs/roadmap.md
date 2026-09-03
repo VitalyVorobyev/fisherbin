@@ -265,7 +265,7 @@ with native NumPy in under ten seconds after warm-up.
 
 ## M12 — Consolidation programme
 
-**Status:** active; S1 done, S2 and S3 unblocked.
+**Status:** active; S1 and S2 done; S3 and S5 unblocked.
 
 Theorem research paused with P1 closed on DS19 (2 Sep 2026). Before the first public release the
 project reflects on what it has: the manuscript is three research sessions behind the claim
@@ -308,7 +308,7 @@ Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock
 | # | Session | Workstream | Needs | Status |
 |---|---|---|---|---|
 | S1 | Scaffold + public-surface truth pass | memory, W2 | — | done |
-| S2 | Manuscript reconciliation + novelty ledger | W1 | S1 | queued |
+| S2 | Manuscript reconciliation + novelty ledger | W1 | S1 | done |
 | S3 | Library internals refactor | W2 | S1 | queued |
 | S4 | Showcase foundations (Gaussian/Michelson, NumPy example, HEP data spike) | W4 | S3 | queued |
 | S5 | Manuscript v9 draft | W1 | S2 | queued |
