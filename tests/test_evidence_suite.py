@@ -24,6 +24,15 @@ from examples.lloyd_nonmonotone import (
     counterexample_study,
     unguarded_trajectory,
 )
+from examples.michelson_phase import (
+    build_provider,
+    build_train_sample,
+    closed_form_information,
+    run_study,
+)
+from examples.michelson_phase import (
+    unbinned_profiled_information as michelson_unbinned_profiled_information,
+)
 from examples.nuisance_profiled_ds import (
     build_problem,
     finite_partitions,
@@ -54,6 +63,7 @@ SOFT_METRICS = ASSETS / "soft-purification.json"
 LLOYD_METRICS = ASSETS / "lloyd-nonmonotone.json"
 DS_GEOMETRY_METRICS = ASSETS / "ds-geometry-counterexample.json"
 CERTIFICATION_METRICS = ASSETS / "global-certification.json"
+MICHELSON_METRICS = ASSETS / "michelson-phase.json"
 
 # Reduced sizes for the bound checks below: the committed JSON carries the
 # full study, and these re-runs only have to reproduce its qualitative claims.
@@ -1144,3 +1154,100 @@ def test_fast_rerun_reproduces_the_restart_hit_rate_trend() -> None:
     for row in study.rows:
         assert 0.0 <= row.hit_rate <= 1.0
         assert row.median_shortfall >= 0.0
+
+
+# --- docs/examples/michelson-phase.md ---------------------------------------
+
+# The headline table: profiled phase information retained against the
+# unbinned profiled ceiling, for the three labelings, plus the certified
+# efficient-score bound gap of the profiled-D_s partition, at the precision
+# the page prints.
+PAGE_MICHELSON_SWEEP = [
+    (4, 0.0000, 0.7227, 0.8629, 5.0e-03),
+    (6, 0.2054, 0.7995, 0.9483, 2.5e-05),
+    (8, 0.7247, 0.8806, 0.9714, 6.5e-05),
+    (10, 0.5653, 0.9267, 0.9817, 1.2e-04),
+]
+
+
+def test_michelson_json_matches_the_published_headline_table() -> None:
+    metrics = _load(MICHELSON_METRICS)
+    assert metrics["headline_bins"] == 6
+    assert metrics["n_nodes"] == 8_000
+    closed_form = _mapping(metrics, "closed_form")
+    assert round(float(closed_form["i_phiphi"]), 12) == pytest.approx(0.2, abs=1e-12)  # type: ignore[arg-type]
+    assert round(float(closed_form["correlation"]), 3) == pytest.approx(0.872)  # type: ignore[arg-type]
+    assert round(float(metrics["profiled_ceiling"]), 6) == pytest.approx(0.047938, abs=1e-6)  # type: ignore[arg-type]
+    assert round(100.0 * float(metrics["cost_of_profiling"]), 1) == pytest.approx(76.0)  # type: ignore[arg-type]
+
+    sweep = {int(row["n_bins"]): row for row in _listing(metrics, "sweep")}  # type: ignore[call-overload]
+    assert set(sweep) == {row[0] for row in PAGE_MICHELSON_SWEEP}
+    for n_bins, equal_width, d_optimal, profiled, gap in PAGE_MICHELSON_SWEEP:
+        row = sweep[n_bins]
+        assert round(float(row["equal_width_retention"]), 4) == pytest.approx(equal_width, abs=5e-4)  # type: ignore[arg-type]
+        assert round(float(row["d_optimal_retention"]), 4) == pytest.approx(d_optimal, abs=5e-4)  # type: ignore[arg-type]
+        assert round(float(row["profiled_retention"]), 4) == pytest.approx(profiled, abs=5e-4)  # type: ignore[arg-type]
+        assert float(row["bound_gap"]) == pytest.approx(gap, rel=0.1)
+        # The ceiling dominates every labeling of the same budget.
+        assert float(row["profiled_retention"]) <= float(row["ceiling_retention"]) + 1e-9
+
+
+def test_michelson_json_matches_the_published_compile_bridge_and_comb() -> None:
+    metrics = _load(MICHELSON_METRICS)
+    bridge = _mapping(metrics, "compile_bridge")
+    assert bridge["exchange_stable"] is True
+    assert str(bridge["refusal_message"]).endswith("[CE-DS-GLOBAL-GEOMETRY-001]")
+
+    comb = _mapping(metrics, "comb")
+    assert int(comb["n_grid"]) == 4_001  # type: ignore[call-overload]
+    assert int(comb["n_runs"]) == 24  # type: ignore[call-overload]
+
+    rules = {str(row["key"]): row for row in _listing(metrics, "rules")}
+    assert set(rules) == {"d_rule", "ds_rule"}
+    assert round(float(rules["d_rule"]["criterion_efficiency"]), 4) == pytest.approx(  # type: ignore[arg-type]
+        0.8345, abs=5e-4
+    )
+    assert float(rules["d_rule"]["hardening_gap"]) == pytest.approx(0.0, abs=1e-9)  # type: ignore[arg-type]
+    # The soft profiled fit is the only route to a reusable profiled rule and
+    # retains a substantial majority of the profiled phase information, with a
+    # small negative hardening gap -- the deployed hard rule gives up a little
+    # of the soft objective's own optimum.
+    assert 0.7 < float(rules["ds_rule"]["criterion_efficiency"]) < 0.95  # type: ignore[arg-type]
+    assert float(rules["ds_rule"]["hardening_gap"]) < 0.0  # type: ignore[arg-type]
+    # `criterion_efficiency` is each rule's score on its own criterion, on
+    # different denominators. `profiled_retention` is the comparable column:
+    # both rules' own labels through the sweep's profiled ceiling. The profiled
+    # rule must win there, or the criterion is not doing its job.
+    assert float(rules["ds_rule"]["profiled_retention"]) > float(  # type: ignore[arg-type]
+        rules["d_rule"]["profiled_retention"]
+    )
+
+
+def test_michelson_closed_forms_hold_to_machine_precision() -> None:
+    """The page's reason to exist: a check on the library, not only an illustration."""
+    provider = build_provider()
+    sample = build_train_sample(provider, n_nodes=8_000)
+    information = np.asarray(sq.fisher_information(sample.scores, sample.weights))
+    closed_form = closed_form_information()
+    assert abs(float(information[0, 0]) - closed_form["i_phiphi"]) < 1e-12
+    assert abs(float(information[0, 1]) - closed_form["i_phieps"]) < 1e-12
+
+
+def test_fast_rerun_reproduces_the_michelson_aliasing_and_criterion_gap() -> None:
+    """A small fast-mode rerun reproduces the qualitative claims the page makes."""
+    study = run_study(n_nodes=2_000, soft_steps=20, budgets=(4, 6))
+    by_bins = {row.n_bins: row for row in study.sweep}
+
+    # Four equal-width segments over four fringes retain exactly nothing.
+    assert by_bins[4].equal_width_retention < 1e-6
+    # Every criterion beats the naive equal-width rule at six bins.
+    assert by_bins[6].equal_width_retention < by_bins[6].d_optimal_retention
+    assert by_bins[6].d_optimal_retention < by_bins[6].profiled_retention_value
+    # The profiled solver stays close to its own certified ceiling.
+    assert by_bins[6].profiled_retention_value <= by_bins[6].ceiling_retention + 1e-9
+    assert by_bins[6].bound_gap < 1e-2
+
+    sample = build_train_sample(build_provider(), n_nodes=2_000)
+    reference = michelson_unbinned_profiled_information(sample.scores, sample.weights)
+    assert reference > 0.0
+    assert by_bins[6].ceiling_retention <= 1.0 + 1e-9

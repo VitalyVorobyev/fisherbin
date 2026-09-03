@@ -68,6 +68,7 @@ nav:
       - Door 1, precomputed score events: examples/door1-score-events.md
       - Door 2, mixture densities: examples/door2-mixture-densities.md
       - Door 3, classifier-estimated ratios: examples/door3-classifier.md
+      - Michelson interferometer phase: examples/michelson-phase.md
       - Solver shootout: examples/solver-shootout.md
       - "Nuisance parameters: profiled Ds": examples/nuisance-profiled-ds.md
       - Soft rules and purification: examples/soft-purification.md

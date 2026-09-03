@@ -1,0 +1,80 @@
+{
+  "problem": "michelson_phase",
+  "v0": 0.6,
+  "phi0": 0.0,
+  "fringes": 4,
+  "u_max": 25.132741228718345,
+  "n_nodes": 8000,
+  "headline_bins": 6,
+  "closed_form": {
+    "i_phiphi": 0.1999999999999985,
+    "i_phieps": 2.5132741228718345,
+    "i_epseps": 41.53921781998757,
+    "correlation": 0.8719582770810335
+  },
+  "profiled_ceiling": 0.04793775260597477,
+  "cost_of_profiling": 0.7603112369701244,
+  "sweep": [
+    {
+      "n_bins": 4,
+      "equal_width_retention": 4.605264156593518e-32,
+      "d_optimal_retention": 0.7227396781750588,
+      "profiled_retention": 0.862929901630743,
+      "ceiling_retention": 0.8672261564340735,
+      "bound_gap": 0.004966330769635263
+    },
+    {
+      "n_bins": 6,
+      "equal_width_retention": 0.20540197184571238,
+      "d_optimal_retention": 0.7994648908881136,
+      "profiled_retention": 0.9482591934034806,
+      "ceiling_retention": 0.9482831713778096,
+      "bound_gap": 2.5285988623835465e-05
+    },
+    {
+      "n_bins": 8,
+      "equal_width_retention": 0.7246630936475936,
+      "d_optimal_retention": 0.8806301891569168,
+      "profiled_retention": 0.9713517517565993,
+      "ceiling_retention": 0.9714145890040462,
+      "bound_gap": 6.468842510765072e-05
+    },
+    {
+      "n_bins": 10,
+      "equal_width_retention": 0.5652822231572834,
+      "d_optimal_retention": 0.9266730143469211,
+      "profiled_retention": 0.9817212340262794,
+      "ceiling_retention": 0.9818427555949821,
+      "bound_gap": 0.00012377653032880076
+    }
+  ],
+  "compile_bridge": {
+    "compiled_test_retention": 0.8346211523168009,
+    "exchange_stable": true,
+    "refusal_message": "finite profiled-D labels have no canonical inductive compilation; fit an explicit quantizer instead [CE-DS-GLOBAL-GEOMETRY-001]"
+  },
+  "rules": [
+    {
+      "key": "d_rule",
+      "label": "Plain D, compiled exchange",
+      "criterion": "DOptimality",
+      "solver": "DExchangeConfig",
+      "profiled_retention": 0.7986662738412926,
+      "criterion_efficiency": 0.8344795665479535,
+      "hardening_gap": 0.0
+    },
+    {
+      "key": "ds_rule",
+      "label": "Profiled D_s, soft Voronoi",
+      "criterion": "ProfiledDOptimality",
+      "solver": "SoftVoronoiConfig",
+      "profiled_retention": 0.8518066363339105,
+      "criterion_efficiency": 0.8531706053884383,
+      "hardening_gap": -7.587858743030029e-05
+    }
+  ],
+  "comb": {
+    "n_grid": 4001,
+    "n_runs": 24
+  }
+}

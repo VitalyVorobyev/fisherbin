@@ -336,11 +336,23 @@ def central_probabilities(X):
 
 central_score = sq.CentralLogRatioScore(central_probabilities, [delta], [0.5, 0.5])
 recovered = np.asarray(central_score.score(np.linspace(-3.0, 3.0, 7)[:, None])).ravel()
+
+central_quantizer = sq.fit_quantizer(
+    sq.ObservationSample(rng.normal(size=(1_000, 1))),
+    provider=central_score,
+    n_bins=4,
+    config=sq.DExchangeConfig(seed=13),
+)
+central_information_kind = central_quantizer.information_kind  # "supplied_score_surrogate"
 ```
 
 Here the classifier is the exact Bayes rule for a Gaussian location model, so `recovered` reproduces
 \(s(x)=x\) to floating-point accuracy — a useful sanity check to run against your own callback
-before trusting its scores.
+before trusting its scores. Fitting `central_quantizer` from the same paired classifier shows the
+other half of the honesty rule: `CentralLogRatioScore` always records `kind="estimated_ratio"`, so
+even this exact stand-in reports `central_information_kind == "supplied_score_surrogate"` rather
+than `"exact_fisher"`. The label follows the provider's contract, not the accuracy of a particular
+callback.
 
 ### Estimated scores are surrogate information
 

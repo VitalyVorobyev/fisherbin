@@ -5,7 +5,7 @@ All notable changes to ScoreQuant are recorded here. The format follows
 [semantic versioning](https://semver.org/spec/v2.0.0.html) — with the usual `0.x` caveat that the
 public API may still change between minor releases.
 
-## [0.1.0] — unreleased
+## [0.1.0] — 2026-08-30
 
 First public release. Everything below describes the shape being released rather than a change
 against a previous version, since there is none.

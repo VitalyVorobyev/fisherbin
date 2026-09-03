@@ -4,7 +4,7 @@ This directory is the standing memory of the M12 consolidation programme. It exi
 session started in any harness (Codex, Claude Code, or a person) can pick up the programme cold,
 do one session's work, and leave the next session the same footing. Status lives in one place
 only: the M12 table in `docs/roadmap.md`. This file explains how to run a session; the packets
-`S01`–`S09` say what each session delivers.
+`S01`–`S10` say what each session delivers.
 
 ## Scope
 
@@ -15,15 +15,20 @@ Four workstreams, gated in `docs/roadmap.md` under "M12 — Consolidation progra
 - **W2 — Library design pass.** Public-surface truth (S1), then internals (S3): error hierarchy,
   one fit pipeline, single-sourced validation, results constructed once. Breaking changes are
   allowed pre-1.0 and are recorded in an ADR and the CHANGELOG.
-- **W3 — Portal.** The portal is the public face; MkDocs stays the exhaustive reference.
-  Narrative duplicated between the two moves out of MkDocs. The research section is rewritten in
-  plain English from the ledger.
+- **W3 — Portal.** The portal is the public face, served at the site root, with MkDocs as the
+  exhaustive reference beneath it at `/reference/`. Narrative duplicated between the two moves out
+  of MkDocs. The front door explains rather than sells and shows every snippet with its captured
+  output; four detailed walkthroughs carry the applied stories; the research section is rewritten
+  in plain English from the ledger.
 - **W4 — Showcases.** One realistic end-to-end example per input route. HEP data: FAIR Universe
   HiggsML Uncertainty Challenge first, verified by actually fetching it, with a defined fallback.
 
-Dependency spine: the public API is frozen (S3) before anything quotes it (S4, S6, S8); the
-novelty ledger (S2) is written before anything narrates research (S5, S6). The `Needs` column of
-the roadmap table is the merge lock.
+Dependency spine: the public API is frozen (S3) before anything quotes it (S4, S6, S8, S10); the
+novelty ledger (S2) is written before anything narrates research (S5, S6); the topology moves
+before content is written into it (S6 before S8); and the front door is written last, so it quotes
+the walkthroughs' real numbers instead of promising them (S8 before S10). The `Needs` column of
+the roadmap table is the merge lock, and the executable order is
+**S4 → (S6 ∥ S7) → S8 → S10 → S9**.
 
 ## Orchestrator invariants
 
@@ -61,6 +66,15 @@ Pick the model tier by task complexity, not by file count.
 
 Independent tasks run in parallel. An agent that must edit the same file as another waits.
 
+**Check a delegated negative before acting on it.** A "not available", "not usable" or "does not
+exist" verdict from a subagent is a claim about the world, and the cheap tiers reach it too easily
+— an absence is consistent with not having looked in the right place. S4's HEP spike returned
+"none of the three datasets is usable"; one direct query found the decisive dataset published on
+Zenodo under CC-BY-4.0, and the verdict flipped from the fallback back to the preferred route. The
+rule that follows: when a delegated negative would change what the programme builds, the
+orchestrator re-checks the single decisive claim itself before writing it down. Positive findings
+carry their own evidence and need no such pass.
+
 **Budget rule (owner, 3 September 2026).** No session spawns `fable` subagents; the owner's
 plan cannot absorb them (two parallel fable writers in S5 hit the session limit mid-write).
 Strongest-tier work goes to `opus` subagents or is done inline by the orchestrator; `sonnet` and
@@ -93,13 +107,14 @@ failing command and its output.
 ## Session prompt
 
 Start a fresh session in the repo root and paste, filling `<N>` and `<slug>` from the roadmap
-table and the packet file name:
+table and the packet file name. Packets S01-S09 are zero-padded; S10 is not, so read the file
+table below for the exact name:
 
 ```text
 You are running ScoreQuant consolidation session S<N> (programme M12).
 
-Read docs/programme/README.md, then docs/programme/S0<N>-<slug>.md, then the
-closing report of the previous session's packet. Read nothing else directly:
+Read docs/programme/README.md, then docs/programme/S<N>-<slug>.md, then the
+closing report of the session your packet's Needs column names. Read nothing else directly:
 delegate every inventory, module read and gate run to subagents at the tier
 the README's delegation ladder names, and work from their summaries.
 
@@ -126,10 +141,14 @@ Rules of engagement:
 | `S03-library-internals-refactor.md` | Library internals refactor |
 | `S04-showcase-foundations.md` | Showcase foundations |
 | `S05-manuscript-v9-draft.md` | Manuscript v9 draft |
-| `S06-portal-ia-and-research-narrative.md` | Portal information-architecture cut + research narrative |
+| `S06-portal-topology-and-reference-cut.md` | Portal topology, reference cut, research narrative |
 | `S07-hep-classifier-showcase.md` | HEP classifier showcase |
-| `S08-portal-user-path.md` | Portal user path + e2e in CI + deployment |
+| `S08-the-four-walkthroughs.md` | The four walkthroughs |
+| `S10-portal-front-door.md` | Portal front door: home, get-started, e2e, deployment |
 | `S09-closure.md` | Closure: independent v9 audit, exit gate, teardown |
+
+S6, S8 and S10 were re-scoped on 3 September 2026 (see the M12 block in `docs/roadmap.md` for the
+direction). S4 and S7 are unchanged from their original packets.
 
 This directory is excluded from the published MkDocs site (`mkdocs.yml` `exclude_docs`) and from
 the front-door prose guard (`tests/test_readme.py`), so it may use planning vocabulary.

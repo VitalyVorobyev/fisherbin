@@ -265,13 +265,23 @@ with native NumPy in under ten seconds after warm-up.
 
 ## M12 — Consolidation programme
 
-**Status:** active; S1, S2, S3 and S5 done (S5 in review, PR #37); S4 and S6 unblocked.
+**Status:** active; S1-S5 done; S6 and S7 unblocked and independent. The remaining sessions are the
+user-facing half of the programme and were re-scoped on 3 September 2026 around one direction:
+the portal becomes the site root and explains rather than sells, MkDocs narrows to the
+exhaustive reference, and four detailed walkthroughs — one per input route, two on real data —
+carry the applied stories.
 
-Theorem research paused with P1 closed on DS19 (2 Sep 2026). Before the first public release the
-project reflects on what it has: the manuscript is three research sessions behind the claim
-registry, the library carries pre-1.0 design debt that would be breaking to fix later, the portal
-narrates research with hardcoded timelines, and half of the documented input routes have only toy
-examples. This milestone is a multi-session programme; its standing memory is
+Theorem research paused with P1 closed on DS19 (2 Sep 2026). With 0.1.0 out, the project reflects
+on what it has before the next release. Four things were wrong when the milestone opened: the
+manuscript was three research sessions behind the claim registry, the library carried pre-1.0
+design debt that would be breaking to fix later, the portal narrated research with hardcoded
+timelines and sold rather than explained, and half of the documented input routes had only toy
+examples. S3 and S5 closed the first two. The remaining two are what the user-facing half
+addresses, and they are the reason a released library is still not a presentable one: a reader who
+follows the URL the package advertises arrives at an exhaustive reference that re-derives the same
+three concepts up to seven times and never states the problem in plain language.
+
+This milestone is a multi-session programme; its standing memory is
 `docs/programme/README.md` (orchestrator contract and session prompt) and one packet per session
 under `docs/programme/`, each closed by a plain-English report. Nothing else holds programme
 status: this table is the single source of truth for what is queued, active, and done.
@@ -291,17 +301,26 @@ Four workstreams, each with its own gate:
   at one boundary; validation is single-sourced; results are constructed once. **Gate:** golden
   engine and backend conformance suites bit-identical before and after; an architecture test pins
   the layering; ADR 0024 and the CHANGELOG record every breaking change.
-- **W3 — Portal.** The portal is the public face and MkDocs the exhaustive reference; narrative
-  duplicated between them moves out of MkDocs. The hardcoded research timeline and graph are
-  replaced by a plain-English research section written from the novelty ledger. **Gate:** every
-  portal snippet is executed by a test; every research page states who it is for and links every
-  claim it makes; Playwright end-to-end runs in CI; the `/portal/` deployment is live.
+- **W3 — Portal.** The portal is the public face, served at the site root, and MkDocs is the
+  exhaustive reference under `/reference/`; narrative duplicated between them moves out of
+  MkDocs. The front door explains the problem and hands the reader onward — no slogans, no proof
+  strip, and every published snippet shown with its actual output. The hardcoded research
+  timeline and graph are replaced by a plain-English research section written from the novelty
+  ledger. **Gate:** every portal snippet is executed by a test and every output it displays is
+  captured from a run rather than typed; every research page states who it is for and links every
+  claim it makes; every pre-cut MkDocs URL resolves through a committed redirect manifest, checked
+  by a test against the assembled tree; Playwright end-to-end runs in CI; the root deployment is
+  live.
 - **W4 — Showcases.** A realistic end-to-end example for each input route: score sample and
   density ratios (FlowCyt, already real), an analytic `ScoreFunction` with an explicit nuisance on
-  the NumPy backend (Gaussian/Michelson), an executed `CentralLogRatioScore` path, and a HEP
-  classifier route on a fetched, licensed dataset (fallback: a three-interface FlowCyt benchmark).
-  **Gate:** each example is in the MkDocs nav, executes in both test tiers in fast mode, has its
-  evidence JSON pinned, and the roadmap names the provenance of every number it reports.
+  the NumPy backend (Michelson fringe phase against a fringe-frequency nuisance), an executed
+  `CentralLogRatioScore` path, and a HEP
+  classifier route on the FAIR Universe HiggsML public dataset (DOI 10.5281/zenodo.15131565,
+  CC-BY-4.0, Parquet), verified reachable by fetching and carrying an explicit tau-energy-scale
+  nuisance; the FlowCyt three-interface fallback is cut because that dataset check succeeded.
+  **Gate:** each example executes in both test tiers in fast mode, has its evidence JSON pinned,
+  is reachable from the portal's walkthrough index, and the roadmap names the provenance of every
+  number it reports.
 
 Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock):
 
@@ -310,18 +329,26 @@ Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock
 | S1 | Scaffold + public-surface truth pass | memory, W2 | — | done |
 | S2 | Manuscript reconciliation + novelty ledger | W1 | S1 | done |
 | S3 | Library internals refactor | W2 | S1 | done |
-| S4 | Showcase foundations (Gaussian/Michelson, NumPy example, HEP data spike) | W4 | S3 | queued |
+| S4 | Showcase foundations (Michelson phase, NumPy example, HEP data spike) | W4 | S3 | done |
 | S5 | Manuscript v9 draft | W1 | S2 | done |
-| S6 | Portal information-architecture cut + research narrative | W3 | S2, S3 | queued |
-| S7 | HEP classifier showcase (fallback: FlowCyt three-interface benchmark) | W4 | S4 | queued |
-| S8 | Portal user path + e2e in CI + deployment | W3 | S6, S7 | queued |
-| S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8 | queued |
+| S6 | Portal topology, reference cut, research narrative | W3 | S2, S3 | queued |
+| S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | queued |
+| S8 | The four walkthroughs | W3, W4 | S6, S7 | queued |
+| S10 | Portal front door: home, get-started, e2e in CI, deployment | W3 | S8 | queued |
+| S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S10 | queued |
 
 Deliberately cut, because it serves no user: renaming the six iteration-budget parameters (one
 table in the API guide instead); `PartitionResult.from_dict` (`Quantizer.save`/`load` is the
-round trip); flattening or regrouping the public namespace; moving the portal to the site root
-(ADR 0019 requires parity and a redirect manifest); a fresh adversarial literature search (P8
-stays deferred; only attribution facts already in the README ledger are used).
+round trip); flattening or regrouping the public namespace; a fresh adversarial literature search
+(P8 stays deferred; only attribution facts already in the README ledger are used).
+
+One cut is retired. Moving the portal to the site root was cut on the grounds that ADR 0019
+requires link parity and a redirect manifest. That reasoning held while the portal was a second
+reading surface; it stops holding once the portal is the explanatory front door, because a
+visitor who lands on the documentation URL — the one the published package advertises — then
+arrives at the reference rather than at the explanation. S6 does the promotion and pays ADR 0019's
+price directly: a committed manifest of every pre-cut MkDocs URL, and a test that fails if any of
+them stops resolving.
 
 **Exit gate:** all four workstream gates hold; every session row reads `done` or `cut`; the full
 handoff gate and `pnpm validate` are green on `main`; the session prompt in
@@ -329,9 +356,15 @@ handoff gate and `pnpm validate` are green on `main`; the session prompt in
 
 ## M11 — First public release
 
-**Status:** apparatus landed; the tag is unpushed and nothing is published.
+**Status:** done. Tag `v0.1.0` was pushed on 30 August 2026 and both artifacts
+(`scorequant-0.1.0-py3-none-any.whl`, `scorequant-0.1.0.tar.gz`) were published to PyPI the same
+day. This status line said "the tag is unpushed and nothing is published" until 3 September 2026,
+which had been false for four days; `CHANGELOG.md` carried the same error as `[0.1.0] —
+unreleased`. Both are corrected. The published project page advertises
+`https://vitalyvorobyev.github.io/scorequant/` as both Homepage and Documentation, which is why
+S6's redirect manifest is not optional: that URL is the one the world already holds.
 
-The library has been installable only from git. That is a real barrier: it makes the package
+The library had been installable only from git. That is a real barrier: it makes the package
 unusable in a locked dependency set, gives no stable artifact to cite, and means every reported bug
 has to be traced to a commit rather than a version.
 
@@ -344,7 +377,9 @@ has to be traced to a commit rather than a version.
 4. Two guards that cannot be fixed after publication: the git tag must match the packaged version,
    and `twine check` must pass so the README does not render as raw text on the project page.
 
-**Gate:** M12 is done; the full handoff gate passes; `uv build` produces a `py3-none-any` wheel
+**Gate** (met for 0.1.0 except its first clause, which the publication predated; it now gates
+the next release rather than the first): M12 is done; the full handoff gate passes; `uv build`
+produces a `py3-none-any` wheel
 and an sdist that `twine check` accepts; the wheel installs into a clean environment and
 `import scorequant` there reports the packaged version and completes a fit-and-predict round trip
 from the installed package rather than the source tree; the trusted publisher is configured on the
