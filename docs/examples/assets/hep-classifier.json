@@ -1,0 +1,164 @@
+{
+  "fixture": {
+    "n_events": 1000,
+    "weight_sum": 1051433.0267105103,
+    "signal_events": 336,
+    "background_events": 664
+  },
+  "n_bins": 6,
+  "interest": [
+    0
+  ],
+  "schema": [
+    "mu_htautau",
+    "nu_background",
+    "tes"
+  ],
+  "delta": 0.05,
+  "n_folds": 5,
+  "classifier_max_iter": 300,
+  "soft_steps": 400,
+  "classifiers": {
+    "signal_weighted_auc": 0.8344737120691251,
+    "signal_temperature": 2.70338298629393,
+    "signal_fraction": 0.00098781975979457,
+    "signal_seconds": 7.698392458027229,
+    "tes_minus_plus_auc": 0.567367,
+    "tes_temperature": 3.9999999994841673,
+    "tes_near_half_fraction": 0.091,
+    "tes_seconds": 5.825357875030022
+  },
+  "partitions": [
+    {
+      "key": "d_partition",
+      "label": "Plain D",
+      "criterion": "DOptimality",
+      "n_bins": 6,
+      "full_retention": 0.89246968750141,
+      "profiled_retention": 0.8369649450262336
+    },
+    {
+      "key": "ds_partition",
+      "label": "Profiled D_s",
+      "criterion": "ProfiledDOptimality",
+      "n_bins": 6,
+      "full_retention": 0.40838224440624826,
+      "profiled_retention": 0.956003693016737
+    },
+    {
+      "key": "classifier_quantile",
+      "label": "Classifier quantile bins (6)",
+      "criterion": "naive baseline",
+      "n_bins": 6,
+      "full_retention": 0.17817409175557267,
+      "profiled_retention": 0.2454280517847531
+    },
+    {
+      "key": "classifier_logit_equal_width",
+      "label": "Classifier logit equal-width bins (6)",
+      "criterion": "naive baseline",
+      "n_bins": 6,
+      "full_retention": 0.21661583682402136,
+      "profiled_retention": 0.4552468544888668
+    },
+    {
+      "key": "threshold_cut",
+      "label": "Threshold cut at eta_s=0.5119",
+      "criterion": "naive baseline",
+      "n_bins": 2,
+      "full_retention": 3.3931829167082604e-06,
+      "profiled_retention": 0.0
+    }
+  ],
+  "criterion_trade": {
+    "full_retention_given_up": 0.4840874430951617,
+    "profiled_retention_gained": 0.1190387479905034
+  },
+  "scorequant_vs_classifier_binning": {
+    "best_baseline_key": "classifier_logit_equal_width",
+    "profiled_retention_gap": 0.5007568385278702,
+    "profiled_retention_gap_to_equal_frequency": 0.7105756412319839,
+    "baseline_spread": 0.2098188027041137,
+    "full_retention_gap": 0.1917664075822269
+  },
+  "ceiling": {
+    "upper_bound": 14.09321515865392,
+    "ceiling_retention": 0.9568542109395966,
+    "gap_to_ds_partition": 0.0008892641498832177
+  },
+  "ceiling_sweep": [
+    {
+      "n_bins": 3.0,
+      "ds_profiled_retention": 0.8213960084766362,
+      "classifier_quantile_profiled_retention": 0.07652145798664006,
+      "ceiling_retention": 0.8469043795028911,
+      "gap": 0.030582453034462276,
+      "scans": 13,
+      "accepted_moves": 15
+    },
+    {
+      "n_bins": 4.0,
+      "ds_profiled_retention": 0.8998244441188009,
+      "classifier_quantile_profiled_retention": 0.18084009282789268,
+      "ceiling_retention": 0.903514791720541,
+      "gap": 0.004092799269065139,
+      "scans": 7,
+      "accepted_moves": 7
+    },
+    {
+      "n_bins": 6.0,
+      "ds_profiled_retention": 0.956003693016737,
+      "classifier_quantile_profiled_retention": 0.2454280517847531,
+      "ceiling_retention": 0.9568542109395966,
+      "gap": 0.0008892641498832177,
+      "scans": 19,
+      "accepted_moves": 32
+    },
+    {
+      "n_bins": 8.0,
+      "ds_profiled_retention": 0.975668899187969,
+      "classifier_quantile_profiled_retention": 0.4374074923233694,
+      "ceiling_retention": 0.9771831844674906,
+      "gap": 0.0015508451415247038,
+      "scans": 23,
+      "accepted_moves": 75
+    }
+  ],
+  "delta_convergence": {
+    "rows": [
+      {
+        "delta": 0.025,
+        "minus_plus_auc": 0.5307139999999999,
+        "near_half_fraction": 0.101,
+        "ds_profiled_retention": 0.9567344098094354,
+        "ceiling_retention": 0.9595196058136393
+      },
+      {
+        "delta": 0.05,
+        "minus_plus_auc": 0.567367,
+        "near_half_fraction": 0.091,
+        "ds_profiled_retention": 0.956003693016737,
+        "ceiling_retention": 0.9568542109395966
+      },
+      {
+        "delta": 0.1,
+        "minus_plus_auc": 0.659783,
+        "near_half_fraction": 0.055,
+        "ds_profiled_retention": 0.9552114145815266,
+        "ceiling_retention": 0.9560503262429372
+      }
+    ],
+    "agreement": {
+      "headline_delta": 0.05,
+      "half_delta": 0.025,
+      "score_correlation": 0.6293785477264123,
+      "retention_gap": 0.000730716792698316
+    }
+  },
+  "reusable_rule": {
+    "train_full_retention": 0.9729852579299458,
+    "train_profiled_retention": 0.9999957324382192,
+    "hardening_gap": -6.341593916658894e-12,
+    "seconds": 4.4801121249911375
+  }
+}

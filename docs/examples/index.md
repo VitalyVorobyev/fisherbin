@@ -6,9 +6,10 @@ first three enter through each of the three doors in turn; the Michelson-phase p
 the analytic `ScoreFunction` route and the NumPy backend at once; the shootout puts every
 solver and baseline on one problem; the next five are theory demonstrations — a
 nuisance-parameter criterion, a soft relaxation, two counterexamples, and global
-certification; the last is a pointer into the one study that runs on real data.
+certification; the last two point into real data — a real classifier-to-score bridge on the
+public FAIR Universe HiggsML dataset, and the complete FlowCyt population-fraction study.
 
-Ten of the eleven pages have a matching notebook under
+Eleven of the twelve pages have a matching notebook under
 [`examples/notebooks/`](https://github.com/VitalyVorobyev/scorequant/tree/main/examples/notebooks)
 that runs the same story at a larger, more decisive scale. See [Three
 doors](../three-doors.md) for what a door is, and [Choosing your
@@ -26,4 +27,5 @@ workflow](../user-workflow.md) for a task-first decision guide.
 | [lloyd-nonmonotone](lloyd-nonmonotone.md) | The manuscript's non-monotone Lloyd step, and the guard's acceptance trace rescuing it | Sample partitioning | 1 | [`lloyd_nonmonotone.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/lloyd_nonmonotone.ipynb) |
 | [ds-geometry-counterexample](ds-geometry-counterexample.md) | An exact rational fixture whose globally optimal profiled-\(D_s\) partition violates its own induced geometry, and why there is no compile bridge | Sample partitioning | 1 | [`ds_geometry_counterexample.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/ds_geometry_counterexample.ipynb) |
 | [global-certification](global-certification.md) | Branch-and-bound optimality certificates and a multi-restart hit-rate study | Sample partitioning | 2 | [`global_certification.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/global_certification.ipynb) |
+| [hep-classifier](../usecases/hep/index.md) | A signal-vs-background classifier and a `tes` minus/plus classifier feeding two different ratio doors on the public FAIR Universe HiggsML dataset, profiled \(D_s\) against a certified ceiling, and a delta convergence study | Both | 3 | [`hep_classifier.ipynb`](https://github.com/VitalyVorobyev/scorequant/blob/main/examples/notebooks/hep_classifier.ipynb) |
 | [flowcyt-teaser](flowcyt-teaser.md) | A pointer into the complete real-data FlowCyt study: 600,000 real cells, a classifier-derived score, and a full population-fraction measurement | Space quantization | 3 | — see the [FlowCyt study](../usecases/flowcyt/index.md) |

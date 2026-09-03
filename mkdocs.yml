@@ -86,6 +86,7 @@ nav:
           - Quantization at scale: usecases/flowcyt/quantization.md
           - "One fraction of interest: profiled Ds": usecases/flowcyt/profiled.md
           - Solver comparison: usecases/flowcyt/solvers.md
+      - HEP classifier study: usecases/hep/index.md
   - API:
       - API guide: api.md
       - Reference:

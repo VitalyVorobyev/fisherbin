@@ -117,12 +117,14 @@ same for each door, and [Choosing your workflow](user-workflow.md) walks through
   validation rules.
 - [Choosing your workflow](user-workflow.md) — which task, which door, which criterion and solver.
 - [The book](book/index.md) — the statistical theory developed independently of this package's API.
-- [Examples](examples/index.md) — eleven runnable pages: the three doors, an interferometer phase
+- [Examples](examples/index.md) — twelve runnable pages: the three doors, an interferometer phase
   measurement with an explicit nuisance on the portable backend, a solver shootout against three
   baselines, theory demonstrations (profiled \(D_s\), soft rules, two counterexamples, global
-  certification), and a teaser into the real-data study below.
-- Evidence — the [synthetic gallery](gallery/index.md) and the reproducible
-  [FlowCyt study](usecases/flowcyt/index.md).
+  certification), a real classifier-to-score bridge on the public FAIR Universe HiggsML dataset,
+  and a teaser into the FlowCyt real-data study below.
+- Evidence — the [synthetic gallery](gallery/index.md), the reproducible
+  [FlowCyt study](usecases/flowcyt/index.md), and the
+  [HEP classifier study](usecases/hep/index.md).
 - [API guide](api.md) and [reference](symbols/index.md) — released contracts and errors.
 - [Related work](related-work.md) — the four research traditions this sits in, an honest
   known-versus-new table, and a software comparison.
