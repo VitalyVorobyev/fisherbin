@@ -9,9 +9,25 @@ a manuscript revision only when a publication decision is taken (see
 driver). Never treat a manuscript statement as more current than the registry.
 
 **Prefer the crosswalk below plus the registry over the article bodies.** The
-v8 article is ~58 KB of prose (`.md`) / ~68 KB (`.html`) — greppable and
+v9 article is ~165 KB of Markdown source / ~195 KB rendered — greppable and
 section-readable, but still an order of magnitude more than a claim lookup, so
-open it only in a dedicated manuscript-revision task.
+open it only in a dedicated manuscript-revision task. Its Appendix H maps every
+`NOVELTY_LEDGER.md` row to the section or appendix that carries it, and
+Appendix G resolves every counterexample fixture id.
+
+**Rendering.** The `.html` sibling is generated, never hand-edited:
+
+```bash
+uv run agenticresearch/py/render_manuscript.py agenticresearch/manuscripts/score_space_quantization_article_v9.md
+```
+
+The script (python-markdown declared inline, so `uv run` fetches it on demand)
+carries the v8 stylesheet verbatim, loads MathJax 3 from its CDN, links `[n]`
+citations to the `ref-n` anchors, renders `[novelty: …; ledger …]` tags as superscript provenance marks that stay
+hidden until the sidebar's "Show provenance" button is pressed, and builds the
+sidebar contents from the `##` headings (appendices under their own divider). Source conventions: `\(…\)` and
+`\[…\]` math, section-local equation tags `(7.2)`, result boxes as
+`<div class="theorem" markdown="1">`.
 
 **Figures live in `figures/`, never inlined.** The six assets were base64
 `data:` URIs until 29 Aug 2026, which made the article a 407 KB blob with
@@ -24,16 +40,55 @@ in the workspace, so this cannot regress. The `.html` needs its sibling
 
 | File | What it is | State |
 |---|---|---|
-| `score_space_quantization_article_v8.md` / `.html` | Main research article, v8, 26 Aug 2026: "Information-optimal hard quantization of multivariate score space" | Structurally complete draft; proofs compressed; behind the registry (see staleness) |
+| `score_space_quantization_article_v9.md` / `.html` | Main research article, v9, 3 Sep 2026 (M12 session S5): "Information-optimal hard quantization of multivariate score space"; main text §1–§10 plus Appendices A–H | Current; drafted from `NOVELTY_LEDGER.md`, restructured the same day into main text + appendices after the owner rejected the flat first draft; Appendix H places every ledger row |
+| `score_space_quantization_article_v8.md` / `.html` | Main research article, v8, 26 Aug 2026 | Superseded by v9; kept for the crosswalk and as the S2 reconciliation input |
 | `NOVELTY_LEDGER.md` | Novelty ledger, 3 Sep 2026 (M12 session S2): one row per central v8 statement and per finding proved since v8, with novelty label, attribution and registry pointer | Current; the v9 draft (S5) is written from it |
 | `../archive/doptimal_event_categorization_hep.html` | Shorter HEP-facing companion: D-optimal event categorization for multi-parameter inference | Archived 3 Sep 2026 (M12 consolidation); not a revision input |
 | `../archive/scorequant_research_landscape_en.html` | Literature/landscape survey (history, key authors, software: MadMiner, INFERNO, ThickBrick, GATO, BOBR, OptBinning) | Archived 3 Sep 2026; superseded by `LITERATURE/` |
 
-## Numbering crosswalk (manuscript v8 ↔ registry)
+## Numbering crosswalk (manuscript v9 ↔ v8 ↔ registry)
 
-Three numbering systems have circulated: manuscript v8 environments, the older
-v5 research-notes numbering, and the registry claim ids. The registry ids are
-canonical.
+Four numbering systems have circulated: manuscript v9 environments, manuscript
+v8 environments, the older v5 research-notes numbering, and the registry claim
+ids. The registry ids are canonical; the ledger row resolves each v9 result to
+its claim ids and attribution. v9 has a main text (§1–§10, twelve numbered
+results in one counter) and Appendices A–H (lettered results); the "first
+draft" column is the rejected 3 September 2026 single-counter draft, kept only
+because the S5 packet and the placement notes were written against it.
+
+| Manuscript v9 | v8 | v9 first draft | v9 location | Novelty; ledger row |
+|---|---|---|---|---|
+| Proposition 1 (affine form of a common-metric stationary partition) | Proposition 1 | Proposition 1 | §3.2 | adaptation; V8-08 |
+| Lemma B.1 (leverage bound) | Lemma 2 | Lemma 2 | Appendix B.2 | known; V8-10 |
+| Theorem 2 (finite D exchange stability forces self-consistent Voronoi geometry) | Theorem 3 | Theorem 3 | §4.2 | apparently new; V8-11 |
+| Proposition 3 (approximate finite efficient-Voronoi geometry) | Proposition 4 | Proposition 4 | §5.1 | unresolved; V8-24 |
+| Lemma 4 (variational form of the generalized profiled information (classical)) | — | Lemma 5 | §5.2 | known; DS11-1 |
+| Proposition C.1 (refinement monotonicity, neutral splits, and the exact domination gap) | — | Proposition 6 | Appendix C.3 | direct corollary; DS11-2 |
+| Theorem 5 (population stationarity is efficient-Voronoi geometry) | — | Theorem 7 | §5.3 | adaptation; DS12-1 |
+| Proposition 6 (exact profiled leverage bound at exchange-stable states) | — | Proposition 8 | §5.4 | apparently new; DS13-1 |
+| Theorem 7 (conditional finite-to-population bridge under (M1)–(M5)) | — | Theorem 9 | §5.5 | adaptation; DS14-1 |
+| Theorem 8 (margins dichotomy at global finite D_s optima (d_\psi=d_\lambda=1)) | — | Theorem 10 | §5.6 | apparently new; DS15-1 |
+| Proposition C.2 (exact empirical sandwich and bracket limits) | — | Proposition 11 | Appendix C.7 | direct corollary; DS15-3 |
+| Proposition C.3 (achievability by swap steering) | — | Proposition 12 | Appendix C.7 | unresolved; DS15-2 |
+| Theorem 9 (margin price, value funnel, and floor) | — | Theorem 13 | §5.7 | apparently new; DS16-1 |
+| Lemma C.4 (tilt-residual identity and the fixed-point gate) | — | Lemma 14 | Appendix C.9 | direct corollary; DS17-3 |
+| Theorem 10 (conditional centering empties the margin-certified branch) | — | Theorem 15 | §5.8 | apparently new; DS17-1 |
+| Proposition C.5 (merged branch on linear-conditional-mean laws) | — | Proposition 16 | Appendix C.9 | known; DS17-2 |
+| Theorem 11 (exact off-class global basin and empirical transfer through global optima) | — | Theorem 17 | §5.9 | adaptation; DS18-1 |
+| Theorem 12 (valid two-sided brackets and exact saddle closure) | — | Theorem 18 | §6.1 | adaptation; DS19-1 |
+| Proposition D.1 (\Delta-consistency of the \beta=0 interval programme on the off-class law of Theorem 11) | — | Proposition 19 | Appendix D.3 | direct corollary; DS19-3 |
+| Proposition D.2 (what is polynomial) | — | Proposition 20 | Appendix D.4 | direct corollary; DS19-5 |
+| Proposition E.1 (exact A move oracle and finite termination) | — | Proposition 21 | Appendix E.3 | direct corollary; A1-1 |
+| Proposition E.2 (tangent screening for A) | — | Proposition 22 | Appendix E.3 | direct corollary; A3-1 |
+| Proposition F.1 (restricted-class empirical consistency) | Proposition 5 | Proposition 23 | Appendix F.5 | adaptation; V8-40 |
+
+Equations are numbered per section or appendix in v9 and only when referenced;
+appendices restate what they need under their own tag. The first-draft v8→v9
+equation map in `docs/programme/S05-manuscript-v9-draft.md` is historical.
+Fixtures are cited in the main text as "fixture G\(n\)" and resolved by
+Appendix G; Appendix H places every ledger row.
+
+### v8 crosswalk (historical)
 
 | Manuscript v8 | Registry claims | Notes |
 |---|---|---|
@@ -44,7 +99,24 @@ canonical.
 | Proposition 5 (restricted-class empirical consistency) | CONSISTENCY-RESTRICTED-AFFINE | |
 | *(absent)* | DS-PROFILED-VARIATIONAL (DS11), OPEN-DS-POP-COMMON-METRIC (DS12), DS-EXCHANGE-LEVERAGE-BOUND (DS13), OPEN-DS-FINITE-POP-BRIDGE (DS14) | audited 28 Aug 2026 (`AUDITS/AUDIT-DS-POPULATION-BRIDGE-001.md`); no manuscript counterpart yet |
 
-## Known staleness in v8 (fix at next manuscript revision)
+## Known staleness
+
+### v9 (3 September 2026)
+
+- The main text was cut hard in the restructure (about 21,000 words of flat text
+  became a main text under 9,000 words plus appendices). No independent human
+  read-through has happened yet; the owner's reading of the rendered main text is
+  the acceptance step recorded in `docs/programme/S05-manuscript-v9-draft.md`.
+- Haynsworth 1968 is cited for the Schur-complement inertia lineage (DS15-4)
+  without a ledger attribution key; the Jakubowski 2021 volume details are
+  unverified. Both are bibliographic, not mathematical.
+- Every item in the v8 list below is addressed in v9 (Appendix H names the
+  location for each ledger row; the four required corrections — Theorem 2
+  hypotheses, the fig-02 caption, the §8 profiled \(D_s\) implementation row,
+  the §9 open problem — are recorded in the S5 packet). New staleness goes
+  here, one bullet per item, by the session that produces the result.
+
+### v8 (historical; fixed in v9)
 
 - A figure caption in §5.2 refers to "Theorem 6"; the result is Theorem 3
   (leftover from renumbering).
