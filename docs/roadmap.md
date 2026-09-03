@@ -263,6 +263,70 @@ non-Lab Lighthouse LCP below 2.5 seconds and CLS below 0.1 on CI, no Pyodide/mar
 ordinary routes, representative manual visual inspection, and a seeded browser scenario agreeing
 with native NumPy in under ten seconds after warm-up.
 
+## M12 — Consolidation programme
+
+**Status:** active; S1 done, S2 and S3 unblocked.
+
+Theorem research paused with P1 closed on DS19 (2 Sep 2026). Before the first public release the
+project reflects on what it has: the manuscript is three research sessions behind the claim
+registry, the library carries pre-1.0 design debt that would be breaking to fix later, the portal
+narrates research with hardcoded timelines, and half of the documented input routes have only toy
+examples. This milestone is a multi-session programme; its standing memory is
+`docs/programme/README.md` (orchestrator contract and session prompt) and one packet per session
+under `docs/programme/`, each closed by a plain-English report. Nothing else holds programme
+status: this table is the single source of truth for what is queued, active, and done.
+
+Four workstreams, each with its own gate:
+
+- **W1 — Manuscript v9.** `agenticresearch/manuscripts/NOVELTY_LEDGER.md` labels every central
+  statement as known / direct corollary / adaptation / apparently new / unresolved, with
+  attribution; v9 folds in every finding since v8 (DS11–DS19, A-optimality, information
+  efficiency, the new counterexamples) and corrects every entry of the README staleness ledger.
+  **Gate:** every ledger row is placed in v9 or marked deliberately omitted with a reason; an
+  independent fresh-context audit read of v9 against the ledger records a verdict per statement;
+  `registry.py validate` is green.
+- **W2 — Library design pass.** No exported name that nothing accepts; every published code
+  string executes in a test; the backend is documented; a small error hierarchy names contract
+  violations and theorem-backed refusals; `fit_quantizer` is one pipeline with the profiled guard
+  at one boundary; validation is single-sourced; results are constructed once. **Gate:** golden
+  engine and backend conformance suites bit-identical before and after; an architecture test pins
+  the layering; ADR 0024 and the CHANGELOG record every breaking change.
+- **W3 — Portal.** The portal is the public face and MkDocs the exhaustive reference; narrative
+  duplicated between them moves out of MkDocs. The hardcoded research timeline and graph are
+  replaced by a plain-English research section written from the novelty ledger. **Gate:** every
+  portal snippet is executed by a test; every research page states who it is for and links every
+  claim it makes; Playwright end-to-end runs in CI; the `/portal/` deployment is live.
+- **W4 — Showcases.** A realistic end-to-end example for each input route: score sample and
+  density ratios (FlowCyt, already real), an analytic `ScoreFunction` with an explicit nuisance on
+  the NumPy backend (Gaussian/Michelson), an executed `CentralLogRatioScore` path, and a HEP
+  classifier route on a fetched, licensed dataset (fallback: a three-interface FlowCyt benchmark).
+  **Gate:** each example is in the MkDocs nav, executes in both test tiers in fast mode, has its
+  evidence JSON pinned, and the roadmap names the provenance of every number it reports.
+
+Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock):
+
+| # | Session | Workstream | Needs | Status |
+|---|---|---|---|---|
+| S1 | Scaffold + public-surface truth pass | memory, W2 | — | done |
+| S2 | Manuscript reconciliation + novelty ledger | W1 | S1 | queued |
+| S3 | Library internals refactor | W2 | S1 | queued |
+| S4 | Showcase foundations (Gaussian/Michelson, NumPy example, HEP data spike) | W4 | S3 | queued |
+| S5 | Manuscript v9 draft | W1 | S2 | queued |
+| S6 | Portal information-architecture cut + research narrative | W3 | S2, S3 | queued |
+| S7 | HEP classifier showcase (fallback: FlowCyt three-interface benchmark) | W4 | S4 | queued |
+| S8 | Portal user path + e2e in CI + deployment | W3 | S6, S7 | queued |
+| S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8 | queued |
+
+Deliberately cut, because it serves no user: renaming the six iteration-budget parameters (one
+table in the API guide instead); `PartitionResult.from_dict` (`Quantizer.save`/`load` is the
+round trip); flattening or regrouping the public namespace; moving the portal to the site root
+(ADR 0019 requires parity and a redirect manifest); a fresh adversarial literature search (P8
+stays deferred; only attribution facts already in the README ledger are used).
+
+**Exit gate:** all four workstream gates hold; every session row reads `done` or `cut`; the full
+handoff gate and `pnpm validate` are green on `main`; the session prompt in
+`docs/programme/README.md` is retired; M11's gate can be evaluated.
+
 ## M11 — First public release
 
 **Status:** apparatus landed; the tag is unpushed and nothing is published.
@@ -280,11 +344,11 @@ has to be traced to a commit rather than a version.
 4. Two guards that cannot be fixed after publication: the git tag must match the packaged version,
    and `twine check` must pass so the README does not render as raw text on the project page.
 
-**Gate:** the full handoff gate passes; `uv build` produces a `py3-none-any` wheel and an sdist that
-`twine check` accepts; the wheel installs into a clean environment and `import scorequant` there
-reports the packaged version and completes a fit-and-predict round trip from the installed package
-rather than the source tree; the trusted publisher is configured on the index; and the tag is pushed
-deliberately.
+**Gate:** M12 is done; the full handoff gate passes; `uv build` produces a `py3-none-any` wheel
+and an sdist that `twine check` accepts; the wheel installs into a clean environment and
+`import scorequant` there reports the packaged version and completes a fit-and-predict round trip
+from the installed package rather than the source tree; the trusted publisher is configured on the
+index; and the tag is pushed deliberately.
 
 Publication is an authorized action, not a merge side effect. Landing this milestone does not
 publish anything.
@@ -323,12 +387,15 @@ What stays deliberately out of scope, and why, in one place:
   (`benchmarks/README.md`, "Optimizations deliberately not taken").
 - **Profiled-\(D_s\) compile-to-quantizer via the projected efficient-score interval rule** —
   research result DS15 (`agenticresearch/KNOWN_RESULTS/05b-ds-bridge.md`) names the deployable
-  rule for `ProfiledDOptimality` results that `compile_quantizer()` currently refuses to
-  produce, but only proves it holds at global optima for conditionally centered,
-  single-parameter-of-interest laws. Deferred: reconsider once OP29
-  (`agenticresearch/claims/OPEN-DS-MARGINS-NONCENTERED.json`) resolves whether the
-  exchange-stable, non-global solutions the library's optimizer actually returns retain the
-  same margins.
+  rule for `ProfiledDOptimality` results that `compile_quantizer()` refuses to produce, but only
+  at global optima of conditionally centered, single-parameter-of-interest laws. The question
+  this paragraph used to wait on (OP29, whether the exchange-stable non-global solutions the
+  optimizer actually returns keep the same margins) is resolved for the deployment-facing scalar
+  case: DS17 disproved the conditional route on the class (L) laws the library fits, DS18 gives
+  exactly one exact off-(L) witness with positive transfer, and DS19 certifies a bracket for the
+  scalar tilt dynamic program with strong duality false. There is no compile route to implement;
+  the refusal stands, and the remaining vector branches of OP29 are academic rigidity questions.
+  Reconsider only on a new theorem, not on a further open-problem resolution.
 - **Signed weights and advanced statistical objectives** — remain gated on a new mathematical
   contract and independent use case. NumPy is now the approved second backend in M9; PyTorch still
   requires a concrete workload, complete capability mapping, conformance evidence, and benchmark.

@@ -13,7 +13,7 @@ exclude_docs: |
   system-design.md
   playbook.md
   adr/**
-  proposals/**
+  programme/**
 
 theme:
   name: material

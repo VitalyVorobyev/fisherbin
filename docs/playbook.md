@@ -75,7 +75,7 @@ uv run mkdocs build --strict   # what CI runs; a broken link or nav entry fails 
 ```
 
 The API reference is collected from docstrings by mkdocstrings. `development.md`, `roadmap.md`,
-`system-design.md`, this page, `adr/**` and `proposals/**` are excluded from the published site
+`system-design.md`, this page, `adr/**` and `programme/**` are excluded from the published site
 (`mkdocs.yml` `exclude_docs`), and `tests/test_readme.py` asserts that the exclusion list and the
 prose guard agree.
 

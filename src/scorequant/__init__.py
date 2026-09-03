@@ -8,7 +8,6 @@ from .artifact import Quantizer
 from .certify import CertificationConfig, certify_partition
 from .components import (
     LinearComponents,
-    LinearProblem,
     scores_from_components,
 )
 from .config import (
@@ -94,7 +93,6 @@ __all__ = [
     "KMeansConfig",
     "LinearComponentScore",
     "LinearComponents",
-    "LinearProblem",
     "MahalanobisLloydConfig",
     "MixtureParameterization",
     "NormalizedTrace",
