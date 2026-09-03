@@ -6,8 +6,8 @@ import ast
 import json
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import griffe
 import numpy as np
 
 import scorequant as sq
@@ -18,6 +18,9 @@ import scorequant as sq
 # accept, and being coupled to the registry -- rather than to a hand-copied Markdown table --
 # is the entire point of generating the matrix instead of maintaining it by hand.
 from scorequant.api import _SOLVER_TABLE
+
+if TYPE_CHECKING:  # pragma: no cover - annotations only
+    import griffe
 
 ROOT = Path(__file__).resolve().parents[2]
 WEBSITE = ROOT / "website"
@@ -74,6 +77,12 @@ def _target(value: griffe.Object | griffe.Alias) -> griffe.Object | griffe.Alias
 
 
 def _api_data() -> list[dict[str, object]]:
+    # Griffe lives in the ``portal`` dependency group, which CI's library test tier does
+    # not install. Importing it here rather than at module scope keeps the solver-matrix
+    # helpers below importable from ``tests/test_solver_matrix.py`` under a bare
+    # ``uv sync --all-extras --dev``; only this function actually needs Griffe.
+    import griffe
+
     module = griffe.load("scorequant", search_paths=[ROOT / "src"], resolve_aliases=True)
     entries: list[dict[str, object]] = []
     for name in sorted(_public_names()):

@@ -23,7 +23,10 @@ interface RedirectEntry {
 
 interface UnstubbedEntry {
   path: string;
-  reason: string;
+  // Optional in the type, required in the file: this is parsed from disk, so the
+  // type is an assertion about JSON that nothing has checked yet. The last test in
+  // this file is what actually enforces that the field is present and substantive.
+  reason?: string;
 }
 
 interface RedirectsManifest {
