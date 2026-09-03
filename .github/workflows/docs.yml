@@ -22,13 +22,24 @@ jobs:
       - run: uv python install 3.13
       - run: uv sync --no-dev --group docs --locked
       - run: uv run --no-sync mkdocs build --strict
-      - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+      # Deployment is frozen for the duration of the portal-root migration
+      # (see the `deploy` job below): the Pages artifact this step would
+      # upload is the pre-cut MkDocs site alone, not the assembled tree that
+      # serves the portal at the root, so uploading it would let a stale
+      # artifact accumulate for a deploy that must not run. S10 restores this
+      # condition alongside the `deploy` job's.
+      - if: false
         uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
   deploy:
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # Deployment is frozen for the duration of the portal-root migration:
+    # consolidation session S10 re-enables this job against the assembled
+    # tree produced by `pnpm assemble:site`, with the owner's authorization,
+    # as ADR 0019 requires. The job stays defined (not deleted) so S10 can
+    # turn it back on by restoring the condition below.
+    if: false
     needs: build
     runs-on: ubuntu-latest
     permissions:

@@ -134,13 +134,15 @@ Solvers are selected by passing a configuration object. The pairing of configura
 is a closed table, validated before any optimization runs; an unsupported pair raises rather than
 silently substituting something else.
 
+<!-- generated: solver-matrix (do not edit by hand; run `pnpm generate:data`) -->
 | Configuration | `optimize_partition` | `fit_quantizer` |
 | --- | --- | --- |
 | `DExchangeConfig` | `DOptimality`, `ProfiledDOptimality` | `DOptimality` |
 | `MahalanobisLloydConfig` | `DOptimality`, `ProfiledDOptimality` | `DOptimality` |
-| `SoftVoronoiConfig` | — | `DOptimality`, `ProfiledDOptimality` |
 | `KMeansConfig` | — | `NormalizedTrace` |
+| `SoftVoronoiConfig` | — | `DOptimality`, `ProfiledDOptimality` |
 | `ScalarDPConfig` | — | `DOptimality` |
+<!-- /generated: solver-matrix -->
 
 ### Exact finite exchange
 

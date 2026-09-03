@@ -44,7 +44,7 @@ jobs:
         working-directory: website
       - run: corepack pnpm build
         working-directory: website
-      - run: corepack pnpm assemble:preview
+      - run: corepack pnpm assemble:site
         working-directory: website
       # `include-hidden-files` is required, not cosmetic: every path segment is
       # tested for a leading dot, so with the default `false` the dot-prefixed

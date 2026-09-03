@@ -5,17 +5,18 @@ import clsx from "clsx";
 import {useEffect, useState} from "react";
 
 import {isActiveNavEntry} from "../lib/navigation";
+import {REFERENCE_BASE} from "../lib/site";
 import {Logo} from "./Logo";
 import {SearchDialog} from "./SearchDialog";
 
 const navigation = [
   ["Docs", "/docs"],
+  ["Walkthroughs", "/walkthroughs"],
+  ["Lab", "/lab"],
   ["API", "/api"],
-  ["Examples", "/examples"],
-  ["Showcase", "/showcase"],
-  ["Theory", "/theory"],
-  ["Benchmarks", "/benchmarks"],
   ["Research", "/research"],
+  ["Benchmarks", "/benchmarks"],
+  ["Reference", REFERENCE_BASE],
   ["Blog", "/blog"]
 ] as const;
 
@@ -67,11 +68,22 @@ export function AppShell({
         <div className="site-header__inner">
           <Logo />
           <nav className={clsx("site-nav", menuOpen && "site-nav--open")} aria-label="Primary">
-            {navigation.map(([label, href]) => (
-              <Link key={href} to={href} className={isActiveNavEntry(pathname, href) ? "is-active" : ""}>
-                {label}
-              </Link>
-            ))}
+            {navigation.map(([label, href]) =>
+              // The reference is a separately built MkDocs tree mounted outside the
+              // Docusaurus app: it needs a real page load, not client-side routing,
+              // and it can never be the "active" entry because reaching it always
+              // means leaving this app. Every other entry stays a router Link with
+              // the usual active-state highlighting.
+              href === REFERENCE_BASE ? (
+                <a key={href} href={href}>
+                  {label}
+                </a>
+              ) : (
+                <Link key={href} to={href} className={isActiveNavEntry(pathname, href) ? "is-active" : ""}>
+                  {label}
+                </Link>
+              )
+            )}
           </nav>
           <div className="site-actions">
             <button className="search-trigger" onClick={() => setSearchOpen(true)} aria-label="Search">
@@ -97,10 +109,10 @@ export function AppShell({
             <p>Hard bins, with the information loss made visible.</p>
           </div>
           <div className="site-footer__links">
-            <span>Learn</span><Link to="/docs">Start here</Link><Link to="/theory">Theory</Link><Link to="/examples">Examples</Link><Link to="/blog">Blog</Link>
+            <span>Learn</span><Link to="/docs">Start here</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/examples">Examples</Link><Link to="/blog">Blog</Link>
           </div>
           <div className="site-footer__links">
-            <span>Reference</span><a href="/scorequant/reference/">Python API</a><a href="https://github.com/VitalyVorobyev/scorequant">GitHub</a>
+            <span>Reference</span><a href={REFERENCE_BASE}>Python API</a><a href="https://github.com/VitalyVorobyev/scorequant">GitHub</a>
           </div>
           <small>Open source · research provenance is explicit · no browser data leaves your device</small>
         </footer>

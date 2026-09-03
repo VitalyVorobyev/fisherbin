@@ -7,10 +7,15 @@ const config: Config = {
   tagline: "Information-optimal score-space quantization",
   favicon: "img/mark.svg",
   url: "https://vitalyvorobyev.github.io",
-  baseUrl: "/scorequant/portal/",
+  baseUrl: "/scorequant/",
   organizationName: "VitalyVorobyev",
   projectName: "scorequant",
-  trailingSlash: false,
+  // Every route must emit its own index.html. With `false`, a docs section emits
+  // both `research.html` and a `research/` directory with no index.html, and which
+  // one a static host serves for `/research` is host-dependent — `docusaurus serve`
+  // resolves the directory and renders the 404 shell. Directory URLs also match the
+  // MkDocs reference mounted beneath this site, so the whole domain reads one way.
+  trailingSlash: true,
   // Matches the separator AppShell already uses for the pages it titles itself,
   // so blog routes — whose titles come from Docusaurus metadata — read the same.
   titleDelimiter: "·",
@@ -18,6 +23,27 @@ const config: Config = {
   onBrokenAnchors: "throw",
   markdown: {hooks: {onBrokenMarkdownLinks: "throw"}},
   plugins: [
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "walkthroughs",
+        path: "walkthroughs",
+        routeBasePath: "walkthroughs",
+        // AppShell (src/theme/Layout) owns navigation; the stock Docusaurus
+        // sidebar is not wanted. No editUrl: these pages have no upstream
+        // source to edit against.
+        sidebarPath: false
+      }
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "research",
+        path: "research",
+        routeBasePath: "research",
+        sidebarPath: false
+      }
+    ],
     () => ({
       name: "runtime-boundary-warnings",
       configureWebpack: (_config, isServer) => ({

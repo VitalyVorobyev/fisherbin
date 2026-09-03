@@ -14,7 +14,7 @@
     "generate:data": "cd .. && uv run python website/scripts/generate_data.py",
     "export:lessons": "cd .. && uv run marimo check website/lessons/score_space.py --select MW && uv run marimo export html-wasm website/lessons/score_space.py -o website/static/lessons/score-space --mode run --no-show-code --no-execute",
     "prepare:runtime": "node scripts/prepare-runtime.mjs",
-    "assemble:preview": "node scripts/assemble-preview.mjs",
+    "assemble:site": "node scripts/assemble-site.mjs",
     "build:site": "docusaurus build",
     "build:content": "pnpm generate && pnpm export:lessons && pnpm build:site && pagefind --site build",
     "build": "pnpm prepare:runtime && pnpm build:content",
@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@docusaurus/core": "3.10.2",
+    "@docusaurus/plugin-content-docs": "3.10.2",
     "@docusaurus/preset-classic": "3.10.2",
     "@fontsource-variable/inter": "5.3.0",
     "@fontsource-variable/space-grotesk": "5.3.0",

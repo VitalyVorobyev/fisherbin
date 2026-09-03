@@ -7,6 +7,7 @@ import {LAB_LIMITS, criterionLabel} from "../lab/protocol";
 import type {LabCriterion, LabProblem, LabRunRequest} from "../lab/protocol";
 import {useLabRunner} from "../lab/useLabRunner";
 import {useScoreTable, type DatasetId} from "../lab/useScoreTable";
+import {siteUrl} from "../lib/site";
 
 type MobilePanel = "controls" | "plot" | "diagnostics";
 
@@ -193,7 +194,7 @@ export default function Lab(): React.JSX.Element {
         </div>
         <section className="lab-lesson">
           <div><span className="eyebrow">Locked notebook lesson</span><h2>Derive the information loss interactively.</h2><p>A self-hosted marimo WASM lesson loads only when you ask for it. Its logic is fixed and its inputs are guided; arbitrary code editing remains outside v1.</p></div>
-          {!lessonOpen ? <button className="button-primary" onClick={() => setLessonOpen(true)}>Load marimo lesson</button> : <iframe title="ScoreQuant marimo lesson" src="/scorequant/portal/lessons/score-space/" loading="lazy" sandbox="allow-scripts allow-same-origin allow-downloads"/>}
+          {!lessonOpen ? <button className="button-primary" onClick={() => setLessonOpen(true)}>Load marimo lesson</button> : <iframe title="ScoreQuant marimo lesson" src={siteUrl("lessons/score-space/")} loading="lazy" sandbox="allow-scripts allow-same-origin allow-downloads"/>}
         </section>
       </div>
     </AppShell>

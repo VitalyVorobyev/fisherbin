@@ -2,9 +2,9 @@ import {describe, expect, it} from "vitest";
 
 import {isActiveNavEntry, isBlogPostList} from "../src/lib/navigation";
 
-// The deployed baseUrl today. Neither predicate may hard-code it: the root-site
-// promotion changes it to "/scorequant/".
-const base = "/scorequant/portal";
+// The deployed baseUrl, post root-site promotion. Neither predicate may
+// hard-code it — it is exercised here only as an input fixture.
+const base = "/scorequant";
 
 describe("primary navigation highlighting", () => {
   it("marks the entry active on its own route, with or without a trailing slash", () => {

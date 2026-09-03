@@ -68,7 +68,7 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm start
 corepack pnpm validate
 corepack pnpm build
-corepack pnpm assemble:preview
+corepack pnpm assemble:site
 ```
 
 Portal data generators invoke Python through `uv run` from the repository root; do not install a

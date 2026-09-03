@@ -2,9 +2,8 @@
  * Route predicates shared by the shell and the blog frame.
  *
  * Both take a `pathname` straight from the router, which carries the site
- * `baseUrl` (`/scorequant/portal/` today, `/scorequant/` after the root-site
- * promotion). Neither may assume a fixed prefix, so both match on the trailing
- * segments instead.
+ * `baseUrl` (see `SITE_BASE` in `./site`). Neither may assume a fixed prefix,
+ * so both match on the trailing segments instead.
  */
 
 function withoutTrailingSlash(pathname: string): string {

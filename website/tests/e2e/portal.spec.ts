@@ -10,19 +10,33 @@ test("home is navigable, evidence-backed, and free of heavy runtime requests", a
   await expect(page.getByRole("heading", {name: /Compress events/})).toBeVisible();
   await expect(page.getByRole("img", {name: /Score-space partition/})).toBeVisible();
   await expect(page.getByText("JAX + NumPy")).toBeVisible();
-  for (const route of ["./docs", "./api", "./examples", "./showcase", "./theory", "./benchmarks", "./research"]) {
+  for (const route of ["./docs/", "./api/", "./examples/", "./showcase/", "./walkthroughs/", "./benchmarks/", "./research/"]) {
     await page.goto(route);
-    await expect(page.locator("main")).toBeVisible();
+    // #main-content is AppShell's own landmark, and it must be the only one.
+    // The stock layouts of both the blog and the docs plugin render a second
+    // <main> of their own inside it; src/theme/BlogLayout and
+    // src/theme/DocRoot/Layout/Main exist to strip those. Nested landmarks are
+    // invalid HTML and an accessibility failure, and the axe scan below only
+    // covers the home page, so this count is what catches a regression on the
+    // routes it does not reach.
+    await expect(page.locator("#main-content")).toBeVisible();
+    expect(await page.locator("main").count(), `nested landmark on ${route}`).toBe(1);
   }
   expect(heavyRequests).toEqual([]);
-  await page.goto("./");
-  const accessibility = await new AxeBuilder({page}).analyze();
-  expect(accessibility.violations).toEqual([]);
+  // The two docs-plugin routes are scanned as well as the home page: they render
+  // through swizzled theme components (src/theme/DocRoot/Layout/Main and
+  // src/theme/DocItem/Layout) rather than the stock ones, so nothing upstream
+  // vouches for their markup.
+  for (const route of ["./", "./research/", "./walkthroughs/"]) {
+    await page.goto(route);
+    const accessibility = await new AxeBuilder({page}).analyze();
+    expect(accessibility.violations, `accessibility violations on ${route}`).toEqual([]);
+  }
 });
 
 test("core learning routes render and search opens from the keyboard", async ({page}) => {
-  await page.goto("./theory");
-  await expect(page.getByRole("heading", {name: /Theory with the failure modes/})).toBeVisible();
+  await page.goto("./walkthroughs/");
+  await expect(page.getByRole("heading", {name: "Walkthroughs", level: 1})).toBeVisible();
   await page.keyboard.press("Control+k");
   await expect(page.getByRole("dialog", {name: "Search ScoreQuant"})).toBeVisible();
   await page.getByPlaceholder("Search concepts, tasks, and symbols").fill("ExecutionConfig");
@@ -34,7 +48,7 @@ test("fixture lab runs without loading Pyodide and mobile panels remain reachabl
   page.on("request", (request) => {
     if (/pyodide|scorequant-.*\.whl/.test(request.url())) pyodideRequests.push(request.url());
   });
-  await page.goto("./lab");
+  await page.goto("./lab/");
   if ((page.viewportSize()?.width ?? 1000) < 820) await page.getByRole("button", {name: "controls"}).click();
   await page.getByRole("button", {name: /Load verified result/}).click();
   if ((page.viewportSize()?.width ?? 1000) < 820) {
@@ -48,7 +62,7 @@ test("fixture lab runs without loading Pyodide and mobile panels remain reachabl
 test("the native browser runner executes the local ScoreQuant wheel", async ({page}, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "One cold-runtime smoke test is sufficient.");
   test.setTimeout(120_000);
-  await page.goto("./lab");
+  await page.goto("./lab/");
   await page.getByLabel("Runner").selectOption("pyodide-numpy");
   await page.getByRole("button", {name: "Run locally"}).click();
   await expect(page.getByText("complete", {exact: true})).toBeVisible({timeout: 110_000});
@@ -57,7 +71,7 @@ test("the native browser runner executes the local ScoreQuant wheel", async ({pa
 
 test("lab validation, cancellation, and lazy lesson states are explicit", async ({page}, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "Desktop covers worker controls; mobile tabs are covered separately.");
-  await page.goto("./lab");
+  await page.goto("./lab/");
   await page.route("**/runtime/manifest.json", async (route) => route.abort());
   await page.getByLabel("Runner").selectOption("pyodide-numpy");
   await page.getByRole("button", {name: "Run locally"}).click();
@@ -71,7 +85,7 @@ test("lab validation, cancellation, and lazy lesson states are explicit", async 
   await page.getByRole("button", {name: "Load marimo lesson"}).click();
   await expect(page.getByTitle("ScoreQuant marimo lesson")).toHaveAttribute(
     "src",
-    "/scorequant/portal/lessons/score-space/"
+    "/scorequant/lessons/score-space/"
   );
 });
 
@@ -85,7 +99,7 @@ test("the showcase tells the study end to end without loading a runtime", async 
       heavyRequests.push(request.url());
     }
   });
-  await page.goto("./showcase");
+  await page.goto("./showcase/");
 
   await expect(page.getByRole("heading", {name: /Thirty patients/})).toBeVisible();
   for (const section of ["The problem", "The data", "Results"]) {
@@ -109,7 +123,7 @@ test("the showcase tells the study end to end without loading a runtime", async 
 
 test("marker panels can be filtered by population and expanded", async ({page}, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "One interaction pass is sufficient.");
-  await page.goto("./showcase");
+  await page.goto("./showcase/");
 
   // "other" dominates every panel, so it starts hidden and can be restored.
   const other = page.getByRole("button", {name: "other", exact: true});
@@ -125,7 +139,7 @@ test("marker panels can be filtered by population and expanded", async ({page}, 
 test("the lab runs the study's real five-dimensional scores, warm on the second run", async ({page}, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "One cold-runtime pass is enough; it costs a Pyodide bootstrap.");
   test.setTimeout(300_000);
-  await page.goto("./lab");
+  await page.goto("./lab/");
 
   // The score table is fetched only when chosen, so the fixture path stays free.
   await page.getByRole("button", {name: /FlowCyt scores/}).click();
@@ -158,7 +172,7 @@ test("the lab runs the study's real five-dimensional scores, warm on the second 
 
 test("a local file is read in the tab and validated before anything runs", async ({page}, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "One file-handling pass is sufficient.");
-  await page.goto("./lab");
+  await page.goto("./lab/");
 
   const uploads: string[] = [];
   page.on("request", (request) => {

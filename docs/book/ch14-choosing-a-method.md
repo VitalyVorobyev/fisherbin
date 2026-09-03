@@ -35,7 +35,10 @@ are not silently reinterpreted — they are refused before any optimization begi
 `ValueError` when both halves are individually valid and a `TypeError` when the
 configuration is not one the task's signature accepts at all. That distinction is the
 difference between "this pairing is not implemented" and "this is the wrong kind of
-object".
+object". The `supported` table the fence below builds is checked against the one generated
+criterion/solver matrix that also appears in [Method overview](../method.md#4-solver), the
+README and [Chapter 6](ch06-two-tasks.md#criterion-and-solver-are-a-closed-set) — this fence
+is what proves that generated matrix matches the library's actual accept/refuse behaviour.
 
 ```python
 import numpy as np

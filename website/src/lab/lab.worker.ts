@@ -2,6 +2,7 @@
 
 import {PROTOCOL_VERSION, isLabEvent} from "./protocol";
 import type {LabEvent, LabRunRequest} from "./protocol";
+import {SITE_BASE} from "../lib/site";
 
 interface RuntimeManifest {
   indexURL: string;
@@ -21,7 +22,7 @@ interface PyodideModule {
 }
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
-const portalRoot = "/scorequant/portal/";
+const portalRoot = SITE_BASE;
 
 /**
  * The warmed runtime, kept across runs.

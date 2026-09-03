@@ -1,7 +1,8 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_name: ScoreQuant
 site_description: Information-preserving binning for statistical inference
-site_url: https://vitalyvorobyev.github.io/scorequant/
+# The portal serves the site root; this reference is mounted beneath it (ADR 0025).
+site_url: https://vitalyvorobyev.github.io/scorequant/reference/
 repo_url: https://github.com/VitalyVorobyev/scorequant
 repo_name: VitalyVorobyev/scorequant
 edit_uri: edit/main/docs/
@@ -88,16 +89,16 @@ nav:
   - API:
       - API guide: api.md
       - Reference:
-          - Overview: reference/index.md
-          - Fitting: reference/fitting.md
-          - Linear models: reference/models.md
-          - Density ratios: reference/ratios.md
-          - Configuration: reference/configuration.md
-          - Results: reference/results.md
-          - Certificates: reference/certification.md
-          - Information: reference/information.md
-          - Transforms: reference/transforms.md
-          - Visualization: reference/visualization.md
+          - Overview: symbols/index.md
+          - Fitting: symbols/fitting.md
+          - Linear models: symbols/models.md
+          - Density ratios: symbols/ratios.md
+          - Configuration: symbols/configuration.md
+          - Results: symbols/results.md
+          - Certificates: symbols/certification.md
+          - Information: symbols/information.md
+          - Transforms: symbols/transforms.md
+          - Visualization: symbols/visualization.md
   - Related work: related-work.md
   - Glossary: glossary.md
   - Bibliography: bibliography.md
