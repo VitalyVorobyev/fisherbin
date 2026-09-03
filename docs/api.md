@@ -38,6 +38,7 @@ optimize_partition(
     config=None,
     provenance=None,
     initial_labels=None,
+    execution=None,
 ) -> PartitionResult
 ```
 
@@ -74,6 +75,7 @@ fit_quantizer(
     criterion=None,
     config=None,
     diagnostics="endpoints",
+    execution=None,
 ) -> QuantizerResult
 ```
 
@@ -221,6 +223,44 @@ bins = rule.predict_scores(scores, execution=sq.ExecutionConfig(backend="numpy")
 
 This is a durable format, unlike `to_dict()` on the result types, which stays JSON-ready
 diagnostic state.
+
+## Execution
+
+Every public entry point takes `execution=`, an `ExecutionConfig`, and the default is JAX. The
+configuration selects the numerical runtime only; it never changes what is being optimized, and
+the package never touches global JAX configuration on your behalf (enabling 64-bit arithmetic is
+an explicit choice you make in the application, typically through `JAX_ENABLE_X64=1`).
+
+<!-- snippet: skip -->
+```python
+sq.ExecutionConfig(backend="jax", precision="preserve", device="default")
+```
+
+- **`backend`** is `"jax"` (default) or `"numpy"`. The NumPy backend is the portable CPU runtime:
+  it runs the same shared mathematics through the same solvers, which is what lets a rule fitted
+  here predict where JAX is not installed, including in the browser Lab. It is not a second solver
+  tree, so the two backends agree to floating-point tolerance on the same inputs and seeds, and
+  the conformance suite holds them to that.
+- **`precision`** is `"preserve"` (default: float32 and float64 inputs keep their dtype, integer
+  and lower-precision inputs are promoted to float32), `"float32"`, or `"float64"`. A float64
+  request on JAX still needs 64-bit mode enabled in the application.
+- **`device`** is `"default"`, `"cpu"`, `"gpu"`, or `"tpu"`. NumPy accepts only the default CPU
+  device; JAX resolves the first available device of the requested family.
+
+Results remember the execution they were fitted under: `PartitionResult.execution` and
+`QuantizerResult.execution` record it, `to_dict()` serializes it, and every follow-up computation
+on the result, `predict_scores` included, reuses it unless you pass an override.
+
+<!-- snippet: skip -->
+```python
+fit = sq.fit_quantizer(sample, n_bins=8, execution=sq.ExecutionConfig(backend="jax"))
+fit.predict_scores(scores)  # runs on the recorded JAX execution
+fit.predict_scores(scores, execution=sq.ExecutionConfig(backend="numpy"))  # override per call
+```
+
+A saved `Quantizer` is backend-free: the artifact stores arrays, not an execution, so `load`
+followed by `predict_scores(..., execution=...)` chooses the runtime at prediction time. Public
+arrays are always `numpy.ndarray` whichever backend produced them.
 
 ---
 

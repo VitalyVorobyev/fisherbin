@@ -15,9 +15,9 @@ const doors = {
   densities: {
     eyebrow: "Door 2 · known densities",
     title: "Keep the model components explicit",
-    description: "Build a LinearProblem from component densities and coefficients. The adapter produces exact mixture scores before fitting the rule.",
-    steps: ["Define component density evaluations", "State the coefficient parameterization", "Fit a score-space quantizer"],
-    code: `problem = sq.LinearProblem(\n    components=component_pdf,\n    coefficients=fractions,\n    weights=quadrature_weights,\n)\n\nquantizer = sq.fit_quantizer(\n    problem, n_bins=6,\n    execution=sq.ExecutionConfig(backend="jax"),\n)`
+    description: "Declare the component densities and the reference coefficients. LinearComponentScore produces exact mixture scores on a deterministic quadrature grid before the rule is fitted.",
+    steps: ["Declare component densities and reference coefficients", "Choose the reference measure (sample or bounded quadrature)", "Fit a score-space quantizer"],
+    code: `model = sq.LinearComponents(\n    components={"peak": peak_pdf, "flat": flat_pdf},\n    coefficients={"peak": 1.0, "flat": 0.5},\n    variables=["mass"],\n)\nsource = sq.IntegrationSource(\n    [[-2.0, 3.0]],\n    density=lambda X: peak_pdf(X) + 0.5 * flat_pdf(X),\n    quadrature=sq.GaussLegendreConfig(order=64),\n)\nquantizer = sq.fit_quantizer(\n    source, provider=sq.LinearComponentScore(model),\n    n_bins=6, config=sq.DExchangeConfig(seed=11),\n)`
   },
   ratios: {
     eyebrow: "Door 3 · density ratios",

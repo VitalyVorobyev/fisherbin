@@ -125,16 +125,8 @@
       "name": "LinearComponents",
       "reference": "/reference/index/",
       "signature": "LinearComponents(components: Mapping[str, ComponentFunction] | Sequence[ComponentFunction], coefficients: Mapping[str, float] | Sequence[float], *, variables: Sequence[str] | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/components.py#L201",
-      "summary": "Define vectorized linear-intensity components on physical variables."
-    },
-    {
-      "kind": "class",
-      "name": "LinearProblem",
-      "reference": "/reference/index/",
-      "signature": "LinearProblem(components: ArrayLike, coefficients: ArrayLike, weights: ArrayLike | None = None, component_names: Sequence[str] | None = None, variables: Sequence[str] | None = None, execution: ExecutionConfig | None = None)",
       "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/components.py#L101",
-      "summary": "Represent an evaluated linear intensity on an integration sample."
+      "summary": "Define vectorized linear-intensity components on physical variables."
     },
     {
       "kind": "class",

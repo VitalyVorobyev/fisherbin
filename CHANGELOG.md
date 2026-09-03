@@ -55,3 +55,9 @@ against a previous version, since there is none.
   import, so 64-bit precision stays an application choice.
 - Scores are never centred; numerically singular Fisher directions are projected out rather than
   repaired with a ridge; validation data is diagnostic only.
+
+### Removed
+
+- `LinearProblem` and `LinearComponents.evaluate` — exported and documented but accepted by no
+  task; use `LinearComponents.evaluate_components` plus `scores_from_components` to hand an
+  evaluated component matrix to `optimize_partition` or a `ScoreSample`.

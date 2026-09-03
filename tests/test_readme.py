@@ -47,9 +47,9 @@ _UNPUBLISHED = {
 }
 
 # Whole directories mkdocs.yml keeps out of the published site. These hold
-# working material -- decision records and incoming proposals -- which is
+# working material -- decision records and programme packets -- which is
 # allowed to use internal planning vocabulary the front door must not.
-_UNPUBLISHED_DIRS = ("adr", "proposals")
+_UNPUBLISHED_DIRS = ("adr", "programme")
 
 
 def _readme_blocks() -> list[Snippet]:

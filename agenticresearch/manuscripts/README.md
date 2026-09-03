@@ -25,8 +25,8 @@ in the workspace, so this cannot regress. The `.html` needs its sibling
 | File | What it is | State |
 |---|---|---|
 | `score_space_quantization_article_v8.md` / `.html` | Main research article, v8, 26 Aug 2026: "Information-optimal hard quantization of multivariate score space" | Structurally complete draft; proofs compressed; behind the registry (see staleness) |
-| `doptimal_event_categorization_hep.html` | Shorter HEP-facing companion: D-optimal event categorization for multi-parameter inference | Draft |
-| `scorequant_research_landscape_en.html` | Literature/landscape survey (history, key authors, software: MadMiner, INFERNO, ThickBrick, GATO, BOBR, OptBinning) | Superseded by `LITERATURE/` for research use |
+| `../archive/doptimal_event_categorization_hep.html` | Shorter HEP-facing companion: D-optimal event categorization for multi-parameter inference | Archived 3 Sep 2026 (M12 consolidation); not a revision input |
+| `../archive/scorequant_research_landscape_en.html` | Literature/landscape survey (history, key authors, software: MadMiner, INFERNO, ThickBrick, GATO, BOBR, OptBinning) | Archived 3 Sep 2026; superseded by `LITERATURE/` |
 
 ## Numbering crosswalk (manuscript v8 ↔ registry)
 
