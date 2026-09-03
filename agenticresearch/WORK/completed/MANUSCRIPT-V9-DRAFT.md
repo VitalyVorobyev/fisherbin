@@ -67,6 +67,20 @@ bibliography grew from 22 to 75 entries, all named by the ledger's Attribution c
 `registry.py validate` is clean. The README crosswalk now maps v9 ↔ v8 ↔ ledger rows and the
 staleness list is reset for v9.
 
+## Revision (3 September 2026, same day)
+
+The owner rejected the first draft as unreadable: 21,000 words in 17 flat sections, 23 results
+in one counter at equal weight, provenance tags in most sentences, fixture ids as narrative
+subjects. The manuscript was restructured on the same branch: a main text of §1–§10
+(about 8,750 (9,000 by `wc -w` including markup) words after `## Abstract`; twelve numbered results, Proposition 1 … Theorem 12)
+and Appendices A–H (score-law access; D auxiliaries; profiled \(D_s\) proofs and auxiliaries;
+brackets; E and A; differentiable quantizers and consistency; fixture catalogue G1–G20; ledger
+placement). Every ledger row is still placed (Appendix H, generated from the tags), the tags are
+unchanged in the source and rendered as hidden provenance marks, and no `CE-*` id appears in
+the main text. The renumbering (first draft → revision) is in the README crosswalk. The
+`docs/programme/S05-manuscript-v9-draft.md` revision spec records the design; its closing
+report records what was verified and what remains open.
+
 ## Next dependency-blocking question
 
 The P8 adversarial literature review: the eight `apparently new` rows and the 31 `unresolved`

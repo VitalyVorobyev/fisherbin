@@ -57,9 +57,15 @@ Pick the model tier by task complexity, not by file count.
 |---|---|
 | haiku | inventories, greps, file:line lists, running gates and reporting failures verbatim, index regeneration, materializing files from a written spec |
 | sonnet | implementing a written spec (module refactors, tests, TSX against a spec, notebooks), executing examples, wiring Docusaurus |
-| opus / fable | API and refactor design decisions, statistical design of examples, novelty labelling, manuscript prose, portal research narrative, independent audits |
+| opus, or the orchestrator inline (never a `fable` subagent) | API and refactor design decisions, statistical design of examples, novelty labelling, manuscript prose, portal research narrative, independent audits |
 
 Independent tasks run in parallel. An agent that must edit the same file as another waits.
+
+**Budget rule (owner, 3 September 2026).** No session spawns `fable` subagents; the owner's
+plan cannot absorb them (two parallel fable writers in S5 hit the session limit mid-write).
+Strongest-tier work goes to `opus` subagents or is done inline by the orchestrator; `sonnet` and
+`haiku` remain for spec-driven implementation and mechanics, all in small numbers. Packet
+delegation tables that say `fable` are read as `opus`.
 
 ## Research sessions
 

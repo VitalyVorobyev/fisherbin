@@ -9,7 +9,8 @@ The manuscripts under ``agenticresearch/manuscripts/`` are authored in Markdown
 (MathJax delimiters ``\(...\)`` and ``\[...\]``, result boxes as
 ``<div class="theorem" markdown="1">``, numeric citations ``[n]`` resolved
 against ``<span id="ref-n">`` anchors in the References list, novelty tags
-``[novelty: <label>; ledger <row>]``). This script is the only sanctioned way
+``[novelty: <label>; ledger <row>]`` rendered as superscript provenance marks that stay
+hidden until the sidebar's "Show provenance" button is pressed). This script is the only sanctioned way
 to produce the ``.html`` sibling, so the two files never drift: the stylesheet
 below is the v8 stylesheet lifted verbatim, MathJax 3 is loaded from its CDN,
 and the sidebar table of contents is generated from the ``##`` headings.
@@ -64,10 +65,10 @@ h4{font-size:1rem;margin:24px 0 7px}
 p{margin:12px 0}
 .lead{font-family:Georgia,"Times New Roman",serif;font-size:1.17rem;line-height:1.65}
 .small{font-size:.88rem;color:var(--muted)}
-.note,.theorem,.proposition,.warning,.result{border-radius:11px;padding:17px 19px;margin:20px 0;border:1px solid var(--line)}
+.note,.remark,.theorem,.proposition,.lemma,.warning,.result{border-radius:11px;padding:17px 19px;margin:20px 0;border:1px solid var(--line)}
 .theorem{background:var(--soft);border-left:4px solid var(--accent)}
-.proposition{background:#fafafa;border-left:4px solid #555}
-.note{background:#fbfaf5;border-left:4px solid #987d3f}
+.proposition,.lemma{background:#fafafa;border-left:4px solid #555}
+.note,.remark{background:#fbfaf5;border-left:4px solid #987d3f}
 .warning{background:#fff6f2;border-left:4px solid var(--accent2)}
 .result{background:#f3f8f4;border-left:4px solid var(--green)}
 .box-title{font-weight:750;margin-bottom:7px}
@@ -110,7 +111,10 @@ sup.ref a{font-size:.75em}
 .badge{display:inline-block;font-size:.73rem;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:2px 8px;margin-right:6px;color:#555;background:#fff}
 .api-table td:first-child{white-space:nowrap;font-weight:650}
 @media(max-width:850px){.mode-grid{grid-template-columns:1fr}
-.novelty{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.74rem;color:var(--muted);white-space:nowrap}
+sup.novelty{display:none;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.66rem;color:var(--muted);white-space:nowrap;margin-left:2px;cursor:help}
+body.show-provenance sup.novelty{display:inline}
+.provenance-toggle{display:block;width:100%;margin:18px 0 0;padding:7px 10px;font:inherit;font-size:.82rem;color:#444;background:#fafafa;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.provenance-toggle:hover{background:#f0f0ee}
 .placement td:first-child{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem}
 """
 
@@ -122,9 +126,16 @@ _MATHJAX = (
     '<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>'
 )
 
+_PROVENANCE_TOGGLE = (
+    '<button type="button" class="provenance-toggle" '
+    "onclick=\"document.body.classList.toggle('show-provenance');"
+    "this.textContent=document.body.classList.contains('show-provenance')"
+    "?'Hide provenance':'Show provenance'\">Show provenance</button>"
+)
+
 _MATH = re.compile(r"\\\[.*?\\\]|\\\(.*?\\\)", re.DOTALL)
 _CITE = re.compile(r"(?<![\w\\])\[(\d{1,3})\]")
-_NOVELTY = re.compile(r"\[novelty: ([^;\]]+); ledger ([^\]]+)\]")
+_NOVELTY = re.compile(r"\s*\[novelty: ([^;\]]+); ledger ([^\]]+)\]")
 _TITLE = re.compile(r"^# (.+)$", re.MULTILINE)
 _DESCRIPTION = re.compile(r"^<!-- description: (.+?) -->$", re.MULTILINE)
 
@@ -152,10 +163,18 @@ def _link_citations(rendered: str) -> str:
 
 
 def _mark_novelty(rendered: str) -> str:
-    return _NOVELTY.sub(
-        lambda m: f'<span class="novelty">[novelty: {m.group(1)}; ledger {m.group(2)}]</span>',
-        rendered,
-    )
+    """Render a novelty tag as a superscript provenance mark, hidden until toggled on.
+
+    The whitespace before the tag is consumed so that hiding the mark leaves no stray
+    space before the punctuation that follows it.
+    """
+
+    def mark(m: re.Match[str]) -> str:
+        label, rows = m.group(1).strip(), m.group(2).strip()
+        title = html_lib.escape(f"novelty: {label}; ledger {rows}", quote=True)
+        return f'<sup class="novelty" title="{title}">{html_lib.escape(rows)}</sup>'
+
+    return _NOVELTY.sub(mark, rendered)
 
 
 def _wrap_abstract(rendered: str) -> str:
@@ -179,12 +198,17 @@ def _wrap_abstract(rendered: str) -> str:
 
 def _toc(md: markdown.Markdown) -> str:
     items = ['<div class="toc-title">Contents</div>']
+    in_appendices = False
     for token in md.toc_tokens:
         if token["level"] != 2:
             continue
         name = html_lib.unescape(re.sub(r"<[^>]+>", "", token["name"]))
         name = re.sub(r"\\\((.*?)\\\)", r"\1", name)
+        if name.startswith("Appendix") and not in_appendices:
+            in_appendices = True
+            items.append('<div class="toc-title">Appendices</div>')
         items.append(f'<a href="#{token["id"]}">{html_lib.escape(name)}</a>')
+    items.append(_PROVENANCE_TOGGLE)
     return "\n".join(items)
 
 

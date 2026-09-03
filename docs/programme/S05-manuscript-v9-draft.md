@@ -1,6 +1,6 @@
 # S05 — Manuscript v9 draft
 
-**Workstream:** W1 · **Needs:** S2 · **Parallel with:** S4 · **Status:** done
+**Workstream:** W1 · **Needs:** S2 · **Parallel with:** S4 · **Status:** active
 
 ## Goal
 
@@ -140,59 +140,132 @@ this design section, the companion packet (then under `WORK/active/`, Outcome un
 section splits and per-ledger-section row files must be regenerated in scratch (they lived in
 a session-local scratchpad).
 
+## Revision spec (written 3 September 2026, after the owner rejected the first draft)
+
+The first v9 draft (21,000 words, 17 sections, 23 results in one counter, 93 inline tags, 20 raw
+fixture ids in prose) was rejected as unreadable: significant and minor results carried equal
+weight in one long technical text. This spec supersedes the section order and result numbering
+in "Design decisions" above; the tag convention and the placement appendix survive with the
+changes stated here. The manuscript keeps the name v9: nothing had merged.
+
+**Shape.** A main text of at most 9,000 words (Abstract through §10, references excluded) that a
+reader can follow without the appendices, and eight appendices holding every auxiliary result,
+proof, fixture and interface detail, each reachable from a pointer in the main text.
+
+| Main § | Title | Built from first draft |
+|---|---|---|
+| Abstract | ≤ 250 words, no tags, no citations, no fixture ids | Abstract |
+| 1 | Introduction | §1, §3.3 (the three-problem distinction is the organizing idea; five contributions; paper map) |
+| 2 | Prior work | §2.1–2.4 rewritten as one review of 900–1,200 words by theme; `known` rows cited, never claimed |
+| 3 | Setting | §3.1, §3.2, §3.7, §4, criterion definitions from §5, §6.1, §10, §11 lead-ins; one paragraph on score-law access pointing to Appendix A |
+| 4 | D-optimality: exchange stability closes the bridge | §5.1–5.3; Theorem 2 with proof sketch; fig-02 to fig-06 |
+| 5 | Profiled \(D_s\): the bridge fails, then what survives | §6.2, §6.3, §7.1 (statement of the variational form only), §7.2–7.4, §7.5 (Theorem 8 only), §8.1 (Theorem 9), §8.2 (Theorem 10), §8.3 (Theorem 11) |
+| 6 | Certified brackets | §9.1, §9.2 as a remark, §9.5 |
+| 7 | Other criteria and learned quantizers | §6.4, §10, §11, §12 in ≤ 700 words with pointers |
+| 8 | Implementation and verification | §14, §15 in ≤ 500 words with pointers |
+| 9 | Discussion and open problems | §16; open problems ≤ 400 words |
+| 10 | Conclusion | §17, ≤ 200 words |
+
+| Appendix | Title | Built from first draft |
+|---|---|---|
+| A | Computational access to the score law | §3.4–3.6, §14 interface catalogue, §14.1 |
+| B | D-optimality: auxiliary results | Lemma B.1 (first-draft Lemma 2), exact enumeration and hit-rate details, boundary fixtures for Theorem 2 |
+| C | Profiled \(D_s\): proofs and auxiliary results | proofs of Theorems 5–11; Propositions C.1–C.3, Lemma C.4, Proposition C.5; tie-witness, wasted-cells, rank-vacuity, sign-split and singular-destination remarks |
+| D | Certified brackets: consistency and complexity | §9.3, §9.4 |
+| E | E- and A-optimality | §10.1–10.2, §11 |
+| F | Differentiable quantizers and consistency | §12.1–12.4 details, §13 |
+| G | Fixture catalogue | table: fixture, what it witnesses, registry claim id, where cited; absorbs the §15 table |
+| H | Ledger placement | the placement table with every location rewritten |
+
+**Result numbering.** Main-text results share one counter; appendix results are lettered.
+First draft → revision: Prop 1 → Prop 1; Lemma 2 → Lemma B.1; Thm 3 → Thm 2; Prop 4 → Prop 3;
+Lemma 5 → Lemma 4; Prop 6 → Prop C.1; Thm 7 → Thm 5; Prop 8 → Prop 6; Thm 9 → Thm 7;
+Thm 10 → Thm 8; Prop 11 → Prop C.2; Prop 12 → Prop C.3; Thm 13 → Thm 9; Lemma 14 → Lemma C.4;
+Thm 15 → Thm 10; Prop 16 → Prop C.5; Thm 17 → Thm 11; Thm 18 → Thm 12; Prop 19 → Prop D.1;
+Prop 20 → Prop D.2; Prop 21 → Prop E.1; Prop 22 → Prop E.2; Prop 23 → Prop F.1. Equations are
+numbered per section or appendix and only when referenced; appendices restate any main-text
+equation they need under their own number.
+
+**Fixtures.** The main text never prints a `CE-*` id. Fixtures are cited as "fixture G\(n\)" with
+the fixed numbering G1 `CE-D-LLOYD-001`, G2 `CE-D-VORONOI-CONVERSE-001`,
+G3 `CE-D-UNMERGED-DUPLICATES-001`, G4 `CE-DS-GLOBAL-GEOMETRY-001`, G5 `CE-DS-GLOBAL-GEOMETRY-002`,
+G6 `CE-DS-DEGENERATE-GLOBAL-TIE-001`, G7 `CE-DS-POP-WASTED-CELLS-001`,
+G8 `CE-DS-MARGINS-RANK-VACUITY-001`, G9 `CE-DS-STABLE-MARGIN-RETAINING-001`,
+G10 `CE-DS-INTERVAL-SEED-UNSTABLE-001`, G11 `CE-DS-LCM-SIGNSPLIT-MARGIN-001`,
+G12 `CE-DS-LCM-SIGNSPLIT-MINIMAL-001`, G13 `CE-DS-NONCENTERED-POPULATION-CUT-UNSTABLE-001`,
+G14 `CE-DS-NONCENTERED-SINGULAR-DESTINATION-001`, G15 `CE-DS-TILT-DUAL-GAP-001`,
+G16 `CE-DS-TILT-DUAL-GAP-002`, G17 `CE-DS-TILT-DUAL-TIE-MASK-001`,
+G18 `CE-DS-MATRIX-TILT-NONQUASICONVEX-001`, G19 `CE-E-GEOMETRY-001`, G20 `CE-A-DSTYLE-001`.
+
+**Novelty tags.** Unchanged in the source (S9 audits per tagged statement), moved with their
+sentences; a dropped passage hands its tag to the surviving statement of the same claim; the
+abstract carries none. The renderer shows them as superscript provenance marks hidden behind a
+"Show provenance" toggle, so the default view is clean prose. Result boxes use the class of
+their environment (`theorem`, `proposition`, `lemma`, `remark`, `warning`); main-text remarks are
+limited to what the reader needs.
+
+**Writers.** Two fable writers in parallel from the first draft split by section: M writes the
+main text, X writes Appendices A–G; the orchestrator assembles, regenerates Appendix H from the
+tags, rewrites the README crosswalk, changes the renderer, and runs one fable reader on the
+rendered main text alone before closing. Acceptance is the owner reading the main text.
+
 ## Closing report
 
 Session S5 ran on 3 September 2026 on branch `consolidation-s5-manuscript-v9-draft` (worktree
-`../scorequant-s5`), in two sittings: a setup sitting paused at the owner's request to save the
-token window, and the drafting sitting (two fable writers in parallel, assembly and rendering
-done inline by the orchestrator; no other subagents).
+`../scorequant-s5`, PR #37), in three sittings: a setup sitting paused at the owner's request,
+a drafting sitting that produced a 21,000-word first draft the owner rejected as unreadable, and
+a restructuring sitting that produced the manuscript described here. The first draft and its
+design are recorded above under "Design decisions"; the revision spec above supersedes them.
 
-**Delivered.** `agenticresearch/manuscripts/score_space_quantization_article_v9.md` (1,335
-lines, 17 sections plus References and Appendix A) and its rendered `.html`, produced by the new
-tracked script `agenticresearch/py/render_manuscript.py` (python-markdown declared as an inline
-script dependency, v8 stylesheet lifted verbatim, MathJax 3, generated contents sidebar). The
-section order is the one recorded in the design section above: v8's sections 1–6 revised, new
-sections 7 (bridge, DS11–DS15), 8 (margins, stable basins, off-class transfer, DS16–DS18), 9
-(certified brackets, DS19), 11 (A-optimality) and 14.1 (information-efficiency outputs), and
-v8's 7–13 revised as 10, 12–17. Labelled results share one counter, Proposition 1 to
-Proposition 23; v8's Proposition 5 is now Proposition 23 and the new results are Lemma 5 to
-Proposition 22. Equations are numbered per section; the v8→v9 map is (1)→3.1, (2)→3.2,
-(3)→4.1, (4)→4.2, (5)→4.3, (6)→5.1, (7)→5.2, (8)→5.3, (9)→5.4, (10)→5.5, (11)→5.6, (12)→5.7,
-(13)→5.8, (14)→6.1, (15)→6.2, (16)→6.3, (17)→6.4, (18)→6.5, (19)→6.6, (20)→10.1, (21)→10.2,
-(22)→10.3, (23)→10.4, (24)→12.1, (25)→12.2, (26)→12.3. Every central statement carries a
-`[novelty: <label>; ledger <row>]` tag copied from the ledger (117 tags, all 103 rows covered,
-none deliberately omitted); Appendix A lists the v9 location of each row. The bibliography grew
-from 22 to 75 entries, all named by the ledger's Attribution column. The four required
-corrections: Theorem 3 (§5.2) now states merged atoms, exactly \(K\) nonempty cells, strictly
-positive weights and zero-tolerance stability, with a warning box on
-`CE-D-UNMERGED-DUPLICATES-001` and a note on the failed converse; the fig-02 caption and alt text
-say Theorem 3; the §14 profiled \(D_s\) table row names `CE-DS-INTERVAL-SEED-UNSTABLE-001` and
-routes compilation through the projected efficient-score rule, certificate-gated otherwise; §16.4
-answers the \(D_s\) bridge question on conditionally centered scalar-nuisance laws and lists
-OP29, OP30, OP31 and the E items as open, and §13 carries the same answer. The manuscripts README
-gained a v9 ↔ v8 ↔ ledger crosswalk (the v8 crosswalk kept as historical), a rendering section,
-and a reset staleness list; the companion packet is closed under `WORK/completed/`.
+**Delivered.** `agenticresearch/manuscripts/score_space_quantization_article_v9.md` and its
+rendered `.html`, now a focused main text plus appendices. The main text (Abstract, §1
+Introduction, §2 Prior work, §3 Setting, §4 D-optimality, §5 Profiled \(D_s\), §6 Certified
+brackets, §7 Other criteria and learned quantizers, §8 Implementation and verification, §9
+Discussion and open problems, §10 Conclusion) runs about 8,750 (9,000 by `wc -w` including markup) words after the abstract and
+carries twelve numbered results in one counter: Proposition 1, Theorem 2 (the D exchange
+theorem), Proposition 3, Lemma 4, Theorem 5, Proposition 6, Theorems 7–11 (the profiled
+\(D_s\) arc: conditional bridge, dichotomy, margin price, centering obstruction, off-class
+transfer) and Theorem 12 (brackets). Appendices A–G hold the score-law access material, the D
+auxiliaries, the \(D_s\) proofs and auxiliary results (Propositions C.1–C.3, Lemma C.4,
+Proposition C.5), the bracket consistency and complexity results, E- and A-optimality,
+differentiable quantizers and consistency, and a fixture catalogue G1–G20 that absorbs the
+verification table; Appendix H places every ledger row and is generated by the assembler from
+the tags. The main text never prints a fixture or registry id. The renderer
+(`agenticresearch/py/render_manuscript.py`) now shows novelty tags as superscript provenance
+marks hidden behind a sidebar "Show provenance" button, lists appendices under their own
+sidebar divider, and styles `lemma` and `remark` boxes. The manuscripts README crosswalk maps
+v9 ↔ v8 ↔ first draft ↔ location ↔ ledger row for all 23 results; its staleness list names
+the two bibliographic loose ends and the missing human read-through. The companion packet
+under `WORK/completed/` carries a revision note. The four required corrections survive:
+Theorem 2 states merged distinct atoms, exactly \(K\) nonempty cells and zero tolerance with a
+remark on fixture G3; the fig-02 caption cites Theorem 2; §8 says the profiled \(D_s\) route
+ships no compiled rule because the interval seed is not exchange-stable (fixture G10); §9
+answers the \(D_s\) bridge question through Theorem 8 and leaves OP29–OP31 and the E items
+open.
 
-**Verified.** `uv run python agenticresearch/py/registry.py validate` → `registry clean`. The
-assembler checked: every ledger row id in Appendix A exactly once (103), every placed row tagged
-in the body, no placeholder, no unresolved `[@Key]` citation, no `$` math, no `data:` URI, zero
-occurrences of "Theorem 6". Greps: `CE-D-UNMERGED-DUPLICATES-001` in §5.2 and §15;
-`CE-DS-INTERVAL-SEED-UNSTABLE-001` in the §14 table row; `Proposition 23` in §13 and §16.4. The
-render script was tested on a fixture with math, result boxes, tables, figures and citations
-before rendering v9. This session touched no `src/`, `docs/` outside `docs/programme/` and
-`docs/roadmap.md`, or `examples/`, so the library gate does not apply.
+**Verified.** `uv run python agenticresearch/py/registry.py validate` → clean. The assembler
+(scratch, not tracked) checked on the final document: all 103 ledger row ids tagged in the body
+and each with one label; Appendix H has one row per id; the abstract carries no tags; the
+twelve main and eleven appendix result labels are each defined exactly once and every
+reference to a result, appendix subsection, section number or fixture number resolves; zero
+`CE-` strings in the main text and all twenty fixture ids in Appendix G; zero `$` math, `data:`
+URIs, placeholders or "Theorem 6"; every figure path exists; Theorem 2's hardened wording and
+the G10 pointer present. Ruff check and format clean on the renderer. One opus reader with fresh context read the rendered main text alone and reported: the central quantity \(v_K\) was named in §5.2 but defined only in §5.6, five dual symbols in §6 arrived without motivation and the dual value \(d\) collided with the dimension letter, six process sentences of the form "An audit …" survived from the ledger notes, equation (5.6) was missing, the off-class law used \(\Phi_{D_s}\) for a raw Schur-complement value, one sentence in §5.9 had lost its subject, §8 restated the fixtures of §4–§7, and \(E_\lambda\), "regular", the between-value and the bare \(\Phi(q)\) were used before definition. All of these were fixed inline (definitions added in §3.3, §5.2, §5.6 and §6; audit sentences reworded as re-derivation statements with their tags kept; equations renumbered; \(\Phi_s\) on the scalar law; §8 shortened) and the checks rerun. Not acted on: the reader's suggestion to demote Propositions 1 and 3 from boxes to inline remarks (they are ledger-tagged results in the crosswalk and stay boxed), the density of §2's citation strings, and one-sentence motivations for Theorems 9 and 12 beyond what §5.7 and the §6 preamble now carry. This session
+touched no `src/`, `docs/` outside `docs/programme/`, `docs/roadmap.md` and `CLAUDE.md`, or
+`examples/`, so the library gate does not apply.
 
-**Cut or left open.** Nothing from the packet was cut. Two bibliographic loose ends from the
-writers are recorded in the companion packet (Haynsworth 1968 cited for DS15-4 without a ledger
-key; Jakubowski 2021 volume details unverified). Section 7 runs about 2,100 words against the
-1,200–1,800 target because it carries 18 ledger rows, eight labelled results and three witness
-boxes with mandated hardened wording; nothing was trimmed to meet the target. The v9 draft has
-had no independent read-through: the two writers verified their own outputs mechanically, and
-the orchestrator spot-read the abstract, Theorem 3 and §16.4 only. The eight `apparently new`
-tags rest on search gaps, as the ledger says; P8 decides them.
+**Cut or left open.** The first draft's section structure and single result counter were
+discarded, not kept as an alternative. The owner's reading of the rendered main text is the
+acceptance step; it has not happened at the time of writing. The eight `apparently new` tags
+still rest on search gaps and P8 decides them. Haynsworth 1968 (DS15-4) has no ledger key and
+the Jakubowski 2021 volume is unverified. Agent budget: the two fable writers of the
+restructuring sitting hit the owner's session limit as they finished, after which the owner
+ruled out fable subagents for good (`CLAUDE.md`, programme README); the trim and the
+read-through ran on opus.
 
-**The one thing the next session must know.** The `.html` is generated; edit only the `.md`
-and rerun `uv run agenticresearch/py/render_manuscript.py <file>.md`. S9 (closure) should read
-Appendix A and the README crosswalk, not the article body, to check that later findings reached
-the manuscript; a new finding adds a ledger row, a v9 statement with its tag, and an Appendix A
-line, in that order.
+**The one thing the next session must know.** Edit only the `.md` and rerun
+`uv run agenticresearch/py/render_manuscript.py <file>.md`; the `.html` is generated. A new
+finding adds a ledger row, a statement with its tag in the main text or the right appendix, and
+a line in Appendix H (regenerated from the tags, so the tag is what matters). S9 should read
+Appendix H, Appendix G and the README crosswalk, not the article body. Never spawn fable
+subagents in this project.
