@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from scorequant._binstats import scatter_bin_statistics
+from scorequant._errors import ContractError
 from scorequant._execution import xp as jnp
 from scorequant.config import ScalarDPConfig
 
@@ -56,7 +57,7 @@ def scalar_interval_dp(
     """
     n_rows = int(values.shape[0])
     if n_bins > n_rows:
-        raise ValueError("scalar dynamic programming requires n_bins <= the number of atoms")
+        raise ContractError("scalar dynamic programming requires n_bins <= the number of atoms")
     order = np.argsort(values, kind="stable")
     ordered_values = values[order]
     ordered_weights = weights[order]
@@ -93,7 +94,7 @@ def scalar_interval_dp(
         previous = current
     objective = float(previous[n_rows])
     if not np.isfinite(objective):
-        raise ValueError("scalar dynamic programming found no feasible interval partition")
+        raise ContractError("scalar dynamic programming found no feasible interval partition")
     ordered_labels = np.empty(n_rows, dtype=np.int32)
     stop = n_rows
     for label in range(n_bins - 1, -1, -1):
@@ -114,13 +115,13 @@ def scalar_weighted_kmeans_dp(
     """Solve one-dimensional weighted interval k-means exactly by dynamic programming."""
     rank = int(points.shape[1]) if points.ndim == 2 else 0
     if rank != 1:
-        raise ValueError(
+        raise ContractError(
             "scalar dynamic programming requires an effective score rank of one, got "
             f"rank {rank}; reduce the score dimension or choose another solver"
         )
     n_rows = int(points.shape[0])
     if n_rows > config.max_rows:
-        raise ValueError(
+        raise ContractError(
             f"scalar dynamic programming received {n_rows} distinct rows, "
             f"exceeding max_rows={config.max_rows}"
         )

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
 
+from ._errors import ContractError, RefusalError
 from ._execution import (
     canonicalize_public,
     current_execution,
@@ -24,7 +25,6 @@ from ._validation import (
 )
 from .artifact import Quantizer
 from .config import (
-    BackendName,
     DExchangeConfig,
     ExecutionConfig,
     KMeansConfig,
@@ -58,6 +58,7 @@ from .sources import (
     ScoreProvenance,
     ScoreSample,
     Source,
+    SourceKind,
 )
 from .transforms import FisherTransform, fisher_transform
 
@@ -94,8 +95,8 @@ class _FitDiagnostics:
 
 
 # Every ``Criterion`` subtype the library defines, used only to tell a
-# recognized-but-mismatched criterion (``ValueError``) apart from a value that
-# is not a criterion at all (``TypeError``).
+# recognized-but-mismatched criterion (``ContractError``) apart from a value
+# that is not a criterion at all (``TypeError``).
 _CRITERION_TYPES: tuple[type[Criterion], ...] = (DOptimality, ProfiledDOptimality, NormalizedTrace)
 
 
@@ -112,7 +113,6 @@ class _SolverSpec:
 
     partition_criteria: tuple[type[Criterion], ...] = ()
     quantizer_criteria: tuple[type[Criterion], ...] = ()
-    backends: tuple[BackendName, ...] = ("jax", "numpy")
 
 
 # The single source of truth for which (config type, criterion type) pairs
@@ -158,7 +158,7 @@ def _validate_solver(config: object, criterion: Criterion, task: str) -> None:
     TypeError
         ``config`` is not a type this task's own signature declares, or
         ``criterion`` is not one of the library's ``Criterion`` subtypes.
-    ValueError
+    ContractError
         Both ``config`` and ``criterion`` are individually valid, but this
         task does not implement that particular pairing. The message names
         the config, the task, and the criteria it does support.
@@ -179,12 +179,7 @@ def _validate_solver(config: object, criterion: Criterion, task: str) -> None:
         )
     if not isinstance(criterion, allowed):
         names = " or ".join(sorted(t.__name__ for t in allowed))
-        raise ValueError(f"{type(config).__name__} implements only {names} for {task}")
-    backend = current_execution().backend
-    if spec is None or backend not in spec.backends:
-        raise ValueError(
-            f"{type(config).__name__} is unavailable for backend {backend!r} in {task}"
-        )
+        raise ContractError(f"{type(config).__name__} implements only {names} for {task}")
 
 
 @execution_scope
@@ -231,7 +226,6 @@ def optimize_partition(
         Mahalanobis-Lloyd solver starts from them directly.
     """
     del execution
-    resolved_execution = current_execution()
     sample = _partition_sample(scores, weights, provenance)
     resolved_criterion = DOptimality() if criterion is None else criterion
     resolved_config = DExchangeConfig() if config is None else config
@@ -244,6 +238,7 @@ def optimize_partition(
             config=resolved_config,
             provenance=sample.provenance,
             initial_labels=initial_labels,
+            schema=sample.schema,
         )
     else:
         # ``_validate_solver`` accepted the pair, and the only other criterion it
@@ -257,15 +252,7 @@ def optimize_partition(
             config=resolved_config,
             provenance=sample.provenance,
             initial_labels=initial_labels,
-        )
-    object.__setattr__(result, "execution", resolved_execution)
-    object.__setattr__(result, "schema", sample.schema)
-    if sample.schema is not None and result.profiled_report is not None:
-        # Attaching the schema is bookkeeping, not a second computation: the
-        # report already holds the columns, and the schema only lets it say
-        # their names.
-        object.__setattr__(
-            result, "profiled_report", replace(result.profiled_report, schema=sample.schema)
+            schema=sample.schema,
         )
     return canonicalize_public(result)
 
@@ -322,92 +309,142 @@ def fit_quantizer(
         resolved_criterion = resolved_criterion.resolve(train.schema)
 
     if isinstance(resolved_config, (DExchangeConfig, MahalanobisLloydConfig)):
-        # ``_validate_solver`` already restricted this pairing to DOptimality:
-        # finite profiled-D exchange has no implicit inductive rule, so a
-        # profiled fit must go through ``optimize_partition`` or
-        # ``SoftVoronoiConfig`` instead.
-        partition = optimize_d_partition(
-            train.scores,
-            weights=train.weights,
+        return _fit_compiled_quantizer(
+            train,
+            validation_sample,
             n_bins=n_bins,
             config=resolved_config,
-            provenance=train.provenance,
+            source_kind=source_kind,
+            execution=resolved_execution,
         )
-        object.__setattr__(partition, "schema", train.schema)
-        rule = partition.compile_quantizer(execution=resolved_execution)
-        validation_report = (
-            None
-            if validation_sample is None
-            else information_report(
-                validation_sample.scores,
-                rule.predict_scores(validation_sample.scores),
-                validation_sample.weights,
-                n_bins=n_bins,
-                rank_rtol=resolved_config.rank_rtol,
-            )
-        )
-        return canonicalize_public(
-            QuantizerResult(
-                quantizer=rule,
-                criterion=partition.criterion,
-                config=resolved_config,
-                execution=resolved_execution,
-                trace=_compiled_trace(partition),
-                labels=partition.labels,
-                train_report=partition.train_report,
-                validation_report=validation_report,
-                provenance=train.provenance,
-                hardening_gap=0.0,
-                source_kind=source_kind,
-            )
-        )
-
-    prepared = _prepare_score_fit(
+    return _fit_geometric_quantizer(
         train,
         validation_sample,
         n_bins=n_bins,
+        criterion=resolved_criterion,
         config=resolved_config,
+        diagnostics=diagnostics,
+        source_kind=source_kind,
+        execution=resolved_execution,
     )
-    run = _run_geometric_quantizer(prepared, n_bins, resolved_criterion)
+
+
+def _fit_compiled_quantizer(
+    train: ScoreSample,
+    validation: ScoreSample | None,
+    *,
+    n_bins: int,
+    config: DExchangeConfig | MahalanobisLloydConfig,
+    source_kind: SourceKind,
+    execution: ExecutionConfig,
+) -> QuantizerResult:
+    """Fit by finite D exchange and compile the exchange-stable partition (Theorem 3).
+
+    ``_validate_solver`` has already restricted this pairing to ``DOptimality``:
+    finite profiled-D exchange has no implicit inductive rule, so a profiled fit
+    must go through ``optimize_partition`` or ``SoftVoronoiConfig`` instead.
+    """
+    partition = optimize_d_partition(
+        train.scores,
+        weights=train.weights,
+        n_bins=n_bins,
+        config=config,
+        provenance=train.provenance,
+        schema=train.schema,
+    )
+    rule = partition.compile_quantizer(execution=execution)
+    validation_report = (
+        None
+        if validation is None
+        else information_report(
+            validation.scores,
+            rule.predict_scores(validation.scores),
+            validation.weights,
+            n_bins=n_bins,
+            rank_rtol=config.rank_rtol,
+        )
+    )
+    return canonicalize_public(
+        QuantizerResult(
+            quantizer=rule,
+            criterion=partition.criterion,
+            config=config,
+            execution=execution,
+            trace=_compiled_trace(partition),
+            labels=partition.labels,
+            train_report=partition.train_report,
+            validation_report=validation_report,
+            provenance=train.provenance,
+            hardening_gap=0.0,
+            source_kind=source_kind,
+        )
+    )
+
+
+def _require_profiled_fit_regular(
+    prepared: _PreparedFit, labels: jnp.ndarray, n_bins: int, criterion: Criterion
+) -> None:
+    """Refuse a profiled labeling whose binned information cannot be profiled.
+
+    Must run after hard assignment and before any report reads ``labels`` (the
+    retention history scores snapshots through the same profiled report, so a
+    check placed downstream never gets to run). The rank ceiling is a
+    bin-budget fact, so deciding for the final labeling decides for every
+    snapshot. This is reachable because the soft solver checks ``n_bins`` only
+    against the Fisher rank, which the vacuous configuration of
+    CE-DS-MARGINS-RANK-VACUITY-001 satisfies.
+    """
+    if not isinstance(criterion, ProfiledDOptimality):
+        return
+    information = binned_fisher_information(
+        prepared.train_sample.scores, labels, prepared.train_sample.weights, n_bins=n_bins
+    )
+    if binned_information_is_degenerate(information):
+        raise RefusalError(
+            f"profiled-D fit is degenerate: {n_bins} bins cannot generate "
+            f"nonsingular {prepared.train_sample.scores.shape[1]}-dimensional binned "
+            f"information. {PROFILED_RANK_ADVICE}",
+            "CE-DS-MARGINS-RANK-VACUITY-001",
+        )
+
+
+def _fit_geometric_quantizer(
+    train: ScoreSample,
+    validation: ScoreSample | None,
+    *,
+    n_bins: int,
+    criterion: Criterion,
+    config: KMeansConfig | SoftVoronoiConfig | ScalarDPConfig,
+    diagnostics: DiagnosticsMode,
+    source_kind: SourceKind,
+    execution: ExecutionConfig,
+) -> QuantizerResult:
+    prepared = _prepare_score_fit(
+        train,
+        validation,
+        n_bins=n_bins,
+        config=config,
+    )
+    run = _run_geometric_quantizer(prepared, n_bins, criterion)
     labels = chunked_hard_assign(prepared.all_train_coordinates, run.centers)
-    if isinstance(resolved_criterion, ProfiledDOptimality):
-        # Refuse before anything else reads this labeling. A report describes a
-        # labeling and does not judge it, so profiled_information_report would
-        # hand back a rule that answers every profiled question with zero - and
-        # on a state this degenerate it raises from its nuisance-block guard
-        # instead, blaming the parameterization for what is a bin-budget fact.
-        # The refusal has to come before _build_fit_diagnostics, not after it:
-        # the retention history scores recorded snapshots through that same
-        # profiled report, so a check placed downstream never gets to run. The
-        # rank ceiling is a property of the bin budget, so if the final
-        # labeling is degenerate every snapshot of the same budget is too, and
-        # deciding here decides for all of them. This is reachable because the
-        # soft solver checks n_bins only against the Fisher rank, which the
-        # vacuous configuration of CE-DS-MARGINS-RANK-VACUITY-001 satisfies.
-        if binned_information_is_degenerate(
-            binned_fisher_information(
-                prepared.train_sample.scores,
-                labels,
-                prepared.train_sample.weights,
-                n_bins=n_bins,
-            )
-        ):
-            raise ValueError(
-                f"profiled-D fit is degenerate: {n_bins} bins cannot generate "
-                f"nonsingular {prepared.train_sample.scores.shape[1]}-dimensional binned "
-                f"information. {PROFILED_RANK_ADVICE}"
-            )
+    # A report describes a labeling and does not judge it, so
+    # profiled_information_report would hand back a rule that answers every
+    # profiled question with zero -- and on a state this degenerate it raises
+    # from its nuisance-block guard instead, blaming the parameterization for
+    # what is a bin-budget fact. Refuse before anything else reads this
+    # labeling instead.
+    _require_profiled_fit_regular(prepared, labels, n_bins, criterion)
     fit_diagnostics = _build_fit_diagnostics(
-        prepared, run, labels, n_bins, resolved_criterion, diagnostics=diagnostics
+        prepared, run, labels, n_bins, criterion, diagnostics=diagnostics
     )
     train_profiled_report = None
     validation_profiled_report = None
     hard_retention = fit_diagnostics.train_report.geometric_mean_retention
-    if isinstance(resolved_criterion, ProfiledDOptimality):
+    if isinstance(criterion, ProfiledDOptimality):
         train_profiled_report = profiled_information_report(
             prepared.train_sample.scores,
             fit_diagnostics.labels,
-            interest=resolved_criterion.interest_indices,
+            interest=criterion.interest_indices,
             weights=prepared.train_sample.weights,
             n_bins=n_bins,
             schema=train.schema,
@@ -417,7 +454,7 @@ def fit_quantizer(
             validation_profiled_report = profiled_information_report(
                 prepared.validation_sample.scores,
                 chunked_hard_assign(prepared.validation_coordinates, run.centers),
-                interest=resolved_criterion.interest_indices,
+                interest=criterion.interest_indices,
                 weights=prepared.validation_sample.weights,
                 n_bins=n_bins,
                 schema=train.schema,
@@ -433,12 +470,12 @@ def fit_quantizer(
                 metric=None,
                 schema=train.schema,
                 provenance=train.provenance,
-                criterion=resolved_criterion,
-                execution=resolved_execution,
+                criterion=criterion,
+                execution=execution,
             ),
-            criterion=resolved_criterion,
-            config=resolved_config,
-            execution=resolved_execution,
+            criterion=criterion,
+            config=config,
+            execution=execution,
             trace=_build_optimization_trace(run, fit_diagnostics),
             labels=fit_diagnostics.labels,
             train_report=fit_diagnostics.train_report,
@@ -461,7 +498,7 @@ def _compiled_trace(partition: PartitionResult) -> OptimizationTrace:
     directly fitted one expose the same history shape.
     """
     if partition.transformed_centers is None:
-        raise ValueError("D compilation geometry is unavailable")
+        raise ContractError("D compilation geometry is unavailable")
     steps = partition.objective_history.shape[0]
     return OptimizationTrace(
         steps=np.arange(steps),
@@ -485,13 +522,13 @@ def _validate_validation_sample(train: ScoreSample, validation: ScoreSample) -> 
     see, and silently scoring against it would report a meaningless retention.
     """
     if validation.scores.shape[1] != train.scores.shape[1]:
-        raise ValueError("validation scores must use the training parameter order")
+        raise ContractError("validation scores must use the training parameter order")
     if (
         train.schema is not None
         and validation.schema is not None
         and train.schema.parameters != validation.schema.parameters
     ):
-        raise ValueError(
+        raise ContractError(
             "validation scores must use the training parameter order; training names "
             f"{', '.join(train.schema.parameters)} but validation names "
             f"{', '.join(validation.schema.parameters)}"
@@ -516,7 +553,7 @@ def _partition_sample(
             if value is not None
         ]
         if conflicting:
-            raise ValueError(
+            raise ContractError(
                 f"{' and '.join(conflicting)} must be omitted when scores is a "
                 "ScoreSample; the sample already carries them"
             )
@@ -524,14 +561,16 @@ def _partition_sample(
     return ScoreSample(scores, weights, provenance=provenance)
 
 
-def _materialize_source(source: Source, provider: ScoreProvider | None) -> tuple[ScoreSample, str]:
+def _materialize_source(
+    source: Source, provider: ScoreProvider | None
+) -> tuple[ScoreSample, SourceKind]:
     if isinstance(source, ScoreSample):
         if provider is not None:
-            raise ValueError("provider must be omitted when source is ScoreSample")
+            raise ContractError("provider must be omitted when source is ScoreSample")
         return source, "score_sample"
     if isinstance(source, IntegrationSource):
         if provider is None:
-            raise ValueError("IntegrationSource requires a score provider")
+            raise ContractError("IntegrationSource requires a score provider")
         validate_provider(provider)
         observations = source.materialize()
         return (
@@ -545,7 +584,7 @@ def _materialize_source(source: Source, provider: ScoreProvider | None) -> tuple
         )
     if isinstance(source, ObservationSample):
         if provider is None:
-            raise ValueError("ObservationSample requires a score provider")
+            raise ContractError("ObservationSample requires a score provider")
         validate_provider(provider)
         return (
             ScoreSample(
@@ -572,7 +611,7 @@ def _prepare_score_fit(
         train_sample.effective_scores, train_sample.effective_weights
     )
     if n_bins > effective_scores.shape[0]:
-        raise ValueError("n_bins exceeds distinct positive-weight score rows")
+        raise ContractError("n_bins exceeds distinct positive-weight score rows")
     full_information = jnp.einsum(
         "n,np,nq->pq", effective_weights, effective_scores, effective_scores
     )

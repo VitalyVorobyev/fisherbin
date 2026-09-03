@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ._binstats import scatter_bin_statistics
+from ._errors import ContractError
 from ._execution import (
     backend_jit,
     canonical_array,
@@ -74,7 +75,7 @@ def _validate_hard_assignments(
 ) -> tuple[jnp.ndarray, int]:
     labels = jnp.asarray(assignments)
     if labels.shape != (sample.scores.shape[0],):
-        raise ValueError(
+        raise ContractError(
             f"assignments must have shape [{sample.scores.shape[0]}], got {labels.shape}"
         )
     if not jnp.issubdtype(labels.dtype, jnp.integer):
@@ -87,9 +88,9 @@ def _validate_hard_assignments(
             raise TypeError("n_bins must be an integer")
         resolved_n_bins = n_bins
     if resolved_n_bins < 1:
-        raise ValueError("n_bins must be at least one")
+        raise ContractError("n_bins must be at least one")
     if bool(np.asarray(jnp.any((labels < 0) | (labels >= resolved_n_bins)))):
-        raise ValueError("assignments contain a label outside [0, n_bins)")
+        raise ContractError("assignments contain a label outside [0, n_bins)")
     return labels, resolved_n_bins
 
 
@@ -195,12 +196,12 @@ def fractional_fisher_information(
     sample = validate_sample(scores, weights)
     resp = jnp.asarray(responsibilities, dtype=sample.scores.dtype)
     if resp.ndim != 2 or resp.shape[0] != sample.scores.shape[0] or resp.shape[1] == 0:
-        raise ValueError("responsibilities must have shape [N, B] with B >= 1")
+        raise ContractError("responsibilities must have shape [N, B] with B >= 1")
     resp = resp[sample.positive_weight_mask]
     if not bool(np.asarray(jnp.all(jnp.isfinite(resp)))) or bool(np.asarray(jnp.any(resp < 0))):
-        raise ValueError("responsibilities must be finite and nonnegative")
+        raise ContractError("responsibilities must be finite and nonnegative")
     if not bool(np.asarray(jnp.allclose(jnp.sum(resp, axis=1), 1, rtol=1e-5, atol=1e-7))):
-        raise ValueError("responsibility rows must sum to one")
+        raise ContractError("responsibility rows must sum to one")
     weighted_resp = sample.effective_weights[:, None] * resp
     bin_weights = jnp.sum(weighted_resp, axis=0)
     bin_score_sums = weighted_resp.T @ sample.effective_scores
@@ -389,10 +390,12 @@ def _nuisance_information(
     """
     dimension = information.shape[0]
     if any(index >= dimension for index in interest):
-        raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
+        raise ContractError(f"interest indices must be smaller than score dimension {dimension}")
     nuisance = tuple(index for index in range(dimension) if index not in set(interest))
     if not nuisance:
-        raise ValueError("profiled D requires at least one nuisance score column; use DOptimality")
+        raise ContractError(
+            "profiled D requires at least one nuisance score column; use DOptimality"
+        )
     nuisance_block, _nuisance_sign, nuisance_logdet = _nuisance_block_slogdet(information, nuisance)
     # Decided by the scale-free rank test, not by the log determinant's sign.
     # The sign is unreliable exactly where this guard matters: on a block the
@@ -400,7 +403,7 @@ def _nuisance_information(
     # factorization, so it can refuse on one machine and pass on another, and
     # a caller that would have blamed the bin budget then never runs.
     if _is_numerically_singular(nuisance_block):
-        raise ValueError("profiled D requires nonsingular nuisance information")
+        raise ContractError("profiled D requires nonsingular nuisance information")
     return nuisance_block, nuisance_logdet, nuisance
 
 
@@ -449,7 +452,7 @@ def profiled_information_report(
     """
     del execution
     if not interest or len(set(interest)) != len(interest) or any(index < 0 for index in interest):
-        raise ValueError("interest must contain unique nonnegative indices")
+        raise ContractError("interest must contain unique nonnegative indices")
     sample = validate_sample(scores, weights)
     labels, resolved_n_bins = _validate_hard_assignments(sample, assignments, n_bins)
     binned, _ = _hard_binned_fisher(sample, labels, resolved_n_bins)
@@ -459,7 +462,7 @@ def profiled_information_report(
     binned_sign, binned_logdet = jnp.linalg.slogdet(schur_binned)
     unbinned_sign, unbinned_logdet = jnp.linalg.slogdet(schur_unbinned)
     if float(np.asarray(unbinned_sign)) <= 0:
-        raise ValueError("full-data profiled information is singular")
+        raise ContractError("full-data profiled information is singular")
     interest_rank = int(np.linalg.matrix_rank(np.asarray(schur_binned)))
     nuisance_rank = int(np.linalg.matrix_rank(np.asarray(nuisance_binned)))
     if float(np.asarray(binned_sign)) <= 0:
@@ -519,15 +522,15 @@ def efficient_scores(
     """
     del execution
     if not interest or len(set(interest)) != len(interest) or any(index < 0 for index in interest):
-        raise ValueError("interest must contain unique nonnegative indices")
+        raise ContractError("interest must contain unique nonnegative indices")
     sample = validate_sample(scores, weights)
     dimension = sample.scores.shape[1]
     if any(index >= dimension for index in interest):
-        raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
+        raise ContractError(f"interest indices must be smaller than score dimension {dimension}")
     interest_set = set(interest)
     nuisance = tuple(index for index in range(dimension) if index not in interest_set)
     if not nuisance:
-        raise ValueError("efficient-score projection requires at least one nuisance column")
+        raise ContractError("efficient-score projection requires at least one nuisance column")
     information = _unbinned_fisher(sample)
     interest_indices = jnp.asarray(interest)
     nuisance_indices = jnp.asarray(nuisance)
@@ -535,7 +538,7 @@ def efficient_scores(
     nuisance_information = information[jnp.ix_(nuisance_indices, nuisance_indices)]
     sign, _ = jnp.linalg.slogdet(nuisance_information)
     if float(np.asarray(sign)) <= 0:
-        raise ValueError("efficient-score projection requires nonsingular nuisance information")
+        raise ContractError("efficient-score projection requires nonsingular nuisance information")
     nuisance_coefficients = jnp.linalg.solve(nuisance_information, cross.T)
     return canonical_array(
         sample.scores[:, interest_indices]
@@ -611,7 +614,7 @@ def efficient_score_bound(
     """
     del execution
     if not interest or len(set(interest)) != len(interest) or any(index < 0 for index in interest):
-        raise ValueError("interest must contain unique nonnegative indices")
+        raise ContractError("interest must contain unique nonnegative indices")
     if len(interest) > 1:
         raise NotImplementedError(
             "the certified efficient-score bound supports one interest column; a "
@@ -631,10 +634,10 @@ def efficient_score_bound(
         efficient[sample.positive_weight_mask], sample.effective_weights
     )
     if n_bins > atoms.shape[0]:
-        raise ValueError("n_bins exceeds distinct positive-weight efficient-score atoms")
+        raise ContractError("n_bins exceeds distinct positive-weight efficient-score atoms")
     n_atoms = int(atoms.shape[0])
     if n_atoms > resolved_config.max_rows:
-        raise ValueError(
+        raise ContractError(
             f"the efficient-score bound received {n_atoms} distinct atoms, "
             f"exceeding max_rows={resolved_config.max_rows}"
         )
@@ -656,7 +659,7 @@ def efficient_score_bound(
     cell_weights, cell_means = atom_statistics.weights, atom_statistics.means
     between = float(np.asarray(jnp.sum(cell_weights * cell_means[:, 0] ** 2)))
     if between <= 0:
-        raise ValueError("the efficient score retains no information under any partition")
+        raise ContractError("the efficient score retains no information under any partition")
 
     # Zero-weight rows carry no measure; the interval rule still labels them.
     centers = scatter_bin_statistics(label_array, atom_weights, coordinates, n_bins).means

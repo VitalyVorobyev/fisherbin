@@ -145,7 +145,7 @@ It also says, without being asked, that the labels it is reporting are not excha
 try:
     rejected.compile_quantizer()
     raise AssertionError("an unstable partition has no theorem behind it")
-except ValueError as error:
+except sq.RefusalError as error:
     assert "only an exchange-stable D partition can be compiled" in str(error)
 ```
 

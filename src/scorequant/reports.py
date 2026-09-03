@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 
+from ._errors import ContractError
 from ._json import json_ready
 from ._typing import JsonValue
 from .criteria import DOptimality, ProfiledDOptimality
@@ -407,16 +408,16 @@ class EfficientScoreBound:
         """
         criterion = partition_result.criterion
         if not isinstance(criterion, ProfiledDOptimality):
-            raise ValueError(
+            raise ContractError(
                 "the efficient-score bound compares only against a profiled-D partition"
             )
         if criterion.interest_indices != self.interest:
-            raise ValueError(
+            raise ContractError(
                 f"partition interest {criterion.interest_indices} differs from the certified "
                 f"interest {self.interest}"
             )
         if partition_result.n_bins > self.n_bins:
-            raise ValueError(
+            raise ContractError(
                 f"the bound certifies at most {self.n_bins} cells, but the partition "
                 f"has {partition_result.n_bins}"
             )

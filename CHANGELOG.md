@@ -55,6 +55,16 @@ against a previous version, since there is none.
   import, so 64-bit precision stays an application choice.
 - Scores are never centred; numerically singular Fisher directions are projected out rather than
   repaired with a ridge; validation data is diagnostic only.
+- Weight and `rank_rtol` validation is single-sourced; the messages are the `ScoreSample` ones
+  everywhere.
+
+### Errors
+
+- Every deliberate exception is a `ScoreQuantError`. `ContractError` (a `ValueError`) reports a
+  malformed call; `RefusalError` (a `RuntimeError`, deliberately not a `ValueError`) reports a
+  theorem-backed refusal and carries `counterexample`, the registry id that forces it.
+  `compile_quantizer()` on an unstable, profiled, or geometrically degenerate partition and a
+  rank-deficient profiled `fit_quantizer` now raise `RefusalError`.
 
 ### Removed
 

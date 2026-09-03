@@ -106,3 +106,94 @@ def test_package_import_does_not_require_jax_or_optax(tmp_path: Path) -> None:
     )
     assert completed.returncode == 0, completed.stderr
     assert "backend='numpy'" in completed.stdout
+
+
+def test_artifact_never_imports_fit_layers() -> None:
+    # artifact.py is the deployable, backend-free layer; pulling in any fitting
+    # module would let loading or predicting drag the fit machinery along.
+    forbidden = {"result", "api", "partition", "quantizers", "solvers", "certify", "visualization"}
+    assert sorted(_imports(PACKAGE / "artifact.py") & forbidden) == []
+
+
+def test_solvers_never_import_orchestration() -> None:
+    # The solvers package holds private numerical kernels; none of them may
+    # import the orchestration layer that calls them.
+    forbidden = {
+        f"scorequant.{module}"
+        for module in (
+            "api",
+            "result",
+            "artifact",
+            "partition",
+            "quantizers",
+            "information",
+            "certify",
+        )
+    }
+    offenders = {
+        path.name: sorted(_imports(path) & forbidden) for path in (PACKAGE / "solvers").glob("*.py")
+    }
+    assert {name: modules for name, modules in offenders.items() if modules} == {}
+
+
+def test_predict_and_errors_modules_stay_leaf() -> None:
+    # _predict.py is the leaf both artifact.py and result.py depend on, and
+    # _errors.py is stdlib-only so every module can import it without risking
+    # a cycle.
+    assert _imports(PACKAGE / "_predict.py") <= {"__future__", "_chunking", "_execution"}
+    assert _imports(PACKAGE / "_errors.py") <= {"__future__"}
+
+
+def test_api_constructs_results_once() -> None:
+    # Results are built once, with every field passed to the constructor,
+    # rather than assembled and then patched after the fact; the façade no
+    # longer reaches into a solver module's global state either.
+    assert "object.__setattr__" not in (PACKAGE / "api.py").read_text()
+    assert "_DYNAMIC_WORKING_SET_BYTES" not in (PACKAGE / "quantizers.py").read_text()
+
+
+def _refusal_error_call_name(func: ast.expr) -> str | None:
+    if isinstance(func, ast.Name):
+        return func.id
+    if isinstance(func, ast.Attribute):
+        return func.attr
+    return None
+
+
+def test_every_refusal_cites_a_registered_counterexample() -> None:
+    # AGENTS.md: "code that refuses a capability names the counterexample
+    # forcing the refusal. Keep both in sync with the registry." Every
+    # RefusalError call site must cite a counterexample id that actually
+    # exists in the registry, and there must be more than zero of them.
+    counterexamples = ROOT / "agenticresearch" / "COUNTEREXAMPLES"
+    sites: list[tuple[Path, int, str]] = []
+    for path in _package_sources():
+        tree = ast.parse(path.read_text())
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            if _refusal_error_call_name(node.func) != "RefusalError":
+                continue
+            counterexample_id: str | None = None
+            if (
+                len(node.args) >= 2
+                and isinstance(node.args[1], ast.Constant)
+                and isinstance(node.args[1].value, str)
+            ):
+                counterexample_id = node.args[1].value
+            else:
+                for keyword in node.keywords:
+                    if (
+                        keyword.arg == "counterexample"
+                        and isinstance(keyword.value, ast.Constant)
+                        and isinstance(keyword.value.value, str)
+                    ):
+                        counterexample_id = keyword.value.value
+            assert counterexample_id is not None, (
+                f"{path}:{node.lineno} RefusalError call has no literal counterexample id"
+            )
+            assert (counterexamples / f"{counterexample_id}.json").exists(), (
+                f"{path}:{node.lineno} cites unregistered counterexample {counterexample_id!r}"
+            )
+            sites.append((path, node.lineno, counterexample_id))
+    assert len(sites) >= 6, f"expected at least six RefusalError sites, found {len(sites)}: {sites}"

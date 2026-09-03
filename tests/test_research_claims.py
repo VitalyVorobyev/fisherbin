@@ -778,7 +778,7 @@ def test_ds15_rank_vacuity_is_refused_by_both_public_tasks(
     criterion = sq.ProfiledDOptimality(interest=interest)
     provenance = sq.ScoreProvenance(kind="exact", reference_point=(0.0,) * dimension)
     for config in (sq.DExchangeConfig(seed=0), sq.MahalanobisLloydConfig(seed=0)):
-        with pytest.raises(ValueError, match="rank at most n_bins"):
+        with pytest.raises(sq.RefusalError, match="rank at most n_bins"):
             sq.optimize_partition(
                 scores,
                 weights=weights,
@@ -789,7 +789,7 @@ def test_ds15_rank_vacuity_is_refused_by_both_public_tasks(
             )
 
     sample = sq.ScoreSample(scores, weights, provenance=provenance)
-    with pytest.raises(ValueError, match="profiled-D fit is degenerate"):
+    with pytest.raises(sq.RefusalError, match="profiled-D fit is degenerate"):
         sq.fit_quantizer(
             sample,
             n_bins=vacuous_bins,
@@ -811,7 +811,7 @@ def test_ds15_rank_vacuity_is_refused_by_both_public_tasks(
             "profiled_information_report",
             _refuse_to_report,
         )
-        with pytest.raises(ValueError, match="profiled-D fit is degenerate"):
+        with pytest.raises(sq.RefusalError, match="profiled-D fit is degenerate"):
             sq.fit_quantizer(
                 sample,
                 n_bins=vacuous_bins,

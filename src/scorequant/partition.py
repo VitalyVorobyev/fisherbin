@@ -27,6 +27,7 @@ import numpy as np
 
 from ._binstats import scatter_bin_statistics
 from ._chunking import assignment_chunk_rows
+from ._errors import ContractError, RefusalError
 from ._execution import (
     backend_jit,
     canonicalize_public,
@@ -71,7 +72,7 @@ from .reports import (
     StabilityReport,
 )
 from .result import PartitionResult
-from .sources import ScoreProvenance
+from .sources import ScoreProvenance, ScoreSchema
 from .transforms import FisherTransform, fisher_transform
 
 # Relative slack allowed when certifying the leverage bound q_delta <= 1/W_a +
@@ -235,7 +236,7 @@ class _DObjective:
         """Build the cell information matrix, its inverse, and its log determinant."""
         information, inverse, sign, logdet = _cell_information_matrices(cells.weights, cells.means)
         if float(np.asarray(sign)) <= 0:
-            raise ValueError(
+            raise ContractError(
                 "initial D partition is singular; increase n_bins or use a different "
                 "reference sample"
             )
@@ -305,10 +306,11 @@ class _ProfiledDObjective:
         # blame the nuisance parameterization for what is a bin-budget fact -
         # a message that sends users looking for a data problem that is not there.
         if binned_information_is_degenerate(information):
-            raise ValueError(
+            raise RefusalError(
                 f"initial profiled-D partition is singular: {int(cells.means.shape[0])} "
                 f"bins cannot generate nonsingular {int(information.shape[0])}-dimensional "
-                f"binned information. {PROFILED_RANK_ADVICE}"
+                f"binned information. {PROFILED_RANK_ADVICE}",
+                "CE-DS-MARGINS-RANK-VACUITY-001",
             )
         # information._nuisance_information owns the nonsingular-nuisance guard
         # and the index bookkeeping. The Schur block is deliberately not built:
@@ -383,6 +385,7 @@ def optimize_d_partition(
     config: PartitionConfig,
     provenance: ScoreProvenance,
     initial_labels: ArrayLike | None = None,
+    schema: ScoreSchema | None = None,
 ) -> PartitionResult:
     """Optimize arbitrary labels of one fixed weighted score table."""
     prepared = _prepare_partition(scores, weights, n_bins=n_bins, config=config)
@@ -415,11 +418,12 @@ def optimize_d_partition(
             _DObjective(),
         )
         if disagreement > config.gain_tolerance:
-            raise ValueError(
+            raise RefusalError(
                 "terminal D state is geometrically degenerate: relabeling a row by the "
                 f"terminal Mahalanobis rule gains {disagreement:.6g}, above "
                 f"gain_tolerance={config.gain_tolerance:g}; duplicate/tied score atoms "
-                "must be merged or assigned consistently"
+                "must be merged or assigned consistently",
+                "CE-D-UNMERGED-DUPLICATES-001",
             )
 
     return _partition_result(
@@ -440,13 +444,14 @@ def optimize_d_partition(
             state,
             gain_tolerance=config.gain_tolerance,
         ),
+        schema=schema,
     )
 
 
 def _require_d_bin_budget(prepared: _PreparedPartition, n_bins: int) -> None:
     """Reject a cell budget that cannot make the binned D information regular."""
     if n_bins < prepared.transform.rank:
-        raise ValueError(
+        raise ContractError(
             "D-optimality requires at least as many bins as informative directions; "
             "a normalized mean-zero score law generally requires one additional bin"
         )
@@ -495,18 +500,19 @@ def optimize_profiled_d_partition(
     config: PartitionConfig,
     provenance: ScoreProvenance,
     initial_labels: ArrayLike | None = None,
+    schema: ScoreSchema | None = None,
 ) -> PartitionResult:
     """Optimize same-label profiled-D labels of one fixed score table."""
     prepared = _prepare_partition(scores, weights, n_bins=n_bins, config=config)
     dimension = prepared.scores.shape[1]
     if any(index >= dimension for index in criterion.interest_indices):
-        raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
+        raise ContractError(f"interest indices must be smaller than score dimension {dimension}")
     interest_set = set(criterion.interest_indices)
     nuisance = tuple(index for index in range(dimension) if index not in interest_set)
     if not nuisance:
-        raise ValueError("profiled D requires a nuisance block; use DOptimality")
+        raise ContractError("profiled D requires a nuisance block; use DOptimality")
     if prepared.transform.rank != dimension:
-        raise ValueError(
+        raise ContractError(
             "profiled D requires full-rank supplied-score information in the declared "
             "interest/nuisance parameterization"
         )
@@ -520,7 +526,7 @@ def optimize_profiled_d_partition(
     # them n_bins == dimension is feasible and not vacuous. The centered case
     # is refused where it is detectable - at the singular initial state.
     if n_bins < dimension:
-        raise ValueError("profiled D requires at least as many bins as score dimensions")
+        raise ContractError("profiled D requires at least as many bins as score dimensions")
     objective = _ProfiledDObjective(interest=criterion.interest_indices, nuisance=nuisance)
     run = _optimize_labels(
         points=prepared.scores,
@@ -555,6 +561,7 @@ def optimize_profiled_d_partition(
             interest=criterion.interest_indices,
             weights=sample.weights,
             n_bins=n_bins,
+            schema=schema,
         ),
         profiled_geometry=_profiled_geometry_report(
             prepared.scores,
@@ -564,6 +571,7 @@ def optimize_profiled_d_partition(
             nuisance=nuisance,
             exchange_stable=run.exchange_stable,
         ),
+        schema=schema,
     )
 
 
@@ -663,16 +671,16 @@ def _validate_labeling(labels: ArrayLike, sample: _ValidatedSample) -> tuple[int
     array = jnp.asarray(labels)
     n_rows = int(sample.scores.shape[0])
     if array.shape != (n_rows,):
-        raise ValueError(f"labels must have shape [{n_rows}], got {array.shape}")
+        raise ContractError(f"labels must have shape [{n_rows}], got {array.shape}")
     if not jnp.issubdtype(array.dtype, jnp.integer):
         raise TypeError("labels must contain integer bin labels")
     declared = np.asarray(array, dtype=np.int64)
     if int(declared.min()) < 0:
-        raise ValueError("labels must be nonnegative bin indices")
+        raise ContractError("labels must be nonnegative bin indices")
     n_bins = int(declared.max()) + 1
     effective = declared[np.asarray(sample.positive_weight_mask)]
     if int(np.bincount(effective, minlength=n_bins)[:n_bins].min()) == 0:
-        raise ValueError(
+        raise ContractError(
             f"labels declare {n_bins} cells but at least one of them holds no "
             "positive-weight row; every declared cell must carry measure"
         )
@@ -698,13 +706,13 @@ def _stability_objective(
         return transform.apply(scores), _DObjective()
     dimension = int(scores.shape[1])
     if any(index >= dimension for index in criterion.interest_indices):
-        raise ValueError(f"interest indices must be smaller than score dimension {dimension}")
+        raise ContractError(f"interest indices must be smaller than score dimension {dimension}")
     interest = set(criterion.interest_indices)
     nuisance = tuple(index for index in range(dimension) if index not in interest)
     if not nuisance:
-        raise ValueError("profiled D requires a nuisance block; use DOptimality")
+        raise ContractError("profiled D requires a nuisance block; use DOptimality")
     if transform.rank != dimension:
-        raise ValueError(
+        raise ContractError(
             "profiled D requires full-rank supplied-score information in the declared "
             "interest/nuisance parameterization"
         )
@@ -726,6 +734,7 @@ def _partition_result(
     geometry: GeometryReport | None = None,
     profiled_report: ProfiledInformationReport | None = None,
     profiled_geometry: ProfiledGeometryReport | None = None,
+    schema: ScoreSchema | None = None,
 ) -> PartitionResult:
     """Assemble the criterion-independent part of one finite partition result."""
     sample = prepared.sample
@@ -764,6 +773,7 @@ def _partition_result(
         geometry=geometry,
         profiled_report=profiled_report,
         profiled_geometry=profiled_geometry,
+        schema=schema,
     )
 
 
@@ -808,7 +818,7 @@ def _prepare_partition(
         sample.effective_scores, sample.effective_weights, config.collapse_duplicates
     )
     if n_bins > effective_scores.shape[0]:
-        raise ValueError("n_bins exceeds distinct positive-weight score rows")
+        raise ContractError("n_bins exceeds distinct positive-weight score rows")
     full_information = jnp.einsum(
         "n,np,nq->pq", effective_weights, effective_scores, effective_scores
     )
@@ -838,19 +848,19 @@ def _collapsed_initial_labels(
     labels = jnp.asarray(initial_labels)
     n_rows = int(prepared.sample.scores.shape[0])
     if labels.shape != (n_rows,):
-        raise ValueError(f"initial_labels must have shape [{n_rows}], got {labels.shape}")
+        raise ContractError(f"initial_labels must have shape [{n_rows}], got {labels.shape}")
     if not jnp.issubdtype(labels.dtype, jnp.integer):
         raise TypeError("initial_labels must contain integer bin labels")
     effective = np.asarray(labels[prepared.sample.positive_weight_mask], dtype=np.int64)
     if effective.size and (effective.min() < 0 or effective.max() >= n_bins):
-        raise ValueError("initial_labels contain a label outside [0, n_bins)")
+        raise ContractError("initial_labels contain a label outside [0, n_bins)")
     inverse = np.asarray(prepared.inverse_rows)
     collapsed = np.zeros(int(prepared.scores.shape[0]), dtype=np.int32)
     collapsed[inverse] = effective
     if not np.array_equal(collapsed[inverse], effective):
-        raise ValueError("initial_labels must assign identical score rows to the same bin")
+        raise ContractError("initial_labels must assign identical score rows to the same bin")
     if int(np.bincount(collapsed, minlength=n_bins)[:n_bins].min()) == 0:
-        raise ValueError(
+        raise ContractError(
             "initial_labels must leave every one of the n_bins cells nonempty once "
             "zero-weight rows are dropped and identical score rows are merged"
         )
@@ -917,7 +927,7 @@ def _optimize_exchange(
         if best is None or run.state.objective > best.state.objective:
             best = run
     if best is None:
-        raise ValueError("solver_restarts must be at least one")
+        raise ContractError("solver_restarts must be at least one")
     return best
 
 
@@ -1372,8 +1382,13 @@ def _trial_state(
     """Rebuild the exact state of a proposed labeling, or reject an infeasible one."""
     try:
         return objective.init_state(_cell_statistics(points, weights, jnp.asarray(labels), n_bins))
-    except ValueError:
-        # An emptied cell or a singular proposal is an ordinary batch rejection.
+    except (ContractError, RefusalError):
+        # An emptied cell or a singular proposal is an ordinary batch rejection,
+        # regardless of whether ``init_state`` reports it as a malformed input
+        # (``ContractError``) or a theorem-backed refusal on this trial labeling
+        # (``RefusalError``, e.g. a profiled trial whose binned information
+        # would be degenerate): a discarded trial is never a request outcome,
+        # so neither should surface past this internal rejection.
         return None
 
 
@@ -1383,7 +1398,7 @@ def _cell_statistics(
     """Accumulate exact weighted cell occupancy, score sums, and score means."""
     statistics = scatter_bin_statistics(labels, weights, points, n_bins)
     if bool(np.asarray(jnp.any(statistics.weights <= 0))):
-        raise ValueError("exact exchange requires exactly n_bins nonempty cells")
+        raise ContractError("exact exchange requires exactly n_bins nonempty cells")
     return _CellStatistics(weights=statistics.weights, sums=statistics.sums, means=statistics.means)
 
 
@@ -1623,7 +1638,7 @@ def _profiled_semimetric(state: _ExchangeState, nuisance: tuple[int, ...]) -> jn
 
 def _require_nuisance(matrix: jnp.ndarray | None) -> jnp.ndarray:
     if matrix is None:
-        raise ValueError("profiled-D exchange state is missing its nuisance block")
+        raise ContractError("profiled-D exchange state is missing its nuisance block")
     return matrix
 
 
