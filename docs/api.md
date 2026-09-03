@@ -16,7 +16,7 @@ algebra (`ratios_from_posteriors`, `mixture_scores_from_ratios`, `ratio_closure_
 `FisherTransform`, the report types, and the plotting helpers. Each answers a question you will
 know you have; none is needed to fit anything.
 
-The sections below follow that order. The generated [reference](reference/index.md) covers every
+The sections below follow that order. The generated [reference](symbols/index.md) covers every
 public object.
 
 ---

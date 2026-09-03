@@ -1,6 +1,8 @@
 # ADR 0019: Add a React learning portal beside the engineering reference
 
-**Status:** Accepted
+**Status:** Accepted. Its staged rollout is completed by
+[ADR 0025](0025-portal-at-the-site-root.md): the portal now serves the site root and MkDocs
+is narrowed to `/reference/`, with the redirect manifest that stage 2 required.
 
 **Supersedes in part:** [ADR 0006](0006-documentation-site.md)
 

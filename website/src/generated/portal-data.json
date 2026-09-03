@@ -3,167 +3,175 @@
     {
       "kind": "class",
       "name": "CentralLogRatioScore",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "CentralLogRatioScore(predict: Callable[[ArrayLike], ArrayLike], deltas: ArrayLike, class_priors: ArrayLike, *, description: str | None = None, metadata: Mapping[str, JsonValue] | None = None, schema: ScoreSchema | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L286",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L287",
       "summary": "Estimate central finite-difference scores from paired density ratios."
     },
     {
       "kind": "class",
       "name": "CertificationConfig",
-      "reference": "/reference/configuration/",
+      "reference": "/reference/symbols/configuration/",
       "signature": "CertificationConfig(max_nodes: int = 2000000, max_rows: int = 64, gain_tolerance: float = 1e-10)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L59",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L60",
       "summary": "Configure explicit branch-and-bound certification of a D partition."
     },
     {
       "kind": "class",
+      "name": "ContractError",
+      "reference": "/reference/symbols/index/",
+      "signature": "",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/_errors.py#L10",
+      "summary": "The caller violated an input, shape, range, or pairing contract."
+    },
+    {
+      "kind": "class",
       "name": "DExchangeConfig",
-      "reference": "/reference/configuration/",
+      "reference": "/reference/symbols/configuration/",
       "signature": "DExchangeConfig(rank_rtol: float | None = None, seed: int = 0, initializer_restarts: int = 8, max_scans: int | None = None, batch_moves: bool = True, solver_restarts: int = 1, init: Literal['kmeans++', 'random'] = 'kmeans++', gain_tolerance: float = 1e-10, first_improvement: bool = False, collapse_duplicates: bool | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L220",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L227",
       "summary": "Configure exact positive-gain D-optimal point exchange."
     },
     {
       "kind": "class",
       "name": "DOptimality",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "DOptimality()",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L12",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L13",
       "summary": "Maximize the log determinant in the informative score subspace."
     },
     {
       "kind": "class",
       "name": "DensityRatioScore",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "DensityRatioScore(ratio: Callable[[ArrayLike], ArrayLike], parameterization: RatioParameterization, *, provenance: ScoreProvenance | None = None, schema: ScoreSchema | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L141",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L142",
       "summary": "Map observations to model density ratios and evaluate declared scores."
     },
     {
       "kind": "class",
       "name": "EfficientScoreBound",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "EfficientScoreBound(upper_bound: float, labels: np.ndarray, efficient_scores: np.ndarray, n_bins: int, interest: tuple[int, ...])",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L341",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L342",
       "summary": "Certify a ceiling on profiled information from the full-data efficient score."
     },
     {
       "kind": "class",
       "name": "ExecutionConfig",
-      "reference": "/reference/configuration/",
+      "reference": "/reference/symbols/configuration/",
       "signature": "ExecutionConfig(backend: BackendName = 'jax', precision: PrecisionPolicy = 'preserve', device: DeviceKind = 'default')",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L18",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L19",
       "summary": "Select the numerical runtime without changing statistical semantics."
     },
     {
       "kind": "class",
       "name": "FisherTransform",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "FisherTransform(matrix: np.ndarray, eigenvectors: np.ndarray, eigenvalues: np.ndarray, retained_eigenvalues: np.ndarray, rank_rtol: float, threshold: float, whiten: bool)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/transforms.py#L20",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/transforms.py#L21",
       "summary": "Projection onto informative Fisher directions, optionally whitened."
     },
     {
       "kind": "class",
       "name": "GaussLegendreConfig",
-      "reference": "/reference/configuration/",
+      "reference": "/reference/symbols/configuration/",
       "signature": "GaussLegendreConfig(order: int = 16, max_points: int = 1000000)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L274",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L269",
       "summary": "Configure deterministic tensor-product Gauss-Legendre quadrature."
     },
     {
       "kind": "class",
       "name": "GeometryReport",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "GeometryReport(maximum_voronoi_violation: float, guaranteed_violation_gain: float, maximum_violation_gain: float, maximum_separation_residual: float, violating_moves: int, evaluated_moves: int, voronoi_consistent: bool, separation_certified: bool, gain_tolerance: float)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L140",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L141",
       "summary": "Certify the self-consistent Voronoi geometry of a finite D partition."
     },
     {
       "kind": "class",
       "name": "InformationReport",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "InformationReport(fisher_unbinned: np.ndarray, fisher_binned: np.ndarray, retained_matrix: np.ndarray, retained_eigenvalues: np.ndarray, arithmetic_mean_retention: float, geometric_mean_retention: float, logdet_retention: float, bin_weights: np.ndarray, bin_counts: np.ndarray, bin_effective_sample_sizes: np.ndarray, effective_rank: int, rank_threshold: float, psd_residual_min_eigenvalue: float)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L27",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L28",
       "summary": "Report supplied-score retention and per-bin diagnostics for one sample."
     },
     {
       "kind": "class",
       "name": "IntegrationSource",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "IntegrationSource(bounds: ArrayLike, *, density: Callable[[ArrayLike], ArrayLike], quadrature: GaussLegendreConfig | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L293",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L288",
       "summary": "A finite box, density, and deterministic quadrature reference measure."
     },
     {
       "kind": "class",
       "name": "IntensityParameterization",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "IntensityParameterization(coefficients: ArrayLike)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L189",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L192",
       "summary": "Declare an extended linear-intensity model over component ratios."
     },
     {
       "kind": "class",
       "name": "KMeansConfig",
-      "reference": "/reference/configuration/",
+      "reference": "/reference/symbols/configuration/",
       "signature": "KMeansConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, solver_restarts: int = 8, max_iter: int = 100, tolerance: float = 1e-06, record_every: int = 1)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L100",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L107",
       "summary": "Configure deterministic weighted score-space k-means."
     },
     {
       "kind": "class",
       "name": "LinearComponentScore",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "LinearComponentScore(model: LinearComponents, provenance: ScoreProvenance = ScoreProvenance(kind='exact', description='linear-component event score'))",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L58",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L59",
       "summary": "Evaluate a frozen linear-component model and return local scores."
     },
     {
       "kind": "class",
       "name": "LinearComponents",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "LinearComponents(components: Mapping[str, ComponentFunction] | Sequence[ComponentFunction], coefficients: Mapping[str, float] | Sequence[float], *, variables: Sequence[str] | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/components.py#L101",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/components.py#L102",
       "summary": "Define vectorized linear-intensity components on physical variables."
     },
     {
       "kind": "class",
       "name": "MahalanobisLloydConfig",
-      "reference": "/reference/configuration/",
+      "reference": "/reference/symbols/configuration/",
       "signature": "MahalanobisLloydConfig(rank_rtol: float | None = None, seed: int = 0, initializer_restarts: int = 8, max_iter: int = 100, guard: Literal['exchange', 'reject'] = 'exchange', gain_tolerance: float = 1e-10, collapse_duplicates: bool | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L311",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L315",
       "summary": "Configure guarded batch Mahalanobis-Lloyd iteration."
     },
     {
       "kind": "class",
       "name": "MixtureParameterization",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "MixtureParameterization(reference_fractions: ArrayLike, *, reference_component: int = -1)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L237",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L240",
       "summary": "Declare a normalized mixture with one simplex-dependent component."
     },
     {
       "kind": "class",
       "name": "NormalizedTrace",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "NormalizedTrace()",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L119",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L120",
       "summary": "Minimize within-bin distortion after Fisher whitening."
     },
     {
       "kind": "class",
       "name": "ObservationSample",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ObservationSample(observations: ArrayLike, weights: ArrayLike | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L242",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L249",
       "summary": "A finite weighted observation table requiring a score provider."
     },
     {
       "kind": "class",
       "name": "OptimizationTrace",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "OptimizationTrace(steps: np.ndarray, centers: np.ndarray, objective: np.ndarray, bin_weights: np.ndarray, train_hard_retention: np.ndarray, objective_label: str, validation_hard_retention: np.ndarray | None = None, soft_retention: np.ndarray | None = None, temperatures: np.ndarray | None = None, gradient_norms: np.ndarray | None = None)",
       "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/result.py#L54",
       "summary": "Store aggregate quantizer optimization history."
@@ -171,15 +179,15 @@
     {
       "kind": "class",
       "name": "PartitionCertificate",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "PartitionCertificate(status: Literal['optimal', 'budget_exhausted'], objective: float, labels: np.ndarray, upper_bound: float, gap: float, nodes_explored: int, incumbent_was_optimal: bool)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L288",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L289",
       "summary": "Report what a bounded global D search actually proved."
     },
     {
       "kind": "class",
       "name": "PartitionResult",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "PartitionResult(labels: np.ndarray, training_scores: np.ndarray, cell_weights: np.ndarray, cell_score_sums: np.ndarray, cell_score_means: np.ndarray, information_full: np.ndarray, information_partitioned: np.ndarray, objective: float, transform: FisherTransform, transformed_centers: np.ndarray | None, metric: np.ndarray | None, criterion: DOptimality | ProfiledDOptimality, config: PartitionConfig, execution: ExecutionConfig, train_report: InformationReport, provenance: ScoreProvenance, accepted_moves: int, scans: int, exchange_stable: bool, best_remaining_gain: float, objective_history: np.ndarray, positive_weight_mask: np.ndarray, lloyd_iterations: int = 0, accepted_lloyd_steps: int = 0, geometry: GeometryReport | None = None, profiled_report: ProfiledInformationReport | None = None, profiled_geometry: ProfiledGeometryReport | None = None, schema: ScoreSchema | None = None)",
       "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/result.py#L219",
       "summary": "Represent optimized labels of one fixed weighted score table."
@@ -187,273 +195,289 @@
     {
       "kind": "class",
       "name": "ProfiledDOptimality",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ProfiledDOptimality(interest: tuple[int, ...] | tuple[str, ...])",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L23",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/criteria.py#L24",
       "summary": "Maximize profiled information for declared parameters of interest."
     },
     {
       "kind": "class",
       "name": "ProfiledGeometryReport",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ProfiledGeometryReport(metric: np.ndarray, maximum_positive_violation: float, maximum_theoretical_bound: float, maximum_bound_residual: float, violating_moves: int, evaluated_moves: int, bound_certified: bool)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L271",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L272",
       "summary": "Diagnose the finite efficient-semimetric gap of a profiled partition."
     },
     {
       "kind": "class",
       "name": "ProfiledInformationReport",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ProfiledInformationReport(interest: tuple[int, ...], nuisance: tuple[int, ...], schur_unbinned: np.ndarray, schur_binned: np.ndarray, nuisance_unbinned: np.ndarray, nuisance_binned: np.ndarray, objective: float, logdet_retention: float, geometric_mean_retention: float, interest_rank: int, nuisance_rank: int, schema: ScoreSchema | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L90",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L91",
       "summary": "Report same-label profiled information for interest and nuisance blocks."
     },
     {
       "kind": "class",
       "name": "Quantizer",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "Quantizer(transform: FisherTransform, centers: np.ndarray, metric: np.ndarray | None, schema: ScoreSchema | None, provenance: ScoreProvenance, criterion: Criterion, execution: ExecutionConfig)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/artifact.py#L49",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/artifact.py#L52",
       "summary": "A frozen hard rule on score space."
     },
     {
       "kind": "class",
       "name": "QuantizerResult",
-      "reference": "/reference/index/",
-      "signature": "QuantizerResult(quantizer: Quantizer, criterion: Criterion, config: QuantizerConfig, execution: ExecutionConfig, trace: OptimizationTrace, labels: np.ndarray, train_report: InformationReport, validation_report: InformationReport | None, provenance: ScoreProvenance, hardening_gap: float | None = None, source_kind: str = 'score_sample', train_profiled_report: ProfiledInformationReport | None = None, validation_profiled_report: ProfiledInformationReport | None = None)",
+      "reference": "/reference/symbols/index/",
+      "signature": "QuantizerResult(quantizer: Quantizer, criterion: Criterion, config: QuantizerConfig, execution: ExecutionConfig, trace: OptimizationTrace, labels: np.ndarray, train_report: InformationReport, validation_report: InformationReport | None, provenance: ScoreProvenance, hardening_gap: float | None = None, source_kind: SourceKind = 'score_sample', train_profiled_report: ProfiledInformationReport | None = None, validation_profiled_report: ProfiledInformationReport | None = None)",
       "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/result.py#L84",
       "summary": "Represent a reusable hard rule on raw score vectors."
     },
     {
       "kind": "class",
       "name": "RatioClosureReport",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "RatioClosureReport(normalizers: np.ndarray, max_residual: float)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L62",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L63",
       "summary": "Report how far model density ratios are from unit normalization."
     },
     {
       "kind": "class",
       "name": "RatioProvenance",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "RatioProvenance(estimator: str | None = None, parameterization: RatioParameterizationKind | None = None, coefficients: tuple[float, ...] | None = None, reference_fractions: tuple[float, ...] | None = None, reference_component: int | None = None, training_priors: tuple[float, ...] | tuple[tuple[float, float], ...] | None = None, calibration: str | None = None, deltas: tuple[float, ...] | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L106",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L113",
       "summary": "Describe how a model density-ratio representation was obtained."
     },
     {
       "kind": "class",
+      "name": "RefusalError",
+      "reference": "/reference/symbols/index/",
+      "signature": "RefusalError(message: str, counterexample: str)",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/_errors.py#L18",
+      "summary": "The library declines a valid request because a theorem-backed condition fails on the data."
+    },
+    {
+      "kind": "class",
       "name": "ScalarDPConfig",
-      "reference": "/reference/configuration/",
+      "reference": "/reference/symbols/configuration/",
       "signature": "ScalarDPConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, max_rows: int = 20000)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L380",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L381",
       "summary": "Configure exact interval dynamic programming for one score coordinate."
     },
     {
       "kind": "class",
       "name": "ScoreFunction",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ScoreFunction(function: Callable[[ArrayLike], ArrayLike], provenance: ScoreProvenance = ScoreProvenance(), schema: ScoreSchema | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L26",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L27",
       "summary": "Wrap an exact or estimated callable ``[N, D] -> [N, P]``."
     },
     {
       "kind": "class",
       "name": "ScoreProvenance",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ScoreProvenance(kind: ScoreKind = 'unknown', description: str | None = None, reference_point: tuple[float, ...] | None = None, metadata: Mapping[str, JsonValue] = dict(), ratio: RatioProvenance | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L142",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L149",
       "summary": "Describe where supplied score coordinates came from."
     },
     {
       "kind": "class",
       "name": "ScoreProvider",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L399",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/providers.py#L400",
       "summary": "The observation-to-score contract every fitting route goes through."
     },
     {
       "kind": "class",
+      "name": "ScoreQuantError",
+      "reference": "/reference/symbols/index/",
+      "signature": "",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/_errors.py#L6",
+      "summary": "Base of every exception ScoreQuant raises deliberately."
+    },
+    {
+      "kind": "class",
       "name": "ScoreSample",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ScoreSample(scores: ArrayLike, weights: ArrayLike | None = None, *, schema: ScoreSchema | None = None, provenance: ScoreProvenance | None = None)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L204",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L211",
       "summary": "A finite weighted score table representing an empirical score law."
     },
     {
       "kind": "class",
       "name": "ScoreSchema",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ScoreSchema(parameters: tuple[str, ...])",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L27",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/sources.py#L32",
       "summary": "Name the parameter each score coordinate differentiates."
     },
     {
       "kind": "class",
       "name": "SoftVoronoiConfig",
-      "reference": "/reference/configuration/",
+      "reference": "/reference/symbols/configuration/",
       "signature": "SoftVoronoiConfig(whiten: bool = True, rank_rtol: float | None = None, seed: int = 0, initializer_restarts: int = 8, kmeans_max_iter: int = 100, tolerance: float = 1e-06, max_steps: int = 1000, learning_rate: float = 0.01, gradient_clip: float = 10.0, temperature_end_ratio: float = 0.05, record_every: int = 10)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L152",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/config.py#L159",
       "summary": "Configure differentiable D-optimal soft Voronoi fitting."
     },
     {
       "kind": "class",
       "name": "StabilityReport",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "StabilityReport(stable: bool, best_gain: float, best_move: tuple[int, int] | None, objective: float, n_bins: int, criterion: DOptimality | ProfiledDOptimality, gain_tolerance: float)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L223",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/reports.py#L224",
       "summary": "Certify that no single-row relocation improves one supplied labeling."
     },
     {
       "kind": "function",
       "name": "binned_fisher_information",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "binned_fisher_information(scores: ArrayLike, assignments: ArrayLike, weights: ArrayLike | None = None, *, n_bins: int | None = None, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L134",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L135",
       "summary": "Estimate Fisher information retained by hard bin counts."
     },
     {
       "kind": "function",
       "name": "certify_partition",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "certify_partition(scores: ArrayLike, *, weights: ArrayLike | None = None, n_bins: int, incumbent: ArrayLike | None = None, criterion: DOptimality | ProfiledDOptimality | None = None, rank_rtol: float | None = None, config: CertificationConfig | None = None, execution: ExecutionConfig | None = None) -> PartitionCertificate",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L99",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L100",
       "summary": "Prove or bound the global optimality of a finite D partition."
     },
     {
       "kind": "function",
       "name": "efficient_score_bound",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "efficient_score_bound(scores: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, n_bins: int, config: ScalarDPConfig | None = None, execution: ExecutionConfig | None = None) -> EfficientScoreBound",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L546",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L549",
       "summary": "Certify a ceiling on profiled information by quantizing the efficient score."
     },
     {
       "kind": "function",
       "name": "efficient_scores",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "efficient_scores(scores: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L491",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L494",
       "summary": "Project scores with the full-information nuisance regression."
     },
     {
       "kind": "function",
       "name": "exchange_stability_report",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "exchange_stability_report(scores: ArrayLike, labels: ArrayLike, *, weights: ArrayLike | None = None, criterion: DOptimality | ProfiledDOptimality | None = None, rank_rtol: float | None = None, gain_tolerance: float = 1e-10, execution: ExecutionConfig | None = None) -> StabilityReport",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/partition.py#L570",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/partition.py#L578",
       "summary": "Certify one supplied labeling against every single-row relocation."
     },
     {
       "kind": "function",
       "name": "fisher_information",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "fisher_information(scores: ArrayLike, weights: ArrayLike | None = None, *, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L35",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L36",
       "summary": "Estimate unbinned Fisher information."
     },
     {
       "kind": "function",
       "name": "fit_quantizer",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "fit_quantizer(source: Source, *, provider: ScoreProvider | None = None, validation: Source | None = None, n_bins: int, criterion: Criterion | None = None, config: QuantizerConfig | None = None, diagnostics: DiagnosticsMode = 'endpoints', execution: ExecutionConfig | None = None) -> QuantizerResult",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L273",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L260",
       "summary": "Fit a reusable hard rule from an empirical or bounded score law."
     },
     {
       "kind": "function",
       "name": "fractional_fisher_information",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "fractional_fisher_information(scores: ArrayLike, responsibilities: ArrayLike, weights: ArrayLike | None = None, *, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L169",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L170",
       "summary": "Estimate Fisher information retained by fractional assignments."
     },
     {
       "kind": "function",
       "name": "information_report",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "information_report(scores: ArrayLike, assignments: ArrayLike, weights: ArrayLike | None = None, *, n_bins: int | None = None, rank_rtol: float | None = None, execution: ExecutionConfig | None = None) -> InformationReport",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L251",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L252",
       "summary": "Build retained-information and occupancy diagnostics for hard bins."
     },
     {
       "kind": "function",
       "name": "mixture_scores_from_ratios",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "mixture_scores_from_ratios(ratios: ArrayLike, reference_fractions: ArrayLike, *, reference_component: int = -1, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L121",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L122",
       "summary": "Construct normalized-mixture scores from component density ratios."
     },
     {
       "kind": "function",
       "name": "optimize_partition",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "optimize_partition(scores: ScoreSample | ArrayLike, *, weights: ArrayLike | None = None, n_bins: int, criterion: DOptimality | ProfiledDOptimality | None = None, config: PartitionConfig | None = None, provenance: ScoreProvenance | None = None, initial_labels: ArrayLike | None = None, execution: ExecutionConfig | None = None) -> PartitionResult",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L190",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/api.py#L185",
       "summary": "Optimize labels of one fixed score table without prediction semantics."
     },
     {
       "kind": "function",
       "name": "plot_information",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "plot_information(report: InformationReport) -> Figure",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L163",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L164",
       "summary": "Plot retained information, its spectrum, and bin occupancy."
     },
     {
       "kind": "function",
       "name": "plot_optimization",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "plot_optimization(trace: OptimizationTrace) -> Figure",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L24",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L25",
       "summary": "Plot objective, hard retention, occupancies, and center motion."
     },
     {
       "kind": "function",
       "name": "plot_partition",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "plot_partition(result: QuantizerResult, scores: ArrayLike, weights: ArrayLike | None = None) -> Figure",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L92",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L93",
       "summary": "Plot observations in the fitted informative coordinate system."
     },
     {
       "kind": "function",
       "name": "plot_summary",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "plot_summary(result: QuantizerResult, scores: ArrayLike, weights: ArrayLike | None = None) -> Figure",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L194",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/visualization.py#L195",
       "summary": "Create a compact final-partition and optimization summary."
     },
     {
       "kind": "function",
       "name": "profiled_information_report",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "profiled_information_report(scores: ArrayLike, assignments: ArrayLike, *, interest: tuple[int, ...], weights: ArrayLike | None = None, n_bins: int | None = None, schema: ScoreSchema | None = None, execution: ExecutionConfig | None = None) -> ProfiledInformationReport",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L419",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/information.py#L422",
       "summary": "Build same-label profiled-\\(D_s\\) diagnostics without regularization."
     },
     {
       "kind": "function",
       "name": "ratio_closure_report",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ratio_closure_report(ratios: ArrayLike, weights: ArrayLike, *, execution: ExecutionConfig | None = None) -> RatioClosureReport",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L293",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L296",
       "summary": "Check that density ratios integrate to one under the declared measure."
     },
     {
       "kind": "function",
       "name": "ratios_from_posteriors",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "ratios_from_posteriors(posteriors: ArrayLike, class_priors: ArrayLike, *, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L58",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/ratios.py#L59",
       "summary": "Convert calibrated class posteriors into model density ratios."
     },
     {
       "kind": "function",
       "name": "scores_from_components",
-      "reference": "/reference/index/",
+      "reference": "/reference/symbols/index/",
       "signature": "scores_from_components(components: ArrayLike, coefficients: ArrayLike, *, execution: ExecutionConfig | None = None) -> np.ndarray",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/components.py#L38",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/components.py#L39",
       "summary": "Construct scores for a linear intensity model."
     }
   ],
@@ -764,6 +788,66 @@
       "dependencies": [
         "FI-QUANT-IDENTITY"
       ],
+      "id": "FI-RANK-CEILING",
+      "level": "universal",
+      "statement": "rank(I_q)<=min(d,K-1); positive-definite full-D information requires K>=d+1.",
+      "status": "bridge",
+      "title": "Rank ceiling for K hard categories"
+    },
+    {
+      "dependencies": [
+        "FI-LOSS-DECOMPOSITION"
+      ],
+      "id": "INFO-RETENTION-SPECTRUM",
+      "level": "information_accounting",
+      "statement": "R=I_full^{-1/2} I_q I_full^{-1/2} satisfies 0<=R<=I, so every retention eigenvalue lies in [0,1].",
+      "status": "bridge",
+      "title": "Normalized retained-information spectrum"
+    },
+    {
+      "dependencies": [
+        "INFO-RETENTION-SPECTRUM"
+      ],
+      "id": "INFO-D-EFFICIENCY",
+      "level": "information_accounting",
+      "statement": "eta_D=(det I_q/det I_full)^(1/d), the geometric mean retained Fisher information over normalized parameter directions.",
+      "status": "bridge",
+      "title": "D-efficiency relative to unbinned inference"
+    },
+    {
+      "dependencies": [
+        "INFO-RETENTION-SPECTRUM"
+      ],
+      "id": "INFO-DIRECTIONAL-DIAGNOSTICS",
+      "level": "information_accounting",
+      "statement": "Report normalized retention eigenvalues, geometric mean, arithmetic mean, and minimum; D optimization alone does not guarantee equal retention in every direction.",
+      "status": "bridge",
+      "title": "Direction-resolved retained-information diagnostics"
+    },
+    {
+      "dependencies": [
+        "DS-SCHUR"
+      ],
+      "id": "INFO-DS-EFFICIENCY",
+      "level": "information_accounting",
+      "statement": "eta_Ds=(det Schur_\u03c8(I_q)/det Schur_\u03c8(I_full))^(1/s).",
+      "status": "bridge",
+      "title": "Ds-efficiency relative to unbinned profiled inference"
+    },
+    {
+      "dependencies": [
+        "FI-QUANT-IDENTITY"
+      ],
+      "id": "D-REPARAM-INVARIANCE",
+      "level": "universal",
+      "statement": "Under an invertible local parameter transformation, I_q transforms by congruence and logdet changes only by a quantizer-independent constant.",
+      "status": "bridge",
+      "title": "D-optimal partition invariance under invertible reparameterization"
+    },
+    {
+      "dependencies": [
+        "FI-QUANT-IDENTITY"
+      ],
       "id": "TRACE-WHITENED-KMEANS",
       "level": "population_quantizer",
       "statement": "d-tr(I_full^{-1}I_q)=E||z-E[z|Z]||^2 for z=I_full^{-1/2}s; maximizing retained normalized trace is weighted k-means.",
@@ -781,7 +865,36 @@
       "title": "D leverage inequality"
     },
     {
+      "dependencies": [],
+      "id": "D-RANK2-MOVE",
+      "level": "finite_assignment",
+      "statement": "For a weighted point moved from non-singleton a to b, \u0394I=\u03b1u_a u_a^T-\u03b2u_b u_b^T with \u03b1=wW_a/(W_a-w), \u03b2=wW_b/(W_b+w).",
+      "status": "project_proved",
+      "title": "Exact weighted rank-two relocation"
+    },
+    {
       "dependencies": [
+        "D-RANK2-MOVE"
+      ],
+      "id": "D-LOGDET-GAIN",
+      "level": "finite_assignment",
+      "statement": "With H=I^{-1}, q_aa=u_a^T H u_a, q_bb=u_b^T H u_b, q_ab=u_a^T H u_b, the determinant ratio is (1+\u03b1q_aa)(1-\u03b2q_bb)+\u03b1\u03b2q_ab^2.",
+      "status": "project_proved",
+      "title": "Exact finite D log-determinant gain"
+    },
+    {
+      "dependencies": [
+        "D-LOGDET-GAIN"
+      ],
+      "id": "D-EXCHANGE-TERMINATES",
+      "level": "finite_assignment",
+      "statement": "Accepting only exact positive D gains strictly increases the objective, cannot cycle, and terminates finitely at a one-point exchange-stable state.",
+      "status": "project_proved",
+      "title": "Monotone exact D one-point exchange"
+    },
+    {
+      "dependencies": [
+        "D-LOGDET-GAIN",
         "D-LEVERAGE"
       ],
       "id": "D-EXCHANGE-IMPLIES-VORONOI",
@@ -789,9 +902,465 @@
       "statement": "For distinct positive-weight score atoms obtained by merging duplicate rows, positive-definite retained information, exactly K nonempty cells, no move constraints beyond preserving nonempty cells, and zero-tolerance exact stability, every tied-or-worse nearest-centroid comparison from a non-singleton source has strictly positive exact D gain. Stability forces distinct centroids; singleton rows are then strictly nearest to their own centroids. Hence one-point exchange stability implies strict self-consistent D-Voronoi geometry.",
       "status": "project_proved",
       "title": "Finite D exchange stability implies strict self-consistent Voronoi"
+    },
+    {
+      "dependencies": [
+        "D-EXCHANGE-IMPLIES-VORONOI"
+      ],
+      "id": "D-FINITE-INDUCTIVE-CLOSURE",
+      "level": "empirical_inductive_quantizer",
+      "statement": "Every exact zero-tolerance one-point-exchange-stable positive-definite finite D solution on merged distinct positive-weight score atoms compiles to q_hat(s)=argmin_b (s-\u03bc_b)^T I_hat^{-1}(s-\u03bc_b), reproducing all merged-atom training labels strictly; original duplicate rows inherit the merged label. Positive solver tolerance gives only a tolerance-stamped boundary-disagreement guarantee.",
+      "status": "project_proved",
+      "title": "Exact finite inductive closure / compiler"
+    },
+    {
+      "dependencies": [
+        "D-EXCHANGE-IMPLIES-VORONOI"
+      ],
+      "id": "D-GLOBAL-GEOMETRIC-REALIZABILITY",
+      "level": "finite_assignment",
+      "statement": "Every finite global D optimum is exchange stable and therefore strict self-consistent D-Voronoi; unrestricted finite D optimization and realizable affine/Voronoi labeling optimization have the same optimum value.",
+      "status": "project_proved",
+      "title": "Every finite global D optimum is geometrically realizable"
+    },
+    {
+      "dependencies": [
+        "D-GLOBAL-GEOMETRIC-REALIZABILITY"
+      ],
+      "id": "D-GLOBAL-XP",
+      "level": "finite_assignment",
+      "statement": "Because global optima are affine/Voronoi-realizable, arrangement enumeration yields an exact algorithm N^{O(Kd)} for fixed d and K.",
+      "status": "project_proved",
+      "title": "Exact finite D optimization is XP for fixed (d,K)"
+    },
+    {
+      "dependencies": [],
+      "id": "D-BB-SINGLETON-BOUND",
+      "level": "finite_assignment",
+      "statement": "For unassigned U, I_completion <= I_partial+\u03a3_{i\u2208U} w_i s_i s_i^T, so its logdet is a valid upper bound on every completion.",
+      "status": "project_proved",
+      "title": "Singleton-refinement branch-and-bound upper bound for D"
+    },
+    {
+      "dependencies": [
+        "D-LLOYD-NONMONOTONE",
+        "D-LOGDET-GAIN"
+      ],
+      "id": "D-GUARDED-LLOYD",
+      "level": "finite_assignment",
+      "statement": "A batch Lloyd/Voronoi reassignment may be used as a proposal, but monotonicity is restored only by accepting proposals that improve the exact D objective.",
+      "status": "project_proved",
+      "title": "Guarded D-Lloyd proposal is monotone when accepted by exact objective"
+    },
+    {
+      "dependencies": [],
+      "id": "D-VORONOI-NOT-EXCHANGE",
+      "level": "finite_assignment",
+      "statement": "Self-consistent nearest-centroid assignment under the current D metric is strictly weaker than one-point exact exchange stability.",
+      "status": "counterexample",
+      "title": "D-Voronoi fixed point does not imply exchange stability"
+    },
+    {
+      "dependencies": [],
+      "id": "D-UNMERGED-DUPLICATES-FAIL",
+      "level": "finite_assignment",
+      "statement": "If coincident positive-weight score atoms may occupy different singleton cells, a positive-definite labeling can be vacuously one-point exchange stable while strict nearest-centroid assignment and deterministic score-only label reproduction fail.",
+      "status": "counterexample",
+      "title": "Split duplicate atoms defeat strict D-Voronoi closure"
+    },
+    {
+      "dependencies": [],
+      "id": "D-LLOYD-NONMONOTONE",
+      "level": "finite_assignment",
+      "statement": "Batch recomputation of I^{-1}, nearest-centroid reassignment, and centroid update can decrease the true logdet objective.",
+      "status": "counterexample",
+      "title": "Adaptive Mahalanobis Lloyd need not increase D"
+    },
+    {
+      "dependencies": [],
+      "id": "DS-SCHUR",
+      "level": "universal",
+      "statement": "For POI \u03c8 and nuisance \u03bb, S_\u03c8(I)=I_\u03c8\u03c8-I_\u03c8\u03bb I_\u03bb\u03bb^{-1} I_\u03bb\u03c8 and F_s=logdet S_\u03c8(I)=logdet I-logdet I_\u03bb\u03bb when the relevant blocks are nonsingular.",
+      "status": "literature",
+      "title": "Ds objective is the logdet of efficient/profiled Schur information"
+    },
+    {
+      "dependencies": [
+        "DS-SCHUR",
+        "FI-QUANT-IDENTITY"
+      ],
+      "id": "DS-EFFICIENT-SCORE-DOMINATION",
+      "level": "population_quantizer",
+      "statement": "For full-data efficient score S_hat=S_\u03c8-B* S_\u03bb, every quantizer satisfies Schur_\u03c8(I_q) <= Var(E[S_hat|q(S)]) in Loewner order.",
+      "status": "project_proved",
+      "title": "Full-data efficient-score domination"
+    },
+    {
+      "dependencies": [],
+      "id": "DS-SCALAR-EFFICIENT-DP",
+      "level": "finite_assignment",
+      "statement": "For d_\u03c8=1, deterministic D-optimal quantization of a scalar efficient score has ordered interval cells, and the finite-sample optimum can be solved exactly by dynamic programming.",
+      "status": "project_proved",
+      "title": "Scalar efficient-score upper problem is exactly solvable by dynamic programming"
+    },
+    {
+      "dependencies": [
+        "D-LOGDET-GAIN"
+      ],
+      "id": "DS-EXCHANGE-LEVERAGE-BOUND",
+      "level": "finite_assignment",
+      "statement": "At a one-point exchange-stable Ds state, every admissible move satisfies s_aa - s_bb <= beta q_aa q_bb <= w_i q_aa q_bb (efficient-semimetric violation bounded by the product of full-metric leverages); no balancedness or mass margin needed, complementing DS-OKN-BOUND.",
+      "status": "project_proved",
+      "title": "Exact profiled leverage stability bound"
+    },
+    {
+      "dependencies": [],
+      "id": "DS-FINITE-GEOMETRY-FAILS",
+      "level": "finite_assignment",
+      "statement": "Positive first-order efficient-semimetric margin need not imply positive exact finite Ds gain; exchange stability does not force exact finite efficient-Voronoi assignment.",
+      "status": "counterexample",
+      "title": "D-style finite exchange-to-geometry theorem fails for Ds"
+    },
+    {
+      "dependencies": [],
+      "id": "DS-GLOBAL-NONGEOMETRIC",
+      "level": "finite_assignment",
+      "statement": "An exact centered equal-weight N=8,d=2,d_\u03c8=1,K=3 exhaustive example has a unique global Ds optimum that violates its own efficient-semimetric nearest-cell rule.",
+      "status": "counterexample",
+      "title": "A finite global Ds optimum can be non-geometric"
+    },
+    {
+      "dependencies": [
+        "DS-EXCHANGE-LEVERAGE-BOUND",
+        "CONSISTENCY-RESTRICTED-AFFINE"
+      ],
+      "id": "OPEN-DS-FINITE-POP-BRIDGE",
+      "level": "empirical_to_population",
+      "statement": "For i.i.d. samples from an atomless law with finite second moments and a uniform affine-slab margin, one-point exchange-stable finite Ds labelings satisfying mass, conditioning, and projected-centroid-separation margins are asymptotically geometric (vanishing disagreement with their own efficient-semimetric companion rule); subsequential limits are self-consistent, hence population-stationary, efficient-Voronoi quantizers with convergent values; global finite optima converge in value to the population optimum over the margin-compatible geometric class, attained by their limits. Without the separation margin the same conclusions hold for the reduced (merged) rule.",
+      "status": "project_proved",
+      "title": "Conditional finite-to-population Ds bridge"
+    },
+    {
+      "dependencies": [
+        "DS-EFFICIENT-SCORE-DOMINATION",
+        "DS-SCALAR-EFFICIENT-DP"
+      ],
+      "id": "OPEN-DS-MARGINS-AT-OPTIMA",
+      "level": "empirical_to_population",
+      "statement": "For d_psi = d_lambda = 1 and score laws with conditionally centered nuisance (E[S_lam|shat]=0: Gaussian, elliptical), atomless efficient-score marginal with a unique optimal scalar K-quantizer (log-concave suffices) and swap-rich nuisance conditionals, almost surely along exact global finite Ds optima: (i) the value converges to the unrestricted population supremum v_K over all measurable K-cell quantizers, attained only by the optimal efficient-score interval quantizer, which is fully nuisance-degenerate and infeasible in-bin (zero nuisance block; DS9 feasibility split); (ii) cell masses converge to the positive population masses - the mass margin (M2) is automatic and singleton cells die out (the N<=18 singleton evidence is pre-asymptotic); (iii) the binned nuisance and cross blocks vanish, so lambda_min(I_N) -> 0: the conditioning margin (M3) FAILS for every kappa>0 and every law in the class - the optimizer sheds binned nuisance information by design; (iv) the margin-compatible optimum v*(kappa) is strictly below v_K, so DS14 governs margin-certified (necessarily suboptimal by delta(kappa)>0) solutions, never free global optima, on this class; (v) DS11(a) efficient-score domination becomes an equality at optima. The (M5) projected-centroid object rides on a 0/0 slope and degenerates with the metric; the meaningful reduced geometry is the scalar J* geometry with distinct centroids. The originally registered d_lambda-generality is refuted: at K = d_lambda + 1 exact centering forces every feasible labeling's profiled value to exactly zero (rank ceiling), so K >= d_lambda + 2 is the correct cardinality condition - at d_lambda = 1 that is exactly K >= 3.",
+      "status": "project_proved",
+      "title": "Margins dichotomy at global finite Ds optima (conditionally centered laws, scalar nuisance)"
+    },
+    {
+      "dependencies": [
+        "OPEN-DS-MARGINS-AT-OPTIMA",
+        "DS-SCALAR-EFFICIENT-DP"
+      ],
+      "id": "DS-STABLE-MARGINS-PRICE",
+      "level": "empirical_to_population",
+      "statement": "For d_psi = d_lambda = 1, conditionally centered laws (L) with scalar regularity (S), equal weights, centered empirical score rows, K >= 3: on one probability-one measurable event, simultaneously over every labeling at every N, (1) PRICE - for every kappa > 0 there is delta(kappa) > 0 with limsup_N sup{Phi_s_hat(z) : z feasible, I_hat_lambdalambda(z) >= kappa} <= v_K - delta(kappa), where sup(empty) = -infinity; since lambda_min(I_hat) <= I_hat_lambdalambda, the DS14 conditioning margin (M3) forces the same cap, and stability, optimality, selection measurability, and seeding are irrelevant; (2) FUNNEL - any feasible sequence with Phi_s_hat -> v_K has cells converging in sample measure to J*, min cell mass -> min_b w*_b > 0, and I_hat_lambdalambda, I_hat_psilambda, lambda_min -> 0, so DS15's degeneracy is value-topological; (3) FLOOR - label raw i.i.d. scores by any fixed measurable q with positive cell masses and I_q_lambdalambda > kappa, then compute information after exact sample centering: Phi_s_hat -> Phi(q), so the constrained empirical sup is asymptotically at least v*+(kappa) = sup{Phi(q) : I_q_lambdalambda > kappa} and v*+(kappa) <= v_K - delta(kappa). This neither asserts attainment nor continuity in kappa, and v*(kappa), defined instead by lambda_min(I_q) >= kappa, is only bounded above by v*+(kappa). (R) is not needed. Proof: Proposition 4 plus arbitrary-grouping rigidity using a compact tilt-codebook uniform law, and signed weighted-VC Glivenko-Cantelli over all tilted half-planes.",
+      "status": "project_proved",
+      "title": "Margin price and value funnel at arbitrary finite Ds labelings"
+    },
+    {
+      "dependencies": [
+        "OPEN-DS-FINITE-POP-BRIDGE"
+      ],
+      "id": "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
+      "level": "empirical_to_population",
+      "statement": "For d_psi = d_lambda = 1 and any atomless law in class (L) (E[S_lambda | shat] = 0 a.s.) with E S = 0, E||S||^2 < oo, and I > 0: (POPULATION) every root-consistent strip rule, meaning E[h(T_beta) S_lambda] = 0, has binned nuisance block exactly zero at every tilt and K >= 2; equivalently, no regular tilt-consistent strip rule B*(I_q) = beta exists because that definition requires I_lambdalambda(q) > 0. Hence no full-rank bounded-packet stationary rule has pairwise-distinct projected centroids. (EMPIRICAL) if (M4) also holds, the pathwise audited DS14 bridge gives one selection-independent probability-one event on which, for fixed K and every rational kappa, c_0, gamma > 0, all sufficiently large N have no ordinary one-point exchange-stable K-cell labeling satisfying (M2)+(M3)+(M5). Neither (S) nor (R) is used. Thus OP30(a) full-triple inhabitation is disproved on this conditionally centered class; the conclusion does not extend to non-centered laws.",
+      "status": "project_proved",
+      "title": "Conditional centering empties the margin-certified stable branch"
+    },
+    {
+      "dependencies": [
+        "DS-STABLE-BASINS-CENTERED-OBSTRUCTION",
+        "DS-STABLE-MARGINS-PRICE",
+        "DS-TILT-DUAL-CERTIFICATE",
+        "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
+        "OPEN-DS-FINITE-POP-BRIDGE",
+        "OPEN-DS-MARGINS-AT-OPTIMA"
+      ],
+      "id": "DS-PROFILED-COMPILE-CERTIFICATE",
+      "level": "empirical_inductive_quantizer",
+      "statement": "The registered theory gives five observable cases. (1) A concrete regular tilt-DP saddle closes p_reg=g_reg=d and certifies a finite global in-bin labeling; a singular saddle certifies only the generalized DS11 problem. (2) A nonclosed reported bracket reports its named interval, does not authorize the word optimal, and does not certify a duality gap either (a deterministic DP tie policy can hide a closure: CE-DS-TILT-DUAL-TIE-MASK-001). (3) The projected full-efficient-score interval rule remains the currently established unconditional compiler for the distinct projected problem with nuisance information supplied externally. (4) A profiled DS14 companion rule is theorem-backed only along sequences satisfying every audited DS14 law, stability, mass, conditioning, compactness, and projected-separation hypothesis; one measured floor or finite root is diagnostic only. (5) Otherwise compilation of a profiled terminal is refused. On class (L), DS16/DS17 keep the full-triple ordinary-stable companion branch priced and eventually empty. Off (L), DS18 plus DS19 prove that the beta-zero interval DP is Delta-consistent on one exact law, but this value transfer is deliberately not a compile authorization. Strong tilt duality can fail by order one, and the multivariate outer problem is nonquasiconvex.",
+      "status": "project_proved",
+      "title": "Profiled compile verdict is selected by an observable certificate state"
+    },
+    {
+      "dependencies": [
+        "DS-SCALAR-EFFICIENT-DP"
+      ],
+      "id": "DS-TILT-DUAL-CERTIFICATE",
+      "level": "finite_assignment",
+      "statement": "For d_psi=1 and positive finite weights, write V_z(beta)=btw(S_psi-beta S_lambda;z) (uncentered), v_K(beta)=max_z V_z(beta), and Phi^+(z)=min_beta V_z(beta). The DP-active generalized primal p^+, generalized global value g^+, regular in-bin primal p_reg, regular global value g_reg, and dual d=min_beta v_K(beta) obey p^+ <= g^+ <= d and p_reg <= g_reg <= g^+ <= d; d is attained after quotienting the common nuisance-null space. The generalized bracket closes, p^+=g^+=d, iff some labeling z in the DP-optimal set D(beta) at some beta satisfies beta I_lambdalambda(z)=I_psilambda(z); then every Phi^+-maximiser and every dual minimiser form such a pair; if the exhibited z has a nonsingular nuisance block it is an ordinary in-bin global optimum, otherwise it certifies only the DS11 pseudo-inverse problem. Fixed-tilt exact rational evaluation of v_K, an active labeling, the exact one-sided derivatives and the primal values costs O(KN^2) rational operations (O(KN) after sorting) and tolerates exact ties in every tie order (tie lemma). A certified rational epsilon-bracket on d is computable in time polynomial in the input bits and log(1/epsilon) via an observable coercivity radius, a subgradient separation oracle and a cutting-plane LP lower certificate. Exact minimisation is polynomial in bit complexity at d_lambda=1 for every K (root-separation bisection on the one-sided DP derivatives, output rational or a degree-2 algebraic number), and polynomial in arithmetic operations for fixed d_lambda>=2 and variable K (Toledo 1993 parametric search). Exact polynomial bit complexity for fixed d_lambda>=2 with variable K, and any exact statement for variable d_lambda, is OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY.",
+      "status": "project_proved",
+      "title": "Scalar-POI tilt-DP gives a valid two-sided certificate with an exact saddle closure gate"
+    },
+    {
+      "dependencies": [
+        "DS-SCALAR-EFFICIENT-DP"
+      ],
+      "id": "DS-TILT-DUAL-STRONG-DUALITY-FAILS",
+      "level": "finite_assignment",
+      "statement": "An exact equal-weight N=4, K=3, d_psi=d_lambda=1 table (CE-DS-TILT-DUAL-GAP-001) has all six nonempty partitions regular, global profiled value 116805/11816, and tilt dual at least 61717893/5839400 by an exact convex mixture of two active partition quadratics; its exact dual minimum is 44729/4232 at the rational crossing beta*=-8/23, so the exact gap is 534361/781333 > 0.68 even though the DS9 and DS11 domains coincide. The witness is support-minimal for K=3. The overall support minimum is N=3, K=2: CE-DS-TILT-DUAL-GAP-002 (rows (-1,0),(0,-1),(1,0), equal weights) has g^+=1/3 and exact d=1/2 at beta*=0, gap 1/6, with a fully rational mixture proof. A positive-weight bounded augmentation family with vanishing added mass preserves the global-versus-dual gap asymptotically, so the gap is Theta(1), not a finite-grid artifact.",
+      "status": "counterexample",
+      "title": "The scalar-POI tilt dual can have an order-one strong-duality gap"
+    },
+    {
+      "dependencies": [],
+      "id": "E-GLOBAL-GEOMETRY-FAILS",
+      "level": "finite_assignment",
+      "statement": "An exhaustive finite example with a simple minimum eigenvalue has a global E optimum whose vv^T nearest-cell rule disagrees with a training label.",
+      "status": "counterexample",
+      "title": "Finite global E optimum can violate its own rank-one nearest-cell rule"
+    },
+    {
+      "dependencies": [],
+      "id": "E-FIRSTORDER-NOT-FINITE",
+      "level": "finite_assignment",
+      "statement": "A positive E subgradient-rule margin can coexist with a strictly negative exact finite E gain.",
+      "status": "counterexample",
+      "title": "Positive first-order E margin need not imply exact finite improvement"
+    },
+    {
+      "dependencies": [],
+      "id": "HARD-GEOMETRIC-EMPIRICAL-PIECEWISE-CONSTANT",
+      "level": "empirical_inductive_quantizer",
+      "statement": "For hard affine/Voronoi parameterizations, finite empirical labels and cell moments remain unchanged until a training row crosses a boundary; ordinary gradient is therefore zero almost everywhere.",
+      "status": "project_proved",
+      "title": "Hard finite geometric objective is piecewise constant in boundary parameters"
+    },
+    {
+      "dependencies": [],
+      "id": "SOFT-RANDOMIZED-FIM",
+      "level": "finite_assignment",
+      "statement": "For probabilities r_ib, W_b=\u03a3_i w_i r_ib and m_b=\u03a3_i w_i r_ib s_i give I_soft=\u03a3_b m_bm_b^T/W_b, the Fisher information of the corresponding randomized categorical observation when the randomization rule is theta-independent.",
+      "status": "project_proved",
+      "title": "Soft assignments are an actual randomized quantizer"
+    },
+    {
+      "dependencies": [],
+      "id": "SOFT-FIXED-TEMP-STATIONARY",
+      "level": "empirical_inductive_quantizer",
+      "statement": "A positive-temperature softmax affine-max family is smooth on the regular region; line-search gradient/quasi-Newton methods can be monotone in the soft objective and converge only to standard stationary notions.",
+      "status": "bridge",
+      "title": "Fixed-temperature soft optimization has standard nonconvex stationary guarantees"
+    },
+    {
+      "dependencies": [
+        "FI-QUANT-IDENTITY"
+      ],
+      "id": "SOFT-HARD-ATOMLESS-EQUIVALENCE",
+      "level": "population_quantizer",
+      "statement": "Because the objectives depend only on (W_b,m_b), atomless purification implies randomized and deterministic quantizers have the same attainable population objective values.",
+      "status": "bridge",
+      "title": "Randomized and deterministic population optima coincide for moment-based criteria under atomlessness"
+    },
+    {
+      "dependencies": [],
+      "id": "RATIO-LOCAL-SCORE",
+      "level": "score_oracle",
+      "statement": "s(x)=\u2207_theta log[p(x|theta)/p(x|theta0)]|theta0; absolute normalized densities are unnecessary if the relevant local density ratio is available.",
+      "status": "bridge",
+      "title": "Local score can be obtained from a local density ratio"
+    },
+    {
+      "dependencies": [
+        "RATIO-LOCAL-SCORE"
+      ],
+      "id": "MIXTURE-RATIO-SCORE",
+      "level": "score_oracle",
+      "statement": "For p(x|theta)=\u03a3_alpha theta_alpha phi_alpha(x), score coordinates depend on phi_alpha(x)/\u03a3_beta theta0_beta phi_beta(x); ratios to one reference component suffice after algebraic reconstruction.",
+      "status": "bridge",
+      "title": "Linear-mixture component ratios suffice for score construction"
+    },
+    {
+      "dependencies": [],
+      "id": "CLASSIFIER-RATIO-ORACLE",
+      "level": "score_oracle",
+      "statement": "With known class priors, posterior odds recover component density ratios, which can then be transformed into the local mixture score.",
+      "status": "literature",
+      "title": "Calibrated classifier posterior odds recover component density ratios"
+    },
+    {
+      "dependencies": [
+        "FI-QUANT-IDENTITY"
+      ],
+      "id": "PROXY-TRUE-RETAINED-FI",
+      "level": "information_accounting",
+      "statement": "If q is built from estimated score s_hat, the actual retained information is Var(E[s|q(s_hat)]), not Var(E[s_hat|q(s_hat)]) unless the proxy is exact in the relevant sense.",
+      "status": "bridge",
+      "title": "True retained Fisher information under a score proxy"
+    },
+    {
+      "dependencies": [],
+      "id": "CONSISTENCY-RESTRICTED-AFFINE",
+      "level": "empirical_to_population",
+      "statement": "For a compact finite-capacity affine-max class with uniform cell-mass and conditioning margins and appropriate score integrability, cell moments converge uniformly; objective values converge uniformly; approximate empirical maximizers are value-consistent, and isolated population optima give decision/parameter consistency up to labels.",
+      "status": "project_proved",
+      "title": "Restricted affine-max empirical consistency"
+    },
+    {
+      "dependencies": [
+        "D-GLOBAL-GEOMETRIC-REALIZABILITY",
+        "CONSISTENCY-RESTRICTED-AFFINE"
+      ],
+      "id": "OPEN-D-UNRESTRICTED-CONSISTENCY",
+      "level": "empirical_to_population",
+      "statement": "Determine whether unrestricted empirical global D optima converge in value/decision to population global hard quantizers.",
+      "status": "open",
+      "title": "Unrestricted global D consistency"
+    },
+    {
+      "dependencies": [
+        "D-GLOBAL-XP"
+      ],
+      "id": "OPEN-D-PARAMETERIZED-COMPLEXITY",
+      "level": "finite_assignment",
+      "statement": "Determine NP-hardness/FPT/W[1]/ETH boundaries and tightness of N^{O(Kd)}; valid reductions are required.",
+      "status": "open",
+      "title": "Parameterized complexity of global finite D quantization"
+    },
+    {
+      "dependencies": [
+        "DS-TILT-DUAL-CERTIFICATE"
+      ],
+      "id": "OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY",
+      "level": "finite_assignment",
+      "statement": "Determine whether min_beta v_K(S_psi-beta S_lambda), with K and d_lambda part of the rational input, admits exact algebraic optimization in polynomial bit complexity using the fixed-tilt interval-DP oracle, including active tie refinements, without materializing a potentially large parametric-DP envelope. Settled by DS-TILT-DUAL-CERTIFICATE and its audit: fixed-tilt exact evaluation, polynomial certified-epsilon minimization, exact polynomial-bit minimization at d_lambda=1 for every K (root-separation bisection), and exact minimization in polynomially many arithmetic operations for fixed d_lambda>=2 with variable K (Toledo 1993 fixed-dimension parametric search with degree-2 comparisons). Remaining: a polynomial bit bound for fixed d_lambda>=2 with variable K (a root-separation argument for the conic breakpoint arrangement carried through the parametric search), and any exact statement, or hardness obstruction, for variable d_lambda.",
+      "status": "open",
+      "title": "Exact bit complexity of the variable-dimension tilt-DP dual"
+    },
+    {
+      "dependencies": [
+        "OPEN-DS-MARGINS-AT-OPTIMA"
+      ],
+      "id": "OPEN-DS-MARGINS-NONCENTERED",
+      "level": "empirical_to_population",
+      "statement": "Complete the academic margins dichotomy beyond the audited d_psi=d_lambda=1 DS15 class. For d_psi>1, establish the required uniqueness and rigidity theory for vector-D quantization of the efficient score before transferring the degenerate-attainer argument. For d_lambda>=2 and K>=d_psi+d_lambda+1, construct or refute a vector-(R) steering mechanism spanning all nuisance directions. The rank-vacuous boundary K=d_psi+d_lambda is already excluded by CE-DS-MARGINS-RANK-VACUITY-001. The deployment-facing non-centered DS18 remainder is closed by DS19's value-consistent interval-DP primal and is not part of this P6 question.",
+      "status": "open",
+      "title": "Vector-parameter margins dichotomy beyond the scalar DS15 class"
+    },
+    {
+      "dependencies": [
+        "DS-STABLE-MARGINS-PRICE",
+        "OPEN-DS-FINITE-POP-BRIDGE",
+        "DS-STABLE-BASINS-CENTERED-OBSTRUCTION"
+      ],
+      "id": "OPEN-DS-STABLE-BASINS",
+      "level": "empirical_to_population",
+      "statement": "Resolve the two academic remainders left by DS17 on the scalar conditionally centered class: whether ordinary exchange-stable empirical sequences can track (M5)-free coincident-centroid wasted-cell configurations, and whether the constrained values v*(kappa) and v*+(kappa) are attained and one-sided continuous under their distinct DS16 conventions. The Gaussian sign-split construction proves only nonemptiness of the closed population feasible class for kappa<=1/pi. Deployment and non-centered Delta-selection are closed out of P1 by DS19 and are not part of this P7 question.",
+      "status": "open",
+      "title": "Wasted-cell tracking and constrained-value attainment"
+    },
+    {
+      "dependencies": [
+        "D-EXCHANGE-IMPLIES-VORONOI",
+        "DS-FINITE-GEOMETRY-FAILS",
+        "E-GLOBAL-GEOMETRY-FAILS"
+      ],
+      "id": "OPEN-CRITERION-CHARACTERIZATION",
+      "level": "finite_assignment",
+      "statement": "Find necessary/sufficient conditions on concave F for one-point exchange stability to imply pointwise assignment under a common first-order metric/supergradient.",
+      "status": "open",
+      "title": "Characterize criteria with finite exchange => first-order geometry"
+    },
+    {
+      "dependencies": [
+        "SOFT-RANDOMIZED-FIM",
+        "SOFT-HARD-ATOMLESS-EQUIVALENCE"
+      ],
+      "id": "OPEN-ATOMIC-RANDOMIZATION-GAP",
+      "level": "population_quantizer",
+      "statement": "For atomic/finite score laws, determine whether splitting an atom among labels can strictly improve the objective over every deterministic hard score quantizer.",
+      "status": "open",
+      "title": "Atomic randomization gap"
+    },
+    {
+      "dependencies": [
+        "SOFT-FIXED-TEMP-STATIONARY",
+        "HARD-GEOMETRIC-EMPIRICAL-PIECEWISE-CONSTANT"
+      ],
+      "id": "OPEN-SOFT-HARD-ZEROTEMP",
+      "level": "empirical_inductive_quantizer",
+      "statement": "Determine when stationary points or optima of softened randomized affine/Voronoi families converge to hard stationary/optimal partitions as temperature tends to zero.",
+      "status": "open",
+      "title": "Soft-to-hard zero-temperature limit"
+    },
+    {
+      "dependencies": [
+        "CLASSIFIER-RATIO-ORACLE",
+        "PROXY-TRUE-RETAINED-FI"
+      ],
+      "id": "OPEN-CLASSIFIER-CALIBRATION-FI",
+      "level": "score_oracle",
+      "statement": "Relate posterior/ratio calibration error to density-ratio error, score error, representation loss, and final D/Ds efficiency.",
+      "status": "open",
+      "title": "Classifier calibration error to Fisher-information loss"
+    },
+    {
+      "dependencies": [
+        "PROXY-TRUE-RETAINED-FI"
+      ],
+      "id": "OPEN-SCORE-PERTURBATION",
+      "level": "score_oracle",
+      "statement": "Control cell moments, retained Fisher information, D/Ds objective, efficiency, and boundary displacement from norm bounds on score-proxy error.",
+      "status": "open",
+      "title": "Perturbation theory for estimated scores"
+    },
+    {
+      "dependencies": [],
+      "id": "OPEN-PARAMETER-MISMATCH",
+      "level": "population_quantizer",
+      "statement": "Bound D/Ds efficiency loss when a quantizer optimized at theta0 is evaluated at theta0+delta; seek local perturbation results.",
+      "status": "open",
+      "title": "Reference-point mismatch degradation"
+    },
+    {
+      "dependencies": [
+        "OPEN-PARAMETER-MISMATCH"
+      ],
+      "id": "OPEN-MULTIREFERENCE-ROBUST",
+      "level": "population_quantizer",
+      "statement": "Study average or minimax objectives over parameter regions and determine whether common-metric/affine geometry survives.",
+      "status": "open",
+      "title": "Multi-reference / robust quantization"
+    },
+    {
+      "dependencies": [
+        "INFO-D-EFFICIENCY"
+      ],
+      "id": "OPEN-D-EFFICIENCY-VS-K",
+      "level": "information_accounting",
+      "statement": "Find distribution-dependent/distribution-free bounds on eta_D(K) and inversion rules for required bin count at target efficiency.",
+      "status": "open",
+      "title": "Sharp D-efficiency bounds versus K"
+    },
+    {
+      "dependencies": [
+        "INFO-D-EFFICIENCY",
+        "INFO-DIRECTIONAL-DIAGNOSTICS"
+      ],
+      "id": "OPEN-D-DIRECTIONAL-BOUND",
+      "level": "information_accounting",
+      "statement": "Bound the worst normalized retained eigenvalue from eta_D, and conversely, with useful additional assumptions.",
+      "status": "open",
+      "title": "Direction-wise guarantees from determinant efficiency"
+    },
+    {
+      "dependencies": [
+        "PROXY-TRUE-RETAINED-FI",
+        "INFO-RETENTION-SPECTRUM"
+      ],
+      "id": "OPEN-RETENTION-UNCERTAINTY",
+      "level": "information_accounting",
+      "statement": "Develop influence-function or bootstrap confidence intervals for reported retention functionals (e.g. geometric-mean retention), handling the non-smoothness of hard assignment at cell boundaries, so retention is reported with error bars rather than as a point estimate.",
+      "status": "open",
+      "title": "Finite-sample uncertainty for retention estimates"
     }
   ],
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "scoreSpace": {
     "points": [
       [
@@ -1319,5 +1888,54 @@
       1.289090909090909,
       1.3
     ]
-  }
+  },
+  "solverMatrix": [
+    {
+      "configuration": "DExchangeConfig",
+      "contract": "Exact positive-gain relocations; monotone objective; terminates exchange-stable",
+      "partitionCriteria": [
+        "DOptimality",
+        "ProfiledDOptimality"
+      ],
+      "quantizerCriteria": [
+        "DOptimality"
+      ]
+    },
+    {
+      "configuration": "MahalanobisLloydConfig",
+      "contract": "A batch is adopted only if the exactly rebuilt objective improves; optional exact-exchange guard",
+      "partitionCriteria": [
+        "DOptimality",
+        "ProfiledDOptimality"
+      ],
+      "quantizerCriteria": [
+        "DOptimality"
+      ]
+    },
+    {
+      "configuration": "KMeansConfig",
+      "contract": "Weighted $k$-means in whitened score space",
+      "partitionCriteria": [],
+      "quantizerCriteria": [
+        "NormalizedTrace"
+      ]
+    },
+    {
+      "configuration": "SoftVoronoiConfig",
+      "contract": "Differentiable soft optimization then hardening, with the hardening gap reported",
+      "partitionCriteria": [],
+      "quantizerCriteria": [
+        "DOptimality",
+        "ProfiledDOptimality"
+      ]
+    },
+    {
+      "configuration": "ScalarDPConfig",
+      "contract": "The exact global interval solution for rank-one score space",
+      "partitionCriteria": [],
+      "quantizerCriteria": [
+        "DOptimality"
+      ]
+    }
+  ]
 }

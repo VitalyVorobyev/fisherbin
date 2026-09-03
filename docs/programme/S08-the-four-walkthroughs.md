@@ -100,6 +100,18 @@ routes.
 **Retirement.** `website/src/pages/showcase.tsx` and `examples.tsx` deleted; `docs.tsx` left for
 S10, which replaces it with `/get-started`. Nav and navigation tests updated.
 
+**Handed over by S6 (decision R1).** This session also retires `docs/three-doors.md`, because
+this session writes the pages that replace it. The page carries **13 executed `python` fences**
+covering the source-versus-provider contract, all three provider constructions (including
+`CentralLogRatioScore`) and validation samples. Every one of them moves into walkthrough MDX,
+where the extended `tests/test_portal_snippets.py` executes it; the fence count before and after
+goes in the closing report. Deleting the page without moving the fences would silently drop
+coverage the programme has already ruled must not disappear. On retirement, remove
+`three-doors.md` from `tests/test_readme.py`'s `_FRONT_DOOR`, add it to
+`test_retired_pages_are_gone`, re-point every inbound link the S6 closing report lists, and change
+its `website/redirects.json` entry from `reference/three-doors/` to the walkthrough that replaces
+it.
+
 ## Done criteria
 
 - Four MDX walkthroughs exist and render; each hits all eight beats, verified against this packet

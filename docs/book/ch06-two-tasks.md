@@ -202,6 +202,7 @@ Not every criterion works with every solver, and rather than accept a pairing an
 do something else, ScoreQuant enumerates the combinations it implements and rejects the
 rest before any optimization starts.
 
+<!-- generated: solver-matrix (do not edit by hand; run `pnpm generate:data`) -->
 | Configuration | `optimize_partition` | `fit_quantizer` |
 | --- | --- | --- |
 | `DExchangeConfig` | `DOptimality`, `ProfiledDOptimality` | `DOptimality` |
@@ -209,6 +210,7 @@ rest before any optimization starts.
 | `KMeansConfig` | — | `NormalizedTrace` |
 | `SoftVoronoiConfig` | — | `DOptimality`, `ProfiledDOptimality` |
 | `ScalarDPConfig` | — | `DOptimality` |
+<!-- /generated: solver-matrix -->
 
 ```python
 for config, criterion, task in (

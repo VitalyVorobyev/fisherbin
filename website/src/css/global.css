@@ -570,6 +570,21 @@ kbd {
 /* Development blog — the portal's editorial reading surface. Docusaurus owns
    the markup here, so these rules attach to semantic structure inside the
    frame rather than to the theme's hashed CSS-module class names. */
+.docs-frame { width: var(--page); margin: 0 auto; padding: 76px 0 96px; }
+.doc-article__body { max-width: var(--reading); min-width: 0; }
+.doc-article--with-toc { display: grid; grid-template-columns: minmax(0, 1fr) 232px; gap: 58px; }
+.doc-article__toc { position: sticky; top: 104px; align-self: start; padding-left: 22px; border-left: 1px solid var(--line); font-size: 13px; }
+.doc-article__toc-title { display: block; margin-bottom: 12px; color: var(--ink-500); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.doc-article__toc ul { margin: 0; padding: 0; list-style: none; }
+.doc-article__toc li { margin: 9px 0; }
+.doc-article__toc li[data-level="3"] { padding-left: 14px; }
+.doc-article__toc a { color: var(--ink-600); }
+.doc-article__toc a:hover { color: var(--blue); }
+@media (max-width: 1080px) {
+  .doc-article--with-toc { grid-template-columns: minmax(0, 1fr); }
+  .doc-article__toc { display: none; }
+}
+.docs-frame__content { max-width: var(--reading); min-width: 0; }
 .blog-frame { width: var(--page); margin: 0 auto; padding: 76px 0 96px; }
 /* The index supplies its own PageIntro, which already carries the top spacing. */
 .page-intro + .blog-frame { padding-top: 8px; }
@@ -646,6 +661,31 @@ kbd {
 }
 .blog-frame .markdown table { display: block; overflow-x: auto; width: 100%; font-size: 15px; }
 .blog-frame .markdown th, .blog-frame .markdown td { border: 1px solid var(--line); }
+
+/* Docs-plugin article content (/walkthroughs, /research) reads like the blog's. */
+.doc-article .markdown table { display: block; overflow-x: auto; width: 100%; font-size: 15px; }
+.doc-article .markdown th, .doc-article .markdown td { border: 1px solid var(--line); }
+.doc-article .markdown blockquote {
+  margin: 26px 0;
+  padding: 4px 0 4px 22px;
+  border-left: 2px solid var(--blue);
+  color: var(--ink-800);
+  font-size: 18px;
+}
+
+/*
+ * Infima stripes every even table row with `rgba(0, 0, 0, .03)`, which over the
+ * portal's page background resolves to #f1f2f3. The portal's link blue (--blue,
+ * #276be8) measures 4.3:1 against that, below the WCAG AA threshold of 4.5:1 that
+ * the axe scan enforces — so a link in an even row failed the scan on every page
+ * with a table. Portal tables are plain paper with the portal's own rules, which
+ * is both the accessible answer and the consistent one.
+ *
+ * The variable is `--ifm-table-stripe-background`. Infima also defines
+ * `--ifm-table-stripe-background-color`, which is NOT what the stripe rule reads;
+ * setting that one changes nothing.
+ */
+.blog-frame .markdown, .doc-article .markdown { --ifm-table-stripe-background: transparent; }
 
 /* Tags and pagination: the footer furniture Docusaurus emits under each post. */
 .blog-frame .margin-top--sm a[href*="/tags/"],

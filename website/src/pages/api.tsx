@@ -3,6 +3,7 @@ import {useMemo, useState} from "react";
 import {AppShell} from "../components/AppShell";
 import {PageIntro} from "../components/PageIntro";
 import {portalData} from "../data/portal";
+import {REFERENCE_BASE, siteUrl} from "../lib/site";
 
 type Kind = "all" | "class" | "function";
 
@@ -20,11 +21,11 @@ export default function Api(): React.JSX.Element {
         <aside className="side-index"><span>Symbol kind</span>{(["all", "class", "function"] as Kind[]).map((value) => <button key={value} className={kind === value ? "is-active" : ""} onClick={() => setKind(value)}>{value === "all" ? "All public symbols" : value === "class" ? "Classes" : "Functions"}</button>)}</aside>
         <section className="editorial-panel">
           <div className="filter-row"><input className="filter-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Filter by name or contract" aria-label="Filter API symbols"/><span className="tag">{symbols.length} symbols</span></div>
-          <div className="provenance-note"><span aria-hidden="true">◇</span><span>Generated at build time from <code>scorequant.__all__</code>, Python signatures, NumPy-style docstrings, and source line locations.</span></div>
+          <div className="provenance-note"><span aria-hidden="true">◇</span><span>Generated at build time from <code>scorequant.__all__</code>, Python signatures, NumPy-style docstrings, and source line locations. For the hand-written guide that walks the API rather than listing it, see the reference&rsquo;s <a href={`${REFERENCE_BASE}api/`}>API guide</a>.</span></div>
           <div className="api-list">
             {symbols.map((symbol) => (
               <article className="api-symbol" id={symbol.name.toLowerCase()} key={symbol.name}>
-                <div className="api-symbol__top"><h2>{symbol.name}</h2><div className="api-symbol__links"><a href={symbol.source}>source ↗</a><a href={`/scorequant${symbol.reference}`}>full reference ↗</a></div></div>
+                <div className="api-symbol__top"><h2>{symbol.name}</h2><div className="api-symbol__links"><a href={symbol.source}>source ↗</a><a href={siteUrl(symbol.reference)}>full reference ↗</a></div></div>
                 <code>{symbol.signature}</code><p>{symbol.summary || "Public contract documented in the canonical reference."}</p>
               </article>
             ))}

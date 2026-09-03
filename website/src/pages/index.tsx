@@ -57,7 +57,7 @@ export default function Home(): React.JSX.Element {
         <div className="section-wrap">
           <div className="section-heading">
             <div><span className="eyebrow">Then choose a door</span><h2>Different observations. One score law.</h2></div>
-            <Link className="plain-link" to="/theory">Why scores are sufficient here →</Link>
+            <Link className="plain-link" to="/research">Why scores are sufficient here →</Link>
           </div>
           <div className="door-grid">
             <article className="door"><small>Door 1 · direct</small><h3>You already have scores</h3><p>Bring event-level score vectors and optional importance weights. This is the shortest, most transparent path.</p></article>

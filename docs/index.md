@@ -1,5 +1,11 @@
 # ScoreQuant
 
+This is the ScoreQuant **reference**: the exhaustive API, method and evidence material behind the
+library. For the explanation and the guided walkthroughs, start at the site root,
+[vitalyvorobyev.github.io/scorequant](https://vitalyvorobyev.github.io/scorequant/) — this page and
+everything under it assume you already know why you are here. Looking for the generated API pages
+directly? Jump straight to [Symbols](symbols/index.md).
+
 ScoreQuant compresses events into a small number of hard bins while preserving the Fisher
 information that downstream parameter estimation depends on.
 
@@ -117,7 +123,7 @@ same for each door, and [Choosing your workflow](user-workflow.md) walks through
   certification), and a teaser into the real-data study below.
 - Evidence — the [synthetic gallery](gallery/index.md) and the reproducible
   [FlowCyt study](usecases/flowcyt/index.md).
-- [API guide](api.md) and [reference](reference/index.md) — released contracts and errors.
+- [API guide](api.md) and [reference](symbols/index.md) — released contracts and errors.
 - [Related work](related-work.md) — the four research traditions this sits in, an honest
   known-versus-new table, and a software comparison.
 - [Glossary](glossary.md) and [bibliography](bibliography.md).

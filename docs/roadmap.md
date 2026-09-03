@@ -265,7 +265,7 @@ with native NumPy in under ten seconds after warm-up.
 
 ## M12 — Consolidation programme
 
-**Status:** active; S1-S5 done; S6 and S7 unblocked and independent. The remaining sessions are the
+**Status:** active; S1-S6 done; S7 unblocked, and S8 waits on it. The remaining sessions are the
 user-facing half of the programme and were re-scoped on 3 September 2026 around one direction:
 the portal becomes the site root and explains rather than sells, MkDocs narrows to the
 exhaustive reference, and four detailed walkthroughs — one per input route, two on real data —
@@ -308,9 +308,10 @@ Four workstreams, each with its own gate:
   timeline and graph are replaced by a plain-English research section written from the novelty
   ledger. **Gate:** every portal snippet is executed by a test and every output it displays is
   captured from a run rather than typed; every research page states who it is for and links every
-  claim it makes; every pre-cut MkDocs URL resolves through a committed redirect manifest, checked
-  by a test against the assembled tree; Playwright end-to-end runs in CI; the root deployment is
-  live.
+  claim it makes; every pre-cut MkDocs URL resolves — 51 of the 53 through stubs from a committed
+  redirect manifest, the site root and `/reference/` by deliberately serving new content, with the
+  parity checked against the assembled tree rather than by eye; Playwright end-to-end runs in CI;
+  the root deployment is live.
 - **W4 — Showcases.** A realistic end-to-end example for each input route: score sample and
   density ratios (FlowCyt, already real), an analytic `ScoreFunction` with an explicit nuisance on
   the NumPy backend (Michelson fringe phase against a fringe-frequency nuisance), an executed
@@ -331,7 +332,7 @@ Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock
 | S3 | Library internals refactor | W2 | S1 | done |
 | S4 | Showcase foundations (Michelson phase, NumPy example, HEP data spike) | W4 | S3 | done |
 | S5 | Manuscript v9 draft | W1 | S2 | done |
-| S6 | Portal topology, reference cut, research narrative | W3 | S2, S3 | queued |
+| S6 | Portal topology, reference cut, research narrative | W3 | S2, S3 | done |
 | S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | queued |
 | S8 | The four walkthroughs | W3, W4 | S6, S7 | queued |
 | S10 | Portal front door: home, get-started, e2e in CI, deployment | W3 | S8 | queued |

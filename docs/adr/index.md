@@ -26,3 +26,4 @@ Only decisions that materially constrain future implementation are recorded here
 22. [ADR 0022 — Make `ScoreProvider` a protocol, not a closed union](0022-score-provider-protocol.md) — extends ADR 0010
 23. [ADR 0023 — Separate the deployable rule from the fit](0023-versioned-quantizer-artifact.md) — extends ADR 0009
 24. [ADR 0024 — Exception hierarchy and two-stage fit pipeline](0024-error-hierarchy-and-fit-pipeline.md) — extends ADR 0023
+25. [ADR 0025 — Serve the portal at the site root and MkDocs at `/reference/`](0025-portal-at-the-site-root.md) — completes ADR 0019

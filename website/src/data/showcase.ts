@@ -1,4 +1,5 @@
 import rawShowcase from "../generated/showcase-data.json";
+import {siteUrl} from "../lib/site";
 
 export interface ShowcaseDataset {
   citation: string;
@@ -89,7 +90,7 @@ export interface LabScoreTable {
   weights: number[];
 }
 
-const SCORES_URL = "/scorequant/portal/showcase-data/flowcyt-scores.json";
+const SCORES_URL = siteUrl("showcase-data/flowcyt-scores.json");
 
 /**
  * Load the score table on demand.

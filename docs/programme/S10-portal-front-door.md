@@ -100,6 +100,29 @@ Publication is an authorized action, not a merge side effect. The flip needs the
 go-ahead, requested with the assembled tree already verified, and the live URL is recorded in the
 closing report.
 
+**Also handed over by S6.** `README.md` carries **14 absolute
+`https://vitalyvorobyev.github.io/scorequant/...` links**, and they describe the *deployed* site,
+which does not change until this session flips the deployment. They were therefore deliberately
+left pointing at the pre-migration structure: updating them earlier would have broken live links —
+on GitHub and on the PyPI project page — for a migration that had not shipped. In the same commit
+that turns deployment on, every one of them moves under `/reference/`, except the badge link and
+any that should now point at a portal route. `docs/reference/` was renamed `docs/symbols/` in S6,
+so the "reference" link becomes `.../reference/symbols/`. `pyproject.toml`'s `Homepage` and
+`Documentation` already point at the site root and are correct unchanged — after the flip the root
+is the portal home, which is the point.
+
+**Handed over by S6 (decision R1).** This session also retires `docs/motivation.md` and
+`docs/user-workflow.md`, because this session writes the portal home and `/get-started` that
+replace them. `motivation.md` has no code fences and retires cleanly. `user-workflow.md` carries
+**9 executed `python` fences**; they move into `/get-started`, whose whole point is showing each
+snippet with its captured output, and the fence count before and after goes in the closing report.
+On retirement, remove both from `tests/test_readme.py`'s `_FRONT_DOOR`, add them to
+`test_retired_pages_are_gone`, re-point every inbound link the S6 closing report lists, and change
+their `website/redirects.json` entries from `reference/...` to the portal pages that replace them.
+`docs/user-workflow.md` also holds one of the seven hand-copies of the criterion/solver table
+(S6 decision R3 kept it because it is advice rather than a matrix); check whether `/get-started`
+should consume the generated fragment instead.
+
 ## Done criteria
 
 - The home page carries none of: a hero slogan, the proof strip, paired call-to-action buttons, a

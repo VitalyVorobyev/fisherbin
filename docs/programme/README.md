@@ -30,6 +30,13 @@ the walkthroughs' real numbers instead of promising them (S8 before S10). The `N
 the roadmap table is the merge lock, and the executable order is
 **S4 → (S6 ∥ S7) → S8 → S10 → S9**.
 
+One corollary, learned in S6 and worth stating as a rule: **a page is retired by the session that
+publishes its replacement.** S6 was originally to delete the three MkDocs narrative pages, but the
+portal pages replacing them are written in S8 and S10, and two of the three carry executed
+snippets whose coverage would have vanished in the gap. Retiring a page early trades a real,
+tested asset for a promise. So `three-doors.md` retires in S8 and `motivation.md` and
+`user-workflow.md` in S10, each alongside the page that takes over its job.
+
 ## Orchestrator invariants
 
 The session's orchestrator is a lean coordinator, not a reader of the codebase.

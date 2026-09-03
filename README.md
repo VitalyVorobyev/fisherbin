@@ -254,13 +254,15 @@ superior one.
 
 Unsupported task/criterion combinations are rejected before any optimization runs.
 
+<!-- generated: solver-matrix (do not edit by hand; run `pnpm generate:data`) -->
 | Configuration | `optimize_partition` | `fit_quantizer` | Contract |
 | --- | --- | --- | --- |
 | `DExchangeConfig` | `DOptimality`, `ProfiledDOptimality` | `DOptimality` | Exact positive-gain relocations; monotone objective; terminates exchange-stable |
 | `MahalanobisLloydConfig` | `DOptimality`, `ProfiledDOptimality` | `DOptimality` | A batch is adopted only if the exactly rebuilt objective improves; optional exact-exchange guard |
-| `SoftVoronoiConfig` | — | `DOptimality`, `ProfiledDOptimality` | Differentiable soft optimization then hardening, with the hardening gap reported |
 | `KMeansConfig` | — | `NormalizedTrace` | Weighted $k$-means in whitened score space |
+| `SoftVoronoiConfig` | — | `DOptimality`, `ProfiledDOptimality` | Differentiable soft optimization then hardening, with the hardening gap reported |
 | `ScalarDPConfig` | — | `DOptimality` | The exact global interval solution for rank-one score space |
+<!-- /generated: solver-matrix -->
 
 The strong finite-sample bridge *exchange stable $\Rightarrow I_B^{-1}$-Voronoi* is specific to
 full $D$-optimality and should not be assumed for profiled $D_s$.

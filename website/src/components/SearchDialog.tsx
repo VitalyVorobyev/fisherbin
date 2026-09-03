@@ -2,6 +2,7 @@ import Link from "@docusaurus/Link";
 import {useEffect, useMemo, useRef, useState} from "react";
 
 import {portalData} from "../data/portal";
+import {siteUrl} from "../lib/site";
 
 interface PagefindData {
   excerpt: string;
@@ -33,7 +34,7 @@ const routes = [
   ["Docs", "/docs", "Choose a workflow from scores, densities, or ratios."],
   ["API", "/api", "Inspect generated Python signatures and contracts."],
   ["Examples", "/examples", "Reproducible workflows with evidence."],
-  ["Theory", "/theory", "Read the mathematical story chapter by chapter."],
+  ["Walkthroughs", "/walkthroughs", "One applied question followed end to end, with real numbers."],
   ["Benchmarks", "/benchmarks", "Compare speed, scale, and retained information."],
   ["Research", "/research", "Follow claims, dependencies, and counterexamples."],
   ["Lab", "/lab", "Run ScoreQuant locally in the browser."]
@@ -69,7 +70,7 @@ export function SearchDialog({open, onClose}: SearchDialogProps): React.JSX.Elem
     const sequence = ++searchSequence.current;
     void (async (): Promise<void> => {
       try {
-        const moduleURL = "/scorequant/portal/pagefind/pagefind.js";
+        const moduleURL = siteUrl("pagefind/pagefind.js");
         const pagefind = await import(/* webpackIgnore: true */ moduleURL) as PagefindModule;
         const response = await pagefind.search(normalized);
         const data = await Promise.all(response.results.slice(0, 6).map(async (hit) => hit.data()));

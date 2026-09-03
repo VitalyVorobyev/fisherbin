@@ -128,7 +128,7 @@ corepack pnpm test:e2e      # playwright; needs a prior build, it serves build/
 
 ```bash
 uv run mkdocs build --strict
-cd website && corepack pnpm assemble:preview
+cd website && corepack pnpm assemble:site
 ```
 
 This writes `.pages-preview/` with MkDocs at the root and the portal at `/portal/`. It does **not**
