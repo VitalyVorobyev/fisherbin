@@ -8,10 +8,11 @@ from typing import Literal
 
 import numpy as np
 
+from ._errors import ContractError
 from ._execution import canonical_array
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
-from ._validation import canonical_sample
+from ._validation import canonical_sample, validate_weights
 
 type ScoreKind = Literal[
     "unknown",
@@ -22,6 +23,10 @@ type ScoreKind = Literal[
 ]
 
 type RatioParameterizationKind = Literal["intensity", "mixture", "central_log_ratio"]
+
+type SourceKind = Literal["score_sample", "observation_sample", "integration_source"]
+
+type InformationKind = Literal["exact_fisher", "supplied_score_surrogate"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,16 +67,18 @@ class ScoreSchema:
         if not isinstance(self.parameters, tuple):
             raise TypeError("parameters must be a tuple of names")
         if not self.parameters:
-            raise ValueError("parameters must contain at least one name")
+            raise ContractError("parameters must contain at least one name")
         if any(not isinstance(name, str) for name in self.parameters):
             raise TypeError("parameter names must be strings")
         if any(not name.strip() for name in self.parameters):
-            raise ValueError("parameter names must be non-empty")
+            raise ContractError("parameter names must be non-empty")
         if len(set(self.parameters)) != len(self.parameters):
             duplicates = sorted(
                 {name for name in self.parameters if self.parameters.count(name) > 1}
             )
-            raise ValueError(f"parameter names must be unique; repeated: {', '.join(duplicates)}")
+            raise ContractError(
+                f"parameter names must be unique; repeated: {', '.join(duplicates)}"
+            )
 
     @property
     def dimension(self) -> int:
@@ -190,12 +197,12 @@ def validate_schema(
     if not isinstance(schema, ScoreSchema):
         raise TypeError("schema must be a ScoreSchema")
     if schema.dimension != dimension:
-        raise ValueError(
+        raise ContractError(
             f"schema names {schema.dimension} parameters but the scores have {dimension} columns"
         )
     reference_point = None if provenance is None else provenance.reference_point
     if reference_point is not None and len(reference_point) != schema.dimension:
-        raise ValueError(
+        raise ContractError(
             f"schema names {schema.dimension} parameters but the provenance "
             f"reference point has {len(reference_point)} entries"
         )
@@ -249,24 +256,12 @@ class ObservationSample:
     def __init__(self, observations: ArrayLike, weights: ArrayLike | None = None) -> None:
         array = np.asarray(observations)
         if array.ndim != 2 or array.shape[0] == 0 or array.shape[1] == 0:
-            raise ValueError("observations must have non-empty shape [N, D]")
+            raise ContractError("observations must have non-empty shape [N, D]")
         if not np.issubdtype(array.dtype, np.inexact):
             array = array.astype(np.float32)
         if not bool(np.all(np.isfinite(array))):
-            raise ValueError("observations must be finite")
-        weight_array = (
-            np.ones(array.shape[0], dtype=array.dtype)
-            if weights is None
-            else np.asarray(weights, dtype=array.dtype)
-        )
-        if weight_array.shape != (array.shape[0],):
-            raise ValueError(f"weights must have shape [{array.shape[0]}]")
-        if not bool(np.all(np.isfinite(weight_array))):
-            raise ValueError("weights must be finite")
-        if bool(np.any(weight_array < 0)):
-            raise ValueError("weights must be nonnegative")
-        if not bool(np.any(weight_array > 0)):
-            raise ValueError("at least one weight must be positive")
+            raise ContractError("observations must be finite")
+        weight_array = validate_weights(weights, array.shape[0], dtype=array.dtype)
         object.__setattr__(self, "observations", canonical_array(array))
         object.__setattr__(self, "weights", canonical_array(weight_array))
 
@@ -281,13 +276,13 @@ class GaussLegendreConfig:
     def __post_init__(self) -> None:
         """Validate quadrature capacity before materialization."""
         if isinstance(self.order, bool) or not isinstance(self.order, int) or self.order < 2:
-            raise ValueError("order must be an integer of at least two")
+            raise ContractError("order must be an integer of at least two")
         if (
             isinstance(self.max_points, bool)
             or not isinstance(self.max_points, int)
             or self.max_points < 1
         ):
-            raise ValueError("max_points must be a positive integer")
+            raise ContractError("max_points must be a positive integer")
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -312,13 +307,13 @@ class IntegrationSource:
     ) -> None:
         array = np.asarray(bounds)
         if array.ndim != 2 or array.shape[1] != 2 or array.shape[0] == 0:
-            raise ValueError("bounds must have shape [D, 2]")
+            raise ContractError("bounds must have shape [D, 2]")
         if not np.issubdtype(array.dtype, np.inexact):
             array = array.astype(np.float32)
         if not bool(np.all(np.isfinite(array))):
-            raise ValueError("bounds must be finite")
+            raise ContractError("bounds must be finite")
         if not bool(np.all(array[:, 1] > array[:, 0])):
-            raise ValueError("every upper bound must be greater than its lower bound")
+            raise ContractError("every upper bound must be greater than its lower bound")
         if not callable(density):
             raise TypeError("density must be callable")
         object.__setattr__(self, "bounds", canonical_array(array))
@@ -330,7 +325,7 @@ class IntegrationSource:
         dimension = int(self.bounds.shape[0])
         point_count = self.quadrature.order**dimension
         if point_count > self.quadrature.max_points:
-            raise ValueError(
+            raise ContractError(
                 "tensor quadrature would create "
                 f"{point_count} points, exceeding max_points={self.quadrature.max_points}"
             )
@@ -350,11 +345,11 @@ class IntegrationSource:
         )
         density_values = np.asarray(self.density(observations))
         if density_values.shape != (point_count,):
-            raise ValueError(f"density must return shape [{point_count}]")
+            raise ContractError(f"density must return shape [{point_count}]")
         if not bool(np.all(np.isfinite(density_values))):
-            raise ValueError("density values must be finite")
+            raise ContractError("density values must be finite")
         if bool(np.any(density_values < 0)):
-            raise ValueError("density values must be nonnegative")
+            raise ContractError("density values must be nonnegative")
         weights = density_values * np.asarray(quadrature_weights, dtype=density_values.dtype)
         return ObservationSample(observations, weights)
 

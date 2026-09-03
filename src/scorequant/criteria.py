@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal
 
+from ._errors import ContractError
 from ._typing import JsonValue
 from .sources import ScoreSchema
 
@@ -50,9 +51,9 @@ class ProfiledDOptimality:
     def __post_init__(self) -> None:
         """Validate the representation-independent part of the block contract."""
         if not self.interest:
-            raise ValueError("interest must contain at least one score column or parameter name")
+            raise ContractError("interest must contain at least one score column or parameter name")
         if len(set(self.interest)) != len(self.interest):
-            raise ValueError("interest entries must be unique")
+            raise ContractError("interest entries must be unique")
         entries: tuple[int | str, ...] = tuple(self.interest)
         if self.named:
             if any(not isinstance(entry, str) or not entry.strip() for entry in entries):
@@ -61,7 +62,7 @@ class ProfiledDOptimality:
         if any(isinstance(entry, bool) or not isinstance(entry, int) for entry in entries):
             raise TypeError("interest must be all integer indices or all parameter names")
         if any(int(entry) < 0 for entry in entries):
-            raise ValueError("interest indices must be nonnegative")
+            raise ContractError("interest indices must be nonnegative")
 
     @property
     def named(self) -> bool:
@@ -78,7 +79,7 @@ class ProfiledDOptimality:
         here by name instead of indexing a score matrix with a string.
         """
         if self.named:
-            raise ValueError(
+            raise ContractError(
                 "profiled interest is still expressed by name; it is resolved against "
                 "the sample schema at the public task boundary, so this criterion did "
                 "not come through optimize_partition or fit_quantizer"
@@ -104,7 +105,7 @@ class ProfiledDOptimality:
             return self
         if schema is None:
             names = ", ".join(str(entry) for entry in self.interest)
-            raise ValueError(
+            raise ContractError(
                 f"interest was declared by name ({names}) but the scores carry no "
                 "ScoreSchema; pass schema=ScoreSchema(...) on the sample, or use "
                 "score-column indices"

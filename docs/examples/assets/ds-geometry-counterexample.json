@@ -2075,7 +2075,7 @@
     "maximum_positive_violation": 0.041025641025640935,
     "maximum_bound_residual": -0.06259474790943322,
     "bound_certified": true,
-    "compile_refusal": "finite profiled-D labels have no canonical inductive compilation; fit an explicit quantizer instead",
+    "compile_refusal": "finite profiled-D labels have no canonical inductive compilation; fit an explicit quantizer instead [CE-DS-GLOBAL-GEOMETRY-001]",
     "d_labels": [
       2,
       1,

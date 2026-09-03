@@ -596,7 +596,7 @@ def test_profiled_partition_refuses_to_compile() -> None:
         criterion=sq.ProfiledDOptimality(problem.interest),
         config=sq.DExchangeConfig(seed=11),
     )
-    with pytest.raises(ValueError, match="no canonical inductive compilation"):
+    with pytest.raises(sq.RefusalError, match="no canonical inductive compilation"):
         profiled.compile_quantizer()
 
 
@@ -956,7 +956,7 @@ def test_ds_geometry_json_matches_what_the_library_reports() -> None:
     assert measured.bound_certified is True
     assert measured.compile_refusal == (
         "finite profiled-D labels have no canonical inductive compilation; "
-        "fit an explicit quantizer instead"
+        "fit an explicit quantizer instead [CE-DS-GLOBAL-GEOMETRY-001]"
     )
     # The determinant contrast on the very same rows.
     assert measured.d_voronoi_consistent is True

@@ -472,7 +472,7 @@ assert fixed_point.best_remaining_gain > 0.0
 try:
     fixed_point.compile_quantizer()
     raise AssertionError("an unstable partition has no theorem behind it")
-except ValueError as error:
+except sq.RefusalError as error:
     assert "only an exchange-stable D partition can be compiled" in str(error)
 ```
 

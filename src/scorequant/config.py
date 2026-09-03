@@ -7,6 +7,7 @@ from typing import Literal
 
 import numpy as np
 
+from ._errors import ContractError
 from ._json import json_ready
 from ._typing import JsonValue
 
@@ -40,13 +41,13 @@ class ExecutionConfig:
     def __post_init__(self) -> None:
         """Validate backend, precision, and device compatibility eagerly."""
         if self.backend not in ("jax", "numpy"):
-            raise ValueError("backend must be 'jax' or 'numpy'")
+            raise ContractError("backend must be 'jax' or 'numpy'")
         if self.precision not in ("preserve", "float32", "float64"):
-            raise ValueError("precision must be 'preserve', 'float32', or 'float64'")
+            raise ContractError("precision must be 'preserve', 'float32', or 'float64'")
         if self.device not in ("default", "cpu", "gpu", "tpu"):
-            raise ValueError("device must be 'default', 'cpu', 'gpu', or 'tpu'")
+            raise ContractError("device must be 'default', 'cpu', 'gpu', or 'tpu'")
         if self.backend == "numpy" and self.device not in ("default", "cpu"):
-            raise ValueError("the NumPy backend supports only the default CPU device")
+            raise ContractError("the NumPy backend supports only the default CPU device")
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible execution record."""
@@ -62,18 +63,27 @@ def _validate_integer(name: str, value: object, *, minimum: int) -> None:
     if isinstance(value, bool) or not isinstance(value, int):
         raise TypeError(f"{name} must be an integer")
     if value < minimum:
-        raise ValueError(f"{name} must be at least {minimum}")
+        raise ContractError(f"{name} must be at least {minimum}")
 
 
 def _validate_finite(name: str, value: object, *, positive: bool) -> None:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise TypeError(f"{name} must be a real number")
     if not np.isfinite(value):
-        raise ValueError(f"{name} must be finite")
+        raise ContractError(f"{name} must be finite")
     if positive and value <= 0:
-        raise ValueError(f"{name} must be positive")
+        raise ContractError(f"{name} must be positive")
     if not positive and value < 0:
-        raise ValueError(f"{name} must be nonnegative")
+        raise ContractError(f"{name} must be nonnegative")
+
+
+def validate_rank_rtol(rank_rtol: float | None) -> float | None:
+    """Validate a relative rank threshold: ``None`` (dtype default) or a finite value in [0, 1)."""
+    if rank_rtol is not None:
+        _validate_finite("rank_rtol", rank_rtol, positive=False)
+        if rank_rtol >= 1:
+            raise ContractError("rank_rtol must be less than one")
+    return rank_rtol
 
 
 def _validate_common_config(
@@ -87,10 +97,7 @@ def _validate_common_config(
     record_every: int,
 ) -> None:
     _validate_bool("whiten", whiten)
-    if rank_rtol is not None:
-        _validate_finite("rank_rtol", rank_rtol, positive=False)
-        if rank_rtol >= 1:
-            raise ValueError("rank_rtol must be less than one")
+    validate_rank_rtol(rank_rtol)
     _validate_integer("seed", seed, minimum=0)
     _validate_integer(restarts_field, restarts, minimum=1)
     _validate_finite("tolerance", tolerance, positive=False)
@@ -210,7 +217,7 @@ class SoftVoronoiConfig:
         _validate_finite("gradient_clip", self.gradient_clip, positive=True)
         _validate_finite("temperature_end_ratio", self.temperature_end_ratio, positive=True)
         if self.temperature_end_ratio > 1:
-            raise ValueError("temperature_end_ratio must be at most one")
+            raise ContractError("temperature_end_ratio must be at most one")
 
     def to_dict(self) -> dict[str, JsonValue]:
         """Return a JSON-compatible configuration mapping."""
@@ -286,10 +293,7 @@ class DExchangeConfig:
 
     def __post_init__(self) -> None:
         """Validate exchange settings at construction time."""
-        if self.rank_rtol is not None:
-            _validate_finite("rank_rtol", self.rank_rtol, positive=False)
-            if self.rank_rtol >= 1:
-                raise ValueError("rank_rtol must be less than one")
+        validate_rank_rtol(self.rank_rtol)
         _validate_integer("seed", self.seed, minimum=0)
         _validate_integer("initializer_restarts", self.initializer_restarts, minimum=1)
         if self.max_scans is not None:
@@ -297,7 +301,7 @@ class DExchangeConfig:
         _validate_bool("batch_moves", self.batch_moves)
         _validate_integer("solver_restarts", self.solver_restarts, minimum=1)
         if self.init not in ("kmeans++", "random"):
-            raise ValueError("init must be 'kmeans++' or 'random'")
+            raise ContractError("init must be 'kmeans++' or 'random'")
         _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
         _validate_bool("first_improvement", self.first_improvement)
         if self.collapse_duplicates is not None:
@@ -359,15 +363,12 @@ class MahalanobisLloydConfig:
 
     def __post_init__(self) -> None:
         """Validate the guarded batch settings at construction time."""
-        if self.rank_rtol is not None:
-            _validate_finite("rank_rtol", self.rank_rtol, positive=False)
-            if self.rank_rtol >= 1:
-                raise ValueError("rank_rtol must be less than one")
+        validate_rank_rtol(self.rank_rtol)
         _validate_integer("seed", self.seed, minimum=0)
         _validate_integer("initializer_restarts", self.initializer_restarts, minimum=1)
         _validate_integer("max_iter", self.max_iter, minimum=1)
         if self.guard not in ("exchange", "reject"):
-            raise ValueError("guard must be 'exchange' or 'reject'")
+            raise ContractError("guard must be 'exchange' or 'reject'")
         _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
         if self.collapse_duplicates is not None:
             _validate_bool("collapse_duplicates", self.collapse_duplicates)
@@ -412,10 +413,7 @@ class ScalarDPConfig:
     def __post_init__(self) -> None:
         """Validate the exact-solver capacity contract."""
         _validate_bool("whiten", self.whiten)
-        if self.rank_rtol is not None:
-            _validate_finite("rank_rtol", self.rank_rtol, positive=False)
-            if self.rank_rtol >= 1:
-                raise ValueError("rank_rtol must be less than one")
+        validate_rank_rtol(self.rank_rtol)
         _validate_integer("seed", self.seed, minimum=0)
         _validate_integer("max_rows", self.max_rows, minimum=1)
 

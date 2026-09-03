@@ -3,6 +3,7 @@
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _distribution_version
 
+from ._errors import ContractError, RefusalError, ScoreQuantError
 from .api import fit_quantizer, optimize_partition
 from .artifact import Quantizer
 from .certify import CertificationConfig, certify_partition
@@ -79,6 +80,7 @@ except PackageNotFoundError:  # pragma: no cover - only hit in an uninstalled tr
 __all__ = [
     "CentralLogRatioScore",
     "CertificationConfig",
+    "ContractError",
     "DExchangeConfig",
     "ExecutionConfig",
     "DOptimality",
@@ -107,10 +109,12 @@ __all__ = [
     "QuantizerResult",
     "RatioClosureReport",
     "RatioProvenance",
+    "RefusalError",
     "ScalarDPConfig",
     "ScoreFunction",
     "ScoreProvenance",
     "ScoreProvider",
+    "ScoreQuantError",
     "ScoreSample",
     "ScoreSchema",
     "SoftVoronoiConfig",

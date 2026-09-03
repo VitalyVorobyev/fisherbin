@@ -122,7 +122,7 @@ def test_reject_guard_reports_its_terminal_stability_honestly() -> None:
         result.compile_quantizer()
     else:
         assert result.best_remaining_gain > result.config.gain_tolerance
-        with pytest.raises(ValueError, match="guard='exchange'"):
+        with pytest.raises(sq.RefusalError, match="guard='exchange'"):
             result.compile_quantizer()
 
 
@@ -190,7 +190,7 @@ def test_profiled_labels_refuse_implicit_compilation() -> None:
     )
     assert result.profiled_report is not None
     assert result.profiled_geometry is not None
-    with pytest.raises(ValueError, match="no canonical inductive compilation"):
+    with pytest.raises(sq.RefusalError, match="no canonical inductive compilation"):
         result.compile_quantizer()
     with pytest.raises(ValueError, match="implements only DOptimality"):
         sq.fit_quantizer(

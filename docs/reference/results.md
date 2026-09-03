@@ -19,3 +19,9 @@
 ::: scorequant.OptimizationTrace
 
 ::: scorequant.ScoreProvenance
+
+::: scorequant.ScoreQuantError
+
+::: scorequant.ContractError
+
+::: scorequant.RefusalError

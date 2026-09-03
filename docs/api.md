@@ -262,6 +262,44 @@ A saved `Quantizer` is backend-free: the artifact stores arrays, not an executio
 followed by `predict_scores(..., execution=...)` chooses the runtime at prediction time. Public
 arrays are always `numpy.ndarray` whichever backend produced them.
 
+## Errors
+
+Every exception the library raises deliberately is a `scorequant.ScoreQuantError`. A
+`ContractError` (also a `ValueError`) means change the call: the arguments alone are enough to
+see the problem. A `RefusalError` means the library declined a valid request because a
+theorem-backed condition fails on your data, not on the call, and `error.counterexample` names
+the registry entry that forces the refusal.
+
+<!-- snippet: skip -->
+```python
+try:
+    fit.compile_quantizer()
+except sq.RefusalError as error:
+    print(error, error.counterexample)
+except sq.ContractError as error:
+    raise  # the call itself needs to change
+```
+
+`compile_quantizer()` and a degenerate profiled `fit_quantizer` raise `RefusalError`, which is
+not a `ValueError`.
+
+### Budgets
+
+| Parameter | Class | Default | Meaning |
+|---|---|---|---|
+| `max_iter` | `KMeansConfig` | 100 | Lloyd iterations per restart |
+| `kmeans_max_iter` | `SoftVoronoiConfig` | 100 | Lloyd iterations per initialization restart |
+| `max_steps` | `SoftVoronoiConfig` | 1000 | Adam updates |
+| `max_scans` | `DExchangeConfig` | `None` (run to stability) | complete candidate scans |
+| `max_iter` | `MahalanobisLloydConfig` | 100 | guarded batch iterations |
+| `max_nodes` | `CertificationConfig` | 2 000 000 | branch-and-bound nodes before `budget_exhausted` |
+
+These govern how long a solver may run. A separate set of parameters governs how big a problem it
+may accept: `solver_restarts` (8 on `KMeansConfig`, 1 on `DExchangeConfig`) and
+`initializer_restarts` (8 on the soft, exchange, and Lloyd configs) control how many restarts a
+solver tries, while `ScalarDPConfig.max_rows` (20 000) and `CertificationConfig.max_rows` (64,
+ceiling 512) cap how many rows a solver will accept before refusing outright.
+
 ---
 
 # Advanced
@@ -344,7 +382,7 @@ but no prediction method. One scan is one complete evaluation of every admissibl
 the default `batch_moves` a single scan may relocate many rows, so `accepted_moves` normally
 exceeds `scans`. The two Lloyd counters stay zero unless the guarded batch solver ran, and
 `objective_history` records every accepted step of every phase in order. Its `compile_quantizer()`
-rejects an unstable or geometrically degenerate result.
+raises `RefusalError` on an unstable or geometrically degenerate result.
 
 Geometry diagnostics are criterion-specific and never shared. A `DOptimality` result carries
 `geometry`, a `GeometryReport` measuring the largest Mahalanobis-Voronoi violation of the terminal

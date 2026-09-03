@@ -6,9 +6,10 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ._errors import ContractError
 from ._execution import apply_precision, use_execution
 from ._execution import xp as jnp
-from ._typing import ArrayLike
+from ._typing import ArrayLike, DTypeLike
 from .config import ExecutionConfig
 
 # ``None`` means automatic: below this many effective rows, collapsing pays
@@ -39,6 +40,28 @@ def resolve_collapse_duplicates(collapse_duplicates: bool | None, n_rows: int) -
     if collapse_duplicates is None:
         return n_rows <= _AUTO_COLLAPSE_MAX_ROWS
     return collapse_duplicates
+
+
+def validate_weights(
+    weights: ArrayLike | None, n_rows: int, *, dtype: DTypeLike = np.float64
+) -> np.ndarray:
+    """Return the validated ``[n_rows]`` weight vector as a NumPy array of ``dtype``.
+
+    ``None`` means unit weights. Raises ContractError on shape, non-finite, negative, or
+    all-zero weights. Checked in NumPy on the host: O(N) scalars never justify a device trip.
+    """
+    if weights is None:
+        return np.ones(n_rows, dtype=dtype)
+    array = np.asarray(weights, dtype=dtype)
+    if array.shape != (n_rows,):
+        raise ContractError(f"weights must have shape [{n_rows}], got {array.shape}")
+    if not np.all(np.isfinite(array)):
+        raise ContractError("weights must be finite")
+    if np.any(array < 0):
+        raise ContractError("weights must be nonnegative; signed weights are not supported")
+    if not np.any(array > 0):
+        raise ContractError("at least one weight must be positive")
+    return array
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,33 +97,22 @@ def validate_sample(
     """Validate scores and weights without normalizing their measure scale."""
     score_array = jnp.asarray(scores)
     if score_array.ndim != 2:
-        raise ValueError(f"scores must have shape [N, P], got {score_array.shape}")
+        raise ContractError(f"scores must have shape [N, P], got {score_array.shape}")
     if score_array.shape[0] == 0 or score_array.shape[1] == 0:
-        raise ValueError("scores must contain at least one observation and one parameter")
+        raise ContractError("scores must contain at least one observation and one parameter")
     if expected_features is not None and score_array.shape[1] != expected_features:
-        raise ValueError(
+        raise ContractError(
             f"scores have {score_array.shape[1]} parameters, expected {expected_features}"
         )
     score_array = promote_low_precision(score_array)
 
-    if weights is None:
-        weight_array = jnp.ones(score_array.shape[0], dtype=score_array.dtype)
-    else:
-        weight_array = jnp.asarray(weights, dtype=score_array.dtype)
-        if weight_array.shape != (score_array.shape[0],):
-            raise ValueError(
-                f"weights must have shape [{score_array.shape[0]}], got {weight_array.shape}"
-            )
+    weight_array = jnp.asarray(
+        validate_weights(weights, int(score_array.shape[0]), dtype=score_array.dtype)
+    )
 
-    # These conversions intentionally happen at the public validation boundary.
+    # This conversion intentionally happens at the public validation boundary.
     if not bool(np.asarray(jnp.all(jnp.isfinite(score_array)))):
-        raise ValueError("scores must be finite")
-    if not bool(np.asarray(jnp.all(jnp.isfinite(weight_array)))):
-        raise ValueError("weights must be finite")
-    if bool(np.asarray(jnp.any(weight_array < 0))):
-        raise ValueError("weights must be nonnegative; signed weights are not supported")
-    if not bool(np.asarray(jnp.any(weight_array > 0))):
-        raise ValueError("at least one weight must be positive")
+        raise ContractError("scores must be finite")
 
     positive = weight_array > 0
     return _ValidatedSample(
@@ -126,9 +138,9 @@ def validate_n_bins(n_bins: int, n_observations: int) -> None:
     if isinstance(n_bins, bool) or not isinstance(n_bins, int):
         raise TypeError("n_bins must be an integer")
     if n_bins < 1:
-        raise ValueError("n_bins must be at least one")
+        raise ContractError("n_bins must be at least one")
     if n_bins > n_observations:
-        raise ValueError("n_bins cannot exceed the number of positive-weight observations")
+        raise ContractError("n_bins cannot exceed the number of positive-weight observations")
 
 
 def collapse_duplicate_scores(

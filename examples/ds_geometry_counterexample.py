@@ -444,7 +444,7 @@ def library_run() -> LibraryRun:
     try:
         profiled.compile_quantizer()
         refusal = ""
-    except ValueError as error:
+    except sq.RefusalError as error:
         refusal = str(error)
 
     plain = sq.optimize_partition(scores, weights=weights, n_bins=N_CELLS, config=config)

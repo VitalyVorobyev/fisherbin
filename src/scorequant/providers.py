@@ -8,6 +8,7 @@ from typing import Protocol, runtime_checkable
 
 import numpy as np
 
+from ._errors import ContractError
 from ._execution import canonical_array, execution_scope
 from ._execution import xp as jnp
 from ._typing import ArrayLike, JsonValue
@@ -49,9 +50,9 @@ class ScoreFunction:
         del execution
         values = jnp.asarray(self.function(observations))
         if values.ndim != 2 or values.shape[0] != jnp.asarray(observations).shape[0]:
-            raise ValueError("score function must return shape [N, P]")
+            raise ContractError("score function must return shape [N, P]")
         if values.shape[1] == 0 or not bool(np.asarray(jnp.all(jnp.isfinite(values)))):
-            raise ValueError("score function must return finite non-empty scores")
+            raise ContractError("score function must return finite non-empty scores")
         return canonical_array(values)
 
 
@@ -122,7 +123,7 @@ def _merge_ratio_provenance(
         supplied_value = getattr(supplied, field_name)
         derived_value = getattr(facts, field_name)
         if supplied_value is not None and supplied_value != derived_value:
-            raise ValueError(
+            raise ContractError(
                 f"provenance.ratio.{field_name}={supplied_value!r} conflicts with the "
                 f"declared parameterization value {derived_value!r}"
             )
@@ -274,10 +275,10 @@ class DensityRatioScore:
         """Evaluate the ratio callback and apply the declared score map."""
         values = jnp.asarray(self.ratio(observations))
         if values.ndim != 2 or values.shape[0] != jnp.asarray(observations).shape[0]:
-            raise ValueError("ratio callback must return shape [N, K]")
+            raise ContractError("ratio callback must return shape [N, K]")
         expected = self.parameterization.n_components
         if values.shape[1] != expected:
-            raise ValueError(
+            raise ContractError(
                 f"ratio callback must return {expected} components, got {values.shape[1]}"
             )
         return self.parameterization.scores(values, execution=execution)
@@ -332,20 +333,20 @@ class CentralLogRatioScore:
             raise TypeError("schema must be a ScoreSchema")
         delta_array = jnp.asarray(deltas)
         if delta_array.ndim != 1 or delta_array.shape[0] == 0:
-            raise ValueError("deltas must have shape [P]")
+            raise ContractError("deltas must have shape [P]")
         if not bool(np.asarray(jnp.all(jnp.isfinite(delta_array)))) or bool(
             np.asarray(jnp.any(delta_array <= 0))
         ):
-            raise ValueError("deltas must be finite and positive")
+            raise ContractError("deltas must be finite and positive")
         priors = jnp.asarray(class_priors, dtype=delta_array.dtype)
         if priors.shape == (2,):
             priors = jnp.broadcast_to(priors, (delta_array.shape[0], 2))
         if priors.shape != (delta_array.shape[0], 2):
-            raise ValueError("class_priors must have shape [2] or [P, 2]")
+            raise ContractError("class_priors must have shape [2] or [P, 2]")
         if not bool(np.asarray(jnp.all(jnp.isfinite(priors)))) or bool(
             np.asarray(jnp.any(priors <= 0))
         ):
-            raise ValueError("class_priors must be finite and positive")
+            raise ContractError("class_priors must be finite and positive")
         priors = priors / jnp.sum(priors, axis=1, keepdims=True)
         object.__setattr__(self, "schema", schema)
         object.__setattr__(self, "predict", predict)
@@ -384,13 +385,13 @@ class CentralLogRatioScore:
         if values.ndim == 2 and values.shape[1] == 2 and self.deltas.shape[0] == 1:
             values = values[:, None, :]
         if values.ndim != 3 or values.shape[1:] != self.class_priors.shape:
-            raise ValueError(f"probabilities must have shape [N, {self.deltas.shape[0]}, 2]")
+            raise ContractError(f"probabilities must have shape [N, {self.deltas.shape[0]}, 2]")
         if not bool(np.asarray(jnp.all(jnp.isfinite(values)))) or bool(
             np.asarray(jnp.any(values <= 0))
         ):
-            raise ValueError("probabilities must be finite and strictly positive")
+            raise ContractError("probabilities must be finite and strictly positive")
         if not bool(np.asarray(jnp.allclose(jnp.sum(values, axis=2), 1))):
-            raise ValueError("classifier probability pairs must sum to one")
+            raise ContractError("classifier probability pairs must sum to one")
         log_ratio = jnp.log(values[:, :, 1] / values[:, :, 0])
         prior_log_ratio = jnp.log(self.class_priors[:, 1] / self.class_priors[:, 0])
         return canonical_array((log_ratio - prior_log_ratio[None, :]) / (2 * self.deltas[None, :]))
