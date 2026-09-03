@@ -2,6 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["markdown>=3.7"]
 # ///
+# ruff: noqa: E501  (the embedded stylesheet is lifted verbatim from v8.html)
 r"""Render a manuscript Markdown source to its HTML sibling.
 
 The manuscripts under ``agenticresearch/manuscripts/`` are authored in Markdown
@@ -235,6 +236,7 @@ def render(source: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Render the source named on the command line; return the process exit code."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("source", type=Path, help="manuscript .md file")
     parser.add_argument("-o", "--output", type=Path, help="output .html (default: sibling)")
