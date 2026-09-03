@@ -1,6 +1,6 @@
 # S05 — Manuscript v9 draft
 
-**Workstream:** W1 · **Needs:** S2 · **Parallel with:** S4 · **Status:** active
+**Workstream:** W1 · **Needs:** S2 · **Parallel with:** S4 · **Status:** done
 
 ## Goal
 

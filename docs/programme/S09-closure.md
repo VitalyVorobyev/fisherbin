@@ -1,6 +1,6 @@
 # S09 — Closure: independent v9 audit, exit gate, teardown
 
-**Workstream:** all · **Needs:** S5, S8 · **Parallel with:** — · **Status:** queued
+**Workstream:** all · **Needs:** S5, S8, S10 · **Parallel with:** — · **Status:** queued
 
 ## Goal
 
@@ -9,13 +9,16 @@ ledger, following `agenticresearch/protocols/audit.md`'s independence requiremen
 verdict per statement; this read is publication-critical and is not optional, per the plan's own
 risk note that attribution is publication-critical. Then verify all four workstream gates hold,
 flip every session row in the M12 table to `done` or `cut`, retire the session prompt in
-`docs/programme/README.md`, and consolidate the CHANGELOG for M11. Done means M12 reads `done` in
+`docs/programme/README.md`, and add the post-M12 CHANGELOG entry. Done means M12 reads `done` in
 `docs/roadmap.md` and the full handoff gate plus `pnpm validate` are green on `main`.
 
 ## Inputs
 
 - `docs/programme/README.md`: orchestrator contract; the session prompt this session retires.
-- `docs/programme/S08-portal-user-path.md`: S8 closing report; confirms the portal gate.
+- `docs/programme/S08-the-four-walkthroughs.md`: S8 closing report; confirms the walkthrough
+  half of the W3 and W4 gates.
+- `docs/programme/S10-portal-front-door.md`: S10 closing report; confirms the front door, the
+  redirect parity spot-check and the live deployment URL.
 - `docs/programme/S05-manuscript-v9-draft.md`: S5 closing report; confirms v9 exists and what it
   covers.
 - `agenticresearch/manuscripts/score_space_quantization_article_v9.md`: the document being
@@ -24,7 +27,7 @@ flip every session row in the M12 table to `done` or `cut`, retire the session p
 - `agenticresearch/protocols/audit.md`: the independence and verdict-per-statement procedure this
   session must follow.
 - `docs/roadmap.md`: M12 table and exit gate; this session flips the table and evaluates the gate.
-- `CHANGELOG.md`: consolidated for M11 at session end.
+- `CHANGELOG.md`: the post-M12 entry is added at session end.
 - `agenticresearch/py/registry.py`: `validate` for the final registry check.
 
 Companion research packet: `agenticresearch/WORK/active/MANUSCRIPT-V9-AUDIT.md`. It does not exist
@@ -38,18 +41,21 @@ programme packet points at it and does not duplicate its content.
   vocabulary).
 - `agenticresearch/WORK/completed/MANUSCRIPT-V9-AUDIT.md`: the closed companion packet, carrying
   the audit verdicts.
-- `docs/roadmap.md`: M12 exit gate evaluated; every session row (S1-S9) flipped to `done` or
+- `docs/roadmap.md`: M12 exit gate evaluated; every session row (S1-S10) flipped to `done` or
   `cut`; M12 status line changed to `done`.
 - `docs/programme/README.md`: the copy-paste session prompt retired (marked no longer active, or
   removed per the session's judgment, with the reason recorded).
-- `CHANGELOG.md`: consolidated entry for the M11 release, summarizing the programme's changes.
+- `CHANGELOG.md`: an entry for the release that follows M12, summarizing the programme's changes.
+  The `0.1.0` entry is closed and dated 2026-08-30 (the release shipped before M12 began; S4
+  corrected the stale `unreleased` heading), so this session adds the next entry rather than
+  editing that one.
 
 ## Done criteria
 
 - Every statement in v9 that the ledger tags has a recorded audit verdict.
 - All four M12 workstream gates (W1-W4) hold, verified against their stated gate text in
   `docs/roadmap.md`, not assumed from session closing reports alone.
-- Every session row S1-S9 in the M12 table reads `done` or `cut`.
+- Every session row S1-S10 in the M12 table reads `done` or `cut`.
 - `docs/roadmap.md` M12 status line reads `done`.
 - The full handoff gate, `pnpm validate`, and `python agenticresearch/py/registry.py validate` are
   all green on `main`.
@@ -59,11 +65,11 @@ programme packet points at it and does not duplicate its content.
 
 | Task | Tier | Output |
 |---|---|---|
-| Perform the independent audit read of v9 against the ledger, verdict per statement | opus/fable, must not have drafted v9 in S5 | verdict table |
-| Check every S1-S8 packet for a written closing report and its done criteria met | haiku | coverage checklist |
+| Perform the independent audit read of v9 against the ledger, verdict per statement | opus, must not have drafted v9 in S5; never `fable` | verdict table |
+| Check every S1-S8 and S10 packet for a written closing report and its done criteria met | haiku | coverage checklist |
 | Draft and close the companion audit packet | haiku | `WORK/completed/MANUSCRIPT-V9-AUDIT.md` |
 | Run the full handoff gate, `pnpm validate`, and `registry.py validate` | haiku | gate output |
-| Update `docs/roadmap.md` (session rows, M12 status, exit gate), retire the README session prompt, consolidate CHANGELOG | orchestrator | roadmap, README, CHANGELOG diff |
+| Update `docs/roadmap.md` (session rows, M12 status, exit gate), retire the README session prompt, add the CHANGELOG entry | orchestrator | roadmap, README, CHANGELOG diff |
 
 ## Verification
 
