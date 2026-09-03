@@ -33,6 +33,7 @@ from typing import Literal
 
 import numpy as np
 
+from ._errors import ContractError
 from ._execution import canonicalize_public, execution_scope, scatter_set
 from ._execution import xp as jnp
 from ._json import json_ready
@@ -88,7 +89,7 @@ class CertificationConfig:
         _validate_integer("max_nodes", self.max_nodes, minimum=1)
         _validate_integer("max_rows", self.max_rows, minimum=1)
         if self.max_rows > _MAX_SUPPORTED_ROWS:
-            raise ValueError(f"max_rows must be at most {_MAX_SUPPORTED_ROWS}")
+            raise ContractError(f"max_rows must be at most {_MAX_SUPPORTED_ROWS}")
         _validate_finite("gain_tolerance", self.gain_tolerance, positive=False)
 
     def to_dict(self) -> dict[str, JsonValue]:
@@ -148,7 +149,7 @@ def certify_partition(
 
     Raises
     ------
-    ValueError
+    ContractError
         When the criterion is profiled, when the instance exceeds ``max_rows``,
         or when the inputs cannot support a regular ``n_bins``-cell partition.
     """
@@ -158,7 +159,7 @@ def certify_partition(
         raise TypeError("certify_partition requires CertificationConfig")
     resolved_criterion = DOptimality() if criterion is None else criterion
     if not isinstance(resolved_criterion, DOptimality):
-        raise ValueError(
+        raise ContractError(
             "global certification supports DOptimality only: the singleton-completion "
             "bound relies on Loewner monotonicity of the log determinant under "
             "refinement, which the profiled Schur objective does not inherit"
@@ -170,7 +171,7 @@ def certify_partition(
     _require_d_bin_budget(prepared, n_bins)
     n_atoms = int(prepared.scores.shape[0])
     if n_atoms > resolved_config.max_rows:
-        raise ValueError(
+        raise ContractError(
             f"certify_partition received {n_atoms} distinct positive-weight score "
             f"atoms, exceeding max_rows={resolved_config.max_rows}; global "
             "certification is exponential and is not attempted beyond that capacity"
@@ -206,7 +207,7 @@ def _incumbent_labels(
     if incumbent is not None:
         collapsed = _collapsed_initial_labels(prepared, incumbent, n_bins)
         if collapsed is None:  # pragma: no cover - defensive, incumbent is not None
-            raise ValueError("incumbent labels could not be reduced to score atoms")
+            raise ContractError("incumbent labels could not be reduced to score atoms")
         return np.asarray(collapsed, dtype=np.int64)
     run = _optimize_labels(
         points=prepared.coordinates,
@@ -227,7 +228,7 @@ def _certificate(
 ) -> PartitionCertificate:
     """Expand certified atom labels to input rows and assemble the certificate."""
     if not np.isfinite(search.best_objective):
-        raise ValueError(
+        raise ContractError(
             "certification found no regular n_bins-cell partition; the incumbent is "
             "singular and the node budget stopped the search before it found one"
         )

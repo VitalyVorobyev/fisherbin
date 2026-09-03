@@ -6,11 +6,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ._errors import ContractError
 from ._execution import canonical_array, canonicalize_public, execution_scope
 from ._execution import xp as jnp
 from ._json import json_ready
 from ._typing import ArrayLike, JsonValue
-from .config import ExecutionConfig
+from .config import ExecutionConfig, validate_rank_rtol
 
 
 def _default_rank_rtol(dtype: jnp.dtype) -> float:
@@ -72,9 +73,9 @@ class FisherTransform:
         del execution
         array = jnp.asarray(scores, dtype=self.matrix.dtype)
         if array.ndim != 2 or array.shape[1] != self.input_dim:
-            raise ValueError(f"scores must have shape [N, {self.input_dim}], got {array.shape}")
+            raise ContractError(f"scores must have shape [N, {self.input_dim}], got {array.shape}")
         if not bool(np.asarray(jnp.all(jnp.isfinite(array)))):
-            raise ValueError("scores must be finite")
+            raise ContractError("scores must be finite")
         return canonical_array(array @ self.matrix)
 
     def to_dict(self) -> dict[str, JsonValue]:
@@ -123,21 +124,20 @@ def fisher_transform(
     del execution
     matrix = jnp.asarray(fisher)
     if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1] or matrix.shape[0] == 0:
-        raise ValueError("fisher must be a non-empty square matrix")
+        raise ContractError("fisher must be a non-empty square matrix")
     if not bool(np.asarray(jnp.all(jnp.isfinite(matrix)))):
-        raise ValueError("fisher must be finite")
+        raise ContractError("fisher must be finite")
     matrix = 0.5 * (matrix + matrix.T)
     eigenvalues, eigenvectors = jnp.linalg.eigh(matrix)
     maximum = float(np.asarray(jnp.max(eigenvalues)))
     if maximum <= 0:
-        raise ValueError("Fisher information has no positive informative direction")
+        raise ContractError("Fisher information has no positive informative direction")
+    validate_rank_rtol(rank_rtol)
     resolved_rtol = _default_rank_rtol(matrix.dtype) if rank_rtol is None else rank_rtol
-    if not np.isfinite(resolved_rtol) or resolved_rtol < 0:
-        raise ValueError("rank_rtol must be finite and nonnegative")
     threshold = resolved_rtol * maximum
     keep = np.asarray(eigenvalues > threshold)
     if not np.any(keep):
-        raise ValueError("rank threshold removes every Fisher direction")
+        raise ContractError("rank threshold removes every Fisher direction")
     basis = eigenvectors[:, keep]
     retained = eigenvalues[keep]
     transform_matrix = basis / jnp.sqrt(retained)[None, :] if whiten else basis

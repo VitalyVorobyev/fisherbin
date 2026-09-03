@@ -22,13 +22,16 @@ from pathlib import Path
 
 import numpy as np
 
+from ._errors import ContractError
 from ._execution import canonical_array, use_execution
 from ._json import json_ready
+from ._predict import chunked_predict_labels
 from ._typing import ArrayLike, JsonValue
 from .config import ExecutionConfig
 from .criteria import Criterion, DOptimality, NormalizedTrace, ProfiledDOptimality
 from .reports import InformationReport
 from .sources import (
+    InformationKind,
     RatioParameterizationKind,
     RatioProvenance,
     ScoreProvenance,
@@ -100,7 +103,7 @@ class Quantizer:
         return self.transform.input_dim
 
     @property
-    def information_kind(self) -> str:
+    def information_kind(self) -> InformationKind:
         """Describe whether supplied-score matrices justify exact Fisher language."""
         return "exact_fisher" if self.provenance.exact_fisher else "supplied_score_surrogate"
 
@@ -117,12 +120,10 @@ class Quantizer:
         tensor at once. Each row's nearest-center argmin is independent of every
         other row, so chunking is bit-identical to the unchunked computation.
         """
-        from .result import _chunked_predict_labels
-
         resolved = execution or self.execution
         with use_execution(resolved):
             coordinates = self.transform.apply(scores, execution=resolved)
-            return canonical_array(_chunked_predict_labels(coordinates, self.centers, self.metric))
+            return canonical_array(chunked_predict_labels(coordinates, self.centers, self.metric))
 
     def evaluate_scores(
         self,
@@ -249,11 +250,11 @@ class Quantizer:
         with zipfile.ZipFile(source) as archive:
             names = set(archive.namelist())
             if _MANIFEST not in names:
-                raise ValueError(f"{source} is not a ScoreQuant quantizer artifact")
+                raise ContractError(f"{source} is not a ScoreQuant quantizer artifact")
             manifest = json.loads(archive.read(_MANIFEST))
             version = manifest.get("format_version")
             if version != FORMAT_VERSION:
-                raise ValueError(
+                raise ContractError(
                     f"{source} declares quantizer artifact format_version {version!r}, "
                     f"but this build reads version {FORMAT_VERSION}"
                 )
@@ -261,7 +262,7 @@ class Quantizer:
             def array(name: str) -> np.ndarray:
                 member = f"{name}.npy"
                 if member not in names:
-                    raise ValueError(f"{source} is missing the {member} member")
+                    raise ContractError(f"{source} is missing the {member} member")
                 return np.load(BytesIO(archive.read(member)), allow_pickle=False)
 
             transform_facts = _mapping(manifest["transform"], "transform")
@@ -293,39 +294,39 @@ class Quantizer:
 def _mapping(value: JsonValue, field: str) -> dict[str, JsonValue]:
     """Narrow one manifest field to a JSON object."""
     if not isinstance(value, dict):
-        raise ValueError(f"quantizer artifact field {field!r} must be an object")
+        raise ContractError(f"quantizer artifact field {field!r} must be an object")
     return value
 
 
 def _number(value: JsonValue, field: str) -> float:
     """Narrow one manifest field to a float."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise ValueError(f"quantizer artifact field {field!r} must be a number")
+        raise ContractError(f"quantizer artifact field {field!r} must be a number")
     return float(value)
 
 
 def _flag(value: JsonValue, field: str) -> bool:
     """Narrow one manifest field to a boolean."""
     if not isinstance(value, bool):
-        raise ValueError(f"quantizer artifact field {field!r} must be a boolean")
+        raise ContractError(f"quantizer artifact field {field!r} must be a boolean")
     return value
 
 
 def _text(value: JsonValue, field: str) -> str:
     """Narrow one manifest field to a string."""
     if not isinstance(value, str):
-        raise ValueError(f"quantizer artifact field {field!r} must be a string")
+        raise ContractError(f"quantizer artifact field {field!r} must be a string")
     return value
 
 
 def _floats(value: JsonValue, field: str) -> tuple[float, ...]:
     """Narrow one manifest field to a tuple of floats."""
     if not isinstance(value, list):
-        raise ValueError(f"quantizer artifact field {field!r} must be a list")
+        raise ContractError(f"quantizer artifact field {field!r} must be a list")
     numbers: list[float] = []
     for entry in value:
         if isinstance(entry, bool) or not isinstance(entry, (int, float)):
-            raise ValueError(f"quantizer artifact field {field!r} must contain numbers")
+            raise ContractError(f"quantizer artifact field {field!r} must contain numbers")
         numbers.append(float(entry))
     return tuple(numbers)
 
@@ -342,7 +343,7 @@ def _provenance_from(facts: dict[str, JsonValue]) -> ScoreProvenance:
     metadata = facts.get("metadata")
     kind = _text(facts.get("kind", "unknown"), "provenance.kind")
     if kind not in ("unknown", "exact", "autodiff", "estimated_ratio", "custom_estimated"):
-        raise ValueError(f"unknown score provenance kind {kind!r} in quantizer artifact")
+        raise ContractError(f"unknown score provenance kind {kind!r} in quantizer artifact")
     description = facts.get("description")
     return ScoreProvenance(
         kind=kind,
@@ -373,7 +374,7 @@ def _ratio_from(facts: dict[str, JsonValue]) -> RatioProvenance:
             for row in priors:
                 values = _floats(row, "ratio.training_priors")
                 if len(values) != 2:
-                    raise ValueError("paired training priors must have two entries per row")
+                    raise ContractError("paired training priors must have two entries per row")
                 pairs.append((values[0], values[1]))
             restored_priors = tuple(pairs)
         else:
@@ -408,7 +409,7 @@ def _optional_floats(value: JsonValue | None, field: str) -> tuple[float, ...] |
 def _parameterization(name: str) -> RatioParameterizationKind:
     """Narrow a recorded parameterization name to the declared vocabulary."""
     if name not in ("intensity", "mixture", "central_log_ratio"):
-        raise ValueError(f"unknown ratio parameterization {name!r} in quantizer artifact")
+        raise ContractError(f"unknown ratio parameterization {name!r} in quantizer artifact")
     return name
 
 
@@ -422,15 +423,15 @@ def _criterion_from(facts: dict[str, JsonValue]) -> Criterion:
     if name == "profiled_d_optimality":
         interest = facts.get("interest")
         if not isinstance(interest, list):
-            raise ValueError("profiled criterion in artifact must list its interest columns")
+            raise ContractError("profiled criterion in artifact must list its interest columns")
         return ProfiledDOptimality(interest=tuple(int(_index(entry)) for entry in interest))
-    raise ValueError(f"unknown criterion {name!r} in quantizer artifact")
+    raise ContractError(f"unknown criterion {name!r} in quantizer artifact")
 
 
 def _index(value: JsonValue) -> int:
     """Narrow one recorded interest entry to a score-column index."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise ValueError("profiled interest columns in an artifact must be integers")
+        raise ContractError("profiled interest columns in an artifact must be integers")
     return int(value)
 
 
@@ -444,9 +445,9 @@ def _execution_from(facts: dict[str, JsonValue]) -> ExecutionConfig:
     precision = _text(facts["precision"], "execution.precision")
     device = _text(facts["device"], "execution.device")
     if backend not in ("jax", "numpy"):
-        raise ValueError(f"unknown execution backend {backend!r} in quantizer artifact")
+        raise ContractError(f"unknown execution backend {backend!r} in quantizer artifact")
     if precision not in ("preserve", "float32", "float64"):
-        raise ValueError(f"unknown execution precision {precision!r} in quantizer artifact")
+        raise ContractError(f"unknown execution precision {precision!r} in quantizer artifact")
     if device not in ("default", "cpu", "gpu", "tpu"):
-        raise ValueError(f"unknown execution device {device!r} in quantizer artifact")
+        raise ContractError(f"unknown execution device {device!r} in quantizer artifact")
     return ExecutionConfig(backend=backend, precision=precision, device=device)

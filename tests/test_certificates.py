@@ -358,9 +358,9 @@ def test_compilation_still_refuses_a_disagreement_its_certificate_does_not_cover
     uncertified = dataclasses.replace(
         result, geometry=dataclasses.replace(result.geometry, voronoi_consistent=False)
     )
-    with pytest.raises(ValueError, match="more than the gain tolerance"):
+    with pytest.raises(sq.RefusalError, match="more than the gain tolerance"):
         uncertified.compile_quantizer()
-    with pytest.raises(ValueError, match="more than the gain tolerance"):
+    with pytest.raises(sq.RefusalError, match="more than the gain tolerance"):
         dataclasses.replace(result, geometry=None).compile_quantizer()
 
 

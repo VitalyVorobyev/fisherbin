@@ -317,7 +317,7 @@ And it refuses to compile, in the one place where refusing matters.
 try:
     counterexample.compile_quantizer()
     raise AssertionError("a profiled partition has no canonical rule")
-except ValueError as error:
+except sq.RefusalError as error:
     assert "no canonical inductive compilation" in str(error)
 ```
 

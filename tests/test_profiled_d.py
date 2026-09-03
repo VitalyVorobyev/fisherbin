@@ -63,7 +63,7 @@ def test_profiled_exchange_reaches_exact_counterexample_and_does_not_compile() -
     assert result.profiled_geometry is not None
     assert result.profiled_geometry.maximum_positive_violation > 0
     assert result.profiled_geometry.maximum_bound_residual <= 1e-12
-    with pytest.raises(ValueError, match="no canonical inductive compilation"):
+    with pytest.raises(sq.RefusalError, match="no canonical inductive compilation"):
         result.compile_quantizer()
 
 

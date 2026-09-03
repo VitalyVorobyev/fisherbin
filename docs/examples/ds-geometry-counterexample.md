@@ -158,10 +158,10 @@ would disagree with the labels it came from.
 try:
     profiled.compile_quantizer()
     raise AssertionError("a profiled partition has no canonical rule")
-except ValueError as error:
+except sq.RefusalError as error:
     assert str(error) == (
         "finite profiled-D labels have no canonical inductive compilation; "
-        "fit an explicit quantizer instead"
+        "fit an explicit quantizer instead [CE-DS-GLOBAL-GEOMETRY-001]"
     )
 ```
 

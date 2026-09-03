@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from ._errors import ContractError
 from ._typing import ArrayLike
 from .result import InformationReport, OptimizationTrace, QuantizerResult
 
@@ -110,7 +111,7 @@ def plot_partition(
 
     Raises
     ------
-    ValueError
+    ContractError
         If the fitted informative space has rank above two. Use
         :func:`plot_summary` for a projection-free diagnostic instead.
     """
@@ -119,7 +120,7 @@ def plot_partition(
 
     coordinates = np.asarray(result.transform.apply(scores))
     if coordinates.shape[1] > 2:
-        raise ValueError(
+        raise ContractError(
             "plot_partition supports effective rank 1 or 2 only; "
             "use plot_summary for a projection-free diagnostic"
         )

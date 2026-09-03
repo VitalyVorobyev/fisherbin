@@ -204,7 +204,7 @@ generates — so the library refuses to invent one.
 try:
     initialized.compile_quantizer()
     raise AssertionError("a profiled partition has no canonical rule")
-except ValueError as error:
+except sq.RefusalError as error:
     assert "no canonical inductive compilation" in str(error)
 ```
 

@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from scorequant._errors import ContractError
 from scorequant._execution import (
     AdamState,
     adam_update,
@@ -79,7 +80,7 @@ def _soft_temperature_bounds(
     nearest_separations = jnp.sqrt(jnp.min(center_distances, axis=1))
     start = float(np.asarray(jnp.median(nearest_separations)))
     if not np.isfinite(start) or start <= 0:
-        raise ValueError("soft optimization requires distinct initial centers")
+        raise ContractError("soft optimization requires distinct initial centers")
     return start, start * end_ratio
 
 
@@ -253,11 +254,11 @@ def _soft_voronoi_reference(
     if isinstance(criterion, DOptimality):
         objective_scores = _normalized_objective_scores(objective_scores, weights, rank_rtol)
     elif objective_scores.shape[1] != effective_rank:
-        raise ValueError("profiled-D soft fitting requires full-rank supplied-score information")
+        raise ContractError("profiled-D soft fitting requires full-rank supplied-score information")
     full_fisher = jnp.einsum("n,np,nq->pq", weights, objective_scores, objective_scores)
     reference_sign, reference_value, objective_dimension = _criterion_logdet(full_fisher, criterion)
     if float(np.asarray(reference_sign)) <= 0:
-        raise ValueError("soft fitting requires nonsingular criterion information")
+        raise ContractError("soft fitting requires nonsingular criterion information")
     return objective_scores, float(np.asarray(reference_value)), objective_dimension
 
 
@@ -335,7 +336,7 @@ def soft_voronoi(
 ) -> QuantizerRun:
     """Optimize soft Fisher retention, then return centers for hard assignment."""
     if n_bins < effective_rank:
-        raise ValueError(
+        raise ContractError(
             "soft D-optimal fitting requires n_bins >= the effective Fisher rank; "
             "use k-means for smaller partitions"
         )

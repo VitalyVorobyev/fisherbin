@@ -18,10 +18,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ._errors import ContractError
 from ._execution import canonical_array, canonicalize_public, execution_scope
 from ._execution import xp as jnp
 from ._typing import ArrayLike
-from ._validation import promote_low_precision
+from ._validation import promote_low_precision, validate_weights
 from .components import scores_from_components
 from .config import ExecutionConfig
 from .reports import RatioClosureReport
@@ -32,26 +33,26 @@ _SIMPLEX_ATOL = 1e-7
 
 def _validate_simplex_vector(vector: jnp.ndarray, name: str, size: int) -> None:
     if vector.shape != (size,):
-        raise ValueError(f"{name} must have shape [{size}], got {vector.shape}")
+        raise ContractError(f"{name} must have shape [{size}], got {vector.shape}")
     if not bool(np.asarray(jnp.all(jnp.isfinite(vector)))):
-        raise ValueError(f"{name} must be finite")
+        raise ContractError(f"{name} must be finite")
     if bool(np.asarray(jnp.any(vector <= 0))):
-        raise ValueError(f"{name} must be strictly positive")
+        raise ContractError(f"{name} must be strictly positive")
     if not bool(
         np.asarray(jnp.allclose(jnp.sum(vector), 1.0, rtol=_SIMPLEX_RTOL, atol=_SIMPLEX_ATOL))
     ):
-        raise ValueError(f"{name} must sum to one")
+        raise ContractError(f"{name} must sum to one")
 
 
 def _validate_ratio_matrix(ratios: ArrayLike, name: str = "ratios") -> jnp.ndarray:
     values = jnp.asarray(ratios)
     if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] < 2:
-        raise ValueError(f"{name} must have non-empty shape [N, K] with K >= 2")
+        raise ContractError(f"{name} must have non-empty shape [N, K] with K >= 2")
     values = promote_low_precision(values)
     if not bool(np.asarray(jnp.all(jnp.isfinite(values)))):
-        raise ValueError(f"{name} must be finite")
+        raise ContractError(f"{name} must be finite")
     if bool(np.asarray(jnp.any(values < 0))):
-        raise ValueError(f"{name} must be nonnegative")
+        raise ContractError(f"{name} must be nonnegative")
     return values
 
 
@@ -83,7 +84,7 @@ def ratios_from_posteriors(
 
     Raises
     ------
-    ValueError
+    ContractError
         If shapes, finiteness, nonnegativity, or simplex normalization
         violate the posterior contract.
 
@@ -101,18 +102,18 @@ def ratios_from_posteriors(
     del execution
     values = jnp.asarray(posteriors)
     if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] < 2:
-        raise ValueError("posteriors must have non-empty shape [N, K] with K >= 2")
+        raise ContractError("posteriors must have non-empty shape [N, K] with K >= 2")
     values = promote_low_precision(values)
     if not bool(np.asarray(jnp.all(jnp.isfinite(values)))):
-        raise ValueError("posteriors must be finite")
+        raise ContractError("posteriors must be finite")
     if bool(np.asarray(jnp.any(values < 0))):
-        raise ValueError("posteriors must be nonnegative")
+        raise ContractError("posteriors must be nonnegative")
     if not bool(
         np.asarray(
             jnp.allclose(jnp.sum(values, axis=1), 1.0, rtol=_SIMPLEX_RTOL, atol=_SIMPLEX_ATOL)
         )
     ):
-        raise ValueError("posterior rows must sum to one")
+        raise ContractError("posterior rows must sum to one")
     priors = jnp.asarray(class_priors, dtype=values.dtype)
     _validate_simplex_vector(priors, "class_priors", values.shape[1])
     return canonical_array(values / priors[None, :])
@@ -152,7 +153,7 @@ def mixture_scores_from_ratios(
     ------
     TypeError
         If ``reference_component`` is not an integer.
-    ValueError
+    ContractError
         If shapes, finiteness, positivity, normalization, or the reference
         component violate the mixture-score contract.
 
@@ -174,15 +175,17 @@ def mixture_scores_from_ratios(
     if isinstance(reference_component, bool) or not isinstance(reference_component, int):
         raise TypeError("reference_component must be an integer")
     if not -n_components <= reference_component < n_components:
-        raise ValueError("reference_component is outside the component range")
+        raise ContractError("reference_component is outside the component range")
     resolved_reference = reference_component % n_components
     density = values @ fractions
     if bool(np.asarray(jnp.any(density <= 0))):
-        raise ValueError("the reference-density denominator must be strictly positive at every row")
+        raise ContractError(
+            "the reference-density denominator must be strictly positive at every row"
+        )
     kept_components = [index for index in range(n_components) if index != resolved_reference]
     scores = (values[:, kept_components] - values[:, resolved_reference, None]) / density[:, None]
     if not bool(np.asarray(jnp.all(jnp.isfinite(scores)))):
-        raise ValueError("mixture score construction produced non-finite values")
+        raise ContractError("mixture score construction produced non-finite values")
     return canonical_array(scores)
 
 
@@ -205,9 +208,9 @@ class IntensityParameterization:
     def __init__(self, coefficients: ArrayLike) -> None:
         array = jnp.asarray(coefficients)
         if array.ndim != 1 or array.shape[0] < 2:
-            raise ValueError("coefficients must have shape [K] with K >= 2")
+            raise ContractError("coefficients must have shape [K] with K >= 2")
         if not bool(np.asarray(jnp.all(jnp.isfinite(array)))):
-            raise ValueError("coefficients must be finite")
+            raise ContractError("coefficients must be finite")
         object.__setattr__(self, "coefficients", canonical_array(array))
 
     @property
@@ -230,7 +233,7 @@ class IntensityParameterization:
         """
         values = _validate_ratio_matrix(ratios)
         if values.shape[1] != self.n_components:
-            raise ValueError(f"ratios must have shape [N, {self.n_components}]")
+            raise ContractError(f"ratios must have shape [N, {self.n_components}]")
         return scores_from_components(values, self.coefficients, execution=execution)
 
 
@@ -257,12 +260,12 @@ class MixtureParameterization:
     def __init__(self, reference_fractions: ArrayLike, *, reference_component: int = -1) -> None:
         array = jnp.asarray(reference_fractions)
         if array.ndim != 1 or array.shape[0] < 2:
-            raise ValueError("reference_fractions must have shape [K] with K >= 2")
+            raise ContractError("reference_fractions must have shape [K] with K >= 2")
         _validate_simplex_vector(array, "reference_fractions", int(array.shape[0]))
         if isinstance(reference_component, bool) or not isinstance(reference_component, int):
             raise TypeError("reference_component must be an integer")
         if not -array.shape[0] <= reference_component < array.shape[0]:
-            raise ValueError("reference_component is outside the component range")
+            raise ContractError("reference_component is outside the component range")
         object.__setattr__(self, "reference_fractions", canonical_array(array))
         object.__setattr__(self, "reference_component", reference_component)
 
@@ -317,7 +320,7 @@ def ratio_closure_report(
 
     Raises
     ------
-    ValueError
+    ContractError
         If shapes, finiteness, or nonnegativity violate the contract.
 
     Notes
@@ -331,15 +334,7 @@ def ratio_closure_report(
     """
     del execution
     values = _validate_ratio_matrix(ratios)
-    weight_array = jnp.asarray(weights, dtype=values.dtype)
-    if weight_array.shape != (values.shape[0],):
-        raise ValueError(f"weights must have shape [{values.shape[0]}]")
-    if not bool(np.asarray(jnp.all(jnp.isfinite(weight_array)))):
-        raise ValueError("weights must be finite")
-    if bool(np.asarray(jnp.any(weight_array < 0))):
-        raise ValueError("weights must be nonnegative")
-    if not bool(np.asarray(jnp.any(weight_array > 0))):
-        raise ValueError("at least one weight must be positive")
+    weight_array = jnp.asarray(validate_weights(weights, int(values.shape[0]), dtype=values.dtype))
     normalizers = (weight_array @ values) / jnp.sum(weight_array)
     max_residual = float(jnp.max(jnp.abs(normalizers - 1.0)))
     return canonicalize_public(

@@ -119,7 +119,7 @@ def test_capped_scans_report_the_remaining_gain_and_refuse_compilation() -> None
     assert partition.scans == 3
     assert partition.exchange_stable is False
     assert partition.best_remaining_gain > partition.config.gain_tolerance
-    with pytest.raises(ValueError, match="max_scans"):
+    with pytest.raises(sq.RefusalError, match="max_scans"):
         partition.compile_quantizer()
 
 

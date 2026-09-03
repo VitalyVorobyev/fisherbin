@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ._errors import ContractError
 from ._execution import canonical_array, execution_scope
 from ._execution import xp as jnp
 from ._json import json_ready
@@ -27,11 +28,11 @@ def _names(
         tuple(f"{prefix}_{index}" for index in range(size)) if names is None else tuple(names)
     )
     if len(resolved) != size:
-        raise ValueError(f"expected {size} {prefix} names, got {len(resolved)}")
+        raise ContractError(f"expected {size} {prefix} names, got {len(resolved)}")
     if any(not isinstance(name, str) or not name for name in resolved):
-        raise ValueError(f"{prefix} names must be non-empty strings")
+        raise ContractError(f"{prefix} names must be non-empty strings")
     if len(set(resolved)) != len(resolved):
-        raise ValueError(f"{prefix} names must be unique")
+        raise ContractError(f"{prefix} names must be unique")
     return resolved
 
 
@@ -59,7 +60,7 @@ def scores_from_components(
 
     Raises
     ------
-    ValueError
+    ContractError
         If shapes are incompatible, values are non-finite, or the reference
         intensity is not strictly positive at every row.
 
@@ -78,23 +79,23 @@ def scores_from_components(
     del execution
     component_array = jnp.asarray(components)
     if component_array.ndim != 2 or min(component_array.shape) == 0:
-        raise ValueError("components must have non-empty shape [N, M]")
+        raise ContractError("components must have non-empty shape [N, M]")
     component_array = promote_low_precision(component_array)
     coefficient_array = jnp.asarray(coefficients, dtype=component_array.dtype)
     if coefficient_array.shape != (component_array.shape[1],):
-        raise ValueError(
+        raise ContractError(
             f"coefficients must have shape [{component_array.shape[1]}], "
             f"got {coefficient_array.shape}"
         )
     if not bool(np.asarray(jnp.all(jnp.isfinite(component_array)))):
-        raise ValueError("components must be finite")
+        raise ContractError("components must be finite")
     if not bool(np.asarray(jnp.all(jnp.isfinite(coefficient_array)))):
-        raise ValueError("coefficients must be finite")
+        raise ContractError("coefficients must be finite")
     intensity = component_array @ coefficient_array
     if bool(np.asarray(jnp.any(~jnp.isfinite(intensity)))) or bool(
         np.asarray(jnp.any(intensity <= 0))
     ):
-        raise ValueError("reference intensity must be finite and strictly positive at every row")
+        raise ContractError("reference intensity must be finite and strictly positive at every row")
     return canonical_array(component_array / intensity[:, None])
 
 
@@ -135,7 +136,7 @@ class LinearComponents:
             if set(coefficients) != set(component_names):
                 missing = sorted(set(component_names) - set(coefficients))
                 extra = sorted(set(coefficients) - set(component_names))
-                raise ValueError(
+                raise ContractError(
                     f"coefficient keys must match component keys; missing={missing}, extra={extra}"
                 )
             functions = tuple(components[name] for name in component_names)
@@ -147,9 +148,9 @@ class LinearComponents:
             coefficient_values = tuple(coefficients)
             component_names = tuple(f"component_{index}" for index in range(len(functions)))
         if not functions:
-            raise ValueError("at least one component function is required")
+            raise ContractError("at least one component function is required")
         if len(coefficient_values) != len(functions):
-            raise ValueError(
+            raise ContractError(
                 f"expected {len(functions)} coefficients, got {len(coefficient_values)}"
             )
         if any(not callable(function) for function in functions):
@@ -157,9 +158,9 @@ class LinearComponents:
         resolved_names = _names(component_names, len(functions), prefix="component")
         coefficient_array = np.asarray(coefficient_values, dtype=float)
         if coefficient_array.shape != (len(functions),):
-            raise ValueError("coefficients must be a one-dimensional scalar sequence")
+            raise ContractError("coefficients must be a one-dimensional scalar sequence")
         if not np.isfinite(coefficient_array).all():
-            raise ValueError("coefficients must be finite")
+            raise ContractError("coefficients must be finite")
         variable_names = None if variables is None else tuple(variables)
         resolved_variables = (
             None
@@ -193,23 +194,23 @@ class LinearComponents:
         del execution
         observations = np.asarray(X)
         if observations.ndim != 2 or min(observations.shape) == 0:
-            raise ValueError("X must have non-empty shape [N, K]")
+            raise ContractError("X must have non-empty shape [N, K]")
         if not np.issubdtype(observations.dtype, np.number) or not np.isfinite(observations).all():
-            raise ValueError("X must be numeric and finite")
+            raise ContractError("X must be numeric and finite")
         if self.variables is not None and observations.shape[1] != len(self.variables):
-            raise ValueError(
+            raise ContractError(
                 f"X has {observations.shape[1]} variables, expected {len(self.variables)}"
             )
         columns: list[jnp.ndarray] = []
         for name, function in zip(self.component_names, self.components, strict=True):
             values = jnp.asarray(function(observations))
             if values.shape != (observations.shape[0],):
-                raise ValueError(
+                raise ContractError(
                     f"component {name!r} must return shape [{observations.shape[0]}], "
                     f"got {values.shape}"
                 )
             if not bool(np.asarray(jnp.all(jnp.isfinite(values)))):
-                raise ValueError(f"component {name!r} returned a non-finite value")
+                raise ContractError(f"component {name!r} returned a non-finite value")
             columns.append(values)
         return canonical_array(jnp.stack(columns, axis=1))
 

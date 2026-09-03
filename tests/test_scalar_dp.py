@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 
 import scorequant as sq
-from scorequant import quantizers
 from scorequant.quantizers import scalar_interval_dp
+from scorequant.solvers import scalar as scalar_dp
 from tests._fit import fit_test_quantizer
 
 from ._oracles import _exhaustive_d_oracle
@@ -80,7 +80,7 @@ def test_striped_evaluation_does_not_change_the_optimum(monkeypatch: pytest.Monk
     values = rng.normal(size=57)
     weights = rng.uniform(0.3, 1.7, size=57)
     labels, objective = scalar_interval_dp(values, weights, 4)
-    monkeypatch.setattr(quantizers, "_DYNAMIC_WORKING_SET_BYTES", 512)
+    monkeypatch.setattr(scalar_dp, "_DYNAMIC_WORKING_SET_BYTES", 512)
     striped_labels, striped_objective = scalar_interval_dp(values, weights, 4)
     np.testing.assert_array_equal(striped_labels, labels)
     assert striped_objective == objective

@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from scorequant._binstats import scatter_bin_statistics
+from scorequant._errors import ContractError
 from scorequant._execution import (
     RandomSeed,
     backend_jit,
@@ -32,7 +33,7 @@ def _weighted_kmeans_plus_plus(
         probabilities = weights * minimum_distances
         total = float(np.asarray(jnp.sum(probabilities)))
         if not np.isfinite(total) or total <= 0:
-            raise ValueError(
+            raise ContractError(
                 "n_bins exceeds the number of distinct positive-weight score coordinates"
             )
         chosen = weighted_choice(seeds[bin_index], probabilities / jnp.sum(probabilities))
