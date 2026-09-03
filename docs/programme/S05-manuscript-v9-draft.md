@@ -1,6 +1,6 @@
 # S05 — Manuscript v9 draft
 
-**Workstream:** W1 · **Needs:** S2 · **Parallel with:** S4 · **Status:** active
+**Workstream:** W1 · **Needs:** S2 · **Parallel with:** S4 · **Status:** done
 
 ## Goal
 
@@ -27,9 +27,9 @@ did.
 - `agenticresearch/py/registry.py`: `show <ID> --deps --proof` per-claim evidence for each writer.
 - `agenticresearch/WORK/TEMPLATE.md`: section shape for the companion research packet.
 
-Companion research packet: `agenticresearch/WORK/active/MANUSCRIPT-V9-DRAFT.md`. It does not exist
-yet; this session drafts it from `agenticresearch/WORK/TEMPLATE.md` at session start. This
-programme packet points at it and does not duplicate its content.
+Companion research packet: `agenticresearch/WORK/completed/MANUSCRIPT-V9-DRAFT.md` (drafted from
+`agenticresearch/WORK/TEMPLATE.md` at session start, closed at session end). This programme packet
+points at it and does not duplicate its content.
 
 ## Deliverables
 
@@ -135,14 +135,64 @@ reproducible; record it in the manuscripts README.
 
 **Pause (3 September 2026).** The owner held S5 at the setup stage to conserve the session
 budget. Done so far on branch `consolidation-s5-manuscript-v9-draft`: roadmap row `active`,
-this design section, the companion packet `agenticresearch/WORK/active/MANUSCRIPT-V9-DRAFT.md`
-(open, Outcome unfilled). No v9 text exists yet. Resume by running the two writers named above
+this design section, the companion packet (then under `WORK/active/`, Outcome unfilled). No v9 text exists yet. Resume by running the two writers named above
 (new sections; v8 revision with the four corrections) and then the inline assembly; the v8
 section splits and per-ledger-section row files must be regenerated in scratch (they lived in
 a session-local scratchpad).
 
 ## Closing report
 
-_Written at session end. Plain English, for a reader who did not watch the session: what was
-delivered, what was verified (commands and results), what was cut or left open, and the one thing
-the next session must know._
+Session S5 ran on 3 September 2026 on branch `consolidation-s5-manuscript-v9-draft` (worktree
+`../scorequant-s5`), in two sittings: a setup sitting paused at the owner's request to save the
+token window, and the drafting sitting (two fable writers in parallel, assembly and rendering
+done inline by the orchestrator; no other subagents).
+
+**Delivered.** `agenticresearch/manuscripts/score_space_quantization_article_v9.md` (1,335
+lines, 17 sections plus References and Appendix A) and its rendered `.html`, produced by the new
+tracked script `agenticresearch/py/render_manuscript.py` (python-markdown declared as an inline
+script dependency, v8 stylesheet lifted verbatim, MathJax 3, generated contents sidebar). The
+section order is the one recorded in the design section above: v8's sections 1–6 revised, new
+sections 7 (bridge, DS11–DS15), 8 (margins, stable basins, off-class transfer, DS16–DS18), 9
+(certified brackets, DS19), 11 (A-optimality) and 14.1 (information-efficiency outputs), and
+v8's 7–13 revised as 10, 12–17. Labelled results share one counter, Proposition 1 to
+Proposition 23; v8's Proposition 5 is now Proposition 23 and the new results are Lemma 5 to
+Proposition 22. Equations are numbered per section; the v8→v9 map is (1)→3.1, (2)→3.2,
+(3)→4.1, (4)→4.2, (5)→4.3, (6)→5.1, (7)→5.2, (8)→5.3, (9)→5.4, (10)→5.5, (11)→5.6, (12)→5.7,
+(13)→5.8, (14)→6.1, (15)→6.2, (16)→6.3, (17)→6.4, (18)→6.5, (19)→6.6, (20)→10.1, (21)→10.2,
+(22)→10.3, (23)→10.4, (24)→12.1, (25)→12.2, (26)→12.3. Every central statement carries a
+`[novelty: <label>; ledger <row>]` tag copied from the ledger (117 tags, all 103 rows covered,
+none deliberately omitted); Appendix A lists the v9 location of each row. The bibliography grew
+from 22 to 75 entries, all named by the ledger's Attribution column. The four required
+corrections: Theorem 3 (§5.2) now states merged atoms, exactly \(K\) nonempty cells, strictly
+positive weights and zero-tolerance stability, with a warning box on
+`CE-D-UNMERGED-DUPLICATES-001` and a note on the failed converse; the fig-02 caption and alt text
+say Theorem 3; the §14 profiled \(D_s\) table row names `CE-DS-INTERVAL-SEED-UNSTABLE-001` and
+routes compilation through the projected efficient-score rule, certificate-gated otherwise; §16.4
+answers the \(D_s\) bridge question on conditionally centered scalar-nuisance laws and lists
+OP29, OP30, OP31 and the E items as open, and §13 carries the same answer. The manuscripts README
+gained a v9 ↔ v8 ↔ ledger crosswalk (the v8 crosswalk kept as historical), a rendering section,
+and a reset staleness list; the companion packet is closed under `WORK/completed/`.
+
+**Verified.** `uv run python agenticresearch/py/registry.py validate` → `registry clean`. The
+assembler checked: every ledger row id in Appendix A exactly once (103), every placed row tagged
+in the body, no placeholder, no unresolved `[@Key]` citation, no `$` math, no `data:` URI, zero
+occurrences of "Theorem 6". Greps: `CE-D-UNMERGED-DUPLICATES-001` in §5.2 and §15;
+`CE-DS-INTERVAL-SEED-UNSTABLE-001` in the §14 table row; `Proposition 23` in §13 and §16.4. The
+render script was tested on a fixture with math, result boxes, tables, figures and citations
+before rendering v9. This session touched no `src/`, `docs/` outside `docs/programme/` and
+`docs/roadmap.md`, or `examples/`, so the library gate does not apply.
+
+**Cut or left open.** Nothing from the packet was cut. Two bibliographic loose ends from the
+writers are recorded in the companion packet (Haynsworth 1968 cited for DS15-4 without a ledger
+key; Jakubowski 2021 volume details unverified). Section 7 runs about 2,100 words against the
+1,200–1,800 target because it carries 18 ledger rows, eight labelled results and three witness
+boxes with mandated hardened wording; nothing was trimmed to meet the target. The v9 draft has
+had no independent read-through: the two writers verified their own outputs mechanically, and
+the orchestrator spot-read the abstract, Theorem 3 and §16.4 only. The eight `apparently new`
+tags rest on search gaps, as the ledger says; P8 decides them.
+
+**The one thing the next session must know.** The `.html` is generated; edit only the `.md`
+and rerun `uv run agenticresearch/py/render_manuscript.py <file>.md`. S9 (closure) should read
+Appendix A and the README crosswalk, not the article body, to check that later findings reached
+the manuscript; a new finding adds a ledger row, a v9 statement with its tag, and an Appendix A
+line, in that order.

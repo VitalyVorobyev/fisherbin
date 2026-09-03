@@ -1,6 +1,6 @@
 # MANUSCRIPT-V9-DRAFT — Manuscript v9 from novelty ledger
 
-**Programme:** P6 (D-CORE-COMPLETION; manuscript by-product) · **Opened:** 3 September 2026 · **Status:** active
+**Programme:** P6 (D-CORE-COMPLETION; manuscript by-product) · **Opened:** 3 September 2026 · **Status:** completed 3 September 2026
 
 ## Goal
 
@@ -56,8 +56,21 @@ From the novelty ledger (v8 and later rows):
 
 ## Outcome
 
-_to be filled at close_
+Manuscript v9 exists: `manuscripts/score_space_quantization_article_v9.md` (1,335 lines) and its
+rendered `.html`, produced by the new `py/render_manuscript.py`. Every one of the 103 ledger rows
+is placed (none deliberately omitted); Appendix A of the article lists the section per row and
+117 inline novelty tags cover all 103 rows. Labelled results run Proposition 1 … Proposition 23
+(v8's Proposition 5 is now Proposition 23); sections 7–9 (bridge, margins/basins/transfer,
+certified brackets), 11 (A-optimality) and 14.1 (information-efficiency outputs) are new; the
+four required corrections are in §5.2, §14 and §16.4 (with §13 carrying the same answer). The
+bibliography grew from 22 to 75 entries, all named by the ledger's Attribution column.
+`registry.py validate` is clean. The README crosswalk now maps v9 ↔ v8 ↔ ledger rows and the
+staleness list is reset for v9.
 
 ## Next dependency-blocking question
 
-_to be filled at close_
+The P8 adversarial literature review: the eight `apparently new` rows and the 31 `unresolved`
+rows are tagged in v9 exactly as the ledger labels them, so v9 cannot be submitted until P8
+either confirms those labels or re-attributes them (the tags make every such statement
+greppable). Two bibliographic loose ends from the writers: Haynsworth 1968 was cited for DS15-4
+without a ledger key, and the Jakubowski 2021 volume details are unverified.
