@@ -333,7 +333,7 @@ Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock
 | S4 | Showcase foundations (Michelson phase, NumPy example, HEP data spike) | W4 | S3 | done |
 | S5 | Manuscript v9 draft | W1 | S2 | done |
 | S6 | Portal topology, reference cut, research narrative | W3 | S2, S3 | done |
-| S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | queued |
+| S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | active |
 | S8 | The four walkthroughs | W3, W4 | S6, S7 | queued |
 | S10 | Portal front door: home, get-started, e2e in CI, deployment | W3 | S8 | queued |
 | S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S10 | queued |
