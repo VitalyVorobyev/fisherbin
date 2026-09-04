@@ -1,0 +1,110 @@
+/* Shared editorial surfaces: layout primitives, content grid, side index,
+   editorial panel, filters, tags, provenance note, API list, benchmarks.
+   Split from global.css. */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.eyebrow::before { width: 22px; height: 1px; background: currentColor; content: ""; }
+.page-intro { width: var(--page); margin: 0 auto; padding: 94px 0 64px; }
+.page-intro h1 {
+  max-width: 900px;
+  margin: 18px 0;
+  font-family: var(--font-heading);
+  font-size: clamp(46px, 6vw, 82px);
+  font-weight: 560;
+  letter-spacing: -.058em;
+  line-height: .98;
+}
+.page-intro > p { max-width: 720px; margin: 0; color: var(--text-muted); font-size: clamp(17px, 2vw, 21px); line-height: 1.55; }
+.section-wrap { width: var(--page); margin: 0 auto; }
+.section-rule { border-top: 1px solid var(--border); }
+.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 38px; }
+.section-heading h2 { max-width: 700px; margin: 0; font-family: var(--font-heading); font-size: clamp(32px, 4vw, 52px); font-weight: 560; letter-spacing: -.045em; line-height: 1.05; }
+.section-heading p { max-width: 480px; margin: 0; color: var(--text-muted); }
+.plain-link { color: var(--accent); font-size: 14px; font-weight: 630; }
+.plain-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* Shared editorial surfaces */
+.content-grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 58px; width: var(--page); margin: 0 auto; }
+.side-index { position: sticky; top: 102px; align-self: start; }
+.side-index > span { display: block; margin-bottom: 12px; color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.side-index button, .side-index a { display: flex; width: 100%; padding: 9px 0; border: 0; color: var(--text-muted); background: transparent; font-size: 13px; text-align: left; cursor: pointer; }
+.side-index button:hover, .side-index button.is-active, .side-index a:hover, .side-index a.is-active { color: var(--accent); }
+.editorial-panel { min-width: 0; }
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
+.filter-chip {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  font-size: 12px;
+  cursor: pointer;
+}
+.filter-chip:hover, .filter-chip.is-active { border-color: var(--accent); color: var(--accent-strong); background: var(--tint-accent); }
+.filter-search { width: min(420px, 100%); min-height: 44px; padding: 0 14px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface-raised); }
+.empty-state { padding: 28px; color: var(--text-muted); text-align: center; }
+.provenance-note { display: flex; gap: 10px; align-items: start; padding: 14px 16px; border-left: 2px solid var(--good); color: var(--text-muted); background: var(--tint-good); font-size: 13px; }
+.tag { display: inline-flex; padding: 3px 7px; border: 1px solid var(--border); border-radius: 3px; color: var(--text-faint); font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; }
+
+/* API */
+.api-list { border-top: 1px solid var(--border-strong); }
+.api-symbol { padding: 28px 0; border-bottom: 1px solid var(--border); }
+.api-symbol__top { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+.api-symbol h2 { margin: 0; font-family: var(--font-mono); font-size: 19px; font-weight: 500; }
+.api-symbol__links { display: flex; gap: 14px; color: var(--accent); font-size: 11px; }
+.api-symbol p { max-width: 76ch; margin: 0; color: var(--text-muted); font-size: 13px; }
+
+/* Theory */
+.math-display { overflow-x: auto; margin: 30px 0; padding: 26px; border-block: 1px solid var(--border); text-align: center; font-family: Georgia, serif; font-size: 22px; font-style: italic; }
+
+/* Benchmarks */
+.provenance-grid { display: grid; grid-template-columns: repeat(3, 1fr); margin-bottom: 36px; border: 1px solid var(--border); background: var(--surface-raised); }
+.provenance-grid div { padding: 18px; border-right: 1px solid var(--border); }
+.provenance-grid div:last-child { border-right: 0; }
+.provenance-grid small, .provenance-grid strong { display: block; }
+.provenance-grid small { color: var(--text-faint); font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; }
+.provenance-grid strong { margin-top: 4px; font-size: 13px; }
+.benchmark-chart { padding: 30px; border: 1px solid var(--border); background: var(--surface-raised); }
+.benchmark-row { display: grid; grid-template-columns: 140px minmax(80px, 1fr) 84px 84px; align-items: center; gap: 14px; min-height: 49px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.benchmark-row:last-child { border-bottom: 0; }
+.benchmark-row__bar { height: 7px; border-radius: 999px; background: var(--surface-sunken); }
+.benchmark-row__bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.benchmark-row code { font-family: var(--font-mono); font-size: 10px; }
+
+
+@media (width <= 860px) {
+  .provenance-grid { grid-template-columns: 1fr; }
+  .provenance-grid div { border-right: 0; border-bottom: 1px solid var(--border); }
+}
+
+/* The provenance note sits on a mint ground, where the standard link blue
+   measures 4.48:1 -- just under the AA threshold for body text. The darker blue
+   clears it, and the underline gives the link a distinguisher that does not
+   depend on colour at all. */
+.provenance-note a { color: var(--accent-strong); text-decoration: underline; text-underline-offset: 2px; }
+.provenance-note a:hover { text-decoration-thickness: 2px; }
+.filter-row--tight { gap: 6px; margin: 0; }
+.filter-row--tight .filter-chip { display: flex; flex-direction: column; gap: 1px; align-items: flex-start; padding: 6px 10px; line-height: 1.25; }
+.filter-row--tight .filter-chip small { color: var(--ink-600); font-size: 10px; }
+
+/* Visually hidden but reachable: the file input is triggered by its chip, and
+   removing it from the accessibility tree would remove the only control a
+   keyboard or screen-reader user has for choosing a file. */
+.visually-hidden {
+  position: absolute;
+  overflow: hidden;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+}

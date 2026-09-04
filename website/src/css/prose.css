@@ -1,0 +1,220 @@
+/* Docs and blog reading frames: .docs-frame, .doc-article*, .blog-frame*,
+   tables, the reading measure. Split from global.css. */
+
+/* Development blog — the portal's editorial reading surface. Docusaurus owns
+   the markup here, so these rules attach to semantic structure inside the
+   frame rather than to the theme's hashed CSS-module class names. */
+.docs-frame { width: var(--page); margin: 0 auto; padding: 76px 0 96px; }
+.doc-article__body { max-width: var(--code); min-width: 0; }
+/* Prose keeps the 72ch measure; code, tables and figures keep their own. A
+   sentence that runs past 72ch is tiring to read, but an f-string naming two
+   attributes and a format spec is one token-stream that cannot be re-wrapped,
+   so forcing both into one measure clipped the code instead. Capping the
+   children rather than the body is what lets the two coexist in one column. */
+.doc-article__body .markdown > p,
+.doc-article__body .markdown > ul,
+.doc-article__body .markdown > ol,
+.doc-article__body .markdown > h2,
+.doc-article__body .markdown > h3,
+.doc-article__body .markdown > h4,
+.doc-article__body .markdown > blockquote { max-width: var(--reading); }
+.doc-article--with-toc { display: grid; grid-template-columns: minmax(0, 1fr) 232px; gap: 58px; }
+.doc-article__toc { position: sticky; top: 104px; align-self: start; padding-left: 22px; border-left: 1px solid var(--border); font-size: 13px; }
+.doc-article__toc-title { display: block; margin-bottom: 12px; color: var(--text-faint); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.doc-article__toc ul { margin: 0; padding: 0; list-style: none; }
+.doc-article__toc li { margin: 9px 0; }
+.doc-article__toc li[data-level="3"] { padding-left: 14px; }
+.doc-article__toc a { color: var(--text-muted); }
+.doc-article__toc a:hover { color: var(--accent); }
+@media (max-width: 1080px) {
+  .doc-article--with-toc { grid-template-columns: minmax(0, 1fr); }
+  .doc-article__toc { display: none; }
+}
+/* The reading measure belongs to the prose, not to the prose *plus* its table
+   of contents. Capping this wrapper at --reading made `.doc-article--with-toc`
+   share 72ch between the body and the 232px table of contents, so every docs
+   route -- walkthroughs and research included -- rendered its prose at 351px of
+   a 1376px frame, about 45 characters a line, with wide code clipped mid-token.
+   `.doc-article__body` already caps itself at --reading, so this wrapper only
+   has to leave room for the contents column beside it: 232px plus the 58px
+   grid gap. */
+.docs-frame__content { max-width: min(100%, calc(var(--code) + 290px)); min-width: 0; }
+.blog-frame { width: var(--page); margin: 0 auto; padding: 76px 0 96px; }
+/* The index supplies its own PageIntro, which already carries the top spacing. */
+.page-intro + .blog-frame { padding-top: 8px; }
+.blog-frame__content { max-width: var(--reading); min-width: 0; }
+.blog-frame--with-toc {
+  display: grid;
+  grid-template-columns: minmax(0, var(--reading)) minmax(170px, 236px);
+  justify-content: center;
+  gap: 64px;
+  align-items: start;
+}
+.blog-frame--with-toc .blog-frame__content { max-width: none; }
+.blog-frame__toc { position: sticky; top: 104px; padding-left: 22px; border-left: 1px solid var(--border); }
+.blog-frame__toc .table-of-contents { padding: 0; border: 0; font-size: 13px; }
+.blog-frame__toc .table-of-contents li { margin: 9px 0; }
+.blog-frame__toc a { color: var(--text-muted); }
+.blog-frame__toc a:hover { color: var(--accent); }
+
+.blog-frame article + article { margin-top: 52px; padding-top: 52px; border-top: 1px solid var(--border); }
+.blog-frame article header h1, .blog-frame article header h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 560;
+  letter-spacing: -.04em;
+  line-height: 1.08;
+}
+.blog-frame article header h1 { font-size: clamp(34px, 4.4vw, 52px); }
+.blog-frame article header h2 { font-size: clamp(26px, 3vw, 34px); }
+.blog-frame article header h2 a:hover { color: var(--accent); }
+/* Date, reading time, and authors: one quiet monospaced line above the title. */
+.blog-frame article header time,
+.blog-frame article header > div:not([class*="authorRow"]) {
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.blog-frame .markdown { margin-top: 30px; color: var(--ink-700); font-size: 17px; line-height: 1.72; }
+.blog-frame .markdown > :first-child { margin-top: 0; }
+.blog-frame .markdown h2, .blog-frame .markdown h3 {
+  margin: 46px 0 14px;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-weight: 580;
+  letter-spacing: -.03em;
+  line-height: 1.2;
+}
+.blog-frame .markdown h2 { font-size: 27px; }
+.blog-frame .markdown h3 { font-size: 20px; }
+.blog-frame .markdown p, .blog-frame .markdown ul, .blog-frame .markdown ol { margin: 0 0 20px; }
+.blog-frame .markdown li { margin: 7px 0; }
+.blog-frame .markdown strong { color: var(--text); font-weight: 640; }
+/*
+ * Without an explicit rule, a `.doc-article` prose link fell back to Infima's
+ * default `.markdown a` styling: `--accent`, no underline. axe's
+ * link-in-text-block check (color alone must distinguish a link from its
+ * surrounding running text, or the link needs a non-colour cue) passed that in
+ * light mode -- --blue against --ink-950 measures 3.80:1 -- but failed it in
+ * dark mode, where --blue's dark counterpart sits close in lightness to the
+ * near-white body text (1.97:1, against the 3:1 the rule requires). The same
+ * underline the blog frame already uses for exactly this reason (see below)
+ * removes the reliance on colour in both themes and matches the site's
+ * existing convention (`.home-aside a`, `.blog-frame .markdown a`).
+ */
+.doc-article .markdown a,
+.blog-frame .markdown a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.doc-article .markdown a:hover,
+.blog-frame .markdown a:hover { color: var(--accent-strong); }
+.blog-frame .markdown code {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: .87em;
+}
+.blog-frame .markdown pre { border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+.blog-frame .markdown pre code { padding: 0; border: 0; background: none; }
+.blog-frame .markdown blockquote {
+  margin: 26px 0;
+  padding: 4px 0 4px 22px;
+  border-left: 2px solid var(--accent);
+  color: var(--ink-800);
+  font-size: 18px;
+}
+.blog-frame .markdown table:not(.visually-hidden) { display: block; overflow-x: auto; width: 100%; font-size: 15px; }
+.blog-frame .markdown th, .blog-frame .markdown td { border: 1px solid var(--border); }
+
+/* Docs-plugin article content (/walkthroughs, /research) reads like the blog's. */
+.doc-article .markdown table:not(.visually-hidden) { display: block; overflow-x: auto; width: 100%; font-size: 15px; }
+.doc-article .markdown th, .doc-article .markdown td { border: 1px solid var(--border); }
+.doc-article .markdown blockquote {
+  margin: 26px 0;
+  padding: 4px 0 4px 22px;
+  border-left: 2px solid var(--accent);
+  color: var(--ink-800);
+  font-size: 18px;
+}
+
+/*
+ * Infima stripes every even table row with `rgba(0, 0, 0, .03)`, which over the
+ * portal's page background resolves to #f1f2f3. The portal's link blue (--blue,
+ * #276be8) measures 4.3:1 against that, below the WCAG AA threshold of 4.5:1 that
+ * the axe scan enforces — so a link in an even row failed the scan on every page
+ * with a table. Portal tables are plain paper with the portal's own rules, which
+ * is both the accessible answer and the consistent one.
+ *
+ * The variable is `--ifm-table-stripe-background`. Infima also defines
+ * `--ifm-table-stripe-background-color`, which is NOT what the stripe rule reads;
+ * setting that one changes nothing.
+ */
+.blog-frame .markdown, .doc-article .markdown { --ifm-table-stripe-background: transparent; }
+
+/* Tags and pagination: the footer furniture Docusaurus emits under each post. */
+.blog-frame .margin-top--sm a[href*="/tags/"],
+.blog-frame a[class*="tag_"] {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  padding: 3px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.blog-frame .margin-top--sm a[href*="/tags/"]:hover, .blog-frame a[class*="tag_"]:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.blog-frame nav[class*="paginator"], .blog-frame nav[aria-label*="ost"] {
+  margin-top: 56px;
+  padding-top: 30px;
+  border-top: 1px solid var(--border);
+}
+.blog-frame nav[class*="paginator"] a, .blog-frame nav[aria-label*="ost"] a {
+  display: block;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-weight: 560;
+}
+.blog-frame nav[class*="paginator"] a:hover, .blog-frame nav[aria-label*="ost"] a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 1120px) {
+  .blog-frame--with-toc { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .blog-frame__toc { display: none; }
+}
+
+@media (max-width: 820px) {
+  .blog-frame { padding: 46px 0 64px; }
+  .blog-frame .markdown { font-size: 16px; }
+}
+
+/*
+ * The horizontal-scroll rule above deliberately skips `.visually-hidden`
+ * tables. `BinningComparison` renders one as the text alternative to its bar
+ * chart; making a one-pixel clipped table a scroll container produces a
+ * scrollable region no keyboard can reach, which the accessibility scan reports
+ * as a serious violation at phone width. It is the chart's caption, not a
+ * table anyone scrolls.
+ */
+
+/*
+ * Inline `code` inside a link sits on the code tint rather than on paper, and
+ * the link blue measures 4.49:1 against it -- one hundredth below the WCAG AA
+ * threshold, which the accessibility scan reports as a serious violation. The
+ * darker blue is already a link colour in this palette and measures 7.43:1 on
+ * the same tint, so the link still reads as a link.
+ */
+.doc-article .markdown a code,
+.blog-frame .markdown a code { color: var(--accent-strong); }

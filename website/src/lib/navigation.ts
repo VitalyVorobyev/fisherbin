@@ -27,3 +27,17 @@ export function isBlogPostList(pathname: string): boolean {
   const normalized = withoutTrailingSlash(pathname);
   return normalized.endsWith("/blog") || /\/blog\/page\/\d+$/.test(normalized);
 }
+
+/**
+ * Whether a route is the Lab page.
+ *
+ * Matches only the route's final path segment, so it is unaffected by the
+ * site's base path and by `trailingSlash: true` alike — `/scorequant/lab/`
+ * and `/scorequant/lab` both match, `/scorequant/` does not, and a route that
+ * merely contains "lab" as a substring of a different segment (e.g.
+ * `/scorequant/collab/`) does not either.
+ */
+export function isLabRoute(pathname: string): boolean {
+  const segments = withoutTrailingSlash(pathname).split("/");
+  return segments[segments.length - 1] === "lab";
+}

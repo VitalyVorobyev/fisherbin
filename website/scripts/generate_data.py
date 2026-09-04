@@ -162,58 +162,6 @@ def _research_data() -> list[dict[str, object]]:
     ]
 
 
-def _plain_excerpt(path: Path) -> str:
-    text = path.read_text()
-    text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
-    text = re.sub(r"[#*_`>|\[\]()]", " ", text)
-    paragraphs = [" ".join(part.split()) for part in text.split("\n\n")]
-    return next((part for part in paragraphs if len(part) > 90), "")[:320]
-
-
-def _content_data() -> dict[str, object]:
-    chapters = []
-    for path in sorted((ROOT / "docs" / "book").glob("ch*.md")):
-        heading = next(
-            line.removeprefix("# ").strip()
-            for line in path.read_text().splitlines()
-            if line.startswith("# ")
-        )
-        chapters.append(
-            {
-                "slug": path.stem,
-                "title": heading,
-                "excerpt": _plain_excerpt(path),
-                "reference": f"/book/{path.stem}/",
-            }
-        )
-    examples = []
-    tags = {
-        "door1-score-events": ["scores", "D", "browser"],
-        "door2-mixture-densities": ["densities", "mixture", "browser"],
-        "door3-classifier": ["ratios", "classifier"],
-        "solver-shootout": ["benchmark", "all-solvers"],
-        "nuisance-profiled-ds": ["theory", "profiled-D"],
-        "global-certification": ["certificate", "finite-assignment"],
-    }
-    for slug, labels in tags.items():
-        path = ROOT / "docs" / "examples" / f"{slug}.md"
-        heading = next(
-            line.removeprefix("# ").strip()
-            for line in path.read_text().splitlines()
-            if line.startswith("# ")
-        )
-        examples.append(
-            {
-                "slug": slug,
-                "title": heading,
-                "excerpt": _plain_excerpt(path),
-                "tags": labels,
-                "reference": f"/examples/{slug}/",
-            }
-        )
-    return {"chapters": chapters, "examples": examples}
-
-
 def _score_space_data() -> dict[str, object]:
     rng = np.random.default_rng(28)
     scores = np.concatenate(
@@ -320,7 +268,6 @@ def main() -> None:
         "api": _api_data(),
         "benchmarks": _benchmark_data(),
         "research": _research_data(),
-        "content": _content_data(),
         "scoreSpace": _score_space_data(),
         "solverMatrix": solver_matrix,
     }

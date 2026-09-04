@@ -1,7 +1,7 @@
 import Link from "@docusaurus/Link";
+import Layout from "@theme/Layout";
 
-import {AppShell} from "../components/AppShell";
-import {ScoreSpace} from "../components/ScoreSpace";
+import {ScoreSpaceLiveFit} from "../components/ScoreSpaceLiveFit";
 import {factsFor} from "../lib/facts";
 
 /**
@@ -14,26 +14,42 @@ const fact = factsFor("home");
 
 export default function Home(): React.JSX.Element {
   return (
-    <AppShell
+    <Layout
       title="ScoreQuant"
       description="Choose bins that keep the information your parameters depend on, and measure what the binning cost."
     >
       <section className="home-section section-wrap">
-        <div className="home-lede">
-          <h1>Some analyses have to bin.</h1>
-          <p>
-            A great deal of statistical practice ends in counts. A template fit needs the expected
-            number of events per category for each model component. A trigger has to route an event
-            into one of a few tiers. A cytometry protocol reports the fraction of cells in named
-            gates. A binned likelihood needs bins. In every one of these a continuous measurement is
-            replaced by an integer label, and that step is irreversible.
-          </p>
-          <p>
-            The bins are usually chosen for readability: equal width, equal population, a threshold
-            on one discriminant, or whatever the previous analysis used. Those are choices about
-            presentation. They are also, silently, choices about how much parameter sensitivity
-            survives — and nothing in the usual workflow reports the size of what was given up.
-          </p>
+        <div className="home-opening">
+          <div className="home-lede">
+            <h1>Some analyses have to bin.</h1>
+            <p>
+              A great deal of statistical practice ends in counts. A template fit needs the expected
+              number of events per category for each model component. A trigger has to route an
+              event into one of a few tiers. A cytometry protocol reports the fraction of cells in
+              named gates. A binned likelihood needs bins. In every one of these a continuous
+              measurement is
+              replaced by an integer label, and that step is irreversible.
+            </p>
+            <p>
+              The bins are usually chosen for readability: equal width, equal population, a
+              threshold on one discriminant, or whatever the previous analysis used. Those are
+              choices about presentation. They are also, silently, choices about how much parameter
+              sensitivity survives — and nothing in the usual workflow reports the size of what was
+              given up.
+            </p>
+          </div>
+          <aside className="home-identity" aria-label="What ScoreQuant is">
+            <p className="home-identity__what">
+              <b>ScoreQuant</b> is a Python library for choosing those bins so they keep the Fisher
+              information your parameters depend on, and for measuring what the binning cost.
+            </p>
+            <p className="home-identity__install">
+              <code>uv add scorequant</code>
+            </p>
+            <p className="home-identity__runtime">
+              Runs on JAX by default, and on NumPy with no accelerator and no compiler.
+            </p>
+          </aside>
         </div>
       </section>
 
@@ -118,9 +134,7 @@ export default function Home(): React.JSX.Element {
               problem.
             </p>
           </div>
-          <div className="home-explain__visual">
-            <ScoreSpace />
-          </div>
+          <ScoreSpaceLiveFit />
         </div>
       </section>
 
@@ -178,32 +192,38 @@ export default function Home(): React.JSX.Element {
         <div className="home-doors">
           <article className="door-item">
             <h3>Scores, already computed</h3>
-            <p>
-              Pass the array, or wrap it in <code>ScoreSample</code>. The shortest and most
-              transparent path.
-            </p>
+            <div className="door-item__body">
+              <p>
+                Pass the array, or wrap it in <code>ScoreSample</code>. The shortest and most
+                transparent path.
+              </p>
+            </div>
           </article>
           <article className="door-item">
             <h3>A component or analytic model</h3>
-            <p>
-              <code>LinearComponentScore</code> or <code>ScoreFunction</code>, paired with an
-              observation sample or a bounded quadrature source. The statistical model stays visible
-              in the call.
-            </p>
+            <div className="door-item__body">
+              <p>
+                <code>LinearComponentScore</code> or <code>ScoreFunction</code>, paired with an
+                observation sample or a bounded quadrature source. The statistical model stays visible
+                in the call.
+              </p>
+            </div>
           </article>
           <article className="door-item">
             <h3>Density ratios</h3>
-            <p>
-              <code>DensityRatioScore</code>, or <code>CentralLogRatioScore</code> for paired
-              central classifiers. This is the classifier route, and the caveat belongs here rather
-              than further in: an estimated ratio yields an estimated score. The optimization is
-              unchanged, but the Fisher semantics are only as good as the calibration behind the
-              ratio, so ScoreQuant records that provenance instead of letting it disappear, and{" "}
-              <code>ratio_closure_report</code> measures whether the ratios actually close.
-            </p>
-            <Link className="plain-link" to="/walkthroughs/ratios">
-              A worked classifier route →
-            </Link>
+            <div className="door-item__body">
+              <p>
+                <code>DensityRatioScore</code>, or <code>CentralLogRatioScore</code> for paired
+                central classifiers. This is the classifier route, and the caveat belongs here rather
+                than further in: an estimated ratio yields an estimated score. The optimization is
+                unchanged, but the Fisher semantics are only as good as the calibration behind the
+                ratio, so ScoreQuant records that provenance instead of letting it disappear, and{" "}
+                <code>ratio_closure_report</code> measures whether the ratios actually close.
+              </p>
+              <Link className="plain-link" to="/walkthroughs/ratios">
+                A worked classifier route →
+              </Link>
+            </div>
           </article>
         </div>
       </section>
@@ -238,6 +258,6 @@ export default function Home(): React.JSX.Element {
           </article>
         </div>
       </section>
-    </AppShell>
+    </Layout>
   );
 }

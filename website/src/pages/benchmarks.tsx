@@ -1,6 +1,6 @@
+import Layout from "@theme/Layout";
 import {useMemo, useState} from "react";
 
-import {AppShell} from "../components/AppShell";
 import {PageIntro} from "../components/PageIntro";
 import {portalData} from "../data/portal";
 
@@ -10,7 +10,7 @@ export default function Benchmarks(): React.JSX.Element {
   const maximum = Math.max(...runs.map((run) => run.elapsed_seconds), 0.001);
   const environment = portalData.benchmarks.environment;
   return (
-    <AppShell title="Benchmarks" description="Data-driven ScoreQuant speed, scale, memory, and quality evidence.">
+    <Layout title="Benchmarks" description="Data-driven ScoreQuant speed, scale, memory, and quality evidence.">
       <PageIntro eyebrow="Committed performance evidence" title="What was measured, and on what machine" lead="Every view is rendered from the repository baseline JSON. Runtime, peak memory, dimensions, precision, backend, and quality meaning travel with the number." />
       <section className="section-wrap">
         <div className="provenance-grid">
@@ -31,6 +31,6 @@ export default function Benchmarks(): React.JSX.Element {
         </div>
         <p className="provenance-note" style={{marginTop: 24}}><span aria-hidden="true">◇</span><span>Quality values are intentionally not forced onto one axis: log-determinant objectives and geometric-mean retention answer different questions. Select a run in the canonical benchmark record before comparing quality.</span></p>
       </section>
-    </AppShell>
+    </Layout>
   );
 }

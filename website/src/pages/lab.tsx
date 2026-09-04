@@ -1,8 +1,7 @@
+import {useLocation} from "@docusaurus/router";
+import Layout from "@theme/Layout";
 import {useEffect, useMemo, useRef, useState} from "react";
 
-import {useLocation} from "@docusaurus/router";
-
-import {AppShell} from "../components/AppShell";
 import {ScoreSpace} from "../components/ScoreSpace";
 import {portalData, type ScoreScenario} from "../data/portal";
 import {resolveJobPreset} from "../lab/jobPreset";
@@ -105,7 +104,7 @@ export default function Lab(): React.JSX.Element {
   // cells that overlap here are not necessarily adjacent in the real space.
   const projected = dimensions > 2;
   return (
-    <AppShell lab title="Lab" description="Run bounded ScoreQuant NumPy jobs privately in your browser.">
+    <Layout title="Lab" description="Run bounded ScoreQuant NumPy jobs privately in your browser.">
       <div className="lab-page">
         <header className="lab-heading">
           <div><span className="eyebrow">Local computation workspace</span><h1>Score-space lab</h1></div>
@@ -225,6 +224,6 @@ export default function Lab(): React.JSX.Element {
           {!lessonOpen ? <button className="button-primary" onClick={() => setLessonOpen(true)}>Load marimo lesson</button> : <iframe title="ScoreQuant marimo lesson" src={siteUrl("lessons/score-space/")} loading="lazy" sandbox="allow-scripts allow-same-origin allow-downloads"/>}
         </section>
       </div>
-    </AppShell>
+    </Layout>
   );
 }

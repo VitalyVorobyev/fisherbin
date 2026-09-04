@@ -20,14 +20,6 @@ export interface BenchmarkRun {
   scenario: string;
 }
 
-export interface ContentEntry {
-  excerpt: string;
-  reference: string;
-  slug: string;
-  tags?: string[];
-  title: string;
-}
-
 export interface ResearchClaim {
   dependencies: string[];
   id: string;
@@ -50,7 +42,6 @@ export interface PortalData {
     environment: Record<string, string>;
     runs: BenchmarkRun[];
   };
-  content: {chapters: ContentEntry[]; examples: ContentEntry[]};
   research: ResearchClaim[];
   schemaVersion: number;
   scoreSpace: {

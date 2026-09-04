@@ -1,0 +1,85 @@
+/* Home page. Split from global.css. */
+
+/* Home */
+.home-section { padding: clamp(48px, 4.6vw, 68px) 0; }
+
+/*
+ * The opening spread. The lede alone left roughly 620px of a 1376px frame
+ * empty, and the page identified the problem without ever identifying the
+ * product -- a reader arriving cold met a problem statement and no statement
+ * of what ScoreQuant is. The identity column answers that in the first
+ * screen without becoming a pitch: what it is, how it is installed, what it
+ * runs on.
+ */
+.home-opening { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 316px); align-items: start; gap: 64px; }
+.home-lede { min-width: 0; }
+.home-lede h1 {
+  margin: 0 0 28px;
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 560;
+  letter-spacing: -.045em;
+  line-height: 1.05;
+}
+.home-lede p { max-width: 62ch; margin: 0 0 20px; color: var(--ink-700); font-size: clamp(17px, 1.6vw, 20px); line-height: 1.65; }
+.home-lede p:last-child { margin-bottom: 0; }
+
+.home-identity { min-width: 0; padding-top: 15px; border-top: 2px solid var(--border-strong); }
+.home-identity p { margin: 0 0 14px; }
+.home-identity__what { color: var(--ink-700); font-size: 15px; line-height: 1.6; }
+.home-identity__what b { color: var(--text); font-weight: 640; }
+.home-identity__install code { display: block; padding: 10px 12px; border: 1px solid var(--border); background: var(--surface-raised); color: var(--ink-900); font-family: var(--font-mono); font-size: 14px; }
+.home-identity__runtime { margin-bottom: 0; color: var(--text-faint); font-size: 13px; line-height: 1.55; }
+
+.home-measure { margin: 0; border-top: 1px solid var(--border); }
+.measure-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 24px; padding: 18px 4px; border-bottom: 1px solid var(--border); }
+.measure-row dt { margin: 0; color: var(--ink-700); font-size: 15px; line-height: 1.45; }
+.measure-row dd { margin: 0; color: var(--text); font-family: var(--font-mono); font-size: 18px; font-weight: 600; white-space: nowrap; text-align: right; }
+/*
+ * measure-row--result distinguishes the ScoreQuant row from the three
+ * baselines structurally, not only by colour: a heavier top rule, bolder
+ * weight, and a background shift, so the row still reads as singled-out in
+ * grayscale or under a colour-vision deficiency. --blue-dark on --paper-blue
+ * measures ~7.2:1, well past the 4.5:1 body-text threshold.
+ */
+.measure-row--result { padding-block: 22px; border-top: 2px solid var(--accent); background: var(--surface-sunken); }
+.measure-row--result dt { color: var(--text); font-weight: 630; }
+.measure-row--result dd { color: var(--accent-strong); font-size: 20px; font-weight: 700; }
+
+.home-explain { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 440px); align-items: start; gap: 56px; }
+.home-explain p { margin: 0 0 20px; color: var(--ink-700); font-size: 16px; line-height: 1.7; }
+.home-explain p:last-child { margin-bottom: 0; }
+.home-explain__visual { min-width: 0; }
+
+.home-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.choice { padding: 26px 0 0; border-top: 2px solid var(--border-strong); }
+.choice h3 { margin: 0 0 10px; font-family: var(--font-heading); font-size: 22px; font-weight: 580; letter-spacing: -.03em; }
+.choice p { margin: 0 0 16px; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+
+.home-aside { max-width: 60ch; margin: 32px 0 0; color: var(--text-faint); font-size: 13px; line-height: 1.6; }
+/* A link inside muted running text cannot be signalled by colour alone: --blue on
+   --ink-500 measures 1.15:1, well under the 3:1 axe requires for that distinction
+   (link-in-text-block). Underlining it is the fix, matching `.provenance-note a`,
+   and --blue-dark carries 7.5:1 against --paper for the text itself. */
+.home-aside a { color: var(--accent-strong); text-decoration: underline; text-underline-offset: 2px; }
+.home-aside a:hover { text-decoration-thickness: 2px; }
+
+.home-doors { border-top: 1px solid var(--border); }
+/*
+ * A door is a term and its explanation, so it is set as one: heading in a
+ * fixed left column, prose in the right, on the same full-width rule as
+ * `.measure-row`. Stacked, its 72ch paragraphs sat in the left half of the
+ * frame and left the right half blank.
+ */
+.door-item { display: grid; grid-template-columns: minmax(0, 276px) minmax(0, 1fr); align-items: start; gap: 8px 56px; padding: 26px 0; border-bottom: 1px solid var(--border); }
+.door-item h3 { margin: 0; font-family: var(--font-heading); font-size: 21px; font-weight: 580; letter-spacing: -.03em; }
+.door-item__body { min-width: 0; max-width: var(--reading); }
+.door-item p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.65; }
+.door-item .plain-link { display: inline-block; margin-top: 12px; }
+.door-item:last-child { border-bottom: 0; }
+
+.home-exits { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+/* Matches `.choice` above: the page argues without boxes, so it ends without them. */
+.exit { padding: 26px 0 0; border-top: 2px solid var(--border-strong); }
+.exit h3 { margin: 0 0 10px; font-family: var(--font-heading); font-size: 22px; font-weight: 580; letter-spacing: -.03em; }
+.exit p { margin: 0 0 16px; color: var(--text-muted); font-size: 14px; line-height: 1.6; }

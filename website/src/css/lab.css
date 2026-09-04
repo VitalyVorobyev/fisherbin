@@ -1,0 +1,96 @@
+/* The browser Lab: .site-shell--lab and every .lab-* rule. Split from
+   global.css. */
+
+/* Browser lab. The entire block below is an instrument surface: it is
+   always rendered inside `<div class="site-shell site-shell--lab">`
+   (see AppShell.tsx), so a `.lab-*` rule below never needs its own
+   selector prefix to inherit from the override on `.site-shell--lab`.
+
+   The override only repoints `--good`: every other semantic role used by
+   a rule that also renders inside the Lab without its own per-property
+   override -- the primary button (`.button-primary`, used bare by the
+   marimo-lesson CTA), the search overlay (mounted by AppShell on every
+   route, `.filter-chip`, `.eyebrow`, `.lab-hint*`, `.lab-field--group`,
+   `.score-space__placeholder`/`__note` -- would silently change colour
+   the moment it rendered inside the Lab if its token were repointed here.
+   `--good` has no such shared consumer, so it is the one role safe to
+   swap; everywhere else below names a Tier 3 instrument token directly. */
+.site-shell--lab {
+  --good: var(--inst-accent);
+  min-height: 100vh;
+  color: var(--inst-text);
+  background: var(--inst-deep);
+}
+.site-shell--lab .site-header { border-bottom-color: #223957; background: rgb(6 19 41 / 94%); }
+.site-shell--lab .brand__word, .site-shell--lab .site-nav a:hover, .site-shell--lab .site-nav a.is-active { color: white; }
+.site-shell--lab .site-nav a, .site-shell--lab .search-trigger, .site-shell--lab .theme-toggle { color: #91a4bc; }
+.site-shell--lab .search-trigger > span:first-child, .site-shell--lab .theme-toggle:hover, .site-shell--lab .menu-trigger { color: white; }
+.site-shell--lab kbd { border-color: #314969; color: #8ea2bc; background: #0c2241; box-shadow: none; }
+.site-shell--lab .lab-link { border-color: var(--cyan); color: var(--ink-950); background: var(--cyan); }
+.lab-page { width: var(--page); margin: 0 auto; padding: 44px 0 80px; }
+.lab-heading { display: flex; justify-content: space-between; align-items: end; margin-bottom: 32px; }
+.lab-heading h1 { margin: 8px 0 0; font-family: var(--font-heading); font-size: clamp(40px, 5vw, 64px); font-weight: 540; letter-spacing: -.055em; line-height: 1; }
+.lab-heading .eyebrow { color: #67dbcf; }
+.lab-privacy { display: flex; align-items: center; gap: 9px; color: var(--inst-label); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; }
+.lab-workspace { display: grid; grid-template-columns: 260px minmax(420px, 1fr) 280px; min-height: 650px; border: 1px solid var(--inst-line); border-radius: 9px; background: var(--inst-ground-lab); box-shadow: 0 30px 80px rgb(0 0 0 / 24%); }
+.lab-panel { min-width: 0; padding: 20px; }
+.lab-panel + .lab-panel { border-left: 1px solid var(--inst-line); }
+.lab-panel__title { display: flex; align-items: center; gap: 9px; min-height: 34px; margin-bottom: 24px; border-bottom: 1px solid var(--inst-line-quiet); color: var(--inst-label); font-size: 12px; }
+.lab-panel__title > span { color: #5c7593; font-family: var(--font-mono); font-size: 9px; }
+.lab-panel__title strong { color: white; font-weight: 580; }
+.lab-panel__title small { margin-left: auto; font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; }
+.lab-field { display: block; margin-bottom: 22px; }
+.lab-field > span { display: flex; justify-content: space-between; margin-bottom: 7px; color: var(--inst-muted); font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; }
+.lab-field select { width: 100%; min-height: 40px; padding: 0 10px; border: 1px solid #314c6e; border-radius: 5px; color: var(--inst-text); background: var(--inst-raised); font-size: 12px; }
+/* Excluding the hidden input is not cosmetic: this selector outranks the
+   `.visually-hidden` utility, so without it the hidden file input takes
+   width:100% of the initial containing block and the Lab page scrolls
+   horizontally by the overhang. */
+.lab-field input:not(.visually-hidden) { width: 100%; accent-color: var(--cyan); }
+.lab-limit { margin: 32px 0; padding: 13px; border: 1px solid var(--inst-line); border-radius: 5px; background: #08172f; }
+.lab-limit span, .lab-limit strong, .lab-limit small { display: block; }
+.lab-limit span { color: var(--inst-faint); font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; }
+.lab-limit strong { margin: 6px 0 2px; font-size: 11px; }
+.lab-limit small { color: #7187a1; font-size: 9px; }
+.lab-run { display: flex; justify-content: space-between; align-items: center; width: 100%; min-height: 44px; padding: 0 14px; border: 0; border-radius: 5px; color: #041124; background: var(--cyan); font-size: 12px; font-weight: 700; cursor: pointer; }
+.lab-run:disabled { opacity: .55; cursor: wait; }
+.lab-cancel { width: 100%; margin-top: 10px; padding: 8px; border: 1px solid #934a51; border-radius: 5px; color: #ffb8bd; background: transparent; font-size: 10px; cursor: pointer; }
+.lab-plot { display: flex; flex-direction: column; }
+.lab-plot .score-space { margin: auto 0; }
+.lab-legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-top: 22px; color: #7890aa; font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; }
+.lab-legend span { display: flex; align-items: center; gap: 6px; }
+.lab-legend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
+.lab-legend .legend-center { border: 1px solid white; background: transparent; }
+.lab-legend .legend-edge { width: 16px; height: 0; border-top: 1px dashed #7395b9; border-radius: 0; }
+.lab-status { padding-bottom: 22px; border-bottom: 1px solid var(--inst-line-quiet); }
+.lab-status > span { color: #6d85a1; font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; }
+.lab-status > strong { display: block; width: max-content; margin-top: 7px; padding: 3px 8px; border: 1px solid #385675; border-radius: 999px; font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; }
+.lab-state--complete { border-color: #2d756c !important; color: var(--good); }
+.lab-state--error { border-color: #884953 !important; color: #ff9ea8; }
+.lab-state--loading, .lab-state--running { border-color: #406db2 !important; color: var(--inst-blue); }
+.lab-status p { min-height: 44px; color: #8da1ba; font-size: 11px; }
+.lab-status > i { display: block; overflow: hidden; height: 3px; border-radius: 99px; background: #142d4f; }
+.lab-status > i span { display: block; height: 100%; background: var(--cyan); transition: width 180ms ease; }
+.diagnostic-list { margin: 8px 0 26px; }
+.diagnostic-list div { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--inst-line-quiet); }
+.diagnostic-list dt { color: #8196af; font-size: 10px; }
+.diagnostic-list dd { margin: 0; color: white; font-family: var(--font-mono); font-size: 10px; }
+.lab-note { padding: 15px; border-left: 2px solid #4d6d91; background: #0b203e; }
+.lab-note strong { color: #9eb1c8; font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; }
+.lab-note p { margin: 7px 0 0; color: #7f94ad; font-size: 10px; }
+.lab-mobile-tabs { display: none; }
+.lab-lesson { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 30px; margin-top: 72px; padding: 42px; border: 1px solid var(--inst-line); border-radius: 8px; background: var(--inst-ground-lab); }
+.lab-lesson .eyebrow { color: var(--good); }
+.lab-lesson h2 { margin: 12px 0 8px; font-family: var(--font-heading); font-size: 32px; font-weight: 560; letter-spacing: -.04em; }
+.lab-lesson p { max-width: 620px; margin: 0; color: #8fa3ba; font-size: 13px; }
+.lab-lesson iframe { grid-column: 1 / -1; width: 100%; height: min(78vh, 760px); margin-top: 20px; border: 1px solid #314b6a; border-radius: 6px; background: white; }
+
+/* Lab controls added with protocol v2: dataset selection, criterion selection
+   and the browser-local file picker. */
+.lab-field--group { display: flex; flex-direction: column; gap: 8px; }
+.lab-field--group > span { color: var(--inst-muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+/* Inside the Lab's dark shell a page ink measured 3.1:1; the instrument
+   muted token is the one that belongs here and carries 7.09:1. */
+.lab-hint { margin: 6px 0 0; color: var(--inst-muted); font-size: 12px; }
+.lab-hint--error { padding: 8px 10px; border-left: 2px solid var(--red); color: var(--bad); background: var(--tint-bad); }
+.lab-limit small + small { display: block; margin-top: 2px; opacity: .8; }

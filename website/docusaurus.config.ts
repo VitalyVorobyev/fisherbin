@@ -35,6 +35,23 @@ const accessiblePalenight = {
   })
 };
 
+// Night Owl for dark mode's fenced code (the four walkthroughs are the only
+// pages with substantial code, so this is the theme the e2e accessibility
+// scan exercises in dark mode). Only one of its token colours falls short of
+// WCAG AA against its own `#011627` background: the comment grey at 3.87:1.
+// Replaced with the same hue lifted to 5.44:1 -- a margin, not a hairline --
+// the same style as `accessiblePalenight` above. Every other Night Owl token
+// colour already clears 4.5:1 (the closest being `boolean` at 6.02:1).
+const NIGHT_OWL_ACCESSIBLE_TOKEN_COLOURS = new Map([["rgb(99, 119, 119)", "rgb(127, 143, 143)"]]);
+const accessibleNightOwl = {
+  ...themes.nightOwl,
+  styles: themes.nightOwl.styles.map((entry) => {
+    const replacement =
+      entry.style.color === undefined ? undefined : NIGHT_OWL_ACCESSIBLE_TOKEN_COLOURS.get(entry.style.color);
+    return replacement === undefined ? entry : {...entry, style: {...entry.style, color: replacement}};
+  })
+};
+
 const config: Config = {
   title: "ScoreQuant",
   tagline: "Information-optimal score-space quantization",
@@ -156,14 +173,34 @@ const config: Config = {
         },
         pages: {},
         sitemap: {changefreq: "weekly", priority: 0.6},
-        theme: {customCss: "./src/css/global.css"}
+        // Order matters for the cascade: tokens.css declares every semantic
+        // token (--surface, --border, --accent, ...) that live-fit.css's
+        // rules read, so it must load first; the rest follow in the order
+        // their sections appear in the pre-split global.css, and
+        // responsive.css must stay after every file whose rules its media
+        // queries override at equal specificity. live-fit.css stays last.
+        theme: {
+          customCss: [
+            "./src/css/tokens.css",
+            "./src/css/base.css",
+            "./src/css/shell.css",
+            "./src/css/components.css",
+            "./src/css/home.css",
+            "./src/css/instruments.css",
+            "./src/css/lab.css",
+            "./src/css/responsive.css",
+            "./src/css/prose.css",
+            "./src/css/charts.css",
+            "./src/css/live-fit.css"
+          ]
+        }
       } satisfies ClassicOptions
     ]
   ],
   themeConfig: {
     image: "img/social-card.svg",
-    prism: {theme: accessiblePalenight},
-    colorMode: {defaultMode: "light", disableSwitch: true, respectPrefersColorScheme: false},
+    prism: {theme: accessiblePalenight, darkTheme: accessibleNightOwl},
+    colorMode: {defaultMode: "light", disableSwitch: false, respectPrefersColorScheme: true},
     metadata: [
       {name: "theme-color", content: "#07152f"},
       {name: "description", content: "Learn, inspect, and run information-preserving score-space quantization."}
