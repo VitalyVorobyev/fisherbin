@@ -460,10 +460,23 @@ index; and the tag is pushed deliberately.
 Publication is an authorized action, not a merge side effect. Landing this milestone does not
 publish anything.
 
-**First clause satisfied 4 September 2026:** M12 closed, so this gate is now evaluable in full and
-stands ready for the next release rather than blocked on the consolidation programme. The
-remaining clauses are unchanged and none of them has been run — no tag is pushed, nothing is
-published, and the next release is still a deliberate act.
+**Gate run in full, 4 September 2026: `0.2.0` is published.** M12 closed, satisfying the first
+clause, and the rest were then met rather than assumed. Tag `v0.2.0` points at `ed219d5`;
+`release.yml` reports `verify: success`, `build: success`, `publish-pypi: success`, so the
+artifacts went to PyPI through Trusted Publishing with no token. `twine check` passed on both.
+The clause no CI job covers — a clean-environment install — was run outside the repository so the
+import cannot resolve to `src/`: the wheel reports `0.2.0` from `site-packages` and completes a
+`fit_quantizer`/`predict_scores` round trip.
+
+The release existed because the site had got ahead of the package. The portal published on
+4 September documents `main`, and its `/get-started` page displays captured output from a program
+that catches `sq.RefusalError` — which does not exist anywhere in `0.1.0`'s `src/`. A reader
+following that page's own `uv add scorequant` got an `AttributeError`. Verified closed after
+publication: `scorequant==0.2.0` installed fresh from PyPI runs that page's refusal cell and
+raises the documented `RefusalError` with its `[CE-DS-GLOBAL-GEOMETRY-001]` counterexample id.
+
+`0.2.0` is a minor bump rather than a patch because `LinearProblem` and `LinearComponents.evaluate`
+are removed; `ContractError`, `RefusalError` and `ScoreQuantError` are added.
 
 ## Explicitly outside the development plan
 
