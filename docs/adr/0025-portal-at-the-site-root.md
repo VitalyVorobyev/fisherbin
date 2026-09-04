@@ -1,6 +1,7 @@
 # ADR 0025: Serve the portal at the site root and MkDocs at `/reference/`
 
-**Status:** Accepted
+**Status:** Superseded by [ADR 0027](0027-landing-page-at-the-root.md), which moves the portal to
+`/portal/`, the documentation to `/docs/`, and puts a landing page at the root
 
 **Completes:** [ADR 0019](0019-react-learning-portal.md) stage 2
 

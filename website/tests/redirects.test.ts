@@ -58,13 +58,8 @@ describe("website/redirects.json", () => {
     expect(offenders).toEqual([]);
   });
 
-  // The site root is the one legitimate empty `to`: `motivation/` was retired in
-  // S10 and the portal home is what replaced it, and the assembled root is
-  // addressed as "" exactly as it is in `unstubbed`.
-  it("every `to` is either the site root or ends with a trailing slash", () => {
-    const offenders = manifest.redirects.filter(
-      (entry) => entry.to !== "" && !entry.to.endsWith("/")
-    );
+  it("every `to` ends with a trailing slash", () => {
+    const offenders = manifest.redirects.filter((entry) => !entry.to.endsWith("/"));
     expect(offenders).toEqual([]);
   });
 
@@ -73,40 +68,18 @@ describe("website/redirects.json", () => {
     expect(offenders).toEqual([]);
   });
 
-  // Every stub points into the MkDocs reference, because that is where the
-  // pre-cut content went — with three deliberate exceptions, one per page that
-  // was retired rather than moved. `three-doors.md` went in S8 and the four
-  // walkthroughs replaced it; `motivation.md` and `user-workflow.md` went in S10
-  // and the portal home and `/get-started` replaced them. Listing each exception
-  // here rather than relaxing the rule keeps the next one deliberate too.
-  const PORTAL_TARGETED = new Map([
-    ["three-doors/", "walkthroughs/ratios/"],
-    // Retired in S10 by the pages that replaced them: the portal home took over
-    // the motivation page, and `/get-started` took over the workflow guide.
-    ["motivation/", ""],
-    ["user-workflow/", "get-started/"]
-  ]);
-
-  it("every `to` starts with reference/, except the deliberately listed portal targets", () => {
-    const offenders = manifest.redirects.filter(
-      (entry) => !entry.to.startsWith("reference/") && PORTAL_TARGETED.get(entry.from) !== entry.to
-    );
+  // Every stub points into the MkDocs documentation at docs/, because that is
+  // where every pre-cut page now lives (ADR 0027 restored the three narrative
+  // pages S8 and S10 had retired into portal routes). The portal owns none of
+  // the old URLs, so a `to` outside docs/ is a mistake rather than an exception.
+  it("every `to` starts with docs/", () => {
+    const offenders = manifest.redirects.filter((entry) => !entry.to.startsWith("docs/"));
     expect(offenders).toEqual([]);
   });
 
-  it("every deliberately portal-targeted redirect is still in the manifest", () => {
-    // Guards the exception from outliving its reason: if the entry is deleted or
-    // re-pointed, this fails and the allowance above must be revisited.
-    const byFrom = new Map(manifest.redirects.map((entry) => [entry.from, entry.to]));
-    for (const [from, to] of PORTAL_TARGETED) {
-      expect(byFrom.get(from)).toBe(to);
-    }
-  });
-
   // An unstubbed entry is a URL that silently stops redirecting, so the reason it
-  // is safe has to travel with it. Three are excluded today: the site root,
-  // reference/ and api/ — each because a portal route now occupies the URL and
-  // answers the same question. A one-word reason would defeat the point.
+  // is safe has to travel with it. One is excluded today: the site root, which
+  // the landing page occupies. A one-word reason would defeat the point.
   it("every unstubbed path carries a substantive reason", () => {
     const offenders = manifest.unstubbed.filter((entry) => (entry.reason ?? "").trim().length < 40);
     expect(offenders).toEqual([]);

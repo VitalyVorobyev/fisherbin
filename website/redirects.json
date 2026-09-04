@@ -1,222 +1,222 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "site/sitemap.xml, pre-cut mkdocs build of 2026-09-03 (S6)",
+  "generatedFrom": "site/sitemap.xml, pre-cut mkdocs build of 2026-09-03 (S6); targets re-pointed from reference/ to docs/ when the landing page took the root (ADR 0027)",
   "sourceSitemapCount": 53,
-  "note": "Paths are baseUrl-relative: a sitemap <loc> minus https://vitalyvorobyev.github.io/scorequant/. A 'from' of 'api/' means the assemble script writes <assembled>/api/index.html. Committed and hand-checked rather than regenerated on each build, because its purpose is to remember URLs the new build no longer knows about. Entries move to `unstubbed` when a portal route occupies the same URL: the assemble script refuses to write a stub over real content, and the page that now serves the URL must link onward to what used to be there.",
+  "note": "Paths are baseUrl-relative: a sitemap <loc> minus https://vitalyvorobyev.github.io/scorequant/. A 'from' of 'book/' means the assemble script writes <assembled>/book/index.html. Committed and hand-checked rather than regenerated on each build, because its purpose is to remember URLs the new build no longer knows about. Every target is under docs/, where the MkDocs documentation is mounted; the portal lives beside it at portal/ and owns none of these URLs. An entry moves to `unstubbed` only when real content occupies the same URL: the assemble script refuses to write a stub over real content, and the page that now serves the URL must link onward to what used to be there.",
   "unstubbed": [
     {
       "path": "",
-      "reason": "The site root now serves the portal home. That is the point of the promotion, and it is the URL the published package advertises as both Homepage and Documentation."
-    },
-    {
-      "path": "reference/",
-      "reason": "Was the mkdocstrings section overview, whose content moved to reference/symbols/. The path is now occupied by the MkDocs reference front matter, so no stub can be written there; that page links to reference/symbols/ prominently instead."
-    },
-    {
-      "path": "api/",
-      "reason": "The portal's API catalogue now occupies this URL. It answers the same question \u2014 which public objects exist and what each one is \u2014 and links onward to the reference's hand-written API guide at reference/api/, which is what used to be here. No stub can be written over a real page."
+      "reason": "The site root serves the landing page, which links to the documentation at docs/ (where this index went) and to the portal. It is the URL the published package advertises as Homepage."
     }
   ],
   "redirects": [
     {
+      "from": "api/",
+      "to": "docs/api/"
+    },
+    {
       "from": "bibliography/",
-      "to": "reference/bibliography/"
+      "to": "docs/bibliography/"
     },
     {
       "from": "book/",
-      "to": "reference/book/"
+      "to": "docs/book/"
     },
     {
       "from": "book/ch01-why-bin/",
-      "to": "reference/book/ch01-why-bin/"
+      "to": "docs/book/ch01-why-bin/"
     },
     {
       "from": "book/ch02-one-dimension/",
-      "to": "reference/book/ch02-one-dimension/"
+      "to": "docs/book/ch02-one-dimension/"
     },
     {
       "from": "book/ch03-exact-1d/",
-      "to": "reference/book/ch03-exact-1d/"
+      "to": "docs/book/ch03-exact-1d/"
     },
     {
       "from": "book/ch04-scores-and-doors/",
-      "to": "reference/book/ch04-scores-and-doors/"
+      "to": "docs/book/ch04-scores-and-doors/"
     },
     {
       "from": "book/ch05-information-after-binning/",
-      "to": "reference/book/ch05-information-after-binning/"
+      "to": "docs/book/ch05-information-after-binning/"
     },
     {
       "from": "book/ch06-two-tasks/",
-      "to": "reference/book/ch06-two-tasks/"
+      "to": "docs/book/ch06-two-tasks/"
     },
     {
       "from": "book/ch07-trace-kmeans/",
-      "to": "reference/book/ch07-trace-kmeans/"
+      "to": "docs/book/ch07-trace-kmeans/"
     },
     {
       "from": "book/ch08-d-optimality/",
-      "to": "reference/book/ch08-d-optimality/"
+      "to": "docs/book/ch08-d-optimality/"
     },
     {
       "from": "book/ch09-mahalanobis-lloyd/",
-      "to": "reference/book/ch09-mahalanobis-lloyd/"
+      "to": "docs/book/ch09-mahalanobis-lloyd/"
     },
     {
       "from": "book/ch10-profiled-ds/",
-      "to": "reference/book/ch10-profiled-ds/"
+      "to": "docs/book/ch10-profiled-ds/"
     },
     {
       "from": "book/ch11-e-optimality/",
-      "to": "reference/book/ch11-e-optimality/"
+      "to": "docs/book/ch11-e-optimality/"
     },
     {
       "from": "book/ch12-soft-rules/",
-      "to": "reference/book/ch12-soft-rules/"
+      "to": "docs/book/ch12-soft-rules/"
     },
     {
       "from": "book/ch13-estimated-scores/",
-      "to": "reference/book/ch13-estimated-scores/"
+      "to": "docs/book/ch13-estimated-scores/"
     },
     {
       "from": "book/ch14-choosing-a-method/",
-      "to": "reference/book/ch14-choosing-a-method/"
+      "to": "docs/book/ch14-choosing-a-method/"
     },
     {
       "from": "examples/",
-      "to": "reference/examples/"
+      "to": "docs/examples/"
     },
     {
       "from": "examples/door1-score-events/",
-      "to": "reference/examples/door1-score-events/"
+      "to": "docs/examples/door1-score-events/"
     },
     {
       "from": "examples/door2-mixture-densities/",
-      "to": "reference/examples/door2-mixture-densities/"
+      "to": "docs/examples/door2-mixture-densities/"
     },
     {
       "from": "examples/door3-classifier/",
-      "to": "reference/examples/door3-classifier/"
+      "to": "docs/examples/door3-classifier/"
     },
     {
       "from": "examples/ds-geometry-counterexample/",
-      "to": "reference/examples/ds-geometry-counterexample/"
+      "to": "docs/examples/ds-geometry-counterexample/"
     },
     {
       "from": "examples/flowcyt-teaser/",
-      "to": "reference/examples/flowcyt-teaser/"
+      "to": "docs/examples/flowcyt-teaser/"
     },
     {
       "from": "examples/global-certification/",
-      "to": "reference/examples/global-certification/"
+      "to": "docs/examples/global-certification/"
     },
     {
       "from": "examples/lloyd-nonmonotone/",
-      "to": "reference/examples/lloyd-nonmonotone/"
+      "to": "docs/examples/lloyd-nonmonotone/"
     },
     {
       "from": "examples/michelson-phase/",
-      "to": "reference/examples/michelson-phase/"
+      "to": "docs/examples/michelson-phase/"
     },
     {
       "from": "examples/nuisance-profiled-ds/",
-      "to": "reference/examples/nuisance-profiled-ds/"
+      "to": "docs/examples/nuisance-profiled-ds/"
     },
     {
       "from": "examples/soft-purification/",
-      "to": "reference/examples/soft-purification/"
+      "to": "docs/examples/soft-purification/"
     },
     {
       "from": "examples/solver-shootout/",
-      "to": "reference/examples/solver-shootout/"
+      "to": "docs/examples/solver-shootout/"
     },
     {
       "from": "gallery/",
-      "to": "reference/gallery/"
+      "to": "docs/gallery/"
     },
     {
       "from": "glossary/",
-      "to": "reference/glossary/"
+      "to": "docs/glossary/"
     },
     {
       "from": "method/",
-      "to": "reference/method/"
+      "to": "docs/method/"
     },
     {
       "from": "motivation/",
-      "to": ""
+      "to": "docs/motivation/"
+    },
+    {
+      "from": "reference/",
+      "to": "docs/"
     },
     {
       "from": "reference/certification/",
-      "to": "reference/symbols/certification/"
+      "to": "docs/symbols/certification/"
     },
     {
       "from": "reference/configuration/",
-      "to": "reference/symbols/configuration/"
+      "to": "docs/symbols/configuration/"
     },
     {
       "from": "reference/fitting/",
-      "to": "reference/symbols/fitting/"
+      "to": "docs/symbols/fitting/"
     },
     {
       "from": "reference/information/",
-      "to": "reference/symbols/information/"
+      "to": "docs/symbols/information/"
     },
     {
       "from": "reference/models/",
-      "to": "reference/symbols/models/"
+      "to": "docs/symbols/models/"
     },
     {
       "from": "reference/ratios/",
-      "to": "reference/symbols/ratios/"
+      "to": "docs/symbols/ratios/"
     },
     {
       "from": "reference/results/",
-      "to": "reference/symbols/results/"
+      "to": "docs/symbols/results/"
     },
     {
       "from": "reference/transforms/",
-      "to": "reference/symbols/transforms/"
+      "to": "docs/symbols/transforms/"
     },
     {
       "from": "reference/visualization/",
-      "to": "reference/symbols/visualization/"
+      "to": "docs/symbols/visualization/"
     },
     {
       "from": "related-work/",
-      "to": "reference/related-work/"
+      "to": "docs/related-work/"
     },
     {
       "from": "three-doors/",
-      "to": "walkthroughs/ratios/"
+      "to": "docs/three-doors/"
     },
     {
       "from": "usecases/flowcyt/",
-      "to": "reference/usecases/flowcyt/"
+      "to": "docs/usecases/flowcyt/"
     },
     {
       "from": "usecases/flowcyt/data/",
-      "to": "reference/usecases/flowcyt/data/"
+      "to": "docs/usecases/flowcyt/data/"
     },
     {
       "from": "usecases/flowcyt/profiled/",
-      "to": "reference/usecases/flowcyt/profiled/"
+      "to": "docs/usecases/flowcyt/profiled/"
     },
     {
       "from": "usecases/flowcyt/quantization/",
-      "to": "reference/usecases/flowcyt/quantization/"
+      "to": "docs/usecases/flowcyt/quantization/"
     },
     {
       "from": "usecases/flowcyt/scores/",
-      "to": "reference/usecases/flowcyt/scores/"
+      "to": "docs/usecases/flowcyt/scores/"
     },
     {
       "from": "usecases/flowcyt/solvers/",
-      "to": "reference/usecases/flowcyt/solvers/"
+      "to": "docs/usecases/flowcyt/solvers/"
     },
     {
       "from": "user-workflow/",
-      "to": "get-started/"
+      "to": "docs/user-workflow/"
     }
   ]
 }

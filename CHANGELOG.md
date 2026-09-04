@@ -9,6 +9,16 @@ An `[Unreleased]` section is created by the first change that lands after a rele
 deliberately carries no empty one: a standing `unreleased` heading was dated by a later commit
 once already, which retroactively asserted that unshipped work had shipped.
 
+## [Unreleased]
+
+### Site
+
+- The site topology is reversed after the owner's review of the portal front door (ADR 0027,
+  superseding ADR 0025). A hand-written landing page owns the site root and links to both
+  surfaces; the MkDocs documentation is mounted at `docs/` with *Why ScoreQuant*, *Three doors*
+  and *Choosing your workflow* restored to it; the portal is published unchanged at `portal/`.
+  The package's Documentation URL now points at `docs/`; every pre-portal URL still redirects.
+
 ## [0.2.0] — 2026-09-04
 
 The consolidation release (roadmap milestone M12). The public surface gains a small error

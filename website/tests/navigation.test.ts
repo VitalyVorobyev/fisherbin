@@ -2,9 +2,10 @@ import {describe, expect, it} from "vitest";
 
 import {isActiveNavEntry, isBlogPostList} from "../src/lib/navigation";
 
-// The deployed baseUrl, post root-site promotion. Neither predicate may
-// hard-code it — it is exercised here only as an input fixture.
-const base = "/scorequant";
+// The deployed baseUrl (the portal lives at /portal/ beside the documentation,
+// ADR 0027). Neither predicate may hard-code it — it is exercised here only as
+// an input fixture.
+const base = "/scorequant/portal";
 
 describe("primary navigation highlighting", () => {
   it("marks the entry active on its own route, with or without a trailing slash", () => {
@@ -26,6 +27,7 @@ describe("primary navigation highlighting", () => {
 
   it("survives a change of baseUrl", () => {
     expect(isActiveNavEntry("/scorequant/blog/some-post", "/blog")).toBe(true);
+    expect(isActiveNavEntry("/elsewhere/portal/blog/some-post", "/blog")).toBe(true);
     expect(isActiveNavEntry("/blog", "/blog")).toBe(true);
   });
 });

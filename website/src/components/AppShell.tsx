@@ -120,7 +120,7 @@ export function AppShell({children}: AppShellProps): React.JSX.Element {
               <span>Learn</span><Link to="/get-started">Get started</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/blog">Blog</Link>
             </div>
             <div className="site-footer__links">
-              <span>Reference</span><a href={REFERENCE_BASE}>Python API</a><a href="https://github.com/VitalyVorobyev/scorequant">GitHub</a>
+              <span>Reference</span><a href={REFERENCE_BASE}>Documentation</a><a href="https://github.com/VitalyVorobyev/scorequant">GitHub</a>
             </div>
             <small>Open source · research provenance is explicit · no browser data leaves your device</small>
           </footer>

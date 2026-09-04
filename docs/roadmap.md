@@ -478,6 +478,12 @@ raises the documented `RefusalError` with its `[CE-DS-GLOBAL-GEOMETRY-001]` coun
 `0.2.0` is a minor bump rather than a patch because `LinearProblem` and `LinearComponents.evaluate`
 are removed; `ContractError`, `RefusalError` and `ScoreQuantError` are added.
 
+**Site topology reversed, 4 September 2026.** The owner rejected the portal front door on review.
+A hand-written landing page now owns the site root, the MkDocs documentation is mounted at `/docs/`
+with its three retired narrative pages restored, and the portal is published unchanged at
+`/portal/` ([ADR 0027](adr/0027-landing-page-at-the-root.md), superseding ADR 0025). The portal's
+own pages are future work under the owner's review notes and are not scheduled here.
+
 ## Explicitly outside the development plan
 
 An E-optimal solver is not planned. The E-optimality chapter and deterministic counterexample stay
