@@ -1,8 +1,11 @@
-import {useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
+
+import {useLocation} from "@docusaurus/router";
 
 import {AppShell} from "../components/AppShell";
 import {ScoreSpace} from "../components/ScoreSpace";
 import {portalData, type ScoreScenario} from "../data/portal";
+import {resolveJobPreset} from "../lab/jobPreset";
 import {LAB_LIMITS, criterionLabel} from "../lab/protocol";
 import type {LabCriterion, LabProblem, LabRunRequest} from "../lab/protocol";
 import {useLabRunner} from "../lab/useLabRunner";
@@ -31,6 +34,31 @@ export default function Lab(): React.JSX.Element {
   const fileInput = useRef<HTMLInputElement>(null);
   const lab = useLabRunner();
   const data = useScoreTable();
+  const {chooseFlowCyt, chooseGaussian, loadPreset} = data;
+  // Seeded from `?job=<slug>` once on mount (D5,
+  // docs/programme/S08-the-four-walkthroughs.md). This page is server-rendered
+  // by Docusaurus, so the query is read in an effect rather than during
+  // render: an effect runs only after hydration, so the server render and the
+  // client's first paint both see the same unseeded defaults above, and only
+  // then does this apply the seed -- there is no render for the two to
+  // disagree on. The ref guards it to exactly one application even if
+  // `search` changes later while this page stays mounted.
+  const jobAppliedRef = useRef(false);
+  const {search} = useLocation();
+  useEffect(() => {
+    if (jobAppliedRef.current) return;
+    jobAppliedRef.current = true;
+    const seed = resolveJobPreset(search);
+    if (seed === null) return;
+    setBins(seed.bins);
+    setCriterionName(seed.criterionName);
+    setInterest(seed.interest);
+    setSolver(seed.solver);
+    setRunner(seed.runner);
+    if (seed.dataset === "gaussian") chooseGaussian();
+    else if (seed.dataset === "flowcyt") chooseFlowCyt();
+    else loadPreset(seed.dataset);
+  }, [chooseFlowCyt, chooseGaussian, loadPreset, search]);
   const fixture = portalData.scoreSpace.scenarios[String(bins)];
   const scenario = useMemo<ScoreScenario>(() => lab.result === null ? (fixture ?? EMPTY_SCENARIO) : {
     centers: lab.result.centers,

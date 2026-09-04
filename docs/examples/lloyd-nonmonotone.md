@@ -1,7 +1,7 @@
 # A batch step that loses information
 
 This page is entirely about **sample partitioning** (`optimize_partition`): no rule is
-fitted and nothing is predicted. It enters through [Door 1](../three-doors.md) — a
+fitted and nothing is predicted. It enters through [Door 1](../book/ch04-scores-and-doors.md) — a
 precomputed score table, eight rows of it — and it exists to make one theoretical result
 runnable. The theory is [Chapter 9](../book/ch09-mahalanobis-lloyd.md); this page is the
 demonstration.

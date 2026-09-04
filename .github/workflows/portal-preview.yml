@@ -44,6 +44,21 @@ jobs:
         working-directory: website
       - run: corepack pnpm build
         working-directory: website
+      # Playwright needs its own browser download; `pnpm validate` deliberately
+      # omits e2e so the local loop stays fast, so CI is the only place the
+      # end-to-end suite runs. Chromium alone covers both configured projects
+      # (desktop Chrome and a Pixel 7 emulation).
+      - run: corepack pnpm exec playwright install --with-deps chromium
+        working-directory: website
+      - run: corepack pnpm test:e2e
+        working-directory: website
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright-report
+          path: website/playwright-report
+          if-no-files-found: ignore
       - run: corepack pnpm assemble:site
         working-directory: website
       # `include-hidden-files` is required, not cosmetic: every path segment is

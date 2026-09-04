@@ -1,7 +1,7 @@
 # Soft rules: annealing, the hardening gap, and purification
 
 This page solves **space quantization** (`fit_quantizer`) through
-[Door 1](../three-doors.md), a precomputed table of `(observation, score)` events. It is
+[Door 1](../book/ch04-scores-and-doors.md), a precomputed table of `(observation, score)` events. It is
 about the one solver in the library that does not optimize the hard objective at all:
 `SoftVoronoiConfig`, which optimizes a *randomized* rule with gradient descent and then
 hardens it.

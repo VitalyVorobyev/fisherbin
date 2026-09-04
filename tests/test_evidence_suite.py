@@ -8,6 +8,7 @@ import pytest
 
 import scorequant as sq
 from examples.baselines import rectangular_observation_bins
+from examples.door3_classifier import run_study as run_door3_study
 from examples.ds_geometry_counterexample import (
     canonical_labelings,
     efficient_semimetric,
@@ -66,6 +67,7 @@ DS_GEOMETRY_METRICS = ASSETS / "ds-geometry-counterexample.json"
 CERTIFICATION_METRICS = ASSETS / "global-certification.json"
 MICHELSON_METRICS = ASSETS / "michelson-phase.json"
 HEP_METRICS = ASSETS / "hep-classifier.json"
+DOOR3_METRICS = ASSETS / "door3-classifier.json"
 
 # Reduced sizes for the bound checks below: the committed JSON carries the
 # full study, and these re-runs only have to reproduce its qualitative claims.
@@ -1434,3 +1436,233 @@ def test_fast_rerun_reproduces_the_hep_classifier_gap() -> None:
     classifiers = _mapping(study.metrics, "classifiers")
     assert float(classifiers["tes_minus_plus_auc"]) > 0.5
     assert 0.0 < float(classifiers["signal_fraction"]) < 0.01  # type: ignore[arg-type]
+
+
+# --- docs/examples/door3-classifier.md -------------------------------------
+
+# The ladder table: labeled training size, surrogate retention, true
+# retention, and the ratio-closure residual (evaluated on the dedicated
+# training-measure sample, not on `train_observations`), at the precision
+# the page prints. Transcribed from the committed JSON.
+PAGE_DOOR3_LADDER: dict[int, tuple[float, float, float]] = {
+    15: (0.9658, 0.8847, 0.0420),
+    60: (0.9691, 0.9521, 0.0185),
+    300: (0.9700, 0.9665, 0.0032),
+}
+
+
+def _door3_metrics() -> dict[str, object]:
+    return _load(DOOR3_METRICS)
+
+
+def test_door3_json_matches_the_published_ladder() -> None:
+    metrics = _door3_metrics()
+    assert metrics["n_train"] == 400
+    assert metrics["n_test"] == 600
+    assert metrics["n_closure"] == 50_000
+    assert metrics["n_bins"] == 4
+    mixture = _mapping(metrics, "mixture")
+    assert mixture["signal_mu"] == pytest.approx(1.0)
+    assert mixture["signal_sigma"] == pytest.approx(0.5)
+    assert mixture["background_mu"] == pytest.approx(0.0)
+    assert mixture["background_sigma"] == pytest.approx(1.5)
+    assert list(mixture["reference_fractions"]) == pytest.approx([0.3, 0.7])  # type: ignore[arg-type]
+
+    ladder = {int(row["n_per_class"]): row for row in _listing(metrics, "ladder")}  # type: ignore[call-overload]
+    assert set(ladder) == set(PAGE_DOOR3_LADDER)
+    for n_per_class, (surrogate, true, closure) in PAGE_DOOR3_LADDER.items():
+        row = ladder[n_per_class]
+        assert round(float(row["surrogate_retention"]), 4) == pytest.approx(surrogate, abs=5e-5)  # type: ignore[arg-type]
+        assert round(float(row["true_retention"]), 4) == pytest.approx(true, abs=5e-5)  # type: ignore[arg-type]
+        assert round(float(row["closure_residual"]), 4) == pytest.approx(closure, abs=5e-5)  # type: ignore[arg-type]
+
+    # Evaluated on the measure the ratios are actually defined against, the
+    # closure residual is a genuine estimator-bias signal: it falls
+    # monotonically as the classifier improves.
+    ordered = [float(ladder[n]["closure_residual"]) for n in (15, 60, 300)]
+    assert ordered[0] > ordered[1] > ordered[2]
+
+
+def test_door3_json_matches_the_published_gap_and_ceiling() -> None:
+    metrics = _door3_metrics()
+    gap = _mapping(metrics, "surrogate_gap")
+    gap_rows = gap["rows"]
+    assert isinstance(gap_rows, list)
+    gaps = {int(row["n_per_class"]): float(row["gap"]) for row in gap_rows}  # type: ignore[union-attr]
+    # The gap the surrogate number hides shrinks monotonically as the
+    # classifier improves, and is largest at the smallest training size.
+    assert gaps[15] > gaps[60] > gaps[300]
+    assert gap["largest_n_per_class"] == 15
+    assert round(float(gap["largest_gap"]), 4) == pytest.approx(0.0811, abs=5e-5)  # type: ignore[arg-type]
+
+    ceiling = _mapping(metrics, "exact_ceiling")
+    # The ceiling a quantizer fit directly from the exact score reaches on
+    # this sample -- what the ladder's largest rung (0.9700 surrogate, 0.9665
+    # true) is converging toward.
+    assert round(float(ceiling["retention"]), 3) == pytest.approx(0.972, abs=5e-4)  # type: ignore[arg-type]
+
+    # Evaluated on the correct (training) measure, the exact provider's own
+    # closure residual sits at Monte Carlo noise -- three orders of
+    # magnitude below the worst-trained classifier rung, and below the
+    # best-trained rung too, though by a modest margin there (roughly 1.9x):
+    # a classifier trained on 300 labeled events per class has essentially
+    # converged, so its own bias is already close to this sample's noise
+    # floor. This is the ordering the earlier (wrong-measure) version of
+    # this test had inverted.
+    ladder = {int(row["n_per_class"]): row for row in _listing(metrics, "ladder")}  # type: ignore[call-overload]
+    assert round(float(ceiling["closure_residual"]), 4) == pytest.approx(0.0017, abs=5e-5)  # type: ignore[arg-type]
+    for row in ladder.values():
+        assert float(ceiling["closure_residual"]) < float(row["closure_residual"])
+
+
+def test_door3_json_matches_the_published_closure_measure_mismatch() -> None:
+    """The deliberate, labelled contrast: what closure looks like on the wrong measure."""
+    metrics = _door3_metrics()
+    mismatch = _mapping(metrics, "closure_measure_mismatch")
+    assert "wrong measure" in str(mismatch["description"]).lower()
+    assert "not estimator error" in str(mismatch["description"]).lower()
+
+    assert round(float(mismatch["wrong_measure_residual"]), 3) == pytest.approx(  # type: ignore[arg-type]
+        0.180, abs=5e-4
+    )
+    means = mismatch["analytic_reference_measure_ratio_means"]
+    assert isinstance(means, list)
+    assert [round(float(v), 4) for v in means] == pytest.approx(  # type: ignore[arg-type]
+        [0.8411, 1.1589], abs=5e-5
+    )
+
+    # The wrong-measure residual is not smaller than the exact provider's
+    # correct-measure one -- it is over a hundred times larger, which is the
+    # whole point of keeping both numbers side by side.
+    ceiling = _mapping(metrics, "exact_ceiling")
+    assert float(mismatch["wrong_measure_residual"]) > 50 * float(ceiling["closure_residual"])  # type: ignore[arg-type]
+
+
+# The naive-binning comparison: labeled training size, equal-frequency and
+# equal-width retention of the same estimated score, and the fitted
+# partition's own true retention alongside, at the precision the page prints.
+PAGE_DOOR3_NAIVE_BINNING: dict[int, tuple[float, float, float]] = {
+    15: (0.8842, 0.8648, 0.8847),
+    60: (0.9304, 0.9366, 0.9521),
+    300: (0.9378, 0.9678, 0.9665),
+}
+
+
+def test_door3_json_matches_the_published_naive_binning() -> None:
+    """The one-dimensional naive-binning baseline the walkthrough's comparison beat needs.
+
+    Measured, not assumed: in one dimension quantile cells are close to the
+    D-optimal partition, and at the best-trained rung the naive equal-width
+    rule actually *beats* the fitted partition. That is the qualitative
+    ordering this test pins -- not the "ScoreQuant always wins" shape the
+    other examples happen to show.
+    """
+    metrics = _door3_metrics()
+    naive = _mapping(metrics, "naive_binning")
+    assert "measured, not assumed" in str(naive["description"]).lower()
+
+    rows = {int(row["n_per_class"]): row for row in _listing(naive, "rows")}  # type: ignore[call-overload]
+    assert set(rows) == set(PAGE_DOOR3_NAIVE_BINNING)
+    for n_per_class, (eq_freq, eq_width, true) in PAGE_DOOR3_NAIVE_BINNING.items():
+        row = rows[n_per_class]
+        assert round(float(row["equal_frequency_retention"]), 4) == pytest.approx(  # type: ignore[arg-type]
+            eq_freq, abs=5e-5
+        )
+        assert round(float(row["equal_width_retention"]), 4) == pytest.approx(  # type: ignore[arg-type]
+            eq_width, abs=5e-5
+        )
+        assert round(float(row["true_retention"]), 4) == pytest.approx(true, abs=5e-5)  # type: ignore[arg-type]
+
+    # The qualitative finding, pinned as observed: at 15/class the fitted
+    # partition and the quantile rule are within half a point of each other;
+    # at 300/class the naive equal-width rule actually beats the fit.
+    small = rows[15]
+    assert abs(float(small["true_retention"]) - float(small["equal_frequency_retention"])) < 0.001
+    large = rows[300]
+    assert float(large["equal_width_retention"]) > float(large["true_retention"])
+
+    ceiling_row = _mapping(naive, "exact_ceiling")
+    assert ceiling_row["n_per_class"] is None
+    assert round(float(ceiling_row["equal_width_retention"]), 4) == pytest.approx(  # type: ignore[arg-type]
+        0.9679, abs=5e-5
+    )
+    assert round(float(ceiling_row["true_retention"]), 3) == pytest.approx(0.972, abs=5e-4)  # type: ignore[arg-type]
+    # Even the exact-score ceiling only opens a modest gap over naive
+    # equal-width cells of the same score -- the one-dimensional gap this
+    # study measures is small everywhere, including where there is no
+    # classifier to blame.
+    assert float(ceiling_row["true_retention"]) - float(ceiling_row["equal_width_retention"]) < 0.01
+
+    # The single quoted figure: the largest gap the fit opens over the
+    # better naive rule, at any rung -- small, as expected for a
+    # one-dimensional score, and not at the smallest (worst-classifier) rung.
+    assert round(float(naive["largest_gap"]), 4) == pytest.approx(0.0155, abs=5e-5)  # type: ignore[arg-type]
+    assert naive["largest_gap_n_per_class"] == 60
+    assert float(naive["largest_gap"]) < 0.02
+
+
+def test_door3_json_matches_the_published_provenance() -> None:
+    metrics = _door3_metrics()
+    provenance = _mapping(metrics, "provenance")
+    classifier = provenance["classifier"]
+    assert isinstance(classifier, dict)
+    assert classifier["provenance_kind"] == "estimated_ratio"
+    assert classifier["exact_fisher"] is False
+    assert classifier["information_kind"] == "supplied_score_surrogate"
+
+    exact = provenance["exact"]
+    assert isinstance(exact, dict)
+    assert exact["provenance_kind"] == "exact"
+    assert exact["exact_fisher"] is True
+    assert exact["information_kind"] == "exact_fisher"
+
+
+def test_fast_rerun_reproduces_the_door3_surrogate_gap() -> None:
+    """A small fast-mode rerun reproduces the qualitative claims, not the pinned numbers.
+
+    `n_closure` stays at the full-scale `N_CLOSURE`: the closure check never
+    enters a fit, so it costs nothing extra, and the ladder rungs and the
+    exact ceiling need a shared, high-power closure sample for their
+    residuals to be a meaningful comparison at all -- the fast rerun's speed
+    comes entirely from the smaller `n_train`/`n_test` fits below.
+    """
+    study = run_door3_study(
+        n_per_class_values=(15, 60, 300), n_train=200, n_test=300, n_closure=50_000, n_bins=4
+    )
+    metrics = study.metrics
+    ladder = {int(row["n_per_class"]): row for row in _listing(metrics, "ladder")}  # type: ignore[call-overload]
+
+    # The self-reported surrogate retention overstates the truth most sharply
+    # at the smallest training size ...
+    small = ladder[15]
+    assert float(small["surrogate_retention"]) > float(small["true_retention"])
+
+    # ... and the gap the surrogate hides shrinks as the classifier improves.
+    gaps = [
+        float(ladder[n]["surrogate_retention"]) - float(ladder[n]["true_retention"])
+        for n in (15, 60, 300)
+    ]
+    assert gaps[0] > gaps[1] > gaps[2]
+
+    # The provenance facts hold regardless of scale: a classifier-derived
+    # result never claims exact Fisher semantics, and the exact provider
+    # always does.
+    provenance = _mapping(metrics, "provenance")
+    assert provenance["classifier"]["information_kind"] == "supplied_score_surrogate"  # type: ignore[index]
+    assert provenance["classifier"]["exact_fisher"] is False  # type: ignore[index]
+    assert provenance["exact"]["information_kind"] == "exact_fisher"  # type: ignore[index]
+    assert provenance["exact"]["exact_fisher"] is True  # type: ignore[index]
+
+    # Evaluated on the correct measure, the closure residual falls
+    # monotonically with classifier quality, and the exact provider's own
+    # residual sits below every rung's -- the property that would catch a
+    # regression back to evaluating on the wrong measure.
+    closure = [float(ladder[n]["closure_residual"]) for n in (15, 60, 300)]
+    assert closure[0] > closure[1] > closure[2]
+    ceiling = _mapping(metrics, "exact_ceiling")
+    assert all(float(ceiling["closure_residual"]) < value for value in closure)
+
+    # The wrong-measure contrast is still visibly larger than the corrected
+    # residual at this scale too.
+    mismatch = _mapping(metrics, "closure_measure_mismatch")
+    assert float(mismatch["wrong_measure_residual"]) > 10 * float(ceiling["closure_residual"])  # type: ignore[arg-type]

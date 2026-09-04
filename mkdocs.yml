@@ -46,7 +46,6 @@ nav:
   - Home: index.md
   - Why ScoreQuant: motivation.md
   - Method overview: method.md
-  - Three doors: three-doors.md
   - Choosing your workflow: user-workflow.md
   - Book:
       - Overview: book/index.md

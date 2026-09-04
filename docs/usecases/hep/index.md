@@ -1,6 +1,6 @@
 # HEP classifier study: a tau-energy-scale nuisance from the FAIR Universe HiggsML dataset
 
-This page walks [Door 3](../../three-doors.md) (classifier to density ratios to scores) through
+This page walks [Door 3](../../book/ch04-scores-and-doors.md) (classifier to density ratios to scores) through
 profiled \(D_s\) on a real particle-physics dataset: the
 [FAIR Universe HiggsML Uncertainty Challenge](https://doi.org/10.5281/zenodo.15131565) public
 sample, with an explicit tau-energy-scale (`tes`) nuisance. It follows the same module shape as

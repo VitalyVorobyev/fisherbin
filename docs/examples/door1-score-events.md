@@ -1,7 +1,7 @@
 # Door 1: precomputed score events
 
 This page walks both public tasks — **sample partitioning** (`optimize_partition`) and
-**space quantization** (`fit_quantizer`) — through [Door 1](../three-doors.md): you already
+**space quantization** (`fit_quantizer`) — through [Door 1](../book/ch04-scores-and-doors.md): you already
 have `(event, score)` rows and their weights, so no provider is needed. It replaces the old
 "first analytic partition" tutorial and answers a question that comes up immediately: once
 you have a stable partition of your sample, when do you compile it into a rule, and when do

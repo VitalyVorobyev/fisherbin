@@ -1,7 +1,7 @@
 # A profiled optimum outside its own geometry
 
 This page is about **sample partitioning** only (`optimize_partition`), and it enters
-through [Door 1](../three-doors.md): a score table, eight rows of it, written down rather
+through [Door 1](../book/ch04-scores-and-doors.md): a score table, eight rows of it, written down rather
 than sampled. It exists to make one exact result runnable, and the result is the reason the
 library has no compile bridge for the profiled criterion. The theory is
 [Chapter 10](../book/ch10-profiled-ds.md).

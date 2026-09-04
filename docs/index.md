@@ -47,7 +47,7 @@ exactly that rule — and refuses when the partition is unstable or geometricall
 
 `optimize_partition` always takes score rows, so doors 2 and 3 reach it through an explicit
 `provider.score(X)` call. Observation-to-score conversion never hides inside fitting or prediction.
-[Three doors](three-doors.md) treats each regime in full.
+[Scores, score laws, and the three doors](book/ch04-scores-and-doors.md) treats each regime in full.
 
 ## Install
 
@@ -113,7 +113,7 @@ same for each door, and [Choosing your workflow](user-workflow.md) walks through
   space, and why the two tasks stay apart.
 - [Method overview](method.md) — the pipeline from score to certificate, with the criteria and
   solver families named.
-- [Three doors](three-doors.md) — the input regimes, the source-versus-provider contract, and the
+- [Scores, score laws, and the three doors](book/ch04-scores-and-doors.md) — the input regimes, the source-versus-provider contract, and the
   validation rules.
 - [Choosing your workflow](user-workflow.md) — which task, which door, which criterion and solver.
 - [The book](book/index.md) — the statistical theory developed independently of this package's API.

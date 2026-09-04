@@ -40,7 +40,7 @@ $$
 so any oracle for model density ratios determines it, and for component models the relative
 densities \(\phi_k/\phi_{\rm ref}\) suffice. Where the rows come from — precomputed, an analytic
 component model, or estimated density ratios — is the subject of
-[Three doors](three-doors.md).
+[Scores, score laws, and the three doors](book/ch04-scores-and-doors.md).
 
 For labels \(b(i)\) the relevant quantities are the unbinned information, the cell masses and score
 sums, and the between-cell information:

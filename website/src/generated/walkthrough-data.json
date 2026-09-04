@@ -1,0 +1,633 @@
+{
+  "pages": {
+    "flowcyt": {
+      "bins": {
+        "source": "docs/usecases/assets/cell_population.json#/operating_partition/n_bins",
+        "text": "8",
+        "value": 8
+      },
+      "dExchangeEfficiency": {
+        "source": "docs/usecases/assets/cell_population.json#/finite_d_exchange:8/held_out_d_efficiency",
+        "text": "0.9853",
+        "value": 0.9852758215441055
+      },
+      "dExchangeRmse": {
+        "source": "docs/usecases/assets/cell_population.json#/finite_d_exchange:8/target_macro_rmse",
+        "text": "0.002094",
+        "value": 0.002093732126606461
+      },
+      "informationKind": {
+        "source": "docs/usecases/assets/cell_population.json#/finite_d_exchange:8/information_kind",
+        "text": "supplied_score_surrogate",
+        "value": "supplied_score_surrogate"
+      },
+      "license": {
+        "source": "examples/data/flowcyt_fixture.json#/source_license",
+        "text": "CC-BY-NC-SA-4.0",
+        "value": "CC-BY-NC-SA-4.0"
+      },
+      "markerKmeansEfficiency": {
+        "source": "docs/usecases/assets/cell_population.json#/marker_kmeans:8/held_out_d_efficiency",
+        "text": "0.0704",
+        "value": 0.07035593206242213
+      },
+      "markerKmeansRmse": {
+        "source": "docs/usecases/assets/cell_population.json#/marker_kmeans:8/target_macro_rmse",
+        "text": "0.028892",
+        "value": 0.028891852157931913
+      },
+      "oneDimensionalEfficiency": {
+        "source": "docs/usecases/assets/cell_population.json#/one_dimensional_score:8/held_out_d_efficiency",
+        "text": "0.0378",
+        "value": 0.03780138996527281
+      },
+      "oneDimensionalRmse": {
+        "source": "docs/usecases/assets/cell_population.json#/one_dimensional_score:8/target_macro_rmse",
+        "text": "0.018088",
+        "value": 0.018087934767159634
+      },
+      "profiledCeilingRetention": {
+        "source": "docs/usecases/assets/flowcyt_profiled_ds.json#/fixture_scale/bound/ceiling_retention",
+        "text": "0.9997",
+        "value": 0.9996713041049554
+      },
+      "profiledDPartitionRetention": {
+        "source": "docs/usecases/assets/flowcyt_profiled_ds.json#/fixture_scale/partitions/0/profiled_retention",
+        "text": "0.9954",
+        "value": 0.995386074153505
+      },
+      "referencePerPatientClass": {
+        "source": "examples/data/flowcyt_fixture.json#/reference_per_patient_class",
+        "text": "128",
+        "value": 128
+      },
+      "softVoronoiEfficiency": {
+        "source": "docs/usecases/assets/cell_population.json#/soft_voronoi:8/held_out_d_efficiency",
+        "text": "0.9846",
+        "value": 0.9846216879860943
+      },
+      "softVoronoiRmse": {
+        "source": "docs/usecases/assets/cell_population.json#/soft_voronoi:8/target_macro_rmse",
+        "text": "0.001929",
+        "value": 0.0019285302742885712
+      },
+      "sourceRepository": {
+        "source": "examples/data/flowcyt_fixture.json#/source_repository",
+        "text": "https://github.com/VIPER-GENEVA/FlowCyt-Classification-Benchmark",
+        "value": "https://github.com/VIPER-GENEVA/FlowCyt-Classification-Benchmark"
+      },
+      "studyCells": {
+        "source": "docs/usecases/assets/cell_population.json#/source/sample_rows",
+        "text": "600,000",
+        "value": 600000
+      },
+      "testPerPatient": {
+        "source": "examples/data/flowcyt_fixture.json#/test_per_patient",
+        "text": "2,048",
+        "value": 2048
+      },
+      "twoDimensionalGridEfficiency": {
+        "source": "docs/usecases/assets/cell_population.json#/two_dimensional_grid:8/held_out_d_efficiency",
+        "text": "0.0223",
+        "value": 0.022311477389082943
+      },
+      "twoDimensionalGridRmse": {
+        "source": "docs/usecases/assets/cell_population.json#/two_dimensional_grid:8/target_macro_rmse",
+        "text": "0.083325",
+        "value": 0.08332510970683164
+      },
+      "unbinnedMacroRmse": {
+        "source": "docs/usecases/assets/cell_population.json#/unbinned_classifier_ratio/target_macro_rmse",
+        "text": "0.001728",
+        "value": 0.001727561297740151
+      }
+    },
+    "hep": {
+      "backgroundEvents": {
+        "source": "docs/examples/assets/hep-classifier.json#/fixture/background_events",
+        "text": "664",
+        "value": 664
+      },
+      "baselineSpread": {
+        "source": "docs/examples/assets/hep-classifier.json#/scorequant_vs_classifier_binning/baseline_spread",
+        "text": "0.2098",
+        "value": 0.2098188027041137
+      },
+      "bestBaselineKey": {
+        "source": "docs/examples/assets/hep-classifier.json#/scorequant_vs_classifier_binning/best_baseline_key",
+        "text": "classifier_logit_equal_width",
+        "value": "classifier_logit_equal_width"
+      },
+      "bestBaselineLabel": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/3/label",
+        "text": "Classifier logit equal-width bins (6)",
+        "value": "Classifier logit equal-width bins (6)"
+      },
+      "bins": {
+        "source": "docs/examples/assets/hep-classifier.json#/n_bins",
+        "text": "6",
+        "value": 6
+      },
+      "bytesFetchedFrom": {
+        "source": "examples/data/hep_higgsml_fixture.json#/bytes_fetched_from",
+        "text": "https://github.com/FAIR-Universe/HEP-Challenge/blob/31816a0d8c8dda03d4b28d9e824674821756962b/input_data/FAIR_Universe_HiggsML_data.parquet",
+        "value": "https://github.com/FAIR-Universe/HEP-Challenge/blob/31816a0d8c8dda03d4b28d9e824674821756962b/input_data/FAIR_Universe_HiggsML_data.parquet"
+      },
+      "ceilingRetention": {
+        "source": "docs/examples/assets/hep-classifier.json#/ceiling/ceiling_retention",
+        "text": "0.9569",
+        "value": 0.9568542109395966
+      },
+      "dFullRetention": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/0/full_retention",
+        "text": "0.8925",
+        "value": 0.89246968750141
+      },
+      "dProfiledRetention": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/0/profiled_retention",
+        "text": "0.8370",
+        "value": 0.8369649450262336
+      },
+      "datasetName": {
+        "source": "examples/data/hep_higgsml_fixture.json#/dataset",
+        "text": "FAIR Universe - HiggsML Uncertainty Challenge Public Dataset",
+        "value": "FAIR Universe - HiggsML Uncertainty Challenge Public Dataset"
+      },
+      "delta": {
+        "source": "docs/examples/assets/hep-classifier.json#/delta",
+        "text": "0.050",
+        "value": 0.05
+      },
+      "dsFullRetention": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/1/full_retention",
+        "text": "0.4084",
+        "value": 0.40838224440624826
+      },
+      "dsProfiledRetention": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/1/profiled_retention",
+        "text": "0.9560",
+        "value": 0.956003693016737
+      },
+      "equalFrequencyLabel": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/2/label",
+        "text": "Classifier quantile bins (6)",
+        "value": "Classifier quantile bins (6)"
+      },
+      "fullRetentionGivenUp": {
+        "source": "docs/examples/assets/hep-classifier.json#/criterion_trade/full_retention_given_up",
+        "text": "0.4841",
+        "value": 0.4840874430951617
+      },
+      "gapToCeiling": {
+        "source": "docs/examples/assets/hep-classifier.json#/ceiling/gap_to_ds_partition",
+        "text": "0.0009",
+        "value": 0.0008892641498832177
+      },
+      "gapToEqualFrequency": {
+        "source": "docs/examples/assets/hep-classifier.json#/scorequant_vs_classifier_binning/profiled_retention_gap_to_equal_frequency",
+        "text": "0.7106",
+        "value": 0.7105756412319839
+      },
+      "headlineGap": {
+        "source": "docs/examples/assets/hep-classifier.json#/scorequant_vs_classifier_binning/profiled_retention_gap",
+        "text": "0.5008",
+        "value": 0.5007568385278702
+      },
+      "license": {
+        "source": "examples/data/hep_higgsml_fixture.json#/source_license",
+        "text": "CC-BY-4.0",
+        "value": "CC-BY-4.0"
+      },
+      "licenseRecordDoi": {
+        "source": "examples/data/hep_higgsml_fixture.json#/license_record_doi",
+        "text": "10.5281/zenodo.15131565",
+        "value": "10.5281/zenodo.15131565"
+      },
+      "licenseRecordUrl": {
+        "source": "examples/data/hep_higgsml_fixture.json#/license_record_url",
+        "text": "https://doi.org/10.5281/zenodo.15131565",
+        "value": "https://doi.org/10.5281/zenodo.15131565"
+      },
+      "logitProfiledRetention": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/3/profiled_retention",
+        "text": "0.4552",
+        "value": 0.4552468544888668
+      },
+      "nEvents": {
+        "source": "docs/examples/assets/hep-classifier.json#/fixture/n_events",
+        "text": "1,000",
+        "value": 1000
+      },
+      "nFolds": {
+        "source": "docs/examples/assets/hep-classifier.json#/n_folds",
+        "text": "5",
+        "value": 5
+      },
+      "profiledRetentionGained": {
+        "source": "docs/examples/assets/hep-classifier.json#/criterion_trade/profiled_retention_gained",
+        "text": "0.1190",
+        "value": 0.1190387479905034
+      },
+      "quantileProfiledRetention": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/2/profiled_retention",
+        "text": "0.2454",
+        "value": 0.2454280517847531
+      },
+      "signalAuc": {
+        "source": "docs/examples/assets/hep-classifier.json#/classifiers/signal_weighted_auc",
+        "text": "0.8345",
+        "value": 0.8344737120691251
+      },
+      "signalEvents": {
+        "source": "docs/examples/assets/hep-classifier.json#/fixture/signal_events",
+        "text": "336",
+        "value": 336
+      },
+      "signalFraction": {
+        "source": "docs/examples/assets/hep-classifier.json#/classifiers/signal_fraction",
+        "text": "0.00099",
+        "value": 0.00098781975979457
+      },
+      "tesAuc": {
+        "source": "docs/examples/assets/hep-classifier.json#/classifiers/tes_minus_plus_auc",
+        "text": "0.5674",
+        "value": 0.567367
+      },
+      "thresholdBins": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/4/n_bins",
+        "text": "2",
+        "value": 2
+      },
+      "thresholdLabel": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/4/label",
+        "text": "Threshold cut at eta_s=0.5119",
+        "value": "Threshold cut at eta_s=0.5119"
+      },
+      "thresholdProfiledRetention": {
+        "source": "docs/examples/assets/hep-classifier.json#/partitions/4/profiled_retention",
+        "text": "0.0000",
+        "value": 0.0
+      },
+      "upstreamCommit": {
+        "source": "examples/data/hep_higgsml_fixture.json#/upstream_commit",
+        "text": "31816a0d8c8dda03d4b28d9e824674821756962b",
+        "value": "31816a0d8c8dda03d4b28d9e824674821756962b"
+      }
+    },
+    "michelson": {
+      "bins": {
+        "source": "docs/examples/assets/michelson-phase.json#/headline_bins",
+        "text": "6",
+        "value": 6
+      },
+      "boundGapAtFour": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/0/bound_gap",
+        "text": "0.004966",
+        "value": 0.004966330769635263
+      },
+      "boundGapAtSix": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/1/bound_gap",
+        "text": "2.5e-05",
+        "value": 2.5285988623835465e-05
+      },
+      "ceilingRetentionAtFour": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/0/ceiling_retention",
+        "text": "0.8672",
+        "value": 0.8672261564340735
+      },
+      "ceilingRetentionAtSix": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/1/ceiling_retention",
+        "text": "0.9483",
+        "value": 0.9482831713778096
+      },
+      "combRuns": {
+        "source": "docs/examples/assets/michelson-phase.json#/comb/n_runs",
+        "text": "24",
+        "value": 24
+      },
+      "compiledTestRetention": {
+        "source": "docs/examples/assets/michelson-phase.json#/compile_bridge/compiled_test_retention",
+        "text": "0.8346",
+        "value": 0.8346211523168009
+      },
+      "correlation": {
+        "source": "docs/examples/assets/michelson-phase.json#/closed_form/correlation",
+        "text": "0.8720",
+        "value": 0.8719582770810335
+      },
+      "costOfProfiling": {
+        "source": "docs/examples/assets/michelson-phase.json#/cost_of_profiling",
+        "text": "0.7603",
+        "value": 0.7603112369701244
+      },
+      "dOptimalRetentionAtFour": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/0/d_optimal_retention",
+        "text": "0.7227",
+        "value": 0.7227396781750588
+      },
+      "dOptimalRetentionAtSix": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/1/d_optimal_retention",
+        "text": "0.7995",
+        "value": 0.7994648908881136
+      },
+      "dRuleOwnCriterion": {
+        "source": "docs/examples/assets/michelson-phase.json#/rules/0/criterion_efficiency",
+        "text": "0.8345",
+        "value": 0.8344795665479535
+      },
+      "dRuleProfiledRetention": {
+        "source": "docs/examples/assets/michelson-phase.json#/rules/0/profiled_retention",
+        "text": "0.7987",
+        "value": 0.7986662738412926
+      },
+      "dsRuleOwnCriterion": {
+        "source": "docs/examples/assets/michelson-phase.json#/rules/1/criterion_efficiency",
+        "text": "0.8532",
+        "value": 0.8531706053884383
+      },
+      "dsRuleProfiledRetention": {
+        "source": "docs/examples/assets/michelson-phase.json#/rules/1/profiled_retention",
+        "text": "0.8518",
+        "value": 0.8518066363339105
+      },
+      "equalWidthRetentionAtEight": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/2/equal_width_retention",
+        "text": "0.7247",
+        "value": 0.7246630936475936
+      },
+      "equalWidthRetentionAtFour": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/0/equal_width_retention",
+        "text": "4.6e-32",
+        "value": 4.605264156593518e-32
+      },
+      "equalWidthRetentionAtSix": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/1/equal_width_retention",
+        "text": "0.2054",
+        "value": 0.20540197184571238
+      },
+      "equalWidthRetentionAtTen": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/3/equal_width_retention",
+        "text": "0.5653",
+        "value": 0.5652822231572834
+      },
+      "fringes": {
+        "source": "docs/examples/assets/michelson-phase.json#/fringes",
+        "text": "4.0",
+        "value": 4
+      },
+      "iPhiEps": {
+        "source": "docs/examples/assets/michelson-phase.json#/closed_form/i_phieps",
+        "text": "2.5133",
+        "value": 2.5132741228718345
+      },
+      "iPhiPhi": {
+        "source": "docs/examples/assets/michelson-phase.json#/closed_form/i_phiphi",
+        "text": "0.2000",
+        "value": 0.1999999999999985
+      },
+      "nNodes": {
+        "source": "docs/examples/assets/michelson-phase.json#/n_nodes",
+        "text": "8,000",
+        "value": 8000
+      },
+      "profiledRetentionAtFour": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/0/profiled_retention",
+        "text": "0.8629",
+        "value": 0.862929901630743
+      },
+      "profiledRetentionAtSix": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/1/profiled_retention",
+        "text": "0.9483",
+        "value": 0.9482591934034806
+      },
+      "refusalMessage": {
+        "source": "docs/examples/assets/michelson-phase.json#/compile_bridge/refusal_message",
+        "text": "finite profiled-D labels have no canonical inductive compilation; fit an explicit quantizer instead [CE-DS-GLOBAL-GEOMETRY-001]",
+        "value": "finite profiled-D labels have no canonical inductive compilation; fit an explicit quantizer instead [CE-DS-GLOBAL-GEOMETRY-001]"
+      },
+      "sweepBinsEight": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/2/n_bins",
+        "text": "8",
+        "value": 8
+      },
+      "sweepBinsHeadline": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/1/n_bins",
+        "text": "6",
+        "value": 6
+      },
+      "sweepBinsLow": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/0/n_bins",
+        "text": "4",
+        "value": 4
+      },
+      "sweepBinsTen": {
+        "source": "docs/examples/assets/michelson-phase.json#/sweep/3/n_bins",
+        "text": "10",
+        "value": 10
+      },
+      "visibility": {
+        "source": "docs/examples/assets/michelson-phase.json#/v0",
+        "text": "0.60",
+        "value": 0.6
+      }
+    },
+    "ratios": {
+      "analyticBackgroundRatioMean": {
+        "source": "docs/examples/assets/door3-classifier.json#/closure_measure_mismatch/analytic_reference_measure_ratio_means/1",
+        "text": "1.1589",
+        "value": 1.1589373947070176
+      },
+      "analyticSignalRatioMean": {
+        "source": "docs/examples/assets/door3-classifier.json#/closure_measure_mismatch/analytic_reference_measure_ratio_means/0",
+        "text": "0.8411",
+        "value": 0.8410626055896501
+      },
+      "bins": {
+        "source": "docs/examples/assets/door3-classifier.json#/n_bins",
+        "text": "4",
+        "value": 4
+      },
+      "ceilingEqualWidth": {
+        "source": "docs/examples/assets/door3-classifier.json#/naive_binning/exact_ceiling/equal_width_retention",
+        "text": "0.9679",
+        "value": 0.9678547355857964
+      },
+      "classifierInformationKind": {
+        "source": "docs/examples/assets/door3-classifier.json#/provenance/classifier/information_kind",
+        "text": "supplied_score_surrogate",
+        "value": "supplied_score_surrogate"
+      },
+      "classifierProvenanceKind": {
+        "source": "docs/examples/assets/door3-classifier.json#/provenance/classifier/provenance_kind",
+        "text": "estimated_ratio",
+        "value": "estimated_ratio"
+      },
+      "exactCeiling": {
+        "source": "docs/examples/assets/door3-classifier.json#/exact_ceiling/retention",
+        "text": "0.9724",
+        "value": 0.9724151487580928
+      },
+      "exactClosure": {
+        "source": "docs/examples/assets/door3-classifier.json#/exact_ceiling/closure_residual",
+        "text": "0.0017",
+        "value": 0.001746535301208496
+      },
+      "exactInformationKind": {
+        "source": "docs/examples/assets/door3-classifier.json#/provenance/exact/information_kind",
+        "text": "exact_fisher",
+        "value": "exact_fisher"
+      },
+      "exactProvenanceKind": {
+        "source": "docs/examples/assets/door3-classifier.json#/provenance/exact/provenance_kind",
+        "text": "exact",
+        "value": "exact"
+      },
+      "largeClosure": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/2/closure_residual",
+        "text": "0.0032",
+        "value": 0.0032369494438171387
+      },
+      "largeEqualFrequency": {
+        "source": "docs/examples/assets/door3-classifier.json#/naive_binning/rows/2/equal_frequency_retention",
+        "text": "0.9378",
+        "value": 0.9377758518182528
+      },
+      "largeEqualWidth": {
+        "source": "docs/examples/assets/door3-classifier.json#/naive_binning/rows/2/equal_width_retention",
+        "text": "0.9678",
+        "value": 0.9678089030483656
+      },
+      "largeGap": {
+        "source": "docs/examples/assets/door3-classifier.json#/surrogate_gap/rows/2/gap",
+        "text": "0.0035",
+        "value": 0.0034874667656539238
+      },
+      "largeSurrogate": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/2/surrogate_retention",
+        "text": "0.9700",
+        "value": 0.9699531778931494
+      },
+      "largeTrainSize": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/2/n_per_class",
+        "text": "300",
+        "value": 300
+      },
+      "largeTrue": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/2/true_retention",
+        "text": "0.9665",
+        "value": 0.9664657111274955
+      },
+      "largestGap": {
+        "source": "docs/examples/assets/door3-classifier.json#/surrogate_gap/largest_gap",
+        "text": "0.0811",
+        "value": 0.08110993932864141
+      },
+      "mediumClosure": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/1/closure_residual",
+        "text": "0.0185",
+        "value": 0.018507421016693115
+      },
+      "mediumEqualFrequency": {
+        "source": "docs/examples/assets/door3-classifier.json#/naive_binning/rows/1/equal_frequency_retention",
+        "text": "0.9304",
+        "value": 0.9304424517429776
+      },
+      "mediumEqualWidth": {
+        "source": "docs/examples/assets/door3-classifier.json#/naive_binning/rows/1/equal_width_retention",
+        "text": "0.9366",
+        "value": 0.9365844078803958
+      },
+      "mediumGap": {
+        "source": "docs/examples/assets/door3-classifier.json#/surrogate_gap/rows/1/gap",
+        "text": "0.0170",
+        "value": 0.017034592804553217
+      },
+      "mediumSurrogate": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/1/surrogate_retention",
+        "text": "0.9691",
+        "value": 0.9691271803067208
+      },
+      "mediumTrainSize": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/1/n_per_class",
+        "text": "60",
+        "value": 60
+      },
+      "mediumTrue": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/1/true_retention",
+        "text": "0.9521",
+        "value": 0.9520925875021676
+      },
+      "nClosure": {
+        "source": "docs/examples/assets/door3-classifier.json#/n_closure",
+        "text": "50,000",
+        "value": 50000
+      },
+      "nTest": {
+        "source": "docs/examples/assets/door3-classifier.json#/n_test",
+        "text": "600",
+        "value": 600
+      },
+      "nTrain": {
+        "source": "docs/examples/assets/door3-classifier.json#/n_train",
+        "text": "400",
+        "value": 400
+      },
+      "naiveLargestGap": {
+        "source": "docs/examples/assets/door3-classifier.json#/naive_binning/largest_gap",
+        "text": "0.0155",
+        "value": 0.015508179621771867
+      },
+      "naiveLargestGapTrainSize": {
+        "source": "docs/examples/assets/door3-classifier.json#/naive_binning/largest_gap_n_per_class",
+        "text": "60",
+        "value": 60
+      },
+      "signalFraction": {
+        "source": "docs/examples/assets/door3-classifier.json#/mixture/reference_fractions/0",
+        "text": "0.30",
+        "value": 0.3
+      },
+      "smallClosure": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/0/closure_residual",
+        "text": "0.0420",
+        "value": 0.041996896266937256
+      },
+      "smallEqualFrequency": {
+        "source": "docs/examples/assets/door3-classifier.json#/naive_binning/rows/0/equal_frequency_retention",
+        "text": "0.8842",
+        "value": 0.884225968823333
+      },
+      "smallEqualWidth": {
+        "source": "docs/examples/assets/door3-classifier.json#/naive_binning/rows/0/equal_width_retention",
+        "text": "0.8648",
+        "value": 0.8648227463990631
+      },
+      "smallGap": {
+        "source": "docs/examples/assets/door3-classifier.json#/surrogate_gap/rows/0/gap",
+        "text": "0.0811",
+        "value": 0.08110993932864141
+      },
+      "smallSurrogate": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/0/surrogate_retention",
+        "text": "0.9658",
+        "value": 0.9658172725352395
+      },
+      "smallTrainSize": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/0/n_per_class",
+        "text": "15",
+        "value": 15
+      },
+      "smallTrue": {
+        "source": "docs/examples/assets/door3-classifier.json#/ladder/0/true_retention",
+        "text": "0.8847",
+        "value": 0.8847073332065981
+      },
+      "wrongMeasureResidual": {
+        "source": "docs/examples/assets/door3-classifier.json#/closure_measure_mismatch/wrong_measure_residual",
+        "text": "0.1800",
+        "value": 0.1799619197845459
+      }
+    }
+  },
+  "schemaVersion": 1
+}

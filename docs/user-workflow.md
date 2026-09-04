@@ -44,7 +44,7 @@ The door is fixed by what you already have, not by preference:
   \(\rightarrow\) `DensityRatioScore` (or `CentralLogRatioScore` for paired central classifiers),
   paired with `ObservationSample`.
 
-[Three doors](three-doors.md) works each one through in full, including the source-versus-provider
+[Scores, score laws, and the three doors](book/ch04-scores-and-doors.md) works each one through in full, including the source-versus-provider
 contract and the shape rules.
 
 ## 3. Which criterion?

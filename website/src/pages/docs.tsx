@@ -50,7 +50,7 @@ export default function Docs(): React.JSX.Element {
             <h2>{selected.title}</h2>
             <p>{selected.description}</p>
             <ol className="workflow-steps">{selected.steps.map((step) => <li key={step}>{step}</li>)}</ol>
-            <Link className="plain-link" to="/examples">See complete workflows →</Link>
+            <Link className="plain-link" to="/walkthroughs">See complete workflows →</Link>
           </div>
           <pre className="code-block"><code>{selected.code}</code></pre>
         </div>

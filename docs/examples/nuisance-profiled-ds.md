@@ -2,7 +2,7 @@
 
 This page is mostly about **sample partitioning** (`optimize_partition`), with **space
 quantization** (`fit_quantizer`) brought in at the end to supply a held-out column. It
-enters through [Door 1](../three-doors.md), a precomputed table of `(observation, score)`
+enters through [Door 1](../book/ch04-scores-and-doors.md), a precomputed table of `(observation, score)`
 events — although the scores here come from an exact component model, so
 [Door 2](door2-mixture-densities.md) reaches the same table.
 

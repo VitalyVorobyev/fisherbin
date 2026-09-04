@@ -1,0 +1,117 @@
+{
+  "problem": "door3_classifier",
+  "mixture": {
+    "signal_mu": 1.0,
+    "signal_sigma": 0.5,
+    "background_mu": 0.0,
+    "background_sigma": 1.5,
+    "reference_fractions": [
+      0.3,
+      0.7
+    ]
+  },
+  "n_train": 400,
+  "n_test": 600,
+  "n_closure": 50000,
+  "n_bins": 4,
+  "seeds": {
+    "train_observations": 2026,
+    "test_observations": 999,
+    "closure_observations": 4242,
+    "solver": 7,
+    "classifier_base": 101
+  },
+  "ladder": [
+    {
+      "n_per_class": 15,
+      "surrogate_retention": 0.9658172725352395,
+      "true_retention": 0.8847073332065981,
+      "closure_residual": 0.041996896266937256
+    },
+    {
+      "n_per_class": 60,
+      "surrogate_retention": 0.9691271803067208,
+      "true_retention": 0.9520925875021676,
+      "closure_residual": 0.018507421016693115
+    },
+    {
+      "n_per_class": 300,
+      "surrogate_retention": 0.9699531778931494,
+      "true_retention": 0.9664657111274955,
+      "closure_residual": 0.0032369494438171387
+    }
+  ],
+  "surrogate_gap": {
+    "rows": [
+      {
+        "n_per_class": 15,
+        "gap": 0.08110993932864141
+      },
+      {
+        "n_per_class": 60,
+        "gap": 0.017034592804553217
+      },
+      {
+        "n_per_class": 300,
+        "gap": 0.0034874667656539238
+      }
+    ],
+    "largest_n_per_class": 15,
+    "largest_gap": 0.08110993932864141
+  },
+  "exact_ceiling": {
+    "retention": 0.9724151487580928,
+    "closure_residual": 0.001746535301208496
+  },
+  "closure_measure_mismatch": {
+    "description": "ratio_closure_report evaluated on train_observations (the 0.3/0.7 reference mixture) instead of the 0.5/0.5 training mixture the exact provider's ratios are actually defined against. This residual is not estimator error: it is present even for a perfect (exact) score, and it is what the check reports when handed the wrong measure. Compare exact_ceiling.closure_residual, which evaluates the same ratios on the correct measure instead.",
+    "wrong_measure_residual": 0.1799619197845459,
+    "analytic_reference_measure_ratio_means": [
+      0.8410626055896501,
+      1.1589373947070176
+    ]
+  },
+  "naive_binning": {
+    "description": "What a reader's default one-dimensional binning of the same estimated (or, for the ceiling row, exact) score retains, scored the same way true_retention is: equal-frequency (quantile) and equal-width cells, no Fisher information involved. Measured, not assumed -- in one dimension the quantile rule can be close to, or beat, the fitted partition.",
+    "rows": [
+      {
+        "n_per_class": 15,
+        "equal_frequency_retention": 0.884225968823333,
+        "equal_width_retention": 0.8648227463990631,
+        "true_retention": 0.8847073332065981
+      },
+      {
+        "n_per_class": 60,
+        "equal_frequency_retention": 0.9304424517429776,
+        "equal_width_retention": 0.9365844078803958,
+        "true_retention": 0.9520925875021676
+      },
+      {
+        "n_per_class": 300,
+        "equal_frequency_retention": 0.9377758518182528,
+        "equal_width_retention": 0.9678089030483656,
+        "true_retention": 0.9664657111274955
+      }
+    ],
+    "exact_ceiling": {
+      "n_per_class": null,
+      "equal_frequency_retention": 0.9377797226101509,
+      "equal_width_retention": 0.9678547355857964,
+      "true_retention": 0.9724151487580928
+    },
+    "largest_gap": 0.015508179621771867,
+    "largest_gap_n_per_class": 60
+  },
+  "provenance": {
+    "classifier": {
+      "provenance_kind": "estimated_ratio",
+      "exact_fisher": false,
+      "information_kind": "supplied_score_surrogate"
+    },
+    "exact": {
+      "provenance_kind": "exact",
+      "exact_fisher": true,
+      "information_kind": "exact_fisher"
+    }
+  }
+}

@@ -109,7 +109,7 @@ export function AppShell({
             <p>Hard bins, with the information loss made visible.</p>
           </div>
           <div className="site-footer__links">
-            <span>Learn</span><Link to="/docs">Start here</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/examples">Examples</Link><Link to="/blog">Blog</Link>
+            <span>Learn</span><Link to="/docs">Start here</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/blog">Blog</Link>
           </div>
           <div className="site-footer__links">
             <span>Reference</span><a href={REFERENCE_BASE}>Python API</a><a href="https://github.com/VitalyVorobyev/scorequant">GitHub</a>
