@@ -1,11 +1,5 @@
 # ScoreQuant
 
-This is the ScoreQuant **reference**: the exhaustive API, method and evidence material behind the
-library. For the explanation and the guided walkthroughs, start at the site root,
-[vitalyvorobyev.github.io/scorequant](https://vitalyvorobyev.github.io/scorequant/) — this page and
-everything under it assume you already know why you are here. Looking for the generated API pages
-directly? Jump straight to [Symbols](symbols/index.md).
-
 ScoreQuant compresses events into a small number of hard bins while preserving the Fisher
 information that downstream parameter estimation depends on.
 
@@ -47,7 +41,7 @@ exactly that rule — and refuses when the partition is unstable or geometricall
 
 `optimize_partition` always takes score rows, so doors 2 and 3 reach it through an explicit
 `provider.score(X)` call. Observation-to-score conversion never hides inside fitting or prediction.
-[Scores, score laws, and the three doors](book/ch04-scores-and-doors.md) treats each regime in full.
+[Three doors](three-doors.md) treats each regime in full.
 
 ## Install
 
@@ -105,15 +99,17 @@ future_bins = quantizer.predict_scores(rng.normal(loc=0.2, size=(500, 2)))
 ```
 
 The three fast starts in the [README](https://github.com/VitalyVorobyev/scorequant#readme) do the
-same for each door, and [Diagnostics and choosing a method](book/ch14-choosing-a-method.md) walks
-through the decision.
+same for each door, and [Choosing your workflow](user-workflow.md) walks through the decision.
 
 ## Site map
 
+- [Why ScoreQuant](motivation.md) — the problem, why naive binning loses information, why score
+  space, and why the two tasks stay apart.
 - [Method overview](method.md) — the pipeline from score to certificate, with the criteria and
   solver families named.
-- [Scores, score laws, and the three doors](book/ch04-scores-and-doors.md) — the input regimes, the source-versus-provider contract, and the
+- [Three doors](three-doors.md) — the input regimes, the source-versus-provider contract, and the
   validation rules.
+- [Choosing your workflow](user-workflow.md) — which task, which door, which criterion and solver.
 - [The book](book/index.md) — the statistical theory developed independently of this package's API.
 - [Examples](examples/index.md) — twelve runnable pages: the three doors, an interferometer phase
   measurement with an explicit nuisance on the portable backend, a solver shootout against three
@@ -127,3 +123,6 @@ through the decision.
 - [Related work](related-work.md) — the four research traditions this sits in, an honest
   known-versus-new table, and a software comparison.
 - [Glossary](glossary.md) and [bibliography](bibliography.md).
+- The [learning portal](https://vitalyvorobyev.github.io/scorequant/portal/) — a guided *Get started* whose printed outputs are captured
+  from a run, four end-to-end walkthroughs, and a Lab that runs ScoreQuant in the browser with
+  nothing installed.

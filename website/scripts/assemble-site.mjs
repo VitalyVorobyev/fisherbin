@@ -6,18 +6,20 @@ const website = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const project = resolve(website, "..");
 const portalBuild = resolve(website, "build");
 const referenceSite = resolve(project, "site");
+const landing = resolve(project, "landing");
 const assembled = resolve(project, ".pages-preview");
 const redirectsManifestPath = resolve(website, "redirects.json");
 
-// The portal owns the site root; MkDocs is mounted under /reference/ beneath
-// it (spec: docs/programme/S06-portal-topology-and-reference-cut.md, "Design
-// decisions — topology"). This is the post-cut layout: it no longer mirrors
-// a "first migration stage" where MkDocs held the root and the portal was a
-// subdirectory under it.
+// Three surfaces, one tree (ADR 0027): the landing page owns the site root,
+// the MkDocs documentation is mounted at /docs/, and the Docusaurus portal at
+// /portal/. The landing page is a directory of static files with no build
+// step; the other two are the outputs of `mkdocs build --strict` and
+// `docusaurus build` (whose `baseUrl` must match the mount point).
 await rm(assembled, {recursive: true, force: true});
 await mkdir(assembled, {recursive: true});
-await cp(portalBuild, assembled, {recursive: true});
-await cp(referenceSite, resolve(assembled, "reference"), {recursive: true});
+await cp(landing, assembled, {recursive: true});
+await cp(referenceSite, resolve(assembled, "docs"), {recursive: true});
+await cp(portalBuild, resolve(assembled, "portal"), {recursive: true});
 
 /**
  * The redirect stub template (spec T3).
@@ -55,14 +57,12 @@ async function fileExists(path) {
 const manifest = JSON.parse(await readFile(redirectsManifestPath, "utf8"));
 
 /**
- * A stub must never overwrite real content (ADR 0025).
+ * A stub must never overwrite real content (ADR 0025, kept by ADR 0027).
  *
- * Several old MkDocs URLs share a name with a portal route: `/api/` and
- * `/examples/` are both. They do not collide on disk today only because
- * `trailingSlash: false` makes the portal emit `api.html` rather than
- * `api/index.html`. That is a property of one config line, not of the design,
- * so flipping `trailingSlash` would silently replace portal pages with
- * redirect stubs. This check turns that into a loud build failure instead.
+ * Today nothing but the landing page lives at the root beside the stubs, so
+ * a collision would mean a landing file, a new top-level mount, or a manifest
+ * entry that names one of them. This check turns that into a loud build
+ * failure instead of a silently replaced page.
  */
 for (const {from, to} of manifest.redirects) {
   const toAbsolute = `/scorequant/${to}`;
@@ -107,10 +107,28 @@ for (const {from, to} of manifest.redirects) {
   }
 }
 
+/**
+ * The landing page may only link to pages that exist (ADR 0027).
+ *
+ * It is hand-written HTML with no build step and no link checker of its own,
+ * so this resolves every site-relative `href` it carries against the tree
+ * just assembled. A directory URL must hold an `index.html`; anything else
+ * must be a file. External links and fragments are not checked here.
+ */
+const landingHtml = await readFile(resolve(assembled, "index.html"), "utf8");
+const landingHrefs = [...landingHtml.matchAll(/href="([^"#?]+)"/g)].map((match) => match[1]);
+for (const href of landingHrefs) {
+  if (/^[a-z]+:/.test(href) || href.startsWith("//")) continue;
+  const target = href.endsWith("/") ? resolve(assembled, href, "index.html") : resolve(assembled, href);
+  if (!(await fileExists(target))) {
+    failures.push(`landing link "${href}" does not resolve: expected ${target}`);
+  }
+}
+
 if (failures.length > 0) {
-  process.stderr.write("assemble:site: redirect parity check failed:\n");
+  process.stderr.write("assemble:site: redirect and landing-link parity check failed:\n");
   for (const failure of failures) process.stderr.write(`  - ${failure}\n`);
   process.exit(1);
 }
 
-process.stdout.write(`Assembled site at ${assembled} (portal at the root, MkDocs under reference/, ${manifest.redirects.length} redirect stubs verified).\n`);
+process.stdout.write(`Assembled site at ${assembled} (landing page at the root, MkDocs under docs/, portal under portal/, ${manifest.redirects.length} redirect stubs and ${landingHrefs.length} landing links verified).\n`);

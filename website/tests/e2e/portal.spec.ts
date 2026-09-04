@@ -198,7 +198,7 @@ test("lab validation, cancellation, and lazy lesson states are explicit", async 
   await page.getByRole("button", {name: "Load marimo lesson"}).click();
   await expect(page.getByTitle("ScoreQuant marimo lesson")).toHaveAttribute(
     "src",
-    "/scorequant/lessons/score-space/"
+    "/scorequant/portal/lessons/score-space/"
   );
 });
 

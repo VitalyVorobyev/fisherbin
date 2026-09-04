@@ -57,7 +57,7 @@ const config: Config = {
   tagline: "Information-optimal score-space quantization",
   favicon: "img/mark.svg",
   url: "https://vitalyvorobyev.github.io",
-  baseUrl: "/scorequant/",
+  baseUrl: "/scorequant/portal/",
   organizationName: "VitalyVorobyev",
   projectName: "scorequant",
   // Every route must emit its own index.html. With `false`, a docs section emits

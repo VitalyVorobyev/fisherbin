@@ -6,8 +6,8 @@ import {describe, expect, it} from "vitest";
 
 // Spec T7: SITE_BASE in ../src/lib/site is the one place the portal's base
 // path is allowed to live. This walks the whole `src` tree (never
-// `node_modules` or `build`) and fails the moment the old, pre-promotion
-// prefix creeps back in anywhere.
+// `node_modules` or `build`) and fails the moment the deployed prefix is
+// written anywhere else.
 const websiteRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const srcRoot = join(websiteRoot, "src");
 
@@ -27,10 +27,10 @@ function listFiles(dir: string): string[] {
 }
 
 describe("SITE_BASE is the only place the portal base path lives", () => {
-  it("finds no file under website/src with the retired portal prefix", () => {
+  it("finds the portal prefix in src/lib/site.ts and nowhere else under website/src", () => {
     const offenders = listFiles(srcRoot)
       .filter((path) => readFileSync(path, "utf8").includes("scorequant/portal"))
       .map((path) => path.slice(websiteRoot.length + 1));
-    expect(offenders).toEqual([]);
+    expect(offenders).toEqual(["src/lib/site.ts"]);
   });
 });

@@ -31,7 +31,10 @@ _FORBIDDEN_PROSE = (
 # no work-in-progress markers.
 _FRONT_DOOR = (
     "index.md",
+    "motivation.md",
     "method.md",
+    "three-doors.md",
+    "user-workflow.md",
     "related-work.md",
 )
 
@@ -112,12 +115,6 @@ def test_retired_pages_are_gone() -> None:
     retired_pages = (
         "docs/migration.md",
         "docs/score-sources.md",
-        "docs/three-doors.md",
-        # S10 retired these two alongside the portal pages that replace them:
-        # the home page took over `motivation.md` and `/get-started` took over
-        # `user-workflow.md`, including all nine of its executed fences.
-        "docs/motivation.md",
-        "docs/user-workflow.md",
     )
     for retired in retired_pages:
         assert not (REPO_ROOT / retired).exists()

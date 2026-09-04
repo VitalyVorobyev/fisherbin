@@ -1,8 +1,9 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_name: ScoreQuant
 site_description: Information-preserving binning for statistical inference
-# The portal serves the site root; this reference is mounted beneath it (ADR 0025).
-site_url: https://vitalyvorobyev.github.io/scorequant/reference/
+# A landing page serves the site root; this documentation is mounted at /docs/ and the
+# learning portal at /portal/ (ADR 0027).
+site_url: https://vitalyvorobyev.github.io/scorequant/docs/
 repo_url: https://github.com/VitalyVorobyev/scorequant
 repo_name: VitalyVorobyev/scorequant
 edit_uri: edit/main/docs/
@@ -44,7 +45,10 @@ theme:
 
 nav:
   - Home: index.md
+  - Why ScoreQuant: motivation.md
   - Method overview: method.md
+  - Three doors: three-doors.md
+  - Choosing your workflow: user-workflow.md
   - Book:
       - Overview: book/index.md
       - Why bin at all: book/ch01-why-bin.md
@@ -100,6 +104,7 @@ nav:
   - Related work: related-work.md
   - Glossary: glossary.md
   - Bibliography: bibliography.md
+  - Portal: https://vitalyvorobyev.github.io/scorequant/portal/
 
 plugins:
   - search
@@ -136,6 +141,11 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+
+extra:
+  # The header title links to the landing page at the site root, not to this
+  # documentation's own index (ADR 0027).
+  homepage: https://vitalyvorobyev.github.io/scorequant/
 
 extra_javascript:
   - javascripts/mathjax.js

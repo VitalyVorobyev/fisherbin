@@ -1,8 +1,7 @@
 /**
  * The one base path constant for the whole portal.
  *
- * Nine source files used to hard-code the pre-promotion portal path (or the
- * post-promotion site root) directly: `useBaseUrl` cannot serve all of them
+ * Nine source files used to hard-code the portal path directly: `useBaseUrl` cannot serve all of them
  * because `lab.worker.ts` is a Web Worker with no React context. So every
  * site-rooted literal collapses into this one module instead, including the
  * ones that do have React context — one source of truth beats two
@@ -11,10 +10,14 @@
  * `SITE_BASE` matches `docusaurus.config.ts`'s `baseUrl` exactly and must be
  * changed in lockstep with it.
  */
-export const SITE_BASE = "/scorequant/";
+export const SITE_BASE = "/scorequant/portal/";
 
-/** Where the assembled MkDocs reference site is mounted under the portal. */
-export const REFERENCE_BASE = `${SITE_BASE}reference/`;
+/**
+ * Where the assembled MkDocs documentation is mounted. It is a sibling of the
+ * portal, not a child: the landing page owns the site root, the documentation
+ * is at `/docs/` and the portal at `/portal/` (ADR 0027).
+ */
+export const REFERENCE_BASE = "/scorequant/docs/";
 
 /**
  * Join `SITE_BASE` with `path` without doubling the slash between them.
