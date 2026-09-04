@@ -119,11 +119,17 @@ Portal sessions add `cd website && pnpm validate`. Research sessions add
 `python agenticresearch/py/registry.py validate`. A gate is reported verbatim: green, or the
 failing command and its output.
 
-## Session prompt
+## Session prompt (retired)
 
-Start a fresh session in the repo root and paste, filling `<N>` and `<slug>` from the roadmap
-table and the packet file name. Packets S01-S09 are zero-padded; S10 and S11 are not, so read the file
-table below for the exact name:
+**Retired on 4 September 2026, when S9 closed M12.** All eleven sessions are `done`; there is no
+S12 to start, and this prompt should not be used to open one. It is kept rather than deleted
+because it is the record of how the programme was actually run — the same reason ADR 0025 was
+annotated rather than rewritten, and the reason S11 drew the distinction that deleting a file is
+not the same as retiring it. A future multi-session programme should copy it and adapt it, not
+resume it: the roadmap table it refers to is closed, and `Needs` no longer locks anything.
+
+The prompt as it stood, with `<N>` and `<slug>` filled from the roadmap table and the packet file
+name (packets S01-S09 are zero-padded; S10 and S11 are not):
 
 ```text
 You are running ScoreQuant consolidation session S<N> (programme M12).

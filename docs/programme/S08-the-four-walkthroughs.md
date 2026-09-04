@@ -1,6 +1,6 @@
 # S08 — The four walkthroughs
 
-**Workstream:** W3, W4 · **Needs:** S6, S7 · **Parallel with:** — · **Status:** queued
+**Workstream:** W3, W4 · **Needs:** S6, S7 · **Parallel with:** — · **Status:** done
 
 ## Goal
 

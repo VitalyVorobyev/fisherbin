@@ -5,6 +5,38 @@ All notable changes to ScoreQuant are recorded here. The format follows
 [semantic versioning](https://semver.org/spec/v2.0.0.html) — with the usual `0.x` caveat that the
 public API may still change between minor releases.
 
+## [Unreleased]
+
+Changes on `main` since 0.1.0. Nothing below has been released: verified against the `v0.1.0`
+tag, where `RefusalError` does not exist anywhere in `src/` and `LinearProblem` is still
+exported. These sections were appended while the version heading read `unreleased`, and a later
+commit dated that heading, which retroactively asserted they had shipped.
+
+### Site
+
+- The learning portal is published at the site root, with the strict MkDocs reference beneath it
+  at `reference/`, assembled and deployed by a single workflow (ADR 0026). A pull request builds
+  and uploads the whole tree; only a push to `main` deploys.
+
+### Contracts
+
+- Weight and `rank_rtol` validation is single-sourced; the messages are the `ScoreSample` ones
+  everywhere.
+
+### Errors
+
+- Every deliberate exception is a `ScoreQuantError`. `ContractError` (a `ValueError`) reports a
+  malformed call; `RefusalError` (a `RuntimeError`, deliberately not a `ValueError`) reports a
+  theorem-backed refusal and carries `counterexample`, the registry id that forces it.
+  `compile_quantizer()` on an unstable, profiled, or geometrically degenerate partition and a
+  rank-deficient profiled `fit_quantizer` now raise `RefusalError`.
+
+### Removed
+
+- `LinearProblem` and `LinearComponents.evaluate` — exported and documented but accepted by no
+  task; use `LinearComponents.evaluate_components` plus `scores_from_components` to hand an
+  evaluated component matrix to `optimize_partition` or a `ScoreSample`.
+
 ## [0.1.0] — 2026-08-30
 
 First public release. Everything below describes the shape being released rather than a change
@@ -55,19 +87,3 @@ against a previous version, since there is none.
   import, so 64-bit precision stays an application choice.
 - Scores are never centred; numerically singular Fisher directions are projected out rather than
   repaired with a ridge; validation data is diagnostic only.
-- Weight and `rank_rtol` validation is single-sourced; the messages are the `ScoreSample` ones
-  everywhere.
-
-### Errors
-
-- Every deliberate exception is a `ScoreQuantError`. `ContractError` (a `ValueError`) reports a
-  malformed call; `RefusalError` (a `RuntimeError`, deliberately not a `ValueError`) reports a
-  theorem-backed refusal and carries `counterexample`, the registry id that forces it.
-  `compile_quantizer()` on an unstable, profiled, or geometrically degenerate partition and a
-  rank-deficient profiled `fit_quantizer` now raise `RefusalError`.
-
-### Removed
-
-- `LinearProblem` and `LinearComponents.evaluate` — exported and documented but accepted by no
-  task; use `LinearComponents.evaluate_components` plus `scores_from_components` to hand an
-  evaluated component matrix to `optimize_partition` or a `ScoreSample`.
