@@ -687,6 +687,23 @@ the same selector and property, with zero unexplained losses.
 what reduces that to a one-block change later. Demo activation does not consult
 `navigator.connection.saveData`. Neither was in scope.
 
+**CI caught a defect the local run could not.** The first pull-request build failed, and the
+failure is worth recording because of its shape: the home test packed nineteen navigations and
+**sixteen axe analyses** — eight routes times two themes, each with a settle — into one test with
+the default 30-second budget. S11 is what doubled it, by scanning every route in both themes
+instead of once. It passed on this machine and timed out on a CI runner, on both projects and both
+retries, which is the least useful way for a suite to fail: the machine that gates the merge
+disagrees with the machine the work was done on, and the failure names a timeout rather than the
+thing that is actually wrong.
+
+The fix is not a longer timeout. That test was three contracts wearing one name — the home page's
+content, the one-landmark-per-route count, and an accessibility sweep the name never mentioned — so
+it became three: the home assertions, the route walk with its no-runtime check, and **one test per
+scanned route**, generated in a loop. Every assertion survives unchanged. Each route now gets its
+own budget and the workers run them in parallel, so the full suite went from a single serial
+bottleneck to 32 passing tests in 14 seconds locally, and the accessibility scans are 1–4 seconds
+each. A test that cannot fit in a budget is usually a test that is doing more than one job.
+
 **The deployment was authorized and carried out.** Both blockers cleared on 4 September 2026: the
 owner deleted `docs.yml` and `portal-preview.yml` — the sandbox had refused both, and until they
 were gone a pull request would have built the site twice — and gave the explicit go-ahead to

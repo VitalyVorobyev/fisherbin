@@ -29,69 +29,92 @@ async function setTheme(page: Page, theme: "light" | "dark"): Promise<void> {
   await page.waitForTimeout(200);
 }
 
-test("home is navigable, evidence-backed, and free of heavy runtime requests", async ({page}) => {
+/**
+ * Every route the shell renders. The scan below covers a subset; this list is
+ * what the landmark check walks, and it is deliberately the wider of the two.
+ */
+const ROUTES = [
+  "./",
+  "./get-started/",
+  "./api/",
+  "./walkthroughs/",
+  "./walkthroughs/flowcyt/",
+  "./walkthroughs/hep/",
+  "./walkthroughs/michelson/",
+  "./walkthroughs/ratios/",
+  "./benchmarks/",
+  "./research/",
+  "./lab/"
+];
+
+/**
+ * The routes scanned by axe. The two docs-plugin routes are scanned as well as
+ * the home page: they render through swizzled theme components
+ * (src/theme/DocRoot/Layout/Main and src/theme/DocItem/Layout) rather than the
+ * stock ones, so nothing upstream vouches for their markup.
+ */
+const SCANNED = [
+  "./",
+  "./get-started/",
+  "./research/",
+  "./walkthroughs/",
+  "./walkthroughs/flowcyt/",
+  "./walkthroughs/hep/",
+  "./walkthroughs/michelson/",
+  "./walkthroughs/ratios/"
+];
+
+test("home states the problem and then measures it", async ({page}) => {
+  await page.goto("./");
+  // Both assertions deliberately target that shape rather than a slogan: S10
+  // removed the hero line and the proof strip these used to check, and
+  // replacing them with the problem statement and the measured comparison
+  // keeps the coverage pointed at what the page is now for.
+  await expect(page.getByRole("heading", {name: /Some analyses have to bin/})).toBeVisible();
+  await expect(page.getByRole("img", {name: /Score-space partition/})).toBeVisible();
+  await expect(page.getByText("ScoreQuant, same data, same bin budget")).toBeVisible();
+});
+
+test("every route renders one main landmark and none of them loads a runtime", async ({page}) => {
   const heavyRequests: string[] = [];
   page.on("request", (request) => {
     if (/pyodide|marimo|scorequant-.*\.whl/.test(request.url())) heavyRequests.push(request.url());
   });
-  await page.goto("./");
-  // The home page states the problem and then measures it. Both assertions
-  // deliberately target that shape rather than a slogan: S10 removed the hero
-  // line and the proof strip these used to check, and replacing them with the
-  // problem statement and the measured comparison keeps the coverage pointed at
-  // what the page is now for.
-  await expect(page.getByRole("heading", {name: /Some analyses have to bin/})).toBeVisible();
-  await expect(page.getByRole("img", {name: /Score-space partition/})).toBeVisible();
-  await expect(page.getByText("ScoreQuant, same data, same bin budget")).toBeVisible();
-  const routes = [
-    "./",
-    "./get-started/",
-    "./api/",
-    "./walkthroughs/",
-    "./walkthroughs/flowcyt/",
-    "./walkthroughs/hep/",
-    "./walkthroughs/michelson/",
-    "./walkthroughs/ratios/",
-    "./benchmarks/",
-    "./research/",
-    "./lab/"
-  ];
-  for (const route of routes) {
+  for (const route of ROUTES) {
     await page.goto(route);
     // #main-content is AppShell's own landmark, and it must be the only one.
     // The stock layouts of both the blog and the docs plugin render a second
     // <main> of their own inside it; src/theme/BlogLayout and
     // src/theme/DocRoot/Layout/Main exist to strip those. Nested landmarks are
     // invalid HTML and an accessibility failure, and the axe scan below only
-    // covers the home page, so this count is what catches a regression on the
-    // routes it does not reach.
+    // covers SCANNED, so this count is what catches a regression on the routes
+    // it does not reach.
     await expect(page.locator("#main-content")).toBeVisible();
     expect(await page.locator("main").count(), `nested landmark on ${route}`).toBe(1);
   }
+  // Including ./lab/: the Lab page itself must cost an ordinary page load, and
+  // only pressing a run button may reach the runtime.
   expect(heavyRequests).toEqual([]);
-  // The two docs-plugin routes are scanned as well as the home page: they render
-  // through swizzled theme components (src/theme/DocRoot/Layout/Main and
-  // src/theme/DocItem/Layout) rather than the stock ones, so nothing upstream
-  // vouches for their markup.
-  const scanned = [
-    "./",
-    "./get-started/",
-    "./research/",
-    "./walkthroughs/",
-    "./walkthroughs/flowcyt/",
-    "./walkthroughs/hep/",
-    "./walkthroughs/michelson/",
-    "./walkthroughs/ratios/"
-  ];
-  for (const route of scanned) {
+});
+
+/**
+ * One test per route rather than one loop inside a single test. Sixteen axe
+ * analyses plus their navigations and theme settles do not fit in one 30s
+ * budget on a CI runner — the loop form failed there while passing locally,
+ * which is the least useful way for a suite to fail. Split, each route gets
+ * its own budget and the projects' workers run them in parallel; the set of
+ * assertions is unchanged.
+ */
+for (const route of SCANNED) {
+  test(`${route} has no accessibility violations in either theme`, async ({page}) => {
     await page.goto(route);
     for (const theme of ["light", "dark"] as const) {
       await setTheme(page, theme);
       const accessibility = await new AxeBuilder({page}).analyze();
       expect(accessibility.violations, `accessibility violations on ${route} (${theme} mode)`).toEqual([]);
     }
-  }
-});
+  });
+}
 
 test("core learning routes render and search opens from the keyboard", async ({page}) => {
   await page.goto("./walkthroughs/");
