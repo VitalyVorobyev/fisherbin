@@ -1,0 +1,193 @@
+/* Design tokens: three-tier palette, semantic aliases, dark-mode override,
+   and dark-only instrument touch-ups. Split from global.css. */
+
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+:root {
+  /* ------------------------------------------------------------------
+     Tier 1 -- palette. Raw hex. The only place a hex literal is written
+     for page colour; every page rule below names one of these tokens, or
+     one of the role-based aliases in Tier 2.
+     ------------------------------------------------------------------ */
+  --ink-950: #07142d;
+  --ink-900: #0b1b38;
+  --ink-800: #122746;
+  --ink-700: #29405d;
+  --ink-600: #52657c;
+  --ink-500: #586a7f;
+  --paper: #ffffff;
+  --paper-warm: #f8f9fb;
+  --paper-blue: #eef4fb;
+  --line: #dce3ec;
+  --line-strong: #bdc9d7;
+  --blue: #276be8;
+  --blue-dark: #174ca8;
+  --cyan: #20bfae;
+  --amber: #bc7413;
+  --red: #bb3d3d;
+
+  /* ------------------------------------------------------------------
+     Tier 2 -- semantic. Aliases of Tier 1, named by role rather than by
+     hue, for the page's light editorial surface. Dark mode (a later,
+     separate step) repoints these; today every alias resolves to exactly
+     the Tier 1 value the rule already rendered, so nothing here changes a
+     rendered colour.
+
+     Not every Tier 1 ink gets a role name: --text aliases --ink-950 (its
+     18 direct page uses are the dominant body/heading ink; the file's
+     draft note proposed --ink-900, which turned out to have only 2 direct
+     uses and not the "main text" role -- corrected here). --ink-900,
+     --ink-800 and --ink-700 keep their own narrower direct uses unaliased;
+     the page's text hierarchy is finer than three semantic steps.
+     --surface-sunken and --accent-quiet alias the same Tier 1 value
+     today; kept as two names because they diverge in dark mode. */
+  --surface: var(--paper-warm);
+  --surface-raised: var(--paper);
+  --surface-sunken: var(--paper-blue);
+  --text: var(--ink-950);
+  --text-muted: var(--ink-600);
+  --text-faint: var(--ink-500);
+  --border: var(--line);
+  --border-strong: var(--line-strong);
+  --accent: var(--blue);
+  --accent-strong: var(--blue-dark);
+  --accent-quiet: var(--paper-blue);
+  --good: var(--cyan);
+  --warn: var(--amber);
+  --bad: var(--red);
+
+  /* Four roles the first token pass did not name, each of which pairs a colour
+     with a *background* rather than with the page ground. Without them the pair
+     cannot flip together: a rule saying `color: white` on `background:
+     var(--accent)` keeps its white when the accent lightens for dark mode, and
+     a literal light tint keeps its tint under text that has flipped light. Both
+     were measured failing before these existed. */
+  --on-accent: #ffffff;
+  --tint-accent: #f1f6ff;
+  --tint-good: #eef9f7;
+  --tint-bad: #fdf1f1;
+
+  /* ------------------------------------------------------------------
+     Tier 3 -- instrument. The dark palette already used, as literals, by
+     the "machine" surfaces embedded in the light page: score-space, code
+     blocks, and the entire browser Lab. Deliberately constant -- these do
+     not move in dark mode; the page ground moves toward them instead.
+
+     Ten of these were specified up front; three are added here because
+     their hex recurs at least twice in the file and the task explicitly
+     prefers a token for values that repeat (--inst-ground-lab,
+     --inst-line-score, --inst-label). --inst-ground and --inst-ground-lab
+     (likewise --inst-line and --inst-line-score) are one hex digit apart
+     in the stylesheet as found -- kept as distinct tokens rather than
+     merged onto one, since merging would shift a rendered colour by one
+     step. */
+  --inst-ground: #091a37; /* score-space surface + its radial-gradient stop */
+  --inst-ground-lab: #091a36; /* lab-workspace / lab-lesson / lab-mobile-tabs ground */
+  --inst-deep: #061329; /* site-shell--lab page ground */
+  --inst-raised: #0c2242; /* lab-field select */
+  --inst-line: #263f60; /* lab-workspace / lab-panel / lab-limit / lab-lesson / lab-mobile-tabs borders */
+  --inst-line-quiet: #203858; /* lab-panel__title / lab-status / diagnostic-list row dividers */
+  --inst-line-score: #213b5e; /* score-space's own toolbar/metrics dividers */
+  --inst-text: #e7eef8; /* site-shell--lab ink / lab-field select text */
+  --inst-muted: #8ea2ba; /* lab-field label */
+  --inst-faint: #66809e; /* lab-limit label */
+  --inst-label: #9cb0c8; /* lab-privacy / lab-panel__title label text */
+  --inst-accent: #68dace; /* complete-state / lesson eyebrow */
+  --inst-blue: #84b5ff; /* loading/running state */
+
+  --shadow-soft: 0 18px 54px rgb(7 20 45 / 9%);
+  --font-heading: "Space Grotesk Variable", "Space Grotesk", sans-serif;
+  --font-body: "Inter Variable", Inter, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --page: min(100% - 48px, 1376px);
+  --reading: 72ch;
+  /* The widest published code line, plus a little air. Code sets its own
+     measure; see `.doc-article__body`. */
+  --code: 800px;
+  --ifm-font-family-base: var(--font-body);
+  --ifm-heading-font-family: var(--font-heading);
+  --ifm-color-primary: var(--blue);
+  color-scheme: light;
+}
+
+/* ------------------------------------------------------------------
+   Dark mode does not recolour the site -- it promotes the Tier 3
+   instrument ground (already the palette of the "machine" surfaces:
+   score-space, code blocks, the Lab) to be the *page* ground. Overriding
+   Tier 1 here, and nothing else, is what does that: Tier 2 is aliases of
+   Tier 1, so the whole semantic layer repoints automatically, and so do
+   the handful of rules elsewhere that still name a Tier 1 token
+   directly -- that is what makes the flip complete. Tier 3 is
+   deliberately absent from this block: the instrument surfaces keep
+   their current colours in both themes, and the page ground moves to
+   meet them instead of the other way around.
+   ------------------------------------------------------------------ */
+:root[data-theme="dark"] {
+  --ink-950: #edf3fb;
+  --ink-900: #dbe6f4;
+  --ink-800: #c6d5e8;
+  --ink-700: #adc0d8;
+  --ink-600: #93a9c4;
+  --ink-500: #8ba0ba;
+  --paper: #0b1c38;
+  --paper-warm: #061329;
+  --paper-blue: #12294a;
+  --line: #223957;
+  --line-strong: #31496b;
+  --blue: #7fb0ff;
+  --blue-dark: #a9c9ff;
+  --cyan: #68dace;
+  --amber: #e0a341;
+  --red: #ff9ea8;
+  /* Dark counterparts of the four pairing roles. Measured against their own
+     grounds: button ink on the accent fill 8.70:1, chip text on the accent tint
+     8.28:1, the provenance note's body text 6.24:1 and its link 8.94:1, and the
+     error hint 8.08:1 -- each above its light-mode equivalent. */
+  --on-accent: #04101f;
+  --tint-accent: #152c50;
+  --tint-good: #0e2b29;
+  --tint-bad: #38191d;
+  color-scheme: dark;
+}
+
+/* Once the page ground promotes to dark, a few surfaces that were always
+   rendered dark stop separating from it by contrast alone, or -- for the
+   two rules whose dark ground is Tier 1 rather than Tier 3 -- lose their
+   ground entirely, since Tier 1 flips. Fixed here, dark mode only, with
+   the smallest touch that restores a visible panel; light mode is
+   untouched and none of these are restyled. */
+[data-theme="dark"] .score-space { border-color: #3a5a86; }
+[data-theme="dark"] .score-space--compact { border-color: #35507a; }
+/* `.code-block` and `.api-symbol code` render a dark code panel on the
+   light page by painting a Tier 1 ink token as their background rather
+   than a Tier 3 instrument token -- exactly the "still name a Tier 1
+   token directly" case the block above calls out, except here the token
+   is standing in for a ground, not a text colour, so the flip empties it
+   out instead of completing it. Pinned back to the value it already
+   rendered, so the panel is unchanged in both themes. */
+[data-theme="dark"] .code-block { background: #07142d; }
+[data-theme="dark"] .api-symbol code { background: #0b1b38; }
+/* The snippet output label is a light mint pill with dark text (`--text`)
+   sitting on top of the dark output block; `--text` flips light along
+   with the rest of Tier 1, which would put near-white text on the same
+   light mint. Pinned to its original dark ink so the label keeps reading
+   the same way it does today. */
+[data-theme="dark"] .snippet__output-label { color: #07142d; }
+/* `.site-shell--lab` is a Tier 3 surface and its own local `--good`
+   override already keeps most of its accents fixed across themes (see
+   the comment above that block); this one CTA button was missed --  it
+   names `--cyan` and `--ink-950` directly rather than through `--good`,
+   so it still flips. Pinned to the values it already renders. */
+[data-theme="dark"] .site-shell--lab .lab-link { border-color: #20bfae; color: #07142d; background: #20bfae; }
+/* The header's translucent background is a literal rgb() snapshot of
+   --paper-warm/--line-strong with alpha baked in for the blur underneath --
+   custom properties cannot carry a separate alpha channel here, so it was
+   never going to follow the Tier 1 override the way `background:
+   var(--surface)` would. `.site-shell--lab .site-header` already has its
+   own dark literal for exactly this reason; this is the same snapshot taken
+   of the dark palette above instead of the light one. Without it, every
+   non-Lab route keeps a light header floating over the dark page. */
+[data-theme="dark"] .site-header { border-bottom-color: rgb(49 73 107 / 70%); background: rgb(6 19 41 / 92%); }

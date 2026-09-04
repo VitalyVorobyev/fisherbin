@@ -66,5 +66,8 @@
       "stdout": "status                  optimal\ngap                     0.000e+00\nincumbent was optimal   True\n",
       "order": 11
     }
+  },
+  "firstFit": {
+    "retention": 0.6987764888683643
   }
 }

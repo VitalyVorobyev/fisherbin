@@ -7,6 +7,7 @@ sidebar_position: 5
 import {BinningComparison} from "@site/src/components/BinningComparison";
 import {Diagnostics} from "@site/src/components/Diagnostics";
 import {Figure} from "@site/src/components/Figure";
+import {RatiosLiveFit} from "@site/src/components/RatiosLiveFit";
 import {factValue, factsFor} from "@site/src/lib/facts";
 import {siteUrl} from "@site/src/lib/site";
 
@@ -280,6 +281,8 @@ whole experiment:
   alt="Paired bars at three classifier training sizes: the D-efficiency the estimated score reports about itself, beside the D-efficiency its labels actually achieve against the exact score."
   caption={`The surrogate caveat, drawn. The left bar of each pair is what the library can honestly say about the vectors it was handed; the right bar is what those labels were worth. They converge only as the classifier does.`}
 />
+
+<RatiosLiveFit />
 
 ## What that means for your analysis
 

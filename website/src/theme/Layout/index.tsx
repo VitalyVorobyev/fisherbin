@@ -1,4 +1,5 @@
 import ErrorBoundary from "@docusaurus/ErrorBoundary";
+import {PageMetadata} from "@docusaurus/theme-common";
 import ErrorPageContent from "@theme/ErrorPageContent";
 import type {Props} from "@theme/Layout";
 import LayoutProvider from "@theme/Layout/Provider";
@@ -7,23 +8,25 @@ import type {ReactNode} from "react";
 import {AppShell} from "../../components/AppShell";
 
 /**
- * Renders every Docusaurus-routed page — the blog and the error pages — in the
- * same ScoreQuant shell as the hand-written routes.
+ * Renders every route in the portal — the hand-written `src/pages` routes as
+ * well as the Docusaurus-plugin-routed pages (the blog and the error pages) —
+ * through the same `LayoutProvider` and the same ScoreQuant shell. This is the
+ * one seam every route passes through, which is what makes `useColorMode()`
+ * callable everywhere.
  *
- * Only plugin-routed pages reach this component: everything under `src/pages`
- * mounts `AppShell` itself, so there is no second header or footer to collide
- * with. Metadata stays with Docusaurus, because `BlogPostPage`, `BlogListPage`
- * and `NotFound` each emit their own `PageMetadata`; `manageHead` is off so the
- * shell does not race them for the document title.
+ * `PageMetadata` is rendered first, exactly as stock
+ * `@docusaurus/theme-classic`'s own `Layout` does: `BlogPostPage`,
+ * `BlogListPage` and `NotFound` each nest their own `PageMetadata` further
+ * inside, and React Helmet's last-wins semantics make that nesting resolve
+ * correctly with no toggle needed here.
  */
 export default function Layout({children, title, description}: Props): ReactNode {
+  const resolvedTitle = title ?? "ScoreQuant";
+  const resolvedDescription = description ?? "Information-optimal score-space quantization.";
   return (
     <LayoutProvider>
-      <AppShell
-        title={title ?? "ScoreQuant"}
-        description={description ?? "Information-optimal score-space quantization."}
-        manageHead={false}
-      >
+      <PageMetadata title={resolvedTitle} description={resolvedDescription} />
+      <AppShell>
         <ErrorBoundary fallback={(params) => <ErrorPageContent {...params} />}>
           {children}
         </ErrorBoundary>

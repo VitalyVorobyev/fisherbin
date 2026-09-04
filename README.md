@@ -6,7 +6,7 @@ ScoreQuant replaces continuous event-level information with a small number of ha
 preserving as much Fisher information as possible for the parameters you actually want to measure.
 
 [![CI](https://github.com/VitalyVorobyev/scorequant/actions/workflows/ci.yml/badge.svg)](https://github.com/VitalyVorobyev/scorequant/actions/workflows/ci.yml)
-[![Documentation](https://github.com/VitalyVorobyev/scorequant/actions/workflows/docs.yml/badge.svg)](https://vitalyvorobyev.github.io/scorequant/)
+[![Documentation](https://github.com/VitalyVorobyev/scorequant/actions/workflows/site.yml/badge.svg)](https://vitalyvorobyev.github.io/scorequant/)
 
 Many statistical workflows eventually reduce rich observations to counts in a few named categories:
 template and component fits, gated cell populations, binned likelihoods, trigger tiers, tables a
@@ -111,7 +111,7 @@ These are alternative upstream routes to the *same* downstream optimization prob
 densities are never required: the score is the gradient of a log density *ratio*, so a ratio oracle
 is enough — but it must be a calibrated one. A ranking score or an arbitrary monotonic classifier
 output is not, since the construction needs ratios rather than event ordering. See
-[Three doors](https://vitalyvorobyev.github.io/scorequant/three-doors/) for the derivation.
+[Three doors](https://vitalyvorobyev.github.io/scorequant/walkthroughs/ratios/) for the derivation.
 
 ### Sources and providers are different things
 
@@ -224,7 +224,7 @@ rule = sq.Quantizer.load("gaussian-6bins.sqz")
 
 ## Real-data showcase: FlowCyt
 
-The [FlowCyt study](https://vitalyvorobyev.github.io/scorequant/usecases/flowcyt/) is the main
+The [FlowCyt study](https://vitalyvorobyev.github.io/scorequant/walkthroughs/flowcyt/) is the main
 end-to-end real-data example. Flow cytometry produces individual cells described by twelve marker
 measurements, while the scientific result is a vector of population fractions. The study uses all
 30 patients: 20 reference, 10 frozen held-out, 600,000 sampled real cells drawn from 21,254,866
@@ -339,21 +339,21 @@ termination a stability certificate; exchange stability implies a strict self-co
 $I_B^{-1}$-Mahalanobis-Voronoi rule, which is what licenses compiling a finite partition into a
 reusable one; profiled $D_s$ comes with certified efficient-score upper bounds; and small instances
 can be closed with branch-and-bound global certificates. See
-[Related work](https://vitalyvorobyev.github.io/scorequant/related-work/) for the full map,
+[Related work](https://vitalyvorobyev.github.io/scorequant/reference/related-work/) for the full map,
 including which pipeline stage each comparable package occupies.
 
 ## Documentation
 
-[Why ScoreQuant](https://vitalyvorobyev.github.io/scorequant/motivation/) ·
-[Method overview](https://vitalyvorobyev.github.io/scorequant/method/) ·
-[Three doors](https://vitalyvorobyev.github.io/scorequant/three-doors/) ·
-[Choosing your workflow](https://vitalyvorobyev.github.io/scorequant/user-workflow/) ·
-[The book](https://vitalyvorobyev.github.io/scorequant/book/) ·
-[Examples](https://vitalyvorobyev.github.io/scorequant/examples/) ·
-[API guide](https://vitalyvorobyev.github.io/scorequant/api/) and
+[Why ScoreQuant](https://vitalyvorobyev.github.io/scorequant/) ·
+[Method overview](https://vitalyvorobyev.github.io/scorequant/reference/method/) ·
+[Three doors](https://vitalyvorobyev.github.io/scorequant/walkthroughs/ratios/) ·
+[Choosing your workflow](https://vitalyvorobyev.github.io/scorequant/get-started/) ·
+[The book](https://vitalyvorobyev.github.io/scorequant/reference/book/) ·
+[Examples](https://vitalyvorobyev.github.io/scorequant/reference/examples/) ·
+[API guide](https://vitalyvorobyev.github.io/scorequant/reference/api/) and
 [reference](https://vitalyvorobyev.github.io/scorequant/reference/) ·
-[FlowCyt study](https://vitalyvorobyev.github.io/scorequant/usecases/flowcyt/) ·
-[Related work](https://vitalyvorobyev.github.io/scorequant/related-work/)
+[FlowCyt study](https://vitalyvorobyev.github.io/scorequant/walkthroughs/flowcyt/) ·
+[Related work](https://vitalyvorobyev.github.io/scorequant/reference/related-work/)
 
 The book develops the statistical theory independently of this package's API; the FlowCyt study is
 a reproducible end-to-end evaluation on a frozen patient split.

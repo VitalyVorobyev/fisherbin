@@ -4,6 +4,9 @@
 
 **Completes:** [ADR 0019](0019-react-learning-portal.md) stage 2
 
+**Amended by:** [ADR 0026](0026-one-workflow-publishes-the-site.md), which lifts the deployment
+freeze recorded under Decision below
+
 ## Context
 
 ADR 0019 created the React portal and deliberately staged its rollout: "Initially MkDocs remains
@@ -80,6 +83,10 @@ portal's front door and walkthroughs are written. Turning it on, against the ass
 separate and explicitly authorized act, as ADR 0019 requires — including the Playwright and
 accessibility flows that ADR 0019 named as gates for the promotion rather than for the preview
 artifact.
+
+That separate act is [ADR 0026](0026-one-workflow-publishes-the-site.md). `docs.yml` was deleted
+rather than un-frozen, because it would have deployed `site/` — the MkDocs build alone, not the
+assembled tree this ADR defines.
 
 ## Consequences
 

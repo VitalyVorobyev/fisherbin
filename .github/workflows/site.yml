@@ -1,6 +1,20 @@
-name: Learning portal preview
+name: Site
+
+# The one workflow that builds and publishes the site: the Docusaurus portal at
+# the root, the strict MkDocs reference beneath it at `reference/`, and the
+# pre-cut redirect stubs, assembled by `pnpm assemble:site` into `.pages-preview`
+# and uploaded as a single Pages artifact.
+#
+# A pull request builds the whole tree and uploads it for inspection but never
+# deploys; only a push to `main` deploys. This replaces the frozen deployment
+# that used to live in `docs.yml`, which would have uploaded `site/` — the
+# MkDocs build alone, not the assembled tree — and which was deleted rather
+# than un-frozen, because the deployment moved rather than resuming
+# (consolidation S11; ADR 0019 and ADR 0025).
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -8,7 +22,7 @@ permissions:
   contents: read
 
 jobs:
-  build-preview:
+  build:
     runs-on: ubuntu-latest
     env:
       UV_PYTHON: "3.13"
@@ -35,6 +49,9 @@ jobs:
       - run: uv sync --all-extras --all-groups --locked
       - run: corepack pnpm install --frozen-lockfile
         working-directory: website
+      # The strict reference build. This is the only place it runs now that
+      # `docs.yml` is gone, so it stays early: a broken reference link fails the
+      # pull request here rather than after the portal has been built and tested.
       - run: uv run mkdocs build --strict
       - run: corepack pnpm typecheck
         working-directory: website
@@ -71,6 +88,33 @@ jobs:
           path: .pages-preview
           if-no-files-found: error
           include-hidden-files: true
+      # The Pages artifact is that same assembled tree. `upload-pages-artifact`
+      # tars with `-C <path> .`, so the dot-prefixed root is not the hazard it is
+      # for `upload-artifact` above, and the `.nojekyll` marker inside travels
+      # either way.
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: .pages-preview
 
-      # Deliberately no Pages deployment: promotion remains a separate,
-      # explicitly authorized migration step.
+  deploy:
+    # Publication is an authorized action, not a merge side effect. This job runs
+    # only on a push to the default branch: a pull request builds and uploads the
+    # assembled tree for inspection and stops there.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/configure-pages@v6
+      - name: Deploy the assembled site
+        id: deployment
+        uses: actions/deploy-pages@v5

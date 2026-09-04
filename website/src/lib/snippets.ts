@@ -24,9 +24,16 @@ export interface SnippetExecution {
   seed: number;
 }
 
+/** The `/get-started` first-fit cell's own committed result. */
+export interface FirstFitSummary {
+  /** `partition.train_report.geometric_mean_retention`, read from the same run. */
+  retention: number;
+}
+
 interface SnippetData {
   cells: Record<string, SnippetCell | undefined>;
   execution: SnippetExecution;
+  firstFit: FirstFitSummary;
   schemaVersion: number;
 }
 
@@ -63,4 +70,17 @@ export function snippet(id: string): SnippetCell {
 /** The runtime provenance every generated cell was captured under. */
 export function snippetExecution(): SnippetExecution {
   return snippetData.execution;
+}
+
+/**
+ * The `/get-started` first-fit cell's committed retention.
+ *
+ * Read from the same executed `partition` the cell's own captured stdout
+ * prints `geometric_mean_retention` from
+ * (`website/scripts/generate_snippets.py`) -- not reparsed from that text --
+ * so `GetStartedFirstFitLiveFit` can show it before the reader ever clicks
+ * anything, with no fetch of the (larger) score table required first.
+ */
+export function firstFitRetention(): number {
+  return snippetData.firstFit.retention;
 }
