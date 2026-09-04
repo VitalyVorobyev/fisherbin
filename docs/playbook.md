@@ -88,7 +88,7 @@ A Docusaurus site with a real Pyodide runtime, isolated from Python packaging.
 ```bash
 cd website
 corepack pnpm install --frozen-lockfile
-corepack pnpm start                    # http://localhost:3000/scorequant/portal/
+corepack pnpm start                    # http://localhost:3000/scorequant/
 ```
 
 `start` runs `generate` first, and `generate` shells back to
@@ -131,9 +131,15 @@ uv run mkdocs build --strict
 cd website && corepack pnpm assemble:site
 ```
 
-This writes `.pages-preview/` with MkDocs at the root and the portal at `/portal/`. It does **not**
-deploy. Promoting the portal to the site root is a separately authorized migration step
-([ADR 0019](adr/0019-react-learning-portal.md)); `portal-preview.yml` only uploads an artifact.
+This writes `.pages-preview/` — the portal at the root, the MkDocs reference beneath it at
+`/reference/`, and the pre-cut redirect stubs — and prints the redirect parity check. Running it
+locally does **not** deploy.
+
+Deployment is `site.yml`, and it is the same tree: a pull request builds and uploads it for
+inspection, and a push to `main` publishes it to
+[the site](https://vitalyvorobyev.github.io/scorequant/)
+([ADR 0026](adr/0026-one-workflow-publishes-the-site.md)). That workflow is the only place the
+strict MkDocs build and the Playwright suites run in CI.
 
 ### Things that will cost you an hour if nobody says them
 
@@ -141,7 +147,10 @@ deploy. Promoting the portal to the site root is a separately authorized migrati
   `website/schema/lab-protocol.schema.json` and run `corepack pnpm generate:protocol`.
 - `website/src/generated/portal-data.json` is likewise committed and generated, by
   `website/scripts/generate_data.py`.
-- `website/src/css/global.css` is one file holding every page's styles. There are no CSS modules.
+- The stylesheet is ten files under `website/src/css/`, listed **in cascade order** in
+  `docusaurus.config.ts` under `theme.customCss`. There are no CSS modules, so order is the only
+  thing resolving equal-specificity collisions: `tokens.css` first, `live-fit.css` last. Adding a
+  file means adding it to that array, in the right place.
 - There is no backend and no HTTP call to one. The `remote-jax` and `remote-pytorch` runners exist
   in the protocol schema and are explicitly unimplemented.
 - In CI, `corepack enable` must run both before and after `setup-node`, because `cache: pnpm`

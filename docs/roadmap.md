@@ -238,8 +238,8 @@ unexplained quality regression; both architecture reviews pass.
 
 ## M10 — React learning portal and browser Lab
 
-**Status:** initial vertical slice implemented; research expansion and root-site promotion remain
-future milestones.
+**Status:** initial vertical slice implemented. Root-site promotion and publication were carried
+out by M12 (ADR 0025 and ADR 0026); the research expansion in item 5 below remains future work.
 
 1. Product foundation: land ADR 0019, route/content manifests, design tokens, responsive
    wireframes, the custom Docusaurus shell, Pagefind command palette, and generated data contracts.
@@ -367,7 +367,7 @@ Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock
 | S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | done |
 | S8 | The four walkthroughs | W3, W4 | S6, S7 | done |
 | S10 | Portal front door: home, get-started, captured outputs | W3 | S8 | done |
-| S11 | Portal design pass, inline demos, and launch | W3 | S10 | queued |
+| S11 | Portal design pass, inline demos, and launch | W3 | S10 | active |
 | S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S11 | queued |
 
 Deliberately cut, because it serves no user: renaming the six iteration-budget parameters (one

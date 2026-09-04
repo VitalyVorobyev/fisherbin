@@ -27,3 +27,4 @@ Only decisions that materially constrain future implementation are recorded here
 23. [ADR 0023 — Separate the deployable rule from the fit](0023-versioned-quantizer-artifact.md) — extends ADR 0009
 24. [ADR 0024 — Exception hierarchy and two-stage fit pipeline](0024-error-hierarchy-and-fit-pipeline.md) — extends ADR 0023
 25. [ADR 0025 — Serve the portal at the site root and MkDocs at `/reference/`](0025-portal-at-the-site-root.md) — completes ADR 0019
+26. [ADR 0026 — One workflow builds and publishes the assembled site](0026-one-workflow-publishes-the-site.md) — completes ADR 0019's deployment authorization, amends ADR 0025

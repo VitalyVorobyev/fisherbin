@@ -2,7 +2,9 @@
 
 **Status:** Accepted. Its staged rollout is completed by
 [ADR 0025](0025-portal-at-the-site-root.md): the portal now serves the site root and MkDocs
-is narrowed to `/reference/`, with the redirect manifest that stage 2 required.
+is narrowed to `/reference/`, with the redirect manifest that stage 2 required. The deployment
+authorization this ADR withheld is granted by [ADR 0026](0026-one-workflow-publishes-the-site.md),
+which also retires the `portal-preview.yml` named under Consequences below.
 
 **Supersedes in part:** [ADR 0006](0006-documentation-site.md)
 
