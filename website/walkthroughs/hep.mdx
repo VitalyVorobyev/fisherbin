@@ -1,0 +1,336 @@
+---
+title: A Higgs search with a floating energy scale
+sidebar_label: HEP events
+sidebar_position: 3
+---
+
+import {BinningComparison} from "@site/src/components/BinningComparison";
+import {Diagnostics} from "@site/src/components/Diagnostics";
+import {Figure} from "@site/src/components/Figure";
+import {factValue, factsFor} from "@site/src/lib/facts";
+import {siteUrl} from "@site/src/lib/site";
+
+export const f = factsFor("hep");
+
+# A Higgs search with a floating energy scale
+
+*Who this is for: a physicist who histograms a classifier output before fitting, and wants to know
+what that histogram costs once a detector systematic is floating in the same fit.*
+
+## The measurement
+
+An H→ττ analysis is trying to measure one number: how much Higgs-to-tau-tau signal is present,
+relative to what the Standard Model predicts. Nobody fits that number to individual collision
+events. The events are reduced to a table of counts — how many candidate events landed in each of
+a handful of categories — and the likelihood is built on that table. The categories are almost
+always slices of a classifier output: train a network to separate signal from background, and
+histogram what it says.
+
+The complication is that the tau energy scale is not known exactly. Calibration leaves a residual
+uncertainty, and a modern analysis handles that by letting the energy scale float in the fit as a
+nuisance parameter, constrained but not fixed. That changes the question the histogram has to
+answer. A category boundary that separates signal from background beautifully is not necessarily a
+category boundary that survives having the energy scale floated alongside the signal strength: the
+region where signal concentrates is also the region the energy scale moves events through, so some
+of what those categories carry gets absorbed by the nuisance rather than by the parameter you care
+about.
+
+So the question is not "is the classifier good". It is: given that you may publish only a handful
+of counts, and given that the energy scale will float, which handful?
+
+## Where the events come from
+
+The study runs on {f("nEvents")} events drawn from the {f("datasetName")} —
+{f("signalEvents")} labelled as `htautau` signal and {f("backgroundEvents")} as background, each
+carried at its Monte Carlo weight. The committed fixture holds several tau-energy-scale variants of
+those same rows, so a shifted-up and a shifted-down copy of every event exist side by side and stay
+row-aligned.
+
+The provenance is three separate facts and is worth keeping separate. The bytes were fetched from
+<a href={f("bytesFetchedFrom")} rel="noreferrer noopener" target="_blank">the
+<code>FAIR-Universe/HEP-Challenge</code> code repository</a>, at commit <code>{f("upstreamCommit")}</code>. That code repository carries **no licence
+file** of its own. The {f("license")} claim is made under the Zenodo archival record for the public
+dataset the sample is drawn from, <a href={f("licenseRecordUrl")} rel="noreferrer noopener" target="_blank">DOI
+{f("licenseRecordDoi")}</a> — not under the code repository. Collapsing those three into one
+licence line would be a claim nobody checked.
+
+Everything below is the narrative arc; the exhaustive record — the modelling choices, the
+finite-difference convergence study, and the sweep across bin budgets — lives in the
+<a href="pathname:///reference/usecases/hep/" target="_self">HEP classifier study</a> in the
+reference, and that page is where to go for the parts this one only summarises.
+
+## Reading an event as three coordinates
+
+ScoreQuant does not take events. It takes, for each event, one row saying how sensitive that event
+is to each parameter being measured — one column per parameter. Three parameters are in play here:
+the signal rate `mu_htautau`, the combined background rate `nu_background`, and the tau energy
+scale `tes`.
+
+Nobody has the likelihood of a detector in closed form, so those columns are not written down. They
+are reconstructed from *density ratios*, which is the input route that only needs a classifier: the
+sensitivity of an event depends on the ratio between the densities that generate it, and a
+calibrated classifier estimates exactly that ratio. This example goes through that route twice, in
+two different ways, because the three columns are not all the same kind of quantity.
+
+```python
+import numpy as np
+
+import scorequant as sq
+from examples.hep_classifier import SCHEMA, load_fixture
+
+data = load_fixture()
+nominal = data.features_at(1.0)
+
+assert nominal.shape == (data.n_events, 28)
+assert SCHEMA.parameters == ("mu_htautau", "nu_background", "tes")
+assert SCHEMA.select("mu_htautau") == (0,)
+```
+
+The two **rate** columns come from an ordinary signal-versus-background classifier. Once the
+signal-to-background density ratio is known, the sensitivity to a rate is closed-form algebra, so
+nothing is differentiated numerically. The **energy-scale** column has no such closed form: `tes`
+is a deterministic deformation of the features rather than a mixture weight, so the only way to
+learn how the density responds to it is to compare a shifted-down sample against a shifted-up one.
+A classifier trained to tell those two apart, at a half-offset of {f("delta")}, feeds the library's
+central-difference door. That offset is a numerical differentiation step and not the physical
+energy-scale uncertainty, which is smaller; the column it produces is the derivative at the nominal
+scale whatever prior width the analysis later puts on it.
+
+Both classifiers are cross-fitted, out of fold, with one fold identifier **per event** rather than
+per row, so that an event's shifted-down and shifted-up copies never end up on opposite sides of a
+fold boundary. That is not a detail. Most of the feature columns do not respond to `tes` at all, so
+under a plain per-row split the classifier recognises the event from its inert columns and answers
+with the label of the copy it was trained on — the wrong one — and the resulting column is
+inverted while looking perfectly reasonable.
+
+```python
+from examples.hep_classifier.experiment import FOLD_SEED, HEADLINE_BINS, HEADLINE_DELTA, SOLVER_SEED
+from examples.hep_classifier.scores import event_folds, fit_signal_background_oof, fit_tes_oof
+
+fold_ids = event_folds(data.is_signal, n_folds=5, seed=FOLD_SEED)
+signal = fit_signal_background_oof(data, fold_ids=fold_ids, max_iter=300, seed=FOLD_SEED + 100)
+tes = fit_tes_oof(data, delta=HEADLINE_DELTA, fold_ids=fold_ids, max_iter=300, seed=FOLD_SEED + 500)
+```
+
+The weights are the other trap. Background events in this sample carry Monte Carlo weights orders
+of magnitude above the signal's, so the weighted signal fraction is about
+{f("signalFraction")}. Train on those raw weights and the signal class is statistically invisible.
+Both classifiers are therefore trained on per-class normalized weights with declared priors of a
+half each, and the physical rate ratio enters where it belongs — through the intensity
+parameterization, never through the classifier's priors.
+
+```python
+rate_provider = sq.DensityRatioScore.from_classifier(
+    lambda observations: signal.probabilities,
+    [0.5, 0.5],
+    sq.IntensityParameterization([1.0 - signal.signal_fraction, signal.signal_fraction]),
+    calibration="temperature",
+)
+tes_provider = sq.CentralLogRatioScore(
+    lambda observations: tes.probabilities,
+    deltas=[tes.delta],
+    class_priors=[0.5, 0.5],
+)
+
+rate_scores = np.asarray(rate_provider.score(nominal))  # columns [background, signal]
+tes_scores = np.asarray(tes_provider.score(nominal))  # one column
+
+sample = sq.ScoreSample(
+    np.concatenate([rate_scores[:, [1, 0]], tes_scores], axis=1),
+    data.weights,
+    schema=SCHEMA,
+    provenance=sq.ScoreProvenance(kind="estimated_ratio"),
+)
+
+assert sample.scores.shape == (data.n_events, 3)
+assert sample.provenance.exact_fisher is False
+```
+
+That last assertion is the library refusing to flatter itself. These columns came from trained
+classifiers, so they are estimates, and a sample that declares `estimated_ratio` provenance is not
+permitted to report its output as exact Fisher information no matter how good the numbers look.
+
+## Choosing the categories
+
+With the table in hand the fit is one call. `optimize_partition` assigns each of the
+{f("nEvents")} events to one of {f("bins")} categories, and the criterion says what "best" means:
+`ProfiledDOptimality` asks for the categories that retain the most information about
+`mu_htautau` *after* the background rate and the energy scale have been profiled out, which is the
+question the analysis actually asks. `DExchangeConfig` is the exact finite solver — it moves one
+event at a time, accepts only moves whose exact gain is positive, and therefore terminates rather
+than converging approximately.
+
+The one non-obvious argument is `initial_labels`. `efficient_score_bound` computes a certified
+upper bound on what any {f("bins")}-cell rule of this space could retain, and it produces candidate
+labels on the way. Starting the exchange from those labels is not a trick to make the number look
+better; it is a starting point the bound already justifies, and the same bound then says how much
+was left on the table.
+
+```python
+interest = SCHEMA.select("mu_htautau")
+
+ceiling = sq.efficient_score_bound(
+    sample.scores, interest=interest, weights=sample.weights, n_bins=HEADLINE_BINS
+)
+result = sq.optimize_partition(
+    sample,
+    n_bins=HEADLINE_BINS,
+    criterion=sq.ProfiledDOptimality(("mu_htautau",)),
+    config=sq.DExchangeConfig(seed=SOLVER_SEED),
+    initial_labels=ceiling.labels,
+)
+
+profiled = sq.profiled_information_report(
+    sample.scores,
+    np.asarray(result.labels),
+    interest=interest,
+    weights=sample.weights,
+    n_bins=HEADLINE_BINS,
+)
+
+assert round(float(profiled.geometric_mean_retention), 4) == 0.9560
+assert ceiling.gap_to(result) < 1e-3
+```
+
+## What came out
+
+<Diagnostics
+  caption={`Every retention below is measured at ${f("bins")} categories, against the unbinned information of the same weighted event sample.`}
+  items={[
+    {
+      label: "Signal classifier AUC",
+      value: f("signalAuc"),
+      meaning:
+        "Out-of-fold, weighted by the Monte Carlo event weights. An ordinary, competent signal-versus-background separation — nothing exotic is being smuggled in upstream.",
+    },
+    {
+      label: "Energy-scale classifier AUC",
+      value: f("tesAuc"),
+      meaning:
+        "The minus-versus-plus discrimination task at the finite-difference offset. Barely above chance, which is what a small deformation of the features should look like, and why cross-fitting by event matters so much here.",
+    },
+    {
+      label: "Profiled information retained",
+      value: f("dsProfiledRetention"),
+      meaning:
+        "Information about the signal rate that survives the compression, after the background rate and the energy scale are profiled out. This is the number the measurement cares about.",
+    },
+    {
+      label: "Full-parameter information retained",
+      value: f("dsFullRetention"),
+      meaning:
+        "The same categories judged on all three parameters at once. Far lower — the profiled criterion deliberately spends the other two parameters' information to buy the first one's.",
+    },
+    {
+      label: "Certified ceiling",
+      value: f("ceilingRetention"),
+      meaning:
+        "An upper bound, from the efficient-score bound, on what any rule with this many cells could retain from this space. Computed, not estimated.",
+    },
+    {
+      label: "Gap to the ceiling",
+      value: f("gapToCeiling"),
+      meaning:
+        "How far the fitted categories sit below that bound. Small enough that there is essentially no room left to improve the partition at this budget.",
+    },
+  ]}
+/>
+
+<Figure
+  src={siteUrl("walkthrough-figures/hep-classifier.png")}
+  alt="Four panels: the signal-posterior distribution by class, the six-bin profiled partition in score space, retention against bin budget with the certified ceiling, and the delta-convergence check."
+  caption={`The full study figure. Every number quoted on this page is a value from the run that produced it; the panels show the shape of the result the numbers summarise.`}
+  wide
+/>
+
+## What that means for the signal strength
+
+A table of {f("bins")} published counts carries {f("dsProfiledRetention")} of everything the full
+event sample knows about the Higgs signal strength, with the tau energy scale floating. The
+remainder is not sitting there waiting to be recovered by a cleverer rule: the certified ceiling at
+that many cells is {f("ceilingRetention")}, and the fitted categories are {f("gapToCeiling")} below
+it. The compression costs what it costs; the choice of compression, at this budget, no longer does.
+
+The practical consequence is that the size of the published table becomes a design parameter you
+can set on evidence rather than on convention. What one more category would buy is a measurement,
+not a guess. You can run this shape of fit yourself, on your own table or on the study's, in
+[the Lab](/lab?job=hep).
+
+## What the histogram you would have drawn retains
+
+The comparison has to be against something a physicist would actually do, and the honest version
+of that is more than one thing. Slicing the classifier output into equal-frequency cells is the
+first instinct. Slicing the *logit* of the same output into equal-width cells is the second, and on
+this dataset it is considerably better. The two-bin significance cut — pick the threshold
+maximising S/√B and count either side — is the most recognisable of all.
+
+<BinningComparison
+  axisLabel="Profiled information about the signal rate, retained"
+  caption={`All rules use ${f("bins")} categories except the significance cut, which uses ${f("thresholdBins")}. Higher is better.`}
+  rows={[
+    {
+      label: "Significance cut",
+      text: f("thresholdProfiledRetention"),
+      value: factValue("hep", "thresholdProfiledRetention"),
+    },
+    {
+      label: "Classifier quantiles",
+      text: f("quantileProfiledRetention"),
+      value: factValue("hep", "quantileProfiledRetention"),
+    },
+    {
+      label: "Classifier logit, equal width",
+      text: f("logitProfiledRetention"),
+      value: factValue("hep", "logitProfiledRetention"),
+    },
+    {
+      label: "Plain D",
+      text: f("dProfiledRetention"),
+      value: factValue("hep", "dProfiledRetention"),
+    },
+    {
+      isScoreQuant: true,
+      label: "Profiled Ds",
+      text: f("dsProfiledRetention"),
+      value: factValue("hep", "dsProfiledRetention"),
+    },
+    {
+      isCeiling: true,
+      label: "Certified ceiling",
+      text: f("ceilingRetention"),
+      value: factValue("hep", "ceilingRetention"),
+    },
+  ]}
+/>
+
+The significance cut retains nothing at all, and that is not a rounding artefact: two cells cannot
+resolve three parameters, so once the background rate and the energy scale are profiled out there
+is nothing left for the signal rate. The two multi-bin classifier binnings do much better, and the
+strongest of them — this run records <code>{f("bestBaselineKey")}</code>, the {f("bestBaselineLabel")} — still
+gives up about half. The headline gap is therefore {f("headlineGap")} of profiled information,
+quoted against that strongest baseline.
+
+The reason is structural rather than a matter of tuning. The classifier output is one number, built
+to separate signal from background. No binning of it can encode a direction it never contained, and
+the energy-scale direction is precisely the one it never contained.
+
+## How much of that gap is the method
+
+Here is the part worth taking away, and it cuts against the headline. Binning *the same classifier
+posterior* two reasonable ways moves the retained profiled information by {f("baselineSpread")}.
+Against the equal-frequency cells the gap reads {f("gapToEqualFrequency")}; against the logit
+equal-width cells it reads {f("headlineGap")}. Both baselines are things people do. The difference
+between them is larger than most method comparisons ever report, and it means a large part of any
+such headline is a statement about how hard the baseline was tried, not about the method.
+
+That is why this page quotes the smaller number. The claim that survives the stronger comparison is
+still the interesting one — even a well-binned one-dimensional classifier output gives up around
+half the profiled information — but a reader who takes {f("gapToEqualFrequency")} away from here
+would be carrying a number that measures the weaker baseline's difficulty as much as anything else.
+
+The second caveat is that the profiled criterion is a trade and not a free improvement. Against the
+plain-D partition of the same table, the profiled partition gives up {f("fullRetentionGivenUp")} of
+full three-parameter information to gain {f("profiledRetentionGained")} of profiled information. If
+the energy scale were known exactly, or if the analysis wanted all three parameters equally, that
+would be a bad trade. It is a good trade here because the analysis is measuring one parameter and
+tolerating the other two, which is a statement about the analysis rather than about the criterion.

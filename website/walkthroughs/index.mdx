@@ -9,22 +9,57 @@ sidebar_position: 1
 *Who this is for: a reader who wants one applied question followed end to end, with real
 numbers, rather than a method described in the abstract.*
 
-A walkthrough here is a single input route — score events, an analytic density, a classifier
-ratio, a real dataset — taken from the raw problem to a fitted result, with the numbers that came
-out and what they mean. It is not a tutorial on the whole library and not a restatement of the
-reference; it exists to show one route worked all the way through.
+A walkthrough here takes a single applied question from the raw problem to a fitted result: the
+data and where it came from, which of the three input routes it uses and why, the fit, the
+numbers that came out, what they mean for the original question, and what the binning you would
+otherwise have reached for would have retained on the same data. Each one ends with a measured
+limitation rather than a summary, because the limitations are the part that is hard to find
+elsewhere.
 
-This section is being filled in. Four walkthroughs are planned, one per input route. None of the
-four pages below exists yet — this index lists what each will cover and, for the three routes
-where the material already exists somewhere else, links to where it lives today so nothing is
-unreachable while the walkthrough itself is still unwritten.
+None of the numbers on these pages is typed by hand. Each is read from a committed evidence file
+produced by the example it describes, and a test resolves every one of them back to the run that
+produced it.
 
-| Slug | Route | What it will cover | Today |
-| --- | --- | --- | --- |
-| `flowcyt` | Real flow-cytometry cells, classifier-estimated ratios (Door 3) | Not yet written. | The [showcase page](/showcase) covers the same study narratively; the <a href="pathname:///reference/usecases/flowcyt/" target="_self">full reference study</a> has the complete data, scoring, and solver comparison. |
-| `hep` | Real HEP events, profiled D<sub>s</sub> with a tau-energy-scale nuisance | Not yet written — the example itself does not exist yet. It will use the FAIR Universe HiggsML dataset (Zenodo, DOI [10.5281/zenodo.15131565](https://doi.org/10.5281/zenodo.15131565), CC-BY-4.0). | Nothing published yet; this walkthrough comes from session S7. |
-| `michelson` | An analytic `ScoreFunction` with an explicit nuisance, on the NumPy backend | Not yet written. | The example already exists in the reference: <a href="pathname:///reference/examples/michelson-phase/" target="_self">Michelson interferometer phase</a>. |
-| `ratios` | The density-ratio door end to end, including why estimated ratios do not carry exact Fisher semantics | Not yet written. | <a href="pathname:///reference/examples/door3-classifier/" target="_self">Door 3, classifier-estimated ratios</a> is the executed reference; <a href="pathname:///reference/three-doors/" target="_self">Three doors</a> explains where the three input routes, including this one, come from. |
+## Which one to read
 
-Until a row above has a real page, follow its "Today" link for the same material in its current
-form.
+Pick by the situation you are in, not by the domain.
+
+**[You have a trained classifier and want to bin its output](./ratios)** — *the ratio door.* A
+two-component mixture where the exact Bayes score is known, so the number the library reports
+about an estimated score can be checked against what that score actually achieved. Read this if
+you want to know how far to trust a classifier-derived score, and what the ratio-closure
+diagnostic does and does not tell you. Synthetic by design: it is the only one of the four where
+ground truth exists.
+
+**[You are measuring a rate and a systematic is eating your sensitivity](./hep)** — *profiled
+information with a nuisance.* Real LHC-like events, a signal-strength parameter of interest, and
+a tau-energy-scale nuisance that moves ten of twenty-eight observables at once. Read this if your
+problem has a nuisance parameter and you want to see what binning for the profiled criterion buys
+over binning the classifier output, and how much of that gap depends on which baseline binning
+you compare against.
+
+**[You count cells or events into categories and want fewer bins](./flowcyt)** — *estimated
+ratios on real data.* Real bone-marrow flow cytometry, six populations, a per-patient composition
+to estimate. Read this if your scores come from a classifier trained on labelled reference data
+and you need a small, fixed binning that generalises to new subjects. Its result is a negative
+one, and that is the point.
+
+**[Your score is known in closed form](./michelson)** — *an analytic score with an explicit
+nuisance.* An interferometer phase measured against a fringe-frequency nuisance, on the NumPy
+backend. Read this if you can differentiate your model by hand: it is the one walkthrough where
+the comparison against the optimum is exact rather than estimated, and where a natural-looking
+binning turns out to retain nothing at all.
+
+## What each one uses
+
+| Walkthrough | Input route | Data | Criterion | The thing it teaches |
+| --- | --- | --- | --- | --- |
+| [Ratio door](./ratios) | Density ratios from a classifier | Synthetic, with exact ground truth | D-optimality | What an estimated score's self-reported number is worth |
+| [HEP classifier](./hep) | Density ratios + a central log-ratio | Real events, FAIR Universe HiggsML | Profiled D<sub>s</sub> | Binning for the nuisance, and how much the baseline choice matters |
+| [FlowCyt](./flowcyt) | Density ratios from a classifier | Real cells, FlowCyt benchmark | D-optimality | When hard bins are enough, and when they are not an improvement |
+| [Michelson phase](./michelson) | An analytic score function | Deterministic quadrature | Profiled D<sub>s</sub> | Aliasing, and a theorem-backed refusal |
+
+Every walkthrough links onward to its full record in the reference, which carries the derivations,
+the complete sweeps and the diagnostics these pages only quote from. Each also hands off to the
+[Browser Lab](/lab), which runs the same fit on the same score table in your
+browser with nothing installed.

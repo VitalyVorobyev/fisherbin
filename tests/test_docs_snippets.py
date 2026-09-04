@@ -6,13 +6,19 @@ their fenced Python blocks in order, and executes each page's blocks
 cumulatively in one shared namespace so the docs cannot silently drift from
 the code they describe.
 
-Two HTML-comment markers placed on the line immediately above a fence steer
-execution:
+Two markers placed on the line immediately above a fence steer execution:
 
-- ``<!-- snippet: skip -->`` -- do not execute this block (pseudo-code or an
+- ``snippet: skip`` -- do not execute this block (pseudo-code or an
   illustrative fragment that depends on variables defined elsewhere in prose).
-- ``<!-- snippet: fresh -->`` -- reset the accumulated namespace before this
-  block runs.
+- ``snippet: fresh`` -- reset the accumulated namespace before this block runs.
+
+Each marker is written as an HTML comment in Markdown (``<!-- snippet: skip
+-->``) and as a JSX expression comment in MDX (``{/* snippet: skip */}``).
+Both spellings are recognised because the portal's walkthrough pages are MDX,
+where Docusaurus 3 parses ``<!-- -->`` as JSX rather than as a comment and
+fails the build on it. ``tests/test_portal_snippets.py`` reuses this extractor
+against those pages, which is why the MDX spelling lives here rather than in a
+second parser.
 
 Blocks without a marker execute in page order, sharing one namespace per
 page; each page is isolated from every other page.
@@ -43,10 +49,14 @@ MKDOCS_CONFIG = REPO_ROOT / "mkdocs.yml"
 _SKIP_MARKER = "snippet: skip"
 _FRESH_MARKER = "snippet: fresh"
 
-# An optional HTML-comment marker line directly above a ```python fence,
-# followed by the fenced code itself.
+# An optional marker line directly above a ```python fence, followed by the
+# fenced code itself. The marker is an HTML comment in Markdown or a JSX
+# expression comment in MDX; both spellings carry the same two directives.
 _BLOCK_PATTERN = re.compile(
-    r"(?:^(?P<marker><!--\s*snippet:\s*\w+\s*-->)\n)?^```python\n(?P<code>.*?)\n^```",
+    r"(?:^(?P<marker>"
+    r"<!--\s*snippet:\s*\w+\s*-->"
+    r"|\{/\*\s*snippet:\s*\w+\s*\*/\}"
+    r")\n)?^```python\n(?P<code>.*?)\n^```",
     re.DOTALL | re.MULTILINE,
 )
 
@@ -160,6 +170,24 @@ def test_page_snippets_execute(page_path: Path, blocks: list[Snippet]) -> None:
             exec(compile(block.code, filename, "exec"), namespace)
     finally:
         plt.close("all")
+
+
+def test_both_marker_spellings_are_recognised() -> None:
+    """Markdown HTML comments and MDX JSX comments carry the same directives.
+
+    The portal's walkthrough pages are MDX, where Docusaurus 3 rejects
+    ``<!-- -->`` as invalid JSX, so the markers there are written
+    ``{/* snippet: skip */}``. Both spellings must reach the same
+    `Snippet` flags, because `tests/test_portal_snippets.py` runs this
+    extractor over those pages.
+    """
+    page = (
+        "<!-- snippet: skip -->\n```python\nraise AssertionError\n```\n\n"
+        "{/* snippet: fresh */}\n```python\nvalue = 1\n```\n\n"
+        "```python\nvalue = 2\n```\n"
+    )
+    blocks = _extract_blocks(page)
+    assert [(b.skip, b.fresh) for b in blocks] == [(True, False), (False, True), (False, False)]
 
 
 def test_snippet_pages_were_discovered() -> None:

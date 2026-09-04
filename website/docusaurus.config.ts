@@ -1,6 +1,39 @@
 import type {Config} from "@docusaurus/types";
 import type {Options as ClassicOptions} from "@docusaurus/preset-classic";
 import {BannerPlugin} from "webpack";
+import {themes} from "prism-react-renderer";
+
+// Palenight with one token colour lifted. Its numeric/constant pink `#ff5874`
+// measures 4.48:1 against the code background `#292d3e`, just under the WCAG AA
+// 4.5:1 threshold, so every numeric literal in a fenced snippet is a serious
+// axe violation. That went unnoticed while no portal page carried substantial
+// code; the four walkthroughs added in S8 are full of numbers, and the e2e
+// accessibility scan failed on 93 nodes. `#ff7b93` is the same hue at 5.53:1 --
+// a real margin rather than a hairline pass. Patched here rather than in CSS
+// because prism-react-renderer emits these colours as inline styles, which a
+// stylesheet could only override with `!important`.
+// The theme writes this colour as `rgb(255, 88, 116)`, not as the hex its
+// documentation shows, so both spellings are matched.
+// Two of Palenight's token colours are below the WCAG AA 4.5:1 threshold against
+// its own `#292d3e` code background: the numeric/constant pink at 4.48:1 and,
+// much worse, the comment grey at 2.84:1. Both are replaced with the same hue
+// lifted far enough to clear the threshold with margin rather than by a
+// hairline. The theme writes colours in `rgb()` form, not the hex its
+// documentation shows, so both spellings are matched.
+const ACCESSIBLE_TOKEN_COLOURS = new Map([
+  ["#ff5874", "rgb(255, 123, 147)"],
+  ["rgb(255, 88, 116)", "rgb(255, 123, 147)"],
+  ["#697098", "rgb(144, 153, 196)"],
+  ["rgb(105, 112, 152)", "rgb(144, 153, 196)"]
+]);
+const accessiblePalenight = {
+  ...themes.palenight,
+  styles: themes.palenight.styles.map((entry) => {
+    const replacement =
+      entry.style.color === undefined ? undefined : ACCESSIBLE_TOKEN_COLOURS.get(entry.style.color);
+    return replacement === undefined ? entry : {...entry, style: {...entry.style, color: replacement}};
+  })
+};
 
 const config: Config = {
   title: "ScoreQuant",
@@ -116,6 +149,7 @@ const config: Config = {
   ],
   themeConfig: {
     image: "img/social-card.svg",
+    prism: {theme: accessiblePalenight},
     colorMode: {defaultMode: "light", disableSwitch: true, respectPrefersColorScheme: false},
     metadata: [
       {name: "theme-color", content: "#07152f"},

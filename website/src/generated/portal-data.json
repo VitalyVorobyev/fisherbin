@@ -702,7 +702,7 @@
     ],
     "examples": [
       {
-        "excerpt": "This page walks both public tasks \u2014 sample partitioning optimize partition and space quantization fit quantizer \u2014 through Door 1 ../three-doors.md : you already have event, score rows and their weights, so no provider is needed. It replaces the old \"first analytic partition\" tutorial and answers a question that comes u",
+        "excerpt": "This page walks both public tasks \u2014 sample partitioning optimize partition and space quantization fit quantizer \u2014 through Door 1 ../book/ch04-scores-and-doors.md : you already have event, score rows and their weights, so no provider is needed. It replaces the old \"first analytic partition\" tutorial and answers a questi",
         "reference": "/examples/door1-score-events/",
         "slug": "door1-score-events",
         "tags": [
@@ -713,7 +713,7 @@
         "title": "Door 1: precomputed score events"
       },
       {
-        "excerpt": "This page solves space quantization fit quantizer through Door 2 ../three-doors.md : a linear-component model built from exact component pdfs. It absorbs the old \"linear components\" tutorial, and goes one step further: it fits from a bounded IntegrationSource end to end with two score columns, then measures what binnin",
+        "excerpt": "This page solves space quantization fit quantizer through Door 2 ../book/ch04-scores-and-doors.md : a linear-component model built from exact component pdfs. It absorbs the old \"linear components\" tutorial, and goes one step further: it fits from a bounded IntegrationSource end to end with two score columns, then measu",
         "reference": "/examples/door2-mixture-densities/",
         "slug": "door2-mixture-densities",
         "tags": [
@@ -724,7 +724,7 @@
         "title": "Door 2: mixture densities to a binned fraction measurement"
       },
       {
-        "excerpt": "This page solves space quantization fit quantizer through Door 3 ../three-doors.md : density ratios estimated by a trained scikit-learn classifier, standing in for a likelihood ScoreQuant cannot evaluate. The classifier is one ratio backend among several \u2014 its calibrated posteriors over the training priors are the comp",
+        "excerpt": "This page solves space quantization fit quantizer through Door 3 ../book/ch04-scores-and-doors.md : density ratios estimated by a trained scikit-learn classifier, standing in for a likelihood ScoreQuant cannot evaluate. The classifier is one ratio backend among several \u2014 its calibrated posteriors over the training prio",
         "reference": "/examples/door3-classifier/",
         "slug": "door3-classifier",
         "tags": [
@@ -734,7 +734,7 @@
         "title": "Door 3: classifier-estimated density ratios, and what they honestly buy you"
       },
       {
-        "excerpt": "This page runs both tasks \u2014 sample partitioning optimize partition and space quantization fit quantizer \u2014 through Door 1 ../three-doors.md : a precomputed table of observation, score events. One two-parameter problem, every solver the library dispatches, and the three canonical baselines, scored the same way on the sam",
+        "excerpt": "This page runs both tasks \u2014 sample partitioning optimize partition and space quantization fit quantizer \u2014 through Door 1 ../book/ch04-scores-and-doors.md : a precomputed table of observation, score events. One two-parameter problem, every solver the library dispatches, and the three canonical baselines, scored the same",
         "reference": "/examples/solver-shootout/",
         "slug": "solver-shootout",
         "tags": [
@@ -744,7 +744,7 @@
         "title": "Solver shootout: every method on one problem"
       },
       {
-        "excerpt": "This page is mostly about sample partitioning optimize partition , with space quantization fit quantizer brought in at the end to supply a held-out column. It enters through Door 1 ../three-doors.md , a precomputed table of observation, score events \u2014 although the scores here come from an exact component model, so Door",
+        "excerpt": "This page is mostly about sample partitioning optimize partition , with space quantization fit quantizer brought in at the end to supply a held-out column. It enters through Door 1 ../book/ch04-scores-and-doors.md , a precomputed table of observation, score events \u2014 although the scores here come from an exact component",
         "reference": "/examples/nuisance-profiled-ds/",
         "slug": "nuisance-profiled-ds",
         "tags": [

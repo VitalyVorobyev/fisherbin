@@ -231,8 +231,8 @@ priors (`ratios_from_posteriors`) recovers the component density ratios, and
 `mixture_scores_from_ratios` applies the simplex-constrained algebra that turns them into
 scores — `DensityRatioScore.from_classifier` packages the chain as a provider. The same
 provider accepts a ratio callback from any other backend: an analytic formula, a direct
-density-ratio estimator, a calibrated neural likelihood-ratio model. The [three-doors
-guide](../three-doors.md) works through the constructions with the exact shape and
+density-ratio estimator, a calibrated neural likelihood-ratio model. The [walkthroughs](https://vitalyvorobyev.github.io/scorequant/walkthroughs/) work
+through the constructions with the exact shape and
 normalization requirements.
 
 ## Estimated scores are not Fisher information

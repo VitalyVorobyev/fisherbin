@@ -33,7 +33,7 @@ interface SearchDialogProps {
 const routes = [
   ["Docs", "/docs", "Choose a workflow from scores, densities, or ratios."],
   ["API", "/api", "Inspect generated Python signatures and contracts."],
-  ["Examples", "/examples", "Reproducible workflows with evidence."],
+  ["Walkthroughs", "/walkthroughs", "Applied problems worked end to end, with real numbers."],
   ["Walkthroughs", "/walkthroughs", "One applied question followed end to end, with real numbers."],
   ["Benchmarks", "/benchmarks", "Compare speed, scale, and retained information."],
   ["Research", "/research", "Follow claims, dependencies, and counterexamples."],

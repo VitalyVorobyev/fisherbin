@@ -42,6 +42,7 @@ _DOC_EXECUTION_MODULES = frozenset(
     {
         "test_docs_snippets.py",
         "test_notebooks.py",
+        "test_portal_snippets.py",
         "test_readme.py",
     }
 )

@@ -33,7 +33,6 @@ _FRONT_DOOR = (
     "index.md",
     "motivation.md",
     "method.md",
-    "three-doors.md",
     "user-workflow.md",
     "related-work.md",
 )
@@ -112,8 +111,9 @@ def test_front_door_pages_have_no_work_in_progress_markers() -> None:
 
 
 def test_retired_pages_are_gone() -> None:
-    for retired in ("docs/migration.md", "docs/score-sources.md"):
+    for retired in ("docs/migration.md", "docs/score-sources.md", "docs/three-doors.md"):
         assert not (REPO_ROOT / retired).exists()
     mkdocs = (REPO_ROOT / "mkdocs.yml").read_text(encoding="utf-8")
     assert "migration.md" not in mkdocs
     assert "score-sources.md" not in mkdocs
+    assert "three-doors.md" not in mkdocs

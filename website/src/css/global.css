@@ -659,11 +659,11 @@ kbd {
   color: var(--ink-800);
   font-size: 18px;
 }
-.blog-frame .markdown table { display: block; overflow-x: auto; width: 100%; font-size: 15px; }
+.blog-frame .markdown table:not(.visually-hidden) { display: block; overflow-x: auto; width: 100%; font-size: 15px; }
 .blog-frame .markdown th, .blog-frame .markdown td { border: 1px solid var(--line); }
 
 /* Docs-plugin article content (/walkthroughs, /research) reads like the blog's. */
-.doc-article .markdown table { display: block; overflow-x: auto; width: 100%; font-size: 15px; }
+.doc-article .markdown table:not(.visually-hidden) { display: block; overflow-x: auto; width: 100%; font-size: 15px; }
 .doc-article .markdown th, .doc-article .markdown td { border: 1px solid var(--line); }
 .doc-article .markdown blockquote {
   margin: 26px 0;
@@ -813,3 +813,42 @@ kbd {
 }
 .score-space__placeholder { display: flex; align-items: center; justify-content: center; min-height: 260px; margin: 0; padding: 32px; color: var(--ink-600); font-size: 13px; text-align: center; }
 .score-space__note { margin: 8px 0 0; color: var(--ink-600); font-size: 11px; }
+
+/* ---------------------------------------------------------------------------
+   Walkthrough components (S8): Figure, Diagnostics and BinningComparison.
+   Diagnostics and BinningComparison lean on the chart-figure/chart-* classes
+   above rather than inventing new furniture. --------------------------- */
+
+.chart-figure img { display: block; width: 100%; height: auto; }
+
+.diagnostics { margin: 20px 0; }
+.diagnostics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 0; padding: 0; }
+.diagnostics-item { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 18px 20px; border: 1px solid var(--line); background: var(--paper); }
+.diagnostics-item__label { margin: 0; color: var(--ink-600); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+.diagnostics-item__value { margin: 0; color: var(--ink-950); font-family: var(--font-heading); font-size: 26px; font-weight: 590; line-height: 1.15; }
+.diagnostics-item__meaning { margin: 0; color: var(--ink-600); font-size: 13px; line-height: 1.45; }
+.diagnostics figcaption { margin-top: 10px; color: var(--ink-600); font-size: 12px; }
+
+.binning-comparison__label { fill: var(--ink-700); font-family: var(--font-body); font-size: 12px; }
+.binning-comparison__value { fill: var(--ink-950); font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
+.binning-comparison__bar { fill: var(--line-strong); }
+.binning-comparison__bar--scorequant { fill: var(--blue); }
+
+/*
+ * The horizontal-scroll rule above deliberately skips `.visually-hidden`
+ * tables. `BinningComparison` renders one as the text alternative to its bar
+ * chart; making a one-pixel clipped table a scroll container produces a
+ * scrollable region no keyboard can reach, which the accessibility scan reports
+ * as a serious violation at phone width. It is the chart's caption, not a
+ * table anyone scrolls.
+ */
+
+/*
+ * Inline `code` inside a link sits on the code tint rather than on paper, and
+ * the link blue measures 4.49:1 against it -- one hundredth below the WCAG AA
+ * threshold, which the accessibility scan reports as a serious violation. The
+ * darker blue is already a link colour in this palette and measures 7.43:1 on
+ * the same tint, so the link still reads as a link.
+ */
+.doc-article .markdown a code,
+.blog-frame .markdown a code { color: var(--blue-dark); }

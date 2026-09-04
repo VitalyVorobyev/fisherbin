@@ -10,7 +10,18 @@ test("home is navigable, evidence-backed, and free of heavy runtime requests", a
   await expect(page.getByRole("heading", {name: /Compress events/})).toBeVisible();
   await expect(page.getByRole("img", {name: /Score-space partition/})).toBeVisible();
   await expect(page.getByText("JAX + NumPy")).toBeVisible();
-  for (const route of ["./docs/", "./api/", "./examples/", "./showcase/", "./walkthroughs/", "./benchmarks/", "./research/"]) {
+  const routes = [
+    "./docs/",
+    "./api/",
+    "./walkthroughs/",
+    "./walkthroughs/flowcyt/",
+    "./walkthroughs/hep/",
+    "./walkthroughs/michelson/",
+    "./walkthroughs/ratios/",
+    "./benchmarks/",
+    "./research/"
+  ];
+  for (const route of routes) {
     await page.goto(route);
     // #main-content is AppShell's own landmark, and it must be the only one.
     // The stock layouts of both the blog and the docs plugin render a second
@@ -27,7 +38,16 @@ test("home is navigable, evidence-backed, and free of heavy runtime requests", a
   // through swizzled theme components (src/theme/DocRoot/Layout/Main and
   // src/theme/DocItem/Layout) rather than the stock ones, so nothing upstream
   // vouches for their markup.
-  for (const route of ["./", "./research/", "./walkthroughs/"]) {
+  const scanned = [
+    "./",
+    "./research/",
+    "./walkthroughs/",
+    "./walkthroughs/flowcyt/",
+    "./walkthroughs/hep/",
+    "./walkthroughs/michelson/",
+    "./walkthroughs/ratios/"
+  ];
+  for (const route of scanned) {
     await page.goto(route);
     const accessibility = await new AxeBuilder({page}).analyze();
     expect(accessibility.violations, `accessibility violations on ${route}`).toEqual([]);
@@ -89,7 +109,7 @@ test("lab validation, cancellation, and lazy lesson states are explicit", async 
   );
 });
 
-test("the showcase tells the study end to end without loading a runtime", async ({page}) => {
+test("the flowcyt walkthrough tells the study end to end without loading a runtime", async ({page}) => {
   // The narrative route must stay a narrative route: the moment it pulls the
   // wheel it stops meeting the ordinary-route budget, and the reader pays 15 MB
   // for a page they may only be reading.
@@ -99,10 +119,14 @@ test("the showcase tells the study end to end without loading a runtime", async 
       heavyRequests.push(request.url());
     }
   });
-  await page.goto("./showcase/");
+  await page.goto("./walkthroughs/flowcyt/");
 
-  await expect(page.getByRole("heading", {name: /Thirty patients/})).toBeVisible();
-  for (const section of ["The problem", "The data", "Results"]) {
+  await expect(page.getByRole("heading", {name: /Bone-marrow cell populations/})).toBeVisible();
+  for (const section of [
+    "The report is a few fractions; the instrument measures every cell",
+    "The data, and what travels with it",
+    "The numbers"
+  ]) {
     await expect(page.getByRole("heading", {name: section})).toBeVisible();
   }
 
@@ -119,21 +143,6 @@ test("the showcase tells the study end to end without loading a runtime", async 
 
   const accessibility = await new AxeBuilder({page}).analyze();
   expect(accessibility.violations).toEqual([]);
-});
-
-test("marker panels can be filtered by population and expanded", async ({page}, testInfo) => {
-  test.skip(testInfo.project.name !== "desktop", "One interaction pass is sufficient.");
-  await page.goto("./showcase/");
-
-  // "other" dominates every panel, so it starts hidden and can be restored.
-  const other = page.getByRole("button", {name: "other", exact: true});
-  await expect(other).not.toHaveClass(/is-active/);
-  await other.click();
-  await expect(other).toHaveClass(/is-active/);
-
-  await expect(page.getByRole("img", {name: /FL5 INT_CD34-PC7/})).toHaveCount(0);
-  await page.getByRole("button", {name: /Show all 12 markers/}).click();
-  await expect(page.getByRole("img", {name: /FL5 INT_CD34-PC7/})).toBeVisible();
 });
 
 test("the lab runs the study's real five-dimensional scores, warm on the second run", async ({page}, testInfo) => {
@@ -201,4 +210,20 @@ test("a local file is read in the tab and validated before anything runs", async
 
   // Nothing was sent anywhere: there is no server to send it to.
   expect(uploads).toEqual([]);
+});
+
+test("?job=ratios seeds the Lab's controls before any interaction", async ({page}, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "One seeded-hand-off pass is sufficient.");
+  await page.goto("./lab/?job=ratios");
+
+  // The dataset switched away from the default Gaussian fixture without a
+  // click: this is the ratios walkthrough's own committed score table.
+  await expect(page.getByText("Density-ratio classifier scores")).toBeVisible();
+  await expect(page.getByText(/600 rows · 1 dimensions/)).toBeVisible();
+
+  // The runner seeded to the browser runtime: "fixture" only covers the
+  // built-in Gaussian table, which this job is not.
+  await expect(page.getByLabel("Runner")).toHaveValue("pyodide-numpy");
+  await expect(page.locator(".lab-field--range input[type='range']")).toHaveValue("4");
+  await expect(page.getByLabel("Criterion")).toHaveValue("d_optimality");
 });

@@ -1,7 +1,7 @@
 # Solver shootout: every method on one problem
 
 This page runs **both tasks** — sample partitioning (`optimize_partition`) and space
-quantization (`fit_quantizer`) — through [Door 1](../three-doors.md): a precomputed table
+quantization (`fit_quantizer`) — through [Door 1](../book/ch04-scores-and-doors.md): a precomputed table
 of `(observation, score)` events. One two-parameter problem, every solver the library
 dispatches, and the three canonical baselines, scored the same way on the same held-out
 split.

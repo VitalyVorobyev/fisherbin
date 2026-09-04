@@ -68,9 +68,27 @@ describe("website/redirects.json", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("every `to` starts with reference/ — a future exception must be added deliberately", () => {
-    const offenders = manifest.redirects.filter((entry) => !entry.to.startsWith("reference/"));
+  // Every stub points into the MkDocs reference, because that is where the
+  // pre-cut content went — with one deliberate exception. `three-doors.md` was
+  // retired in S8 rather than moved, and the four walkthroughs are what replaced
+  // it, so its URL is the one stub whose target is a portal route. Listing the
+  // exception here rather than relaxing the rule keeps the next one deliberate too.
+  const PORTAL_TARGETED = new Map([["three-doors/", "walkthroughs/ratios/"]]);
+
+  it("every `to` starts with reference/, except the deliberately listed portal targets", () => {
+    const offenders = manifest.redirects.filter(
+      (entry) => !entry.to.startsWith("reference/") && PORTAL_TARGETED.get(entry.from) !== entry.to
+    );
     expect(offenders).toEqual([]);
+  });
+
+  it("every deliberately portal-targeted redirect is still in the manifest", () => {
+    // Guards the exception from outliving its reason: if the entry is deleted or
+    // re-pointed, this fails and the allowance above must be revisited.
+    const byFrom = new Map(manifest.redirects.map((entry) => [entry.from, entry.to]));
+    for (const [from, to] of PORTAL_TARGETED) {
+      expect(byFrom.get(from)).toBe(to);
+    }
   });
 
   // An unstubbed entry is a URL that silently stops redirecting, so the reason it

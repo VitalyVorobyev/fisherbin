@@ -1,7 +1,7 @@
 # Michelson interferometer phase: profiling a fringe-frequency nuisance
 
 This page walks **sample partitioning** (`optimize_partition`) and **space quantization**
-(`fit_quantizer`) through [Door 2](../three-doors.md) on an analytic score: a `ScoreFunction`
+(`fit_quantizer`) through [Door 2](../book/ch04-scores-and-doors.md) on an analytic score: a `ScoreFunction`
 callback against a bounded `IntegrationSource`, rather than a precomputed score table or a
 linear component model. It also runs entirely on the NumPy backend
 (`ExecutionConfig(backend="numpy", ...)`), and the model is exact enough that the library's own

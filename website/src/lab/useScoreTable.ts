@@ -1,11 +1,15 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 
 import {parseScoreFile} from "./parseScoreFile";
+import {loadWalkthroughScoreTable} from "../data/walkthroughScores";
 import {loadLabScores} from "../data/showcase";
 import {portalData} from "../data/portal";
 import type {ScoreRow} from "./protocol";
 
-export type DatasetId = "gaussian" | "flowcyt" | "local";
+/** A committed walkthrough score table, fetched on demand by slug (D5). */
+export type PresetSlug = "hep" | "michelson" | "ratios";
+
+export type DatasetId = "gaussian" | "flowcyt" | "local" | PresetSlug;
 
 export interface ScoreTable {
   /** Short provenance line shown beside the controls. */
@@ -32,6 +36,8 @@ export interface ScoreTableState {
   chooseGaussian: () => void;
   error: string | null;
   loadFile: (file: File) => void;
+  /** Load one walkthrough's committed score table by slug, fetched on demand. */
+  loadPreset: (slug: PresetSlug) => void;
   loading: boolean;
   table: ScoreTable;
 }
@@ -41,7 +47,8 @@ export interface ScoreTableState {
  *
  * The FlowCyt table is ~300 KB and is fetched only when chosen, so opening the
  * Lab to try the built-in fixture costs nothing. A local file is read in this
- * tab and never sent anywhere -- there is no server to send it to.
+ * tab and never sent anywhere -- there is no server to send it to. A
+ * walkthrough preset (`loadPreset`) is fetched the same on-demand way.
  */
 export function useScoreTable(): ScoreTableState {
   const [table, setTable] = useState<ScoreTable>(GAUSSIAN);
@@ -83,6 +90,32 @@ export function useScoreTable(): ScoreTableState {
       });
   }, []);
 
+  const loadPreset = useCallback((slug: PresetSlug): void => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setLoading(true);
+    setError(null);
+    loadWalkthroughScoreTable(slug, controller.signal)
+      .then((payload) => {
+        setTable({
+          detail: payload.detail,
+          id: slug,
+          label: payload.label,
+          schema: payload.schema,
+          scores: payload.scores as ScoreRow[],
+          weights: payload.weights,
+        });
+      })
+      .catch((cause: unknown) => {
+        if (controller.signal.aborted) return;
+        setError(cause instanceof Error ? cause.message : String(cause));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+  }, []);
+
   const loadFile = useCallback((file: File): void => {
     abortRef.current?.abort();
     setLoading(true);
@@ -106,5 +139,5 @@ export function useScoreTable(): ScoreTableState {
       });
   }, []);
 
-  return {chooseFlowCyt, chooseGaussian, error, loadFile, loading, table};
+  return {chooseFlowCyt, chooseGaussian, error, loadFile, loadPreset, loading, table};
 }

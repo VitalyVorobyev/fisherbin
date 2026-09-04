@@ -265,7 +265,7 @@ with native NumPy in under ten seconds after warm-up.
 
 ## M12 — Consolidation programme
 
-**Status:** active; S1-S7 done; S8 is unblocked and is next. The remaining sessions are the
+**Status:** active; S1-S8 done; S10 is unblocked and is next. The remaining sessions are the
 user-facing half of the programme and were re-scoped on 3 September 2026 around one direction:
 the portal becomes the site root and explains rather than sells, MkDocs narrows to the
 exhaustive reference, and four detailed walkthroughs — one per input route, two on real data —
@@ -311,7 +311,18 @@ Four workstreams, each with its own gate:
   claim it makes; every pre-cut MkDocs URL resolves — 51 of the 53 through stubs from a committed
   redirect manifest, the site root and `/reference/` by deliberately serving new content, with the
   parity checked against the assembled tree rather than by eye; Playwright end-to-end runs in CI;
-  the root deployment is live.
+  the root deployment is live. **S8 done** (`website/walkthroughs/`): four walkthroughs — the
+  ratio door, HEP, FlowCyt, Michelson — each carrying one applied question from the problem to a
+  fitted result and ending in a measured limitation rather than a summary. The 51st redirect is
+  new: `three-doors.md` was retired here and its stub re-points to `walkthroughs/ratios/`, the
+  only stub in the manifest whose target is a portal route rather than the reference, listed as a
+  deliberate exception in `website/tests/redirects.test.ts`. `examples/` moved the other way,
+  from a deliberate non-stub back to a real stub into `reference/examples/`, because the portal
+  route that occupied that URL was deleted with `showcase.tsx`. No number on the four pages is
+  typed: each resolves from a JSON Pointer into committed evidence through
+  `website/scripts/generate_walkthroughs.py`, a missing key fails `pnpm build`, and
+  `tests/test_walkthrough_facts.py` re-resolves every pointer and refuses a numeric literal in
+  prose.
 - **W4 — Showcases.** A realistic end-to-end example for each input route: score sample and
   density ratios (FlowCyt, already real), an analytic `ScoreFunction` with an explicit nuisance on
   the NumPy backend (Michelson fringe phase against a fringe-frequency nuisance), and an executed
@@ -350,7 +361,7 @@ Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock
 | S5 | Manuscript v9 draft | W1 | S2 | done |
 | S6 | Portal topology, reference cut, research narrative | W3 | S2, S3 | done |
 | S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | done |
-| S8 | The four walkthroughs | W3, W4 | S6, S7 | queued |
+| S8 | The four walkthroughs | W3, W4 | S6, S7 | done |
 | S10 | Portal front door: home, get-started, e2e in CI, deployment | W3 | S8 | queued |
 | S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S10 | queued |
 

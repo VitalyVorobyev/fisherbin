@@ -1,6 +1,6 @@
 # Door 2: mixture densities to a binned fraction measurement
 
-This page solves **space quantization** (`fit_quantizer`) through [Door 2](../three-doors.md):
+This page solves **space quantization** (`fit_quantizer`) through [Door 2](../book/ch04-scores-and-doors.md):
 a linear-component model built from exact component pdfs. It absorbs the old "linear
 components" tutorial, and goes one step further: it fits from a bounded `IntegrationSource`
 end to end with two score columns, then measures what binning actually cost the downstream

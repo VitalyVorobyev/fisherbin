@@ -15,40 +15,12 @@
     {
       "path": "api/",
       "reason": "The portal's API catalogue now occupies this URL. It answers the same question \u2014 which public objects exist and what each one is \u2014 and links onward to the reference's hand-written API guide at reference/api/, which is what used to be here. No stub can be written over a real page."
-    },
-    {
-      "path": "examples/",
-      "reason": "The portal's examples index now occupies this URL, and links onward to the reference's example pages at reference/examples/, which is what used to be here. Session S8 replaces this page with the walkthroughs index."
     }
   ],
   "redirects": [
     {
       "from": "bibliography/",
       "to": "reference/bibliography/"
-    },
-    {
-      "from": "glossary/",
-      "to": "reference/glossary/"
-    },
-    {
-      "from": "method/",
-      "to": "reference/method/"
-    },
-    {
-      "from": "motivation/",
-      "to": "reference/motivation/"
-    },
-    {
-      "from": "related-work/",
-      "to": "reference/related-work/"
-    },
-    {
-      "from": "three-doors/",
-      "to": "reference/three-doors/"
-    },
-    {
-      "from": "user-workflow/",
-      "to": "reference/user-workflow/"
     },
     {
       "from": "book/",
@@ -111,6 +83,10 @@
       "to": "reference/book/ch14-choosing-a-method/"
     },
     {
+      "from": "examples/",
+      "to": "reference/examples/"
+    },
+    {
       "from": "examples/door1-score-events/",
       "to": "reference/examples/door1-score-events/"
     },
@@ -159,6 +135,18 @@
       "to": "reference/gallery/"
     },
     {
+      "from": "glossary/",
+      "to": "reference/glossary/"
+    },
+    {
+      "from": "method/",
+      "to": "reference/method/"
+    },
+    {
+      "from": "motivation/",
+      "to": "reference/motivation/"
+    },
+    {
       "from": "reference/certification/",
       "to": "reference/symbols/certification/"
     },
@@ -195,6 +183,14 @@
       "to": "reference/symbols/visualization/"
     },
     {
+      "from": "related-work/",
+      "to": "reference/related-work/"
+    },
+    {
+      "from": "three-doors/",
+      "to": "walkthroughs/ratios/"
+    },
+    {
       "from": "usecases/flowcyt/",
       "to": "reference/usecases/flowcyt/"
     },
@@ -217,6 +213,10 @@
     {
       "from": "usecases/flowcyt/solvers/",
       "to": "reference/usecases/flowcyt/solvers/"
+    },
+    {
+      "from": "user-workflow/",
+      "to": "reference/user-workflow/"
     }
   ]
 }
