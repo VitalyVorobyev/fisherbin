@@ -1,6 +1,6 @@
 # S09 — Closure: independent v9 audit, exit gate, teardown
 
-**Workstream:** all · **Needs:** S5, S8, S11 · **Parallel with:** — · **Status:** queued
+**Workstream:** all · **Needs:** S5, S8, S11 · **Parallel with:** — · **Status:** active
 
 ## Goal
 
@@ -99,6 +99,122 @@ python agenticresearch/py/registry.py validate
 
 ## Closing report
 
-_Written at session end. Plain English, for a reader who did not watch the session: what was
-delivered, what was verified (commands and results), what was cut or left open, and the one thing
-the next session must know._
+M12 is closed. Eleven sessions over the programme; this one audited the manuscript, evaluated the
+four workstream gates, and turned the lights off.
+
+### The site is live, and the check nobody could run locally has now run
+
+S11 merged and deployed on 4 September 2026. The deploying run reported `build: success` and
+`deploy: success`, and the root of the published site now serves the portal's home page rather
+than the reference index.
+
+S11 could not verify its own deployment — the check only becomes possible after the branch is
+merged, so S11 handed it to this session as an inherited obligation and explicitly told the reader
+not to assume it had been discharged. It is discharged now: **all 53 pre-cut URLs resolve against
+the live host, 0 failed.** The check is stronger than a status code. For each of the 50 redirect
+stubs it confirms the stub answers, that the stub body actually names the target the committed
+manifest promises, and that the target itself answers; the 3 deliberately unstubbed URLs are
+required to serve real content rather than a near-empty page. The one baseline change predicted
+before deployment is exactly what happened: `/reference/bibliography/` went from 404 to 200, while
+`/bibliography/` kept working as a stub.
+
+### The manuscript audit found six real defects, and checking it found more
+
+An independent agent, with no access to the drafting session, read v9 against the novelty ledger
+and returned **90 confirmed, 11 needs revision, 2 disputed, 0 absent**. The headline result is the
+one that mattered: **no category-1 failure** — nowhere does v9 claim novelty for a result the
+ledger calls `known`, a `direct corollary`, an `adaptation` or `unresolved`. All 103 ledger rows
+are placed in the manuscript, all 103 inline marks match their ledger row exactly, and there is no
+priority language anywhere in the text.
+
+Every decisive finding was verified directly before being acted on, and that changed the answer
+three times:
+
+- The audit said three reference entries were duplicates. My own earlier check had found one, by
+  comparing 60-character prefixes. **The audit was right and my check was wrong** — the pairs
+  differ in punctuation ("Ritov, and" against "Ritov and"), which a prefix comparison hides.
+- The audit said three `apparently new` statements were missing the required precedent hedge.
+  Enumerating every such label and testing each found **five**.
+- The audit said six bibliography keys were missing. That number could not be reproduced. Under a
+  stated criterion — cited inside a sentence that argues precedent — the verifiable number is
+  **two**.
+
+What was fixed: §9.2 claimed the open-problem list "matches the open entries of the project's
+claim registry", which is false (the registry has 32 open entries; v9 names 19), so it now says
+what is true and names the thirteen that are out of scope. Three duplicate references were merged,
+taking 75 entries to 72 and remapping all 519 citations. Five precedent hedges were added. All
+nine of Appendix H's equation pointers were stale and four pointed at equations that do not exist
+— they were v8 section numbers left behind by the renumbering — and every one is now resolved
+against where the claim actually sits. And DS14-2 and DS15-6, which are audit records, carried the
+label `unresolved`, which the vocabulary defines as "open claim"; the ledger's own Open section
+already said no novelty label applies to them. They are now `n/a — audit record`, a sixth
+vocabulary term, and the open-claim count drops from 31 to 29.
+
+### What was deliberately not done
+
+Two results in v9 are asserted without a citation: the standard hat-matrix leverage inequality
+(V8-10) and the λ_min superdifferential structure (V8-30). Two further references that carry
+prior-art arguments — Hartigan (1975) and Haynsworth (1968) — have no key in the registry
+bibliography. All four are left open rather than filled in, because the bibliography is generated
+and its schema requires each key to name the place where the source was read and annotated;
+writing one without doing the read would assert a read that did not happen. None of the four is a
+novelty overstatement: all the affected rows are labelled `known`, so the manuscript claims nothing
+for them. The debt is a missing citation, not a false claim, and it is recorded in
+`agenticresearch/WORK/completed/MANUSCRIPT-V9-AUDIT.md` with the question the next reader should
+attack.
+
+### A changelog defect that nobody obviously caused
+
+`CHANGELOG.md` dated everything under `[0.1.0] — 2026-08-30`. But S1 and S3 had appended sections
+while that heading still read `unreleased`, and S4 later dated the heading — which retroactively
+asserted that their work had shipped in the release. Checked against the `v0.1.0` tag: `RefusalError`
+does not exist anywhere in `src/` there, and `LinearProblem` is still exported, so the "Errors"
+section and the "Removed" section both described work that had not shipped, and so did one bullet
+under "Contracts". All three now sit under a real `[Unreleased]` heading, alongside the site entry
+for the deployment. Nobody made a mistake at any single step; the defect emerged from the order the
+steps happened in.
+
+Five session packets also disagreed with the roadmap about their own status — S6, S7 and S8 still
+read `queued` and S10 and S11 still read `active`, while the roadmap called all five `done`. The
+roadmap was right; the packet headers are now synced.
+
+### Verified
+
+Green on this branch:
+
+```
+uv run ruff check .                                 All checks passed!
+uv run ruff format --check .                        258 files already formatted
+uv run ty check src                                 All checks passed!
+JAX_ENABLE_X64=1 uv run pytest -n auto              553 passed in 151.35s
+JAX_ENABLE_X64=0 uv run pytest tests/test_float32.py 4 passed in 3.61s
+uv build                                            built sdist + wheel 0.1.0
+uv run mkdocs build --strict                        built in 1.81s, --strict clean
+cd website && pnpm validate                         15 files, 118 tests passed; build ok
+registry.py validate                                registry clean
+```
+
+The four workstream gates were checked against their stated text rather than against the closing
+reports that claim them. W1: 103 of 103 ledger rows placed, an independent audit read recorded with
+a verdict per statement, registry clean. W2: `test_architecture.py`, `test_golden_engine.py` and
+`test_execution_backends.py` all pass in the run above, ADR 0024 records the error hierarchy, and
+the CHANGELOG now records the breaking change under the correct heading. W3: the snippet and fact
+guards (`test_portal_snippets.py`, `test_walkthrough_facts.py`, `test_docs_snippets.py`) pass,
+Playwright runs in CI through `site.yml`, and the root deployment is live with 53 of 53 URLs
+resolving. W4: each showcase executes in both test tiers with its evidence JSON pinned, and the
+roadmap names the provenance of every number it reports.
+
+### The one thing the next session must know
+
+**The programme's status lives in the M12 table in `docs/roadmap.md`, and that table is now closed.**
+There is no S12. The copy-paste session prompt in `docs/programme/README.md` has been marked
+retired rather than deleted — it is the record of how the programme was run, and a future
+multi-session programme should copy and adapt it, not resume it.
+
+The substantive thing left open is the four missing citations above. They need a literature read,
+not an editing pass, and `MANUSCRIPT-V9-AUDIT.md` names the question that unblocks them. Worth
+knowing too: this session wrote throwaway scripts to check the inline-mark/ledger correspondence,
+the Appendix H placement, and that every equation reference resolves. Those checks caught real
+defects and were deliberately not committed as a guard, because M12 was closing. Whoever owns the
+manuscript next should consider making them executable — a stale cross-reference is exactly the
+kind of thing that survives a careful human read.

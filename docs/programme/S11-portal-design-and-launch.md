@@ -1,6 +1,6 @@
 # S11 — Portal design pass, inline demos, and launch
 
-**Workstream:** W3 · **Needs:** S10 · **Parallel with:** — · **Status:** active
+**Workstream:** W3 · **Needs:** S10 · **Parallel with:** — · **Status:** done
 
 ## Goal
 

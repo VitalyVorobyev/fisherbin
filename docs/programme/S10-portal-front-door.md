@@ -1,6 +1,6 @@
 # S10 — Portal front door: home, get-started, captured outputs
 
-**Workstream:** W3 · **Needs:** S8 · **Parallel with:** — · **Status:** active
+**Workstream:** W3 · **Needs:** S8 · **Parallel with:** — · **Status:** done
 
 ## Goal
 

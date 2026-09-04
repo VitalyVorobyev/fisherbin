@@ -265,7 +265,8 @@ with native NumPy in under ten seconds after warm-up.
 
 ## M12 — Consolidation programme
 
-**Status:** active; S1-S8 and S10 done; S11 is next, then S9. The remaining portal
+**Status:** done, 4 September 2026. All eleven sessions are `done`; none was cut. The portal is
+published at the site root and the exit gate below is evaluated. The remaining portal
 work was split on 4 September 2026: S10 writes the front door, and a new S11 does the visual
 design pass, the inline demos and the deployment. The remaining sessions are the
 user-facing half of the programme and were re-scoped on 3 September 2026 around one direction:
@@ -324,9 +325,15 @@ Four workstreams, each with its own gate:
   typed: each resolves from a JSON Pointer into committed evidence through
   `website/scripts/generate_walkthroughs.py`, a missing key fails `pnpm build`, and
   `tests/test_walkthrough_facts.py` re-resolves every pointer and refuses a numeric literal in
-  prose. The gate's own last clause — that the root deployment is live — is delivered by **S11**,
+  prose. The gate's own last clause — that the root deployment is live — was delivered by **S11**,
   not S10: the remaining portal work was split on 4 September 2026 so that the surface is
-  published only once it is finished. A reader checking that clause reads S11's closing report.
+  published only once it is finished. **S11 done**: the assembled tree is published from one
+  workflow (ADR 0026), a pull request builds and uploads it and only a push to `main` deploys.
+  The deployment ran on 4 September 2026 and the site is live at the root. The parity check
+  that no local run can perform — every pre-cut URL resolving against the live host — is
+  recorded in **S9**'s closing report, which S11 handed it to as an inherited obligation:
+  53 of 53 resolve, each stub verified to name the target the manifest promises and each
+  target verified to answer.
 - **W4 — Showcases.** A realistic end-to-end example for each input route: score sample and
   density ratios (FlowCyt, already real), an analytic `ScoreFunction` with an explicit nuisance on
   the NumPy backend (Michelson fringe phase against a fringe-frequency nuisance), and an executed
@@ -367,8 +374,8 @@ Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock
 | S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | done |
 | S8 | The four walkthroughs | W3, W4 | S6, S7 | done |
 | S10 | Portal front door: home, get-started, captured outputs | W3 | S8 | done |
-| S11 | Portal design pass, inline demos, and launch | W3 | S10 | active |
-| S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S11 | queued |
+| S11 | Portal design pass, inline demos, and launch | W3 | S10 | done |
+| S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S11 | done |
 
 Deliberately cut, because it serves no user: renaming the six iteration-budget parameters (one
 table in the API guide instead); `PartitionResult.from_dict` (`Quantizer.save`/`load` is the
@@ -386,6 +393,38 @@ them stops resolving.
 **Exit gate:** all four workstream gates hold; every session row reads `done` or `cut`; the full
 handoff gate and `pnpm validate` are green on `main`; the session prompt in
 `docs/programme/README.md` is retired; M11's gate can be evaluated.
+
+**Evaluated 4 September 2026 (S9): the gate holds.** Each clause, checked against its own text
+rather than against the closing reports that claim it:
+
+- **W1 holds.** All 103 novelty-ledger rows are placed in v9, one row each in Appendix H, with
+  none unplaced and none placed that is not a ledger row. An independent fresh-context audit read
+  v9 against the ledger and recorded a verdict per statement — 90 confirmed, 11 needs revision, 2
+  disputed, 0 absent — with **no category-1 failure**: nowhere does v9 claim novelty for a `known`,
+  `direct corollary`, `adaptation` or `unresolved` row. Its revisions are applied, or recorded as
+  debt where they need a literature read, in `agenticresearch/WORK/completed/MANUSCRIPT-V9-AUDIT.md`.
+  `registry.py validate` reports `registry clean`.
+- **W2 holds.** `test_golden_engine.py`, `test_execution_backends.py` and `test_architecture.py`
+  pass; ADR 0024 records the error hierarchy and the one-pipeline `fit_quantizer`; the CHANGELOG
+  records the breaking change — under `[Unreleased]`, which S9 had to create, because the entries
+  had been appended while the version heading read `unreleased` and a later commit dated that
+  heading, retroactively asserting they shipped in 0.1.0. Checked at the tag: `RefusalError` is
+  absent from `src/` and `LinearProblem` is still exported there.
+- **W3 holds.** Every portal snippet is executed by a test and every displayed output is captured
+  from a run (`test_portal_snippets.py`, `test_docs_snippets.py`, `test_walkthrough_facts.py`);
+  Playwright runs in CI through `site.yml`; and the gate's last clause — the root deployment is
+  live — is discharged. **53 of 53 pre-cut URLs resolve against the live host**, each stub verified
+  to name the target the committed manifest promises and each target verified to answer.
+- **W4 holds.** Each showcase executes in both test tiers with its evidence JSON pinned, is
+  reachable from the walkthrough index, and this roadmap names the provenance of every number it
+  reports.
+
+Every session row reads `done`; none was cut. The full handoff gate and `pnpm validate` ran green
+on the closure branch (553 passed, 4 passed float32, `--strict` MkDocs clean, 118 website tests)
+and are re-run on `main` by `ci.yml` and `site.yml`, both of which trigger on push to the default
+branch. The session prompt is retired in place rather than deleted, with the reason recorded.
+
+**M11's gate is now evaluable**, which was this gate's last clause and the reason S9 ran last.
 
 ## M11 — First public release
 
@@ -420,6 +459,11 @@ index; and the tag is pushed deliberately.
 
 Publication is an authorized action, not a merge side effect. Landing this milestone does not
 publish anything.
+
+**First clause satisfied 4 September 2026:** M12 closed, so this gate is now evaluable in full and
+stands ready for the next release rather than blocked on the consolidation programme. The
+remaining clauses are unchanged and none of them has been run — no tag is pushed, nothing is
+published, and the next release is still a deliberate act.
 
 ## Explicitly outside the development plan
 

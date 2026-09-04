@@ -1,6 +1,6 @@
 # S07 — HEP classifier showcase
 
-**Workstream:** W4 · **Needs:** S4 · **Parallel with:** S6 · **Status:** queued
+**Workstream:** W4 · **Needs:** S4 · **Parallel with:** S6 · **Status:** done
 
 ## Goal
 

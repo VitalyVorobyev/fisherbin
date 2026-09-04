@@ -1,6 +1,6 @@
 # S06 — Portal topology, reference cut, research narrative
 
-**Workstream:** W3 · **Needs:** S2, S3 · **Parallel with:** S7 · **Status:** queued
+**Workstream:** W3 · **Needs:** S2, S3 · **Parallel with:** S7 · **Status:** done
 
 ## Goal
 
