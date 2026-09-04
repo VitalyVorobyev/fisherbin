@@ -4,9 +4,13 @@ A Docusaurus site with an in-browser ScoreQuant runtime (Pyodide + the NumPy bac
 deliberately isolated from Python packaging: Node and pnpm are pinned here, `uv` owns everything
 Python.
 
+The portal is served at the site root (`/scorequant/`), with the MkDocs reference assembled
+beneath it at `/scorequant/reference/`; `website/src/lib/site.ts` is the one place that base is
+written down.
+
 ```bash
 corepack pnpm install --frozen-lockfile
-corepack pnpm start        # http://localhost:3000/scorequant/portal/
+corepack pnpm start        # http://localhost:3000/scorequant/
 ```
 
 Two things that are not obvious and will stop a first run:
@@ -19,8 +23,9 @@ Two things that are not obvious and will stop a first run:
   Node, install it once with `npm install -g corepack@latest`, or the commands fail with
   `command not found: corepack`.
 - **`start` shells back into `uv`.** It runs `generate` first, which executes
-  `uv run python website/scripts/generate_data.py` from the repository root and needs the `portal`
-  dependency group. Run `uv sync --all-extras --all-groups --locked` at the root first.
+  `uv run python website/scripts/generate_data.py`, `generate_showcase.py`,
+  `generate_walkthroughs.py` and `generate_snippets.py` from the repository root, and needs the
+  `portal` dependency group. Run `uv sync --all-extras --all-groups --locked` at the root first.
 
 `corepack pnpm build` additionally downloads the pinned Pyodide release and builds the ScoreQuant
 wheel, so it needs network access.

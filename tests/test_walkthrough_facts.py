@@ -148,6 +148,7 @@ _LITERAL_ALLOWLIST: dict[str, str] = {
     "3": "counting word: three doors",
     "4": "counting word: four walkthroughs",
     "10.5281": "the DOI prefix of the HEP fixture's Zenodo record",
+    "3.12": "the minimum supported Python version, not a measurement",
 }
 
 _FENCE = re.compile(r"^```.*?^```", re.DOTALL | re.MULTILINE)
@@ -180,13 +181,60 @@ def _walkthrough_prose(text: str) -> str:
     return text
 
 
+#: MDX content roots whose prose is held to the fact contract. A page under one
+#: of these may not type a measurement.
+_GUARDED_CONTENT_ROOTS = ("walkthroughs", "get-started")
+
+#: Content roots deliberately outside the guard, each with the reason. The meta
+#: test below fails if a new docs instance appears in neither collection, so a
+#: route cannot be added without someone deciding which side it is on.
+_UNGUARDED_CONTENT_ROOTS: dict[str, str] = {
+    "research": (
+        "The research narrative cites claim ids, dates and counts from the novelty "
+        "ledger rather than from run evidence, so the fact contract is not the right "
+        "instrument for it; S6 gave it claim-id linking as its own check instead."
+    ),
+    "blog": (
+        "Posts are dated accounts of a research or feature arc, written once and not "
+        "regenerated. A post quotes the numbers that were true when it was written, "
+        "which is what makes it a record; holding it to the current evidence would "
+        "require rewriting history every time a study is re-run."
+    ),
+}
+
+
+def _guarded_prose_pages() -> list[Path]:
+    """Every MDX page whose prose the fact contract governs."""
+    pages: list[Path] = []
+    for root in _GUARDED_CONTENT_ROOTS:
+        pages.extend(sorted((ROOT / "website" / root).glob("*.mdx")))
+    return pages
+
+
+def test_every_mdx_content_root_is_classified() -> None:
+    """No content route can be added without deciding whether the guard covers it.
+
+    The guard used to be a glob over one directory, so a new route simply went
+    unguarded and nothing said so. Here the declared roots are checked against
+    the docs instances `docusaurus.config.ts` actually registers.
+    """
+    config = (ROOT / "website/docusaurus.config.ts").read_text(encoding="utf-8")
+    registered = set(re.findall(r'^\s*path:\s*"([^"]+)"', config, flags=re.MULTILINE))
+    classified = set(_GUARDED_CONTENT_ROOTS) | set(_UNGUARDED_CONTENT_ROOTS)
+    assert registered <= classified, (
+        f"content roots {sorted(registered - classified)} are registered in "
+        "docusaurus.config.ts but classified in neither _GUARDED_CONTENT_ROOTS nor "
+        "_UNGUARDED_CONTENT_ROOTS. Decide which, and record the reason if unguarded."
+    )
+
+
 @pytest.mark.parametrize(
     "path",
-    sorted((ROOT / "website" / "walkthroughs").glob("*.mdx")),
-    ids=lambda path: path.name,
+    _guarded_prose_pages(),
+    ids=lambda path: f"{path.parent.name}/{path.name}",
 )
 def test_walkthrough_prose_contains_no_hand_typed_numbers(path: Path) -> None:
-    """No measurement is typed into a walkthrough's prose.
+    """No measurement is typed into a guarded page's prose.
 
     The generator and `factsFor` make a displayed number traceable; this makes
     *bypassing* them visible. Without it, "every number comes from evidence"
@@ -202,6 +250,44 @@ def test_walkthrough_prose_contains_no_hand_typed_numbers(path: Path) -> None:
     assert not offenders, (
         f"{path.name} writes {offenders} as literals; route each through "
         "factsFor(...) or add it to _LITERAL_ALLOWLIST with the reason it is not a measurement"
+    )
+
+
+#: The home page is TSX, so it gets its own allowlist rather than widening the
+#: shared one: a digit that is defensible inside a display equation is not
+#: defensible in a walkthrough's prose.
+_HOME_LITERAL_ALLOWLIST: dict[str, str] = {
+    "1": "the indicator function in the displayed loss identity",
+    "0": "the zero matrix the loss identity is bounded below by",
+}
+
+_TS_BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
+_TS_LINE_COMMENT = re.compile(r"//[^\n]*")
+
+
+def test_home_page_contains_no_numeric_literal() -> None:
+    """`index.tsx` displays only numbers the fact contract resolved.
+
+    The prose guard above strips JSX expressions and tags, which on a TSX file
+    would strip almost everything and prove nothing. So the home page is held to
+    a blunter rule instead: after comments, imports, JSX expressions and tags are
+    removed, no digit may remain. Every number it shows therefore arrives through
+    `factsFor("home")`. See `docs/programme/S10-portal-front-door.md`, decision D7.
+    """
+    path = ROOT / "website/src/pages/index.tsx"
+    text = path.read_text(encoding="utf-8")
+    for pattern in (_TS_BLOCK_COMMENT, _TS_LINE_COMMENT, _ESM, _JSX_EXPRESSION, _JSX_TAG):
+        text = pattern.sub(" ", text)
+    offenders = sorted(
+        {
+            match.group(0)
+            for match in _NUMBER.finditer(text)
+            if match.group(0) not in _HOME_LITERAL_ALLOWLIST
+        }
+    )
+    assert not offenders, (
+        f"index.tsx writes {offenders} as literals; route each through "
+        'factsFor("home") or add it to _HOME_LITERAL_ALLOWLIST with its reason'
     )
 
 

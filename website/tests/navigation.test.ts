@@ -8,7 +8,7 @@ const base = "/scorequant";
 
 describe("primary navigation highlighting", () => {
   it("marks the entry active on its own route, with or without a trailing slash", () => {
-    expect(isActiveNavEntry(`${base}/theory`, "/theory")).toBe(true);
+    expect(isActiveNavEntry(`${base}/get-started`, "/get-started")).toBe(true);
     expect(isActiveNavEntry(`${base}/blog/`, "/blog")).toBe(true);
   });
 
@@ -19,9 +19,9 @@ describe("primary navigation highlighting", () => {
   });
 
   it("does not leak across entries or onto the home route", () => {
-    expect(isActiveNavEntry(`${base}/docs`, "/blog")).toBe(false);
-    expect(isActiveNavEntry(`${base}/blog`, "/docs")).toBe(false);
-    expect(isActiveNavEntry(`${base}/`, "/docs")).toBe(false);
+    expect(isActiveNavEntry(`${base}/get-started`, "/blog")).toBe(false);
+    expect(isActiveNavEntry(`${base}/blog`, "/get-started")).toBe(false);
+    expect(isActiveNavEntry(`${base}/`, "/get-started")).toBe(false);
   });
 
   it("survives a change of baseUrl", () => {

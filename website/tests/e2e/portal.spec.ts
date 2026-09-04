@@ -7,11 +7,16 @@ test("home is navigable, evidence-backed, and free of heavy runtime requests", a
     if (/pyodide|marimo|scorequant-.*\.whl/.test(request.url())) heavyRequests.push(request.url());
   });
   await page.goto("./");
-  await expect(page.getByRole("heading", {name: /Compress events/})).toBeVisible();
+  // The home page states the problem and then measures it. Both assertions
+  // deliberately target that shape rather than a slogan: S10 removed the hero
+  // line and the proof strip these used to check, and replacing them with the
+  // problem statement and the measured comparison keeps the coverage pointed at
+  // what the page is now for.
+  await expect(page.getByRole("heading", {name: /Some analyses have to bin/})).toBeVisible();
   await expect(page.getByRole("img", {name: /Score-space partition/})).toBeVisible();
-  await expect(page.getByText("JAX + NumPy")).toBeVisible();
+  await expect(page.getByText("ScoreQuant, same data, same bin budget")).toBeVisible();
   const routes = [
-    "./docs/",
+    "./get-started/",
     "./api/",
     "./walkthroughs/",
     "./walkthroughs/flowcyt/",
@@ -40,6 +45,7 @@ test("home is navigable, evidence-backed, and free of heavy runtime requests", a
   // vouches for their markup.
   const scanned = [
     "./",
+    "./get-started/",
     "./research/",
     "./walkthroughs/",
     "./walkthroughs/flowcyt/",

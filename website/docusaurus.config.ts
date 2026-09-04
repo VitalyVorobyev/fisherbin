@@ -77,6 +77,19 @@ const config: Config = {
         sidebarPath: false
       }
     ],
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        // `/get-started` is a docs instance rather than an MDX page route so it
+        // inherits the swizzled DocItem table of contents and the single-`<main>`
+        // DocRoot layout the e2e suite asserts on every route. See
+        // `docs/programme/S10-portal-front-door.md`, decision D6.
+        id: "getstarted",
+        path: "get-started",
+        routeBasePath: "get-started",
+        sidebarPath: false
+      }
+    ],
     () => ({
       name: "runtime-boundary-warnings",
       configureWebpack: (_config, isServer) => ({

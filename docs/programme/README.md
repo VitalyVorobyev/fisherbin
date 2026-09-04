@@ -25,10 +25,11 @@ Four workstreams, gated in `docs/roadmap.md` under "M12 — Consolidation progra
 
 Dependency spine: the public API is frozen (S3) before anything quotes it (S4, S6, S8, S10); the
 novelty ledger (S2) is written before anything narrates research (S5, S6); the topology moves
-before content is written into it (S6 before S8); and the front door is written last, so it quotes
-the walkthroughs' real numbers instead of promising them (S8 before S10). The `Needs` column of
-the roadmap table is the merge lock, and the executable order is
-**S4 → (S6 ∥ S7) → S8 → S10 → S9**.
+before content is written into it (S6 before S8); the front door is written last, so it quotes
+the walkthroughs' real numbers instead of promising them (S8 before S10); and the surface is
+published only once it is finished, so the design pass and the deployment flip come after the
+front door exists (S10 before S11). The `Needs` column of the roadmap table is the merge lock,
+and the executable order is **S4 → (S6 ∥ S7) → S8 → S10 → S11 → S9**.
 
 One corollary, learned in S6 and worth stating as a rule: **a page is retired by the session that
 publishes its replacement.** S6 was originally to delete the three MkDocs narrative pages, but the
@@ -36,6 +37,13 @@ portal pages replacing them are written in S8 and S10, and two of the three carr
 snippets whose coverage would have vanished in the gap. Retiring a page early trades a real,
 tested asset for a promise. So `three-doors.md` retires in S8 and `motivation.md` and
 `user-workflow.md` in S10, each alongside the page that takes over its job.
+
+Its sibling, learned on 4 September 2026 and the reason S10 was split in two: **a surface is
+published by the session that finishes it.** S10 was to flip the deployment, but S10 leaves the
+portal correct and unstyled — no dark mode, nothing on it that runs — and deploying that would
+have published a half-finished front door at the URL the released package advertises. Deployment
+therefore moves to S11, together with the `README.md` absolute-link rewrite and the
+post-deployment redirect spot-check, both of which only mean anything once something is live.
 
 ## Orchestrator invariants
 
@@ -114,7 +122,7 @@ failing command and its output.
 ## Session prompt
 
 Start a fresh session in the repo root and paste, filling `<N>` and `<slug>` from the roadmap
-table and the packet file name. Packets S01-S09 are zero-padded; S10 is not, so read the file
+table and the packet file name. Packets S01-S09 are zero-padded; S10 and S11 are not, so read the file
 table below for the exact name:
 
 ```text
@@ -151,11 +159,13 @@ Rules of engagement:
 | `S06-portal-topology-and-reference-cut.md` | Portal topology, reference cut, research narrative |
 | `S07-hep-classifier-showcase.md` | HEP classifier showcase |
 | `S08-the-four-walkthroughs.md` | The four walkthroughs |
-| `S10-portal-front-door.md` | Portal front door: home, get-started, e2e, deployment |
+| `S10-portal-front-door.md` | Portal front door: home, get-started, captured outputs |
+| `S11-portal-design-and-launch.md` | Portal design pass, inline demos, and launch |
 | `S09-closure.md` | Closure: independent v9 audit, exit gate, teardown |
 
 S6, S8 and S10 were re-scoped on 3 September 2026 (see the M12 block in `docs/roadmap.md` for the
-direction). S4 and S7 are unchanged from their original packets.
+direction), and S10 was split into S10 and S11 on 4 September 2026. S4 and S7 are unchanged
+from their original packets.
 
 This directory is excluded from the published MkDocs site (`mkdocs.yml` `exclude_docs`) and from
 the front-door prose guard (`tests/test_readme.py`), so it may use planning vocabulary.

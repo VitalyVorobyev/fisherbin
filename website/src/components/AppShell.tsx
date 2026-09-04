@@ -10,7 +10,7 @@ import {Logo} from "./Logo";
 import {SearchDialog} from "./SearchDialog";
 
 const navigation = [
-  ["Docs", "/docs"],
+  ["Get started", "/get-started"],
   ["Walkthroughs", "/walkthroughs"],
   ["Lab", "/lab"],
   ["API", "/api"],
@@ -106,10 +106,10 @@ export function AppShell({
         <footer className="site-footer">
           <div>
             <Logo />
-            <p>Hard bins, with the information loss made visible.</p>
+            <p>Hard bins, and a measurement of what the binning cost.</p>
           </div>
           <div className="site-footer__links">
-            <span>Learn</span><Link to="/docs">Start here</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/blog">Blog</Link>
+            <span>Learn</span><Link to="/get-started">Get started</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/blog">Blog</Link>
           </div>
           <div className="site-footer__links">
             <span>Reference</span><a href={REFERENCE_BASE}>Python API</a><a href="https://github.com/VitalyVorobyev/scorequant">GitHub</a>

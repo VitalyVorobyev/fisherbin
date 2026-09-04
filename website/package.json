@@ -9,9 +9,10 @@
   },
   "scripts": {
     "start": "pnpm generate && docusaurus start",
-    "generate": "pnpm generate:protocol && pnpm generate:data && pnpm generate:showcase && pnpm generate:walkthroughs",
+    "generate": "pnpm generate:protocol && pnpm generate:data && pnpm generate:showcase && pnpm generate:walkthroughs && pnpm generate:snippets",
     "generate:protocol": "node scripts/generate-protocol.mjs",
     "generate:data": "cd .. && uv run python website/scripts/generate_data.py",
+    "generate:snippets": "cd .. && uv run python website/scripts/generate_snippets.py",
     "export:lessons": "cd .. && uv run marimo check website/lessons/score_space.py --select MW && uv run marimo export html-wasm website/lessons/score_space.py -o website/static/lessons/score-space --mode run --no-show-code --no-execute",
     "prepare:runtime": "node scripts/prepare-runtime.mjs",
     "assemble:site": "node scripts/assemble-site.mjs",

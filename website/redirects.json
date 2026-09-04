@@ -144,7 +144,7 @@
     },
     {
       "from": "motivation/",
-      "to": "reference/motivation/"
+      "to": ""
     },
     {
       "from": "reference/certification/",
@@ -216,7 +216,7 @@
     },
     {
       "from": "user-workflow/",
-      "to": "reference/user-workflow/"
+      "to": "get-started/"
     }
   ]
 }

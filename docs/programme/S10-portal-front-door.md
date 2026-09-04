@@ -1,6 +1,6 @@
-# S10 — Portal front door: home, get-started, e2e, deployment
+# S10 — Portal front door: home, get-started, captured outputs
 
-**Workstream:** W3 · **Needs:** S8 · **Parallel with:** — · **Status:** queued
+**Workstream:** W3 · **Needs:** S8 · **Parallel with:** — · **Status:** active
 
 ## Goal
 
@@ -36,10 +36,6 @@ URL recorded in the closing report.
   the naive baselines that comparison is measured against.
 - `tests/test_portal_snippets.py`: the harness, extended in S8 to MDX, extended here to the
   captured-output pages.
-- `.github/workflows/docs.yml`, `.github/workflows/portal-preview.yml`: the two pipelines the
-  deployment flip changes.
-- `docs/adr/0019-react-learning-portal.md` and S6's migration ADR: the deployment authorization
-  chain.
 
 ## Deliverables
 
@@ -91,26 +87,6 @@ stub to `/get-started` (see Open decisions).
 without either explaining a mechanism or citing a measured number. The before/after list goes in
 the closing report.
 
-**Deployment.** The root deployment turned on: the portal at `/scorequant/`, MkDocs under
-`/scorequant/reference/`, the S6 redirect stubs live. `docs.yml` and `portal-preview.yml`
-reconciled into whatever single publishing path the session designs, with the preview path kept
-for pull requests.
-
-Publication is an authorized action, not a merge side effect. The flip needs the owner's explicit
-go-ahead, requested with the assembled tree already verified, and the live URL is recorded in the
-closing report.
-
-**Also handed over by S6.** `README.md` carries **14 absolute
-`https://vitalyvorobyev.github.io/scorequant/...` links**, and they describe the *deployed* site,
-which does not change until this session flips the deployment. They were therefore deliberately
-left pointing at the pre-migration structure: updating them earlier would have broken live links —
-on GitHub and on the PyPI project page — for a migration that had not shipped. In the same commit
-that turns deployment on, every one of them moves under `/reference/`, except the badge link and
-any that should now point at a portal route. `docs/reference/` was renamed `docs/symbols/` in S6,
-so the "reference" link becomes `.../reference/symbols/`. `pyproject.toml`'s `Homepage` and
-`Documentation` already point at the site root and are correct unchanged — after the flip the root
-is the portal home, which is the point.
-
 **Handed over by S6 (decision R1).** This session also retires `docs/motivation.md` and
 `docs/user-workflow.md`, because this session writes the portal home and `/get-started` that
 replace them. `motivation.md` has no code fences and retires cleanly. `user-workflow.md` carries
@@ -133,12 +109,8 @@ should consume the generated fragment instead.
 - Every snippet on `/get-started` is executed by `tests/test_portal_snippets.py` and asserts a
   result object, and every output the page displays comes from `website/src/generated/`. A `grep`
   for output literals in the page source finds none.
-- `website/src/pages/docs.tsx` is gone or is a redirect stub only.
+- `website/src/pages/docs.tsx` is deleted outright (see Open decisions).
 - Nav is the eight final entries; navigation tests match.
-- Every pre-cut MkDocs URL resolves on the live site, spot-checked against `website/redirects.json`
-  after deployment and recorded in the closing report.
-- The root deployment is live and its URL is in the closing report, flipped with the owner's
-  recorded go-ahead.
 - Full handoff gate green, plus `cd website && pnpm validate` and `pnpm test:e2e`.
 - roadmap M12 table shows S10 `done`; this packet's Closing report is written.
 
@@ -153,8 +125,6 @@ should consume the generated fragment instead.
 | Extend `tests/test_portal_snippets.py` to the `/get-started` snippets | sonnet | test diff |
 | Final nav cut, delete or stub `docs.tsx`, update navigation tests | sonnet | TSX diff |
 | Slogan audit over every route | haiku | flagged and removed sentences |
-| Design and implement the deployment path; reconcile the two workflows | sonnet | workflow diff |
-| Post-deployment redirect spot-check against the manifest | haiku | URL/status table |
 | Run gates and e2e, report failures verbatim | haiku | gate output |
 
 Never a `fable` subagent (`docs/programme/README.md`, budget rule). The front-door prose is the
@@ -174,21 +144,197 @@ cd website && pnpm validate
 cd website && pnpm test:e2e
 ```
 
-## Open decisions
+## Design decisions
 
-- Whether `docs.tsx` is deleted or kept as a redirect stub to `/get-started`. `/docs` is the route
-  most likely to have been linked externally, which argues for a stub; S6's redirect manifest
-  covers MkDocs URLs, not portal ones, so if a stub is wanted it is this session's to add.
-- How the two publishing workflows reconcile: one workflow that builds both surfaces and deploys
-  the assembled tree, or `docs.yml` reduced to producing the MkDocs artifact that the portal
-  workflow assembles. The second keeps the existing division of labour; the first has one place
-  where deployment happens.
-- Whether the captured-output generator runs the snippets in-process or as a subprocess per
-  snippet. A subprocess gives a genuinely clean namespace per snippet at the cost of JAX start-up
-  per call; in-process matches what `tests/test_docs_snippets.py` already does.
+Written before any code, per the orchestrator contract. The three decisions the packet left open
+are answered first, then the decisions this session added.
+
+**D1 — `docs.tsx` is deleted outright, with no redirect stub.** The packet's argument for a stub
+was that `/docs` is the route most likely to have been linked externally. That premise is false,
+and was checked rather than assumed: `.github/workflows/docs.yml`'s Pages artifact has been
+`path: site` — the MkDocs build alone — from the repository's first commit (`d43cae9`) through
+the S6 freeze. The portal has never been served at any URL, so `/scorequant/docs/` has never
+resolved and no external link to it can exist. A stub would redirect from a URL that has only
+ever returned 404, at the cost of a route, a build artifact, a sitemap entry and a line in the
+navigation test forever.
+
+One consequence must be handled in the same commit: `tests/test_portal_snippets.py` builds its
+snippet list at *module import* and ends in `assert escaped_snippets`, so deleting `docs.tsx`
+without replacing that extractor turns the file into a collection error rather than one failing
+test.
+
+**D2 — the two publishing workflows are S11's problem.** Deployment moved out of this session
+entirely; see `docs/programme/S11-portal-design-and-launch.md`.
+
+**D3 — the captured-output generator runs in-process, in one shared namespace.** The packet posed
+this as in-process versus a subprocess per snippet, but subprocess-per-snippet is wrong on the
+merits rather than merely slow: the snippets share one namespace today, exactly as
+`docs/user-workflow.md` says ("Every snippet runs, and they share one namespace"), and a page that
+teaches a workflow must keep that. In-process also matches `tests/test_docs_snippets.py`. The one
+thing `contextlib.redirect_stdout` cannot capture is a C-level write; if that pollutes capture in
+practice, escalate to **one subprocess for the whole program** with file-descriptor redirection,
+never one per cell.
+
+**D4 — snippets are single-sourced from one runnable program.** `website/scripts/get_started_program.py`
+is a genuine top-to-bottom Python file divided by `# %% cell: <id>` markers, so a reader can run it
+and get the page's output. Three consumers share that one source: the generator (executes cells in
+order, captures stdout), the page (renders `<Snippet id="..."/>`), and
+`tests/test_portal_snippets.py` (executes the same cells and asserts a result object). This makes
+two things true by construction instead of by check — the page cannot show an output no run
+produced, *and* it cannot show code no run executed. Rejected: leaving fences in the MDX and having
+the generator parse the page, because a fence and its adjacent output block can silently reorder.
+
+**D5 — printed numbers are computed on the NumPy backend at float64.** Every cell that prints a
+number passes an explicit `sq.ExecutionConfig(backend="numpy", precision="float64", device="cpu")`,
+visible in the snippet, seeded with `np.random.default_rng(21)`. This removes XLA from the
+determinism question, and it is the same configuration the browser Lab runs, which is how "JAX
+default, NumPy portable, X64 the application's call" gets taught concretely rather than asserted.
+Format specifications live in the snippet (`f"{value:.4f}"`, never a bare `repr` of a float or an
+array), leaving roughly 1e-4 of headroom against last-bit BLAS ordering differences. A cell that
+would print something genuinely unstable prints a stable projection —
+`bool(partition.exchange_stable)`, not a raw iteration count.
+
+**D6 — `/get-started` is a third `plugin-content-docs` instance**, at `website/get-started/index.mdx`
+with `id: "getstarted"` and `sidebarPath: false`, matching the two instances S6 created. It
+inherits four mechanisms that already exist and are already tested: the swizzled
+`src/theme/DocItem/Layout` table of contents (which S6 built precisely because the stock one
+crashes in this shell), `src/theme/DocRoot/Layout/Main` — which is *why* docs routes have exactly
+one `<main>`, a count the e2e suite asserts on every route — the keyboard-reachable table in
+`MDXComponents.tsx`, and the MDX prose pipeline the numeric guard already parses. Rejected: an MDX
+*page* route, because `@theme/MDXPage` renders its own `<main>` inside AppShell's and would need a
+fourth theme swizzle to stay axe-clean; and TSX, because it recreates exactly the fragile
+template-literal extraction this session is deleting.
+
+**D7 — the home page's numbers are guarded by a whole-file numeric-literal ban.** The prose guard
+in `tests/test_walkthrough_facts.py` strips JSX expressions and tags, so applied to a TSX file it
+would strip nearly everything and prove nothing. Instead `website/src/pages/index.tsx` may contain
+no numeric literal at all outside a short allowlist with recorded reasons, which forces every
+displayed number through `factsFor("home")`. This is achievable only if the rewritten page carries
+no inline `style` props; today's page has two, and the redesign wants them gone regardless.
+
+**D8 — one fact generator, not two.** The `home` and `get-started` facts become new page keys in
+the existing `website/scripts/generate_walkthroughs.py` table, and its module docstring and the
+`FACTS` comment are updated in the same commit. Splitting the contract across a second generator
+is precisely the drift the contract exists to prevent.
+
+**D9 — the criterion/solver table stays hand-written.** S6 decision R3 kept `user-workflow.md`'s
+copy because it is advice about when to choose a solver, not a compatibility matrix. That
+judgement is unchanged by the move, so `/get-started` keeps the prose and links to the generated
+matrix at `reference/method/` rather than consuming the fragment. Recorded here so the next reader
+does not re-open it.
+
+**D10 — the retirements re-point redirects rather than dropping them.** Deleting
+`docs/motivation.md` and `docs/user-workflow.md` removes `reference/motivation/` and
+`reference/user-workflow/` from the assembled tree, and `website/scripts/assemble-site.mjs`
+resolves every redirect target, so this is a guaranteed build failure unless handled in the same
+commit. `motivation/` re-points to the site root and `user-workflow/` to `get-started/`, which
+keeps `sourceSitemapCount === unstubbed + redirects` at 53 and makes both entries portal-targeted
+like the `three-doors/` entry S8 added.
 
 ## Closing report
 
-_Written at session end. Plain English, for a reader who did not watch the session: what was
-delivered, what was verified (commands and results), what was cut or left open, and the one thing
-the next session must know._
+Ran 4 September 2026 on branch `consolidation-s10-portal-front-door`. The session's own first act
+was a re-scope: the owner split the remaining portal work in two, so S10 kept the front door and a
+new **S11** took the visual design pass, the inline demos and the deployment flip. The deployment
+material moved verbatim into `docs/programme/S11-portal-design-and-launch.md` rather than being
+rewritten, and `docs/programme/README.md` records the rule that motivated the split — *a surface is
+published by the session that finishes it*, the sibling of S6's retirement rule.
+
+**What was delivered.**
+
+The home page no longer sells. It opens by stating the problem in plain language — the text is
+`motivation.md` §1, which is the best statement the project has ever written of it — and its first
+evidence is a measured comparison a reader can check: on the FlowCyt data at eight bins, three
+standard binning rules retain 0.0704, 0.0378 and 0.0223 of the Fisher information about the
+population fractions, against ScoreQuant's 0.9853, all held out. The hero slogan, the four-box
+proof strip, the paired call-to-action buttons and both card grids are gone.
+
+The comparison is quoted against the **strongest** of the three naive rules, not the weakest. This
+was the session's one genuinely contestable choice. The obvious headline was the 0.0223 rectangular
+grid, which flatters the method most; the S7 precedent says the opposite, because a number measured
+against the worst available baseline reports the baseline's difficulty rather than the method. All
+three are published side by side so a reader can see the spread.
+
+`/get-started` replaces the `/docs` tab widget, which showed code and never its output. It is one
+continuous path: install and what the runtime choice means, the smallest real fit and what each of
+its four numbers means, the spectrum and the occupancy check, certifying labels you did not
+produce, the same problem as a reusable rule with save/load, a baseline worth running, the one
+theorem-backed crossing and the refusal that guards it, and three things a reader needs next.
+
+**No output on that page is typed.** `website/scripts/get_started_program.py` is a single runnable
+file split by `# %% cell:` markers; `generate_snippets.py` executes its twelve cells in one shared
+namespace and captures their stdout into `website/src/generated/snippet-outputs.json`; the page
+renders `<Snippet/>`, and `tests/test_portal_snippets.py` executes the same cells through the same
+splitter. One source, three consumers, so the page cannot show an output no run produced *or* code
+no run executed. The cells pin the NumPy backend at float64 with a fixed seed and carry their own
+format specs, which makes exact string equality a realistic contract — and it is the same
+configuration the browser Lab runs, so the page teaches the backend choice by using it.
+
+**What was verified.** `ruff check` clean; `ruff format --check` 257 files; `ty check src` clean;
+`pytest -n auto` **553 passed** (540 at S8); `pytest tests/test_float32.py` 4 passed; `uv build`
+produced both artifacts; `mkdocs build --strict` exit 0 with no warnings; `pnpm validate` clean with
+**71** vitest tests (52 at S6); `pnpm test:e2e` **13 passed, 5 skipped, 0 failed**;
+`pnpm assemble:site` reports **50 redirect stubs verified**.
+
+Three new guards were proved to bite rather than assumed to, the way S8 proved its fact guard:
+pasting a captured output line into the page fails `test_get_started_page_contains_no_output_literal`;
+corrupting one committed stdout fails `test_captured_outputs_are_current`; and writing `0.9853`
+into a heading fails `test_home_page_contains_no_numeric_literal`. All three were restored after.
+
+**Five things found wrong, and fixed.**
+
+1. **A layout defect on every docs route, not just the new one.** `.docs-frame__content` capped the
+   whole grid at the 72ch reading measure, so the body and the 232px table of contents *shared*
+   it: every walkthrough, every research page and the new `/get-started` rendered prose at **351px
+   of a 1376px frame** — about 45 characters a line — with wide code clipped mid-token. The
+   measured fix separates the two measures: prose keeps 72ch, code and tables get their own, and
+   the contents column sits beside them. Prose is now 641px and code 800px at a 1440px viewport.
+   This has been live since S6 and was found only because a page full of wide code was put through
+   it.
+2. **A link distinguishable by colour alone.** `.home-aside`'s inline link measured **1.15:1**
+   against its own muted surrounding text, against the 3:1 axe requires. Underlining it, as
+   `.provenance-note a` already did, fixed it.
+3. **Code blocks unreachable by keyboard.** Adding `/get-started/` to the axe scan immediately
+   exposed `scrollable-region-focusable` on every `.code-block`: they scroll horizontally and were
+   not focusable, so their content was unreadable without a mouse. This is the same defect class S8
+   found in `BinningComparison`, in markup the old `/docs` page shared — it went unseen because that
+   page was never scanned.
+4. **The slogan audit's blanket "all clean" was wrong.** A haiku pass reported zero findings across
+   nine routes. Re-checking it directly — the programme's own rule about delegated negatives — found
+   three: `benchmarks.tsx`'s "Speed without hiding the machine.", `api.tsx`'s "An API you can
+   inspect, not memorize." and the footer's "Hard bins, with the information loss made visible."
+   All three assert a benefit rhetorically; all three are replaced with plain statements ("What was
+   measured, and on what machine", "The public surface, generated from the source", "Hard bins, and
+   a measurement of what the binning cost."). The audit had considered two of them and talked itself
+   out of both.
+5. **A duplicated navigation entry.** `SearchDialog`'s route table listed Walkthroughs twice.
+
+**Decisions taken, recorded above as D1-D10.** The three the packet left open are answered:
+`docs.tsx` is **deleted outright**, because the premise for a stub is false — the Pages artifact has
+been `path: site`, the MkDocs build alone, since the repository's first commit, so `/scorequant/docs/`
+has never resolved and no external link to it can exist; the workflow reconciliation moved to S11;
+and the generator runs **in-process in one shared namespace**, because the cells have always shared
+one and subprocess-per-snippet is wrong on the merits rather than merely slow.
+
+**Fence accounting.** `docs/user-workflow.md` carried 9 executed `python` fences and
+`docs/motivation.md` none. Both are retired. `/get-started` carries **12** executed cells, 11 of
+which print captured output, so every behaviour the retired page demonstrated still runs in a test,
+with five additions (save/load round trip, the refusal message, the baseline gap, the occupancy
+readout, and prediction on fresh scores).
+
+**What was left open.** The `.research-layout` rule is now unreferenced but was left alone: it
+belongs to S11's dead-CSS sweep, which has the coverage tooling to prove the rest of the list.
+`.button-primary`/`.button-secondary` survive because `lab.tsx` still uses them. The home page's
+opening block leaves its right half empty, and the two closing "ways to start" blocks still read as
+cards; both are deliberate hand-offs to S11's design pass rather than defects. Nothing was
+committed or pushed.
+
+**The one thing the next session must know.** The site is still frozen and S11 is the session that
+turns it on: `docs.yml`'s Pages upload and its `deploy` job are both `if: false`, and the packet now
+carries the deployment brief, the authorization chain and the README's 14 absolute links verbatim.
+Two things S11 inherits that are easy to miss. First, the docs layout fix above changed the measure
+on **all fifteen** docs pages, so the design pass is starting from a wider column than the one S8
+and S6 were written against — look at the walkthroughs before restyling them. Second, the axe scan
+now covers `/get-started/`, and it earned its place immediately by finding a defect on its first
+run; when S11 adds dark mode, scanning **both themes** on that route is what will stop the 4.48:1
+class of regression coming back.
