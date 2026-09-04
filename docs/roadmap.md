@@ -265,7 +265,7 @@ with native NumPy in under ten seconds after warm-up.
 
 ## M12 — Consolidation programme
 
-**Status:** active; S1-S6 done; S7 unblocked, and S8 waits on it. The remaining sessions are the
+**Status:** active; S1-S7 done; S8 is unblocked and is next. The remaining sessions are the
 user-facing half of the programme and were re-scoped on 3 September 2026 around one direction:
 the portal becomes the site root and explains rather than sells, MkDocs narrows to the
 exhaustive reference, and four detailed walkthroughs — one per input route, two on real data —
@@ -314,14 +314,30 @@ Four workstreams, each with its own gate:
   the root deployment is live.
 - **W4 — Showcases.** A realistic end-to-end example for each input route: score sample and
   density ratios (FlowCyt, already real), an analytic `ScoreFunction` with an explicit nuisance on
-  the NumPy backend (Michelson fringe phase against a fringe-frequency nuisance), an executed
-  `CentralLogRatioScore` path, and a HEP
-  classifier route on the FAIR Universe HiggsML public dataset (DOI 10.5281/zenodo.15131565,
-  CC-BY-4.0, Parquet), verified reachable by fetching and carrying an explicit tau-energy-scale
-  nuisance; the FlowCyt three-interface fallback is cut because that dataset check succeeded.
+  the NumPy backend (Michelson fringe phase against a fringe-frequency nuisance), and an executed
+  `CentralLogRatioScore` path on a HEP classifier route on the FAIR Universe HiggsML public
+  dataset; the FlowCyt three-interface fallback is cut because that dataset check succeeded.
   **Gate:** each example executes in both test tiers in fast mode, has its evidence JSON pinned,
   is reachable from the portal's walkthrough index, and the roadmap names the provenance of every
-  number it reports.
+  number it reports. **S7 done** (`examples/hep_classifier/`,
+  `docs/usecases/hep/index.md`): every number in the study comes from
+  `docs/examples/assets/hep-classifier.json`, itself computed by
+  `uv run python -m examples.hep_classifier` on the committed 1,000-event fixture
+  (`examples/data/hep_higgsml_fixture.npz`, hash and licence recorded in the sibling `.json`) —
+  bytes fetched from the unlicensed `FAIR-Universe/HEP-Challenge` code repository, the CC-BY-4.0
+  licence claimed under its Zenodo archival record (DOI 10.5281/zenodo.15131565), not under that
+  code repository. The classifier diagnostics (weighted signal AUC 0.8345, weighted signal
+  fraction 0.00099, grouped-fold `tes` minus/plus AUC 0.5674) are measured by the same run and
+  confirm the fixes for the two failure modes the design record documents (fold leakage inverting the `tes` score,
+  raw Monte Carlo weights making the signal class invisible), and land close to the design
+  record's own target numbers. The central prediction — ScoreQuant's profiled-\(D_s\) partition
+  beats binning the classifier output at the same six-bin budget — held, and is quoted against the
+  strongest of two one-dimensional binnings rather than the first tried: a **0.5008**
+  profiled-retention gap against logit-equal-width cells, against 0.7106 for the equal-frequency
+  cells the study first used. The 0.2098 spread between two binnings of the same posterior is
+  published alongside, because it sets how much of the headline number is the method and how much
+  is the baseline's difficulty. The ScoreQuant partition lands within 0.0009 of the certified
+  `efficient_score_bound` ceiling.
 
 Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock):
 
@@ -333,7 +349,7 @@ Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock
 | S4 | Showcase foundations (Michelson phase, NumPy example, HEP data spike) | W4 | S3 | done |
 | S5 | Manuscript v9 draft | W1 | S2 | done |
 | S6 | Portal topology, reference cut, research narrative | W3 | S2, S3 | done |
-| S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | queued |
+| S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | done |
 | S8 | The four walkthroughs | W3, W4 | S6, S7 | queued |
 | S10 | Portal front door: home, get-started, e2e in CI, deployment | W3 | S8 | queued |
 | S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S10 | queued |
