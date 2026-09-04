@@ -1,4 +1,4 @@
-"""Generate the numbers the portal's four walkthrough pages are allowed to print.
+"""Generate the numbers the portal's prose pages are allowed to print.
 
 Every value a walkthrough displays comes from this script, and every value this
 script emits carries a JSON Pointer into a committed evidence file. That pairing
@@ -6,9 +6,14 @@ is the whole point: a page cannot print a number that no run produced, and
 ``tests/test_walkthrough_facts.py`` re-resolves every pointer against the
 evidence so the generated file cannot drift from the studies behind it.
 
-The fact table below *is* the contract. Adding a number to a walkthrough means
-adding a row here, which means naming the evidence it comes from. See
+The fact table below *is* the contract. Adding a number to a page means adding a
+row here, which means naming the evidence it comes from. See
 ``docs/programme/S08-the-four-walkthroughs.md``, decision D2.
+
+S10 extended the table from the four walkthroughs to the front door: the ``home``
+page keys below feed ``website/src/pages/index.tsx``, which may contain no numeric
+literal of its own (``docs/programme/S10-portal-front-door.md``, decision D8 —
+one generator, not two).
 
 Run through ``pnpm generate``, or directly::
 
@@ -45,12 +50,12 @@ EVIDENCE = (
 
 @dataclass(frozen=True)
 class Fact:
-    """One number or string a walkthrough page may print.
+    """One number or string a portal page may print.
 
     Parameters
     ----------
     page
-        Walkthrough slug the fact belongs to.
+        Page slug the fact belongs to: a walkthrough, or ``home``.
     key
         Name the page looks the fact up by.
     source
@@ -105,6 +110,43 @@ FLOWCYT_FIXTURE = "examples/data/flowcyt_fixture.json"
 HEP_FIXTURE = "examples/data/hep_higgsml_fixture.json"
 
 FACTS: tuple[Fact, ...] = (
+    # ------------------------------------------------------------------- home
+    # The front door opens on a measured comparison rather than a claim, so the
+    # baseline it is measured against must be the strongest naive rule in the
+    # study, not the most flattering one. At eight bins the three naive rules on
+    # this data span 0.0223 (an equal-width grid on two PCA components of the
+    # markers) through 0.0378 (equal-frequency bins along the leading Fisher
+    # direction of the score) to 0.0704 (weighted k-means on the standardized
+    # markers). The home page quotes the last of those, and publishes the other
+    # two beside it, for the reason S7 recorded: a headline measured against the
+    # weakest available baseline reports the baseline's difficulty, not the
+    # method. Every one of these is held-out, at the same bin budget as the
+    # ScoreQuant number they are compared with.
+    Fact("home", "bins", f"{FLOWCYT_STUDY}#/operating_partition/n_bins", _count),
+    Fact(
+        "home",
+        "naiveBestEfficiency",
+        f"{FLOWCYT_STUDY}#/marker_kmeans:8/held_out_d_efficiency",
+        _fixed(4),
+    ),
+    Fact(
+        "home",
+        "naiveScoreProjectionEfficiency",
+        f"{FLOWCYT_STUDY}#/one_dimensional_score:8/held_out_d_efficiency",
+        _fixed(4),
+    ),
+    Fact(
+        "home",
+        "naiveGridEfficiency",
+        f"{FLOWCYT_STUDY}#/two_dimensional_grid:8/held_out_d_efficiency",
+        _fixed(4),
+    ),
+    Fact(
+        "home",
+        "scorequantEfficiency",
+        f"{FLOWCYT_STUDY}#/finite_d_exchange:8/held_out_d_efficiency",
+        _fixed(4),
+    ),
     # ---------------------------------------------------------------- flowcyt
     Fact("flowcyt", "bins", f"{FLOWCYT_STUDY}#/operating_partition/n_bins", _count),
     # The study's two ScoreQuant methods disagree about which is better, and they

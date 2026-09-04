@@ -16,7 +16,7 @@ export default function Api(): React.JSX.Element {
   }, [kind, query]);
   return (
     <AppShell title="API" description="Generated ScoreQuant public API catalogue.">
-      <PageIntro eyebrow="Generated public surface" title="An API you can inspect, not memorize." lead="Signatures and summaries are generated from the installed Python source with Griffe. The engineering reference remains canonical for complete field-level documentation." />
+      <PageIntro eyebrow="Generated public surface" title="The public surface, generated from the source" lead="Signatures and summaries are generated from the installed Python source with Griffe. The engineering reference remains canonical for complete field-level documentation." />
       <div className="content-grid">
         <aside className="side-index"><span>Symbol kind</span>{(["all", "class", "function"] as Kind[]).map((value) => <button key={value} className={kind === value ? "is-active" : ""} onClick={() => setKind(value)}>{value === "all" ? "All public symbols" : value === "class" ? "Classes" : "Functions"}</button>)}</aside>
         <section className="editorial-panel">

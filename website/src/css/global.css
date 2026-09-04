@@ -26,6 +26,9 @@
   --font-mono: "IBM Plex Mono", monospace;
   --page: min(100% - 48px, 1376px);
   --reading: 72ch;
+  /* The widest published code line, plus a little air. Code sets its own
+     measure; see `.doc-article__body`. */
+  --code: 800px;
   --ifm-font-family-base: var(--font-body);
   --ifm-heading-font-family: var(--font-heading);
   --ifm-color-primary: var(--blue);
@@ -206,68 +209,63 @@ kbd {
 .plain-link:hover { text-decoration: underline; text-underline-offset: 4px; }
 
 /* Home */
-.home-hero { overflow: hidden; color: white; background: var(--ink-950); }
-.home-hero__inner {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  align-items: center;
-  width: var(--page);
-  min-height: 680px;
-  margin: 0 auto;
-  padding: 76px 0 86px;
-}
-.home-hero__copy { position: relative; z-index: 2; grid-column: 1 / span 6; }
-.home-hero h1 {
-  max-width: 700px;
-  margin: 22px 0 24px;
-  font-family: var(--font-heading);
-  font-size: clamp(52px, 6.4vw, 91px);
-  font-weight: 520;
-  letter-spacing: -.066em;
-  line-height: .93;
-}
-.home-hero h1 em { color: #80e4d7; font-style: normal; }
-.home-hero__copy > p { max-width: 590px; margin: 0 0 34px; color: #b6c3d4; font-size: 19px; line-height: 1.6; }
-.hero-actions { display: flex; gap: 12px; }
-.home-hero__visual { grid-column: 7 / -1; margin-left: 20px; }
-.home-hero .eyebrow { color: #66d8cc; }
-.home-proof {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  width: var(--page);
-  margin: 0 auto;
-  border-bottom: 1px solid var(--line);
-}
-.home-proof > div { padding: 25px 20px; border-right: 1px solid var(--line); }
-.home-proof > div:first-child { padding-left: 0; }
-.home-proof > div:last-child { border-right: 0; }
-.home-proof small { display: block; color: var(--ink-500); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
-.home-proof strong { display: block; margin-top: 4px; font-family: var(--font-heading); font-size: 17px; font-weight: 590; }
 .home-section { padding: 100px 0; }
-.task-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); background: var(--paper); }
-.task-card { min-height: 330px; padding: 42px; }
-.task-card + .task-card { border-left: 1px solid var(--line); }
-.task-card__number { color: var(--ink-600); font-family: var(--font-heading); font-size: 72px; line-height: 1; }
-.task-card h3 { margin: 34px 0 10px; font-family: var(--font-heading); font-size: 30px; font-weight: 580; letter-spacing: -.04em; }
-.task-card p { max-width: 56ch; color: var(--ink-600); }
-.door-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 24px; }
-.door {
-  min-height: 250px;
-  padding: 30px;
-  border-top: 2px solid var(--blue);
-  background: var(--paper);
+
+.home-lede { max-width: 760px; }
+.home-lede h1 {
+  margin: 0 0 28px;
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 560;
+  letter-spacing: -.045em;
+  line-height: 1.05;
 }
-.door:nth-child(2) { border-color: var(--cyan); }
-.door:nth-child(3) { border-color: #7398e9; }
-.door small { color: var(--ink-500); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; }
-.door h3 { margin: 43px 0 10px; font-family: var(--font-heading); font-size: 24px; font-weight: 590; letter-spacing: -.03em; }
-.door p { color: var(--ink-600); font-size: 14px; }
-.research-preview { display: grid; grid-template-columns: 4fr 8fr; gap: 60px; align-items: start; }
-.research-preview__claims { border-top: 1px solid var(--line-strong); }
-.research-preview__claims a { display: grid; grid-template-columns: 98px 1fr 26px; gap: 12px; padding: 20px 0; border-bottom: 1px solid var(--line); }
-.research-preview__claims a:hover strong { color: var(--blue); }
-.research-preview__claims span { color: var(--ink-500); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; }
-.research-preview__claims strong { font-weight: 590; }
+.home-lede p { max-width: 62ch; margin: 0 0 20px; color: var(--ink-700); font-size: clamp(17px, 1.6vw, 20px); line-height: 1.65; }
+.home-lede p:last-child { margin-bottom: 0; }
+
+.home-measure { margin: 0; border-top: 1px solid var(--line); }
+.measure-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 24px; padding: 18px 4px; border-bottom: 1px solid var(--line); }
+.measure-row dt { margin: 0; color: var(--ink-700); font-size: 15px; line-height: 1.45; }
+.measure-row dd { margin: 0; color: var(--ink-950); font-family: var(--font-mono); font-size: 18px; font-weight: 600; white-space: nowrap; text-align: right; }
+/*
+ * measure-row--result distinguishes the ScoreQuant row from the three
+ * baselines structurally, not only by colour: a heavier top rule, bolder
+ * weight, and a background shift, so the row still reads as singled-out in
+ * grayscale or under a colour-vision deficiency. --blue-dark on --paper-blue
+ * measures ~7.2:1, well past the 4.5:1 body-text threshold.
+ */
+.measure-row--result { padding-block: 22px; border-top: 2px solid var(--blue); background: var(--paper-blue); }
+.measure-row--result dt { color: var(--ink-950); font-weight: 630; }
+.measure-row--result dd { color: var(--blue-dark); font-size: 20px; font-weight: 700; }
+
+.home-explain { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 440px); align-items: start; gap: 56px; }
+.home-explain p { margin: 0 0 20px; color: var(--ink-700); font-size: 16px; line-height: 1.7; }
+.home-explain p:last-child { margin-bottom: 0; }
+.home-explain__visual { min-width: 0; }
+
+.home-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.choice { padding: 26px 0 0; border-top: 2px solid var(--line-strong); }
+.choice h3 { margin: 0 0 10px; font-family: var(--font-heading); font-size: 22px; font-weight: 580; letter-spacing: -.03em; }
+.choice p { margin: 0 0 16px; color: var(--ink-600); font-size: 14px; line-height: 1.6; }
+
+.home-aside { max-width: 60ch; margin: 32px 0 0; color: var(--ink-500); font-size: 13px; line-height: 1.6; }
+/* A link inside muted running text cannot be signalled by colour alone: --blue on
+   --ink-500 measures 1.15:1, well under the 3:1 axe requires for that distinction
+   (link-in-text-block). Underlining it is the fix, matching `.provenance-note a`,
+   and --blue-dark carries 7.5:1 against --paper for the text itself. */
+.home-aside a { color: var(--blue-dark); text-decoration: underline; text-underline-offset: 2px; }
+.home-aside a:hover { text-decoration-thickness: 2px; }
+
+.home-doors { border-top: 1px solid var(--line); }
+.door-item { padding: 28px 0; border-bottom: 1px solid var(--line); }
+.door-item h3 { margin: 0 0 8px; font-family: var(--font-heading); font-size: 21px; font-weight: 580; letter-spacing: -.03em; }
+.door-item p { margin: 0; max-width: var(--reading); color: var(--ink-600); font-size: 14px; line-height: 1.65; }
+.door-item .plain-link { display: inline-block; margin-top: 12px; }
+
+.home-exits { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.exit { padding: 30px; border: 1px solid var(--line); background: var(--paper); }
+.exit h3 { margin: 0 0 10px; font-family: var(--font-heading); font-size: 22px; font-weight: 580; letter-spacing: -.03em; }
+.exit p { margin: 0 0 16px; color: var(--ink-600); font-size: 14px; line-height: 1.6; }
 
 /* Real score-space fixture */
 .score-space { overflow: hidden; border: 1px solid #294568; border-radius: 11px; background: #091a37; box-shadow: 0 30px 75px rgb(0 0 0 / 28%); }
@@ -315,6 +313,21 @@ kbd {
 .code-block { overflow-x: auto; padding: 22px; border: 1px solid #263d5c; border-radius: 7px; color: #dbe8f8; background: var(--ink-950); font-family: var(--font-mono); font-size: 12px; line-height: 1.8; white-space: pre; }
 .code-block .code-key { color: #82ddd2; }
 
+/*
+ * Snippet (get-started, S10 B1): one program cell's code, then the captured
+ * output. The output block must be distinguishable from the code block
+ * without relying on colour alone, so it carries both an explicit "Output"
+ * label and a left accent border, on top of its own darker, greener ground.
+ * #bfe9e2 on #05141f measures well past AA (~13:1); the label's dark ink on
+ * mint measures the same order of magnitude, so both clear the 4.5:1 body
+ * text threshold with room to spare.
+ */
+.snippet { margin: 26px 0; }
+.snippet__title { margin: 0 0 10px; color: var(--ink-600); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.snippet__output { margin-top: 10px; }
+.snippet__output-label { display: inline-block; margin-bottom: 6px; padding: 2px 9px; border-radius: 3px; color: var(--ink-950); background: #cdf1ea; font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+.code-block.snippet__output-block { border-left: 3px solid var(--cyan); color: #bfe9e2; background: #05141f; }
+
 /* Search */
 .search-overlay { position: fixed; z-index: 100; inset: 0; display: grid; place-items: start center; padding-top: min(14vh, 130px); background: rgb(7 20 45 / 54%); backdrop-filter: blur(6px); }
 .search-dialog { overflow: hidden; width: min(680px, calc(100% - 32px)); border: 1px solid var(--line-strong); border-radius: 10px; background: var(--paper); box-shadow: 0 35px 100px rgb(7 20 45 / 35%); }
@@ -329,20 +342,6 @@ kbd {
 .search-dialog__results strong { font-size: 13px; }
 .search-dialog__results small { overflow: hidden; color: var(--ink-500); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .search-dialog footer { display: flex; justify-content: space-between; padding: 10px 18px; border-top: 1px solid var(--line); color: var(--ink-500); background: var(--paper-warm); font-family: var(--font-mono); font-size: 9px; }
-
-/* Docs */
-.workflow-doors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.workflow-door { min-height: 154px; padding: 22px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); cursor: pointer; text-align: left; }
-.workflow-door:hover, .workflow-door.is-active { border-color: var(--blue); box-shadow: inset 0 -2px 0 var(--blue); }
-.workflow-door small { color: var(--blue); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; }
-.workflow-door strong { display: block; margin: 24px 0 3px; font-family: var(--font-heading); font-size: 20px; }
-.workflow-door span { color: var(--ink-600); font-size: 12px; }
-.workflow-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 48px; padding-top: 42px; border-top: 1px solid var(--line); }
-.workflow-detail h2 { margin: 8px 0 14px; font-family: var(--font-heading); font-size: 36px; letter-spacing: -.04em; }
-.workflow-detail p { color: var(--ink-600); }
-.workflow-steps { counter-reset: steps; margin: 28px 0; padding: 0; list-style: none; }
-.workflow-steps li { display: grid; grid-template-columns: 27px 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--ink-700); font-size: 13px; }
-.workflow-steps li::before { counter-increment: steps; content: counter(steps); display: grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; color: var(--blue); background: var(--paper-blue); font-family: var(--font-mono); font-size: 9px; }
 
 /* API */
 .api-list { border-top: 1px solid var(--line-strong); }
@@ -494,19 +493,12 @@ kbd {
   .menu-trigger { display: grid; gap: 5px; padding: 9px; }
   .menu-trigger span { width: 18px; height: 1px; background: currentColor; }
   .site-actions .lab-link { display: none; }
-  .home-hero__inner { display: block; min-height: auto; padding: 70px 0 42px; }
-  .home-hero__copy { width: 100%; }
-  .home-hero h1 { font-size: clamp(50px, 16vw, 76px); }
-  .home-hero__visual { margin: 60px 0 0; }
-  .home-proof { grid-template-columns: 1fr 1fr; }
-  .home-proof > div:nth-child(2) { border-right: 0; }
-  .home-proof > div:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
-  .home-proof > div:nth-child(3) { padding-left: 0; }
   .home-section { padding: 72px 0; }
   .section-heading { display: block; }
   .section-heading p { margin-top: 14px; }
-  .task-grid, .door-grid, .example-grid, .workflow-doors, .workflow-detail, .research-layout, .research-preview { grid-template-columns: 1fr; }
-  .task-card + .task-card { border-top: 1px solid var(--line); border-left: 0; }
+  .example-grid, .research-layout, .home-choice, .home-exits { grid-template-columns: 1fr; }
+  .home-explain { grid-template-columns: 1fr; gap: 36px; }
+  .home-explain__visual { margin-top: 4px; }
   .content-grid { display: block; }
   .side-index { position: static; display: flex; gap: 14px; overflow-x: auto; margin-bottom: 28px; padding-bottom: 7px; }
   .side-index > span { display: none; }
@@ -535,12 +527,8 @@ kbd {
   .brand__word { font-size: 17px; }
   .site-actions { gap: 1px; }
   .page-intro h1 { font-size: 43px; }
-  .hero-actions { align-items: stretch; flex-direction: column; }
-  .home-proof { grid-template-columns: 1fr; }
-  .home-proof > div { padding-left: 0; border-right: 0; border-bottom: 1px solid var(--line); }
   .score-space__metrics small { font-size: 7px; }
   .score-space__metrics span { padding-inline: 8px; }
-  .task-card { padding: 28px; }
   .provenance-grid { grid-template-columns: 1fr; }
   .provenance-grid div { border-right: 0; border-bottom: 1px solid var(--line); }
   .benchmark-chart { padding: 18px; }
@@ -571,7 +559,19 @@ kbd {
    the markup here, so these rules attach to semantic structure inside the
    frame rather than to the theme's hashed CSS-module class names. */
 .docs-frame { width: var(--page); margin: 0 auto; padding: 76px 0 96px; }
-.doc-article__body { max-width: var(--reading); min-width: 0; }
+.doc-article__body { max-width: var(--code); min-width: 0; }
+/* Prose keeps the 72ch measure; code, tables and figures keep their own. A
+   sentence that runs past 72ch is tiring to read, but an f-string naming two
+   attributes and a format spec is one token-stream that cannot be re-wrapped,
+   so forcing both into one measure clipped the code instead. Capping the
+   children rather than the body is what lets the two coexist in one column. */
+.doc-article__body .markdown > p,
+.doc-article__body .markdown > ul,
+.doc-article__body .markdown > ol,
+.doc-article__body .markdown > h2,
+.doc-article__body .markdown > h3,
+.doc-article__body .markdown > h4,
+.doc-article__body .markdown > blockquote { max-width: var(--reading); }
 .doc-article--with-toc { display: grid; grid-template-columns: minmax(0, 1fr) 232px; gap: 58px; }
 .doc-article__toc { position: sticky; top: 104px; align-self: start; padding-left: 22px; border-left: 1px solid var(--line); font-size: 13px; }
 .doc-article__toc-title { display: block; margin-bottom: 12px; color: var(--ink-500); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -584,7 +584,15 @@ kbd {
   .doc-article--with-toc { grid-template-columns: minmax(0, 1fr); }
   .doc-article__toc { display: none; }
 }
-.docs-frame__content { max-width: var(--reading); min-width: 0; }
+/* The reading measure belongs to the prose, not to the prose *plus* its table
+   of contents. Capping this wrapper at --reading made `.doc-article--with-toc`
+   share 72ch between the body and the 232px table of contents, so every docs
+   route -- walkthroughs and research included -- rendered its prose at 351px of
+   a 1376px frame, about 45 characters a line, with wide code clipped mid-token.
+   `.doc-article__body` already caps itself at --reading, so this wrapper only
+   has to leave room for the contents column beside it: 232px plus the 58px
+   grid gap. */
+.docs-frame__content { max-width: min(100%, calc(var(--code) + 290px)); min-width: 0; }
 .blog-frame { width: var(--page); margin: 0 auto; padding: 76px 0 96px; }
 /* The index supplies its own PageIntro, which already carries the top spacing. */
 .page-intro + .blog-frame { padding-top: 8px; }

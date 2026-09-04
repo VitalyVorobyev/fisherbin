@@ -265,7 +265,9 @@ with native NumPy in under ten seconds after warm-up.
 
 ## M12 — Consolidation programme
 
-**Status:** active; S1-S8 done; S10 is unblocked and is next. The remaining sessions are the
+**Status:** active; S1-S8 and S10 done; S11 is next, then S9. The remaining portal
+work was split on 4 September 2026: S10 writes the front door, and a new S11 does the visual
+design pass, the inline demos and the deployment. The remaining sessions are the
 user-facing half of the programme and were re-scoped on 3 September 2026 around one direction:
 the portal becomes the site root and explains rather than sells, MkDocs narrows to the
 exhaustive reference, and four detailed walkthroughs — one per input route, two on real data —
@@ -322,7 +324,9 @@ Four workstreams, each with its own gate:
   typed: each resolves from a JSON Pointer into committed evidence through
   `website/scripts/generate_walkthroughs.py`, a missing key fails `pnpm build`, and
   `tests/test_walkthrough_facts.py` re-resolves every pointer and refuses a numeric literal in
-  prose.
+  prose. The gate's own last clause — that the root deployment is live — is delivered by **S11**,
+  not S10: the remaining portal work was split on 4 September 2026 so that the surface is
+  published only once it is finished. A reader checking that clause reads S11's closing report.
 - **W4 — Showcases.** A realistic end-to-end example for each input route: score sample and
   density ratios (FlowCyt, already real), an analytic `ScoreFunction` with an explicit nuisance on
   the NumPy backend (Michelson fringe phase against a fringe-frequency nuisance), and an executed
@@ -362,8 +366,9 @@ Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock
 | S6 | Portal topology, reference cut, research narrative | W3 | S2, S3 | done |
 | S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | done |
 | S8 | The four walkthroughs | W3, W4 | S6, S7 | done |
-| S10 | Portal front door: home, get-started, e2e in CI, deployment | W3 | S8 | queued |
-| S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S10 | queued |
+| S10 | Portal front door: home, get-started, captured outputs | W3 | S8 | done |
+| S11 | Portal design pass, inline demos, and launch | W3 | S10 | queued |
+| S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S11 | queued |
 
 Deliberately cut, because it serves no user: renaming the six iteration-budget parameters (one
 table in the API guide instead); `PartitionResult.from_dict` (`Quantizer.save`/`load` is the

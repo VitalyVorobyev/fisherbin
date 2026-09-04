@@ -58,8 +58,13 @@ describe("website/redirects.json", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("every `to` ends with a trailing slash", () => {
-    const offenders = manifest.redirects.filter((entry) => !entry.to.endsWith("/"));
+  // The site root is the one legitimate empty `to`: `motivation/` was retired in
+  // S10 and the portal home is what replaced it, and the assembled root is
+  // addressed as "" exactly as it is in `unstubbed`.
+  it("every `to` is either the site root or ends with a trailing slash", () => {
+    const offenders = manifest.redirects.filter(
+      (entry) => entry.to !== "" && !entry.to.endsWith("/")
+    );
     expect(offenders).toEqual([]);
   });
 
@@ -69,11 +74,18 @@ describe("website/redirects.json", () => {
   });
 
   // Every stub points into the MkDocs reference, because that is where the
-  // pre-cut content went — with one deliberate exception. `three-doors.md` was
-  // retired in S8 rather than moved, and the four walkthroughs are what replaced
-  // it, so its URL is the one stub whose target is a portal route. Listing the
-  // exception here rather than relaxing the rule keeps the next one deliberate too.
-  const PORTAL_TARGETED = new Map([["three-doors/", "walkthroughs/ratios/"]]);
+  // pre-cut content went — with three deliberate exceptions, one per page that
+  // was retired rather than moved. `three-doors.md` went in S8 and the four
+  // walkthroughs replaced it; `motivation.md` and `user-workflow.md` went in S10
+  // and the portal home and `/get-started` replaced them. Listing each exception
+  // here rather than relaxing the rule keeps the next one deliberate too.
+  const PORTAL_TARGETED = new Map([
+    ["three-doors/", "walkthroughs/ratios/"],
+    // Retired in S10 by the pages that replaced them: the portal home took over
+    // the motivation page, and `/get-started` took over the workflow guide.
+    ["motivation/", ""],
+    ["user-workflow/", "get-started/"]
+  ]);
 
   it("every `to` starts with reference/, except the deliberately listed portal targets", () => {
     const offenders = manifest.redirects.filter(
@@ -92,9 +104,9 @@ describe("website/redirects.json", () => {
   });
 
   // An unstubbed entry is a URL that silently stops redirecting, so the reason it
-  // is safe has to travel with it. Four are excluded today: the site root and
-  // reference/, api/ and examples/ — each because a portal route now occupies the
-  // URL and answers the same question. A one-word reason would defeat the point.
+  // is safe has to travel with it. Three are excluded today: the site root,
+  // reference/ and api/ — each because a portal route now occupies the URL and
+  // answers the same question. A one-word reason would defeat the point.
   it("every unstubbed path carries a substantive reason", () => {
     const offenders = manifest.unstubbed.filter((entry) => (entry.reason ?? "").trim().length < 40);
     expect(offenders).toEqual([]);

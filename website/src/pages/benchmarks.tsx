@@ -11,7 +11,7 @@ export default function Benchmarks(): React.JSX.Element {
   const environment = portalData.benchmarks.environment;
   return (
     <AppShell title="Benchmarks" description="Data-driven ScoreQuant speed, scale, memory, and quality evidence.">
-      <PageIntro eyebrow="Committed performance evidence" title="Speed without hiding the machine." lead="Every view is rendered from the repository baseline JSON. Runtime, peak memory, dimensions, precision, backend, and quality meaning travel with the number." />
+      <PageIntro eyebrow="Committed performance evidence" title="What was measured, and on what machine" lead="Every view is rendered from the repository baseline JSON. Runtime, peak memory, dimensions, precision, backend, and quality meaning travel with the number." />
       <section className="section-wrap">
         <div className="provenance-grid">
           <div><small>Machine</small><strong>{environment.platform_system} · {environment.platform_machine}</strong></div>

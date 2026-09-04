@@ -105,17 +105,15 @@ future_bins = quantizer.predict_scores(rng.normal(loc=0.2, size=(500, 2)))
 ```
 
 The three fast starts in the [README](https://github.com/VitalyVorobyev/scorequant#readme) do the
-same for each door, and [Choosing your workflow](user-workflow.md) walks through the decision.
+same for each door, and [Diagnostics and choosing a method](book/ch14-choosing-a-method.md) walks
+through the decision.
 
 ## Site map
 
-- [Why ScoreQuant](motivation.md) — the problem, why naive binning loses information, why score
-  space, and why the two tasks stay apart.
 - [Method overview](method.md) — the pipeline from score to certificate, with the criteria and
   solver families named.
 - [Scores, score laws, and the three doors](book/ch04-scores-and-doors.md) — the input regimes, the source-versus-provider contract, and the
   validation rules.
-- [Choosing your workflow](user-workflow.md) — which task, which door, which criterion and solver.
 - [The book](book/index.md) — the statistical theory developed independently of this package's API.
 - [Examples](examples/index.md) — twelve runnable pages: the three doors, an interferometer phase
   measurement with an explicit nuisance on the portable backend, a solver shootout against three

@@ -12,8 +12,8 @@ public FAIR Universe HiggsML dataset, and the complete FlowCyt population-fracti
 Eleven of the twelve pages have a matching notebook under
 [`examples/notebooks/`](https://github.com/VitalyVorobyev/scorequant/tree/main/examples/notebooks)
 that runs the same story at a larger, more decisive scale. See [Three
-doors](../book/ch04-scores-and-doors.md) for what a door is, and [Choosing your
-workflow](../user-workflow.md) for a task-first decision guide.
+doors](../book/ch04-scores-and-doors.md) for what a door is, and [Diagnostics and choosing a
+method](../book/ch14-choosing-a-method.md) for a task-first decision guide.
 
 | Page | Demonstrates | Task(s) | Door | Notebook |
 | --- | --- | --- | --- | --- |

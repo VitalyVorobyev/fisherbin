@@ -21,7 +21,7 @@ interest**, and \(\epsilon\) a **fractional fringe-frequency error — the nuisa
 baseline, a phase offset and a slightly wrong wavenumber are nearly the same signal, which is what
 makes an unknown \(\epsilon\) the canonical nuisance of interferometric metrology: this is a
 profiled problem, not a decorative one. Two parameters, one measurement coordinate — the near miss
-[Why ScoreQuant](../motivation.md) describes in prose, on a model where the answer is exactly
+[Why bin at all](../book/ch01-why-bin.md) describes in prose, on a model where the answer is exactly
 computable.
 
 ## Data
