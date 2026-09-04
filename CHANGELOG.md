@@ -5,12 +5,23 @@ All notable changes to ScoreQuant are recorded here. The format follows
 [semantic versioning](https://semver.org/spec/v2.0.0.html) — with the usual `0.x` caveat that the
 public API may still change between minor releases.
 
-## [Unreleased]
+An `[Unreleased]` section is created by the first change that lands after a release. The file
+deliberately carries no empty one: a standing `unreleased` heading was dated by a later commit
+once already, which retroactively asserted that unshipped work had shipped.
 
-Changes on `main` since 0.1.0. Nothing below has been released: verified against the `v0.1.0`
-tag, where `RefusalError` does not exist anywhere in `src/` and `LinearProblem` is still
-exported. These sections were appended while the version heading read `unreleased`, and a later
-commit dated that heading, which retroactively asserted they had shipped.
+## [0.2.0] — 2026-09-04
+
+The consolidation release (roadmap milestone M12). The public surface gains a small error
+hierarchy and loses one exported name that no task accepted; the documentation becomes a learning
+portal served at the URL the package advertises.
+
+**Breaking:** `LinearProblem` and `LinearComponents.evaluate` are removed — see Removed below.
+
+Everything here sat on `main` under an `[Unreleased]` heading that had to be created before this
+release could be described honestly. The entries had been appended while the version heading still
+read `unreleased`, and a later commit dated that heading, which retroactively asserted they had
+shipped in 0.1.0. Verified at the `v0.1.0` tag: `RefusalError` does not exist anywhere in `src/`
+there, and `LinearProblem` is still exported.
 
 ### Site
 

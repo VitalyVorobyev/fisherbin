@@ -228,8 +228,8 @@ cd /tmp && /tmp/sq/bin/python -c "import scorequant as sq; print(sq.__version__)
 the wheel, and the check proves nothing. Then publish:
 
 ```bash
-git tag -a v0.1.0 -m "ScoreQuant 0.1.0"
-git push origin v0.1.0
+git tag -a v0.2.0 -m "ScoreQuant 0.2.0"
+git push origin v0.2.0
 ```
 
 The workflow re-runs the full handoff gate, checks the tag matches the packaged version, runs
