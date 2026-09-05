@@ -57,3 +57,28 @@
 .binning-comparison__value { fill: var(--text); font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
 .binning-comparison__bar { fill: var(--border-strong); }
 .binning-comparison__bar--scorequant { fill: var(--accent); }
+
+/* ---------------------------------------------------------------------------
+   ApertureStrip (M13-B, Michelson walkthrough): stacked bands of coloured
+   runs against a shared fringe-phase axis. Runs get a stroke so two runs of
+   the same counter colour separated only by a boundary (not by a different
+   run in between) still read as distinct rectangles. -------------------- */
+
+.aperture-strip__label { fill: var(--ink-700); font-family: var(--font-body); font-size: 12px; }
+.aperture-strip__run { stroke: var(--surface-raised); stroke-width: 1; }
+
+/* ---------------------------------------------------------------------------
+   MichelsonBudgetExplorer: the counter-budget radios and reset button. The
+   radios are styled like .filter-chip (components.css) and the reset button
+   like .live-fit__button--secondary (live-fit.css); kept as their own rules,
+   rather than reusing those class names directly, since this control isn't
+   a filter row or a LiveFit action. ------------------------------------- */
+
+.budget-explorer { margin: 20px 0; }
+.budget-explorer__controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; padding: 0; border: 0; }
+.budget-explorer__controls legend { padding: 0 0 8px; color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.budget-explorer__radio { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted); background: var(--surface-raised); font-size: 13px; cursor: pointer; }
+.budget-explorer__radio:hover, .budget-explorer__radio.is-active { border-color: var(--accent); color: var(--accent-strong); background: var(--tint-accent); }
+.budget-explorer__reset { margin: 0 0 20px; padding: 9px 16px; border: 1px solid var(--border-strong); border-radius: 7px; color: var(--text); background: var(--surface-sunken); font-size: 13px; font-weight: 620; cursor: pointer; }
+.budget-explorer__reset:hover:not(:disabled) { background: var(--surface); }
+.budget-explorer__reset:disabled { cursor: not-allowed; opacity: .55; }

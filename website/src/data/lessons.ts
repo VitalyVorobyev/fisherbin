@@ -82,8 +82,8 @@ export const LESSONS: readonly Lesson[] = [
       budget: michelson("bins"),
       evaluation: "Phase information retained after profiling, against the unbinned profiled ceiling. Deterministic quadrature, so there is no sampling split for the fixed-table task; the compiled plain-D rule is scored on a separate held-out sample."
     },
-    browser: "Nothing yet. The lesson's experiment, a K control with a browser refit of the committed partition, arrives with the page's rewrite.",
-    status: "pending"
+    browser: "The bin-budget experiment refits the committed profiled partition at the chosen K on the same node table, with the same seed, solver and efficient-score-bound start, and redraws the aperture from the labels it gets back.",
+    status: "complete"
   },
   {
     slug: "ratios",

@@ -12,6 +12,7 @@ import {MarkerHistogram} from "@site/src/components/charts/MarkerHistogram";
 import {MethodComparison} from "@site/src/components/charts/MethodComparison";
 import {populationColor} from "@site/src/components/charts/scale";
 import {showcaseData} from "@site/src/data/showcase";
+import {ReferenceLink} from "@site/src/components/ReferenceLink";
 import {factValue, factsFor} from "@site/src/lib/facts";
 
 export const f = factsFor("flowcyt");
@@ -288,7 +289,7 @@ patients frozen before any fitting rather than alternate rows of one table. The 
 that study — the acquisition protocol, the calibration audit that chose the ratio model, the
 solver comparison, the transport diagnostics, and the per-patient estimates — is the reference
 study at{" "}
-<a href="pathname:///reference/usecases/flowcyt/" target="_self">the FlowCyt case study</a>, and
+<ReferenceLink to="usecases/flowcyt/">the FlowCyt case study</ReferenceLink>, and
 this page quotes it rather than repeating it.
 
 ## What that means for the report

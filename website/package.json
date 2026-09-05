@@ -36,9 +36,12 @@
     "@fontsource/ibm-plex-mono": "5.3.0",
     "@mdx-js/react": "3.1.1",
     "clsx": "2.1.1",
+    "katex": "^0.18.5",
     "prism-react-renderer": "2.4.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.0",

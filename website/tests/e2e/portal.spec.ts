@@ -203,3 +203,60 @@ test("the lessons page lists one lesson per walkthrough and loads no runtime", a
   expect(await walkthroughLinks.count()).toBeGreaterThanOrEqual(4);
   expect(heavyRequests).toEqual([]);
 });
+
+test("the michelson lesson runs problem to experiment without loading a runtime", async ({page}) => {
+  const heavyRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/pyodide|marimo|scorequant-.*\.whl|walkthrough-scores/.test(request.url())) heavyRequests.push(request.url());
+  });
+  await page.goto("./walkthroughs/michelson/");
+  await expect(page.getByRole("heading", {name: /Detector segments for an interferometer phase/, level: 1})).toBeVisible();
+
+  // The seven steps, in order: the page pattern every lesson follows.
+  const steps = ["1. The problem", "2. The model and its score", "3. The binning decision", "4. The run", "5. The evaluation", "6. One experiment: the bin budget", "7. What it means"];
+  // Docusaurus appends a zero-width-space anchor to every heading; strip it.
+  const headings = (await page.getByRole("heading", {level: 2}).allInnerTexts()).map((text) => text.replace(/[\u200B\s]+$/g, ""));
+  expect(headings.filter((text) => steps.some((step) => text.startsWith(step)))).toEqual(steps);
+
+  // The contract sits before any exposition and names the admissible labels
+  // (disjoint counters) at the opening rather than after the result.
+  const contract = page.getByLabel("Problem contract");
+  await expect(contract).toBeVisible();
+  for (const term of ["Observation", "Parameters of interest", "Nuisance", "Reference point", "Admissible labels", "Score provenance", "Task and output", "Evaluation"]) {
+    await expect(contract.getByText(term, {exact: true})).toBeVisible();
+  }
+  await expect(contract.getByText(/disjoint union of intervals/)).toBeVisible();
+
+  // The experiment: one control, keyboard-operable, with a reset and a static table.
+  const radios = page.getByRole("radiogroup", {name: "Counters K"}).getByRole("radio");
+  await expect(radios).toHaveCount(4);
+  await expect(page.getByRole("radio", {name: "6"})).toBeChecked();
+  await expect(page.getByRole("img", {name: /Aperture readout at 6 counters/})).toBeVisible();
+  const reset = page.getByRole("button", {name: "Reset to the headline budget"});
+  await expect(reset).toBeDisabled();
+  await page.getByRole("radio", {name: "6"}).focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByRole("radio", {name: "8"})).toBeChecked();
+  await expect(page.getByRole("img", {name: /Aperture readout at 8 counters/})).toBeVisible();
+  await expect(reset).toBeEnabled();
+  await reset.click();
+  await expect(page.getByRole("radio", {name: "6"})).toBeChecked();
+  await expect(page.getByRole("img", {name: /Aperture readout at 6 counters/})).toBeVisible();
+  await expect(page.getByRole("table", {name: /committed sweep/i})).toBeVisible();
+  await expect(page.getByRole("button", {name: "Refit this budget in your browser"})).toBeVisible();
+
+  expect(heavyRequests).toEqual([]);
+});
+
+test("the michelson refit reproduces the committed profiled retention at the headline budget", async ({page}, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "One activation-gated runtime pass is sufficient.");
+  test.setTimeout(240_000);
+  await page.goto("./walkthroughs/michelson/");
+  const committedValue = await page.locator(".budget-explorer .live-fit__committed .live-fit__value").innerText();
+  await page.getByRole("button", {name: "Refit this budget in your browser"}).click();
+  await expect(page.locator(".live-fit__state")).toHaveText(/complete|error/, {timeout: 230_000});
+  await expect(page.locator(".live-fit__state")).toHaveText("complete");
+  const liveValue = await page.locator(".live-fit__result--live .live-fit__value").innerText();
+  expect(liveValue).toBe(committedValue);
+  await expect(page.getByRole("img", {name: /Your browser's readout at 6 counters/})).toBeVisible();
+});

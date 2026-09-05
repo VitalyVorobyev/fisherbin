@@ -255,6 +255,42 @@ def equal_width_labels(observations: np.ndarray, n_bins: int) -> np.ndarray:
     return np.digitize(u, edges[1:-1])
 
 
+def label_runs(observations: np.ndarray, labels: np.ndarray, *, u_max: float) -> list[list[float]]:
+    """Run-length encode a labeling along increasing `u` into aperture-edge triples.
+
+    Parameters
+    ----------
+    observations
+        Fringe-phase nodes with shape ``[N, 1]``, already sorted by `u` --
+        the midpoint-quadrature nodes `build_train_sample` returns are.
+    labels
+        Integer label per row, aligned with `observations`.
+    u_max
+        Upper edge of the aperture, `U_MAX` for this study.
+
+    Returns
+    -------
+    list of list
+        ``[u_start, u_end, label]`` triples, one per maximal constant-label
+        run, in increasing `u` order. Node `i` of `n` midpoint-quadrature
+        nodes spans ``[i * u_max / n, (i + 1) * u_max / n]``, so a run's
+        bounds are the outer edges of its first and last node: consecutive
+        runs share an edge and together tile ``[0, u_max]`` exactly.
+    """
+    u = np.asarray(observations)[:, 0]
+    labels = np.asarray(labels)
+    n_nodes = u.shape[0]
+    assert np.all(np.diff(u) > 0.0), "observations must be sorted by increasing u"
+    step = u_max / n_nodes
+    edges = np.flatnonzero(np.diff(labels) != 0)
+    starts = np.concatenate([[0], edges + 1])
+    stops = np.concatenate([edges + 1, [n_nodes]])
+    return [
+        [float(start * step), float(stop * step), int(labels[start])]
+        for start, stop in zip(starts, stops, strict=True)
+    ]
+
+
 @dataclass(frozen=True, slots=True)
 class SweepRow:
     """One bin budget's three retentions, the certified ceiling, and its gap.
@@ -651,6 +687,11 @@ def run_study(
                 "profiled_retention": row.profiled_retention_value,
                 "ceiling_retention": row.ceiling_retention,
                 "bound_gap": row.bound_gap,
+                "equal_width_runs": label_runs(
+                    sample.observations, row.equal_width_labels, u_max=U_MAX
+                ),
+                "d_runs": label_runs(sample.observations, row.d_labels, u_max=U_MAX),
+                "profiled_runs": label_runs(sample.observations, row.profiled_labels, u_max=U_MAX),
             }
             for row in sweep
         ],

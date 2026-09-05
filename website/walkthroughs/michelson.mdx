@@ -7,6 +7,10 @@ sidebar_position: 4
 import {BinningComparison} from "@site/src/components/BinningComparison";
 import {Diagnostics} from "@site/src/components/Diagnostics";
 import {Figure} from "@site/src/components/Figure";
+import {MichelsonBudgetExplorer} from "@site/src/components/MichelsonBudgetExplorer";
+import {ProblemContract} from "@site/src/components/ProblemContract";
+import {michelsonSweep} from "@site/src/data/michelsonSweep";
+import {ReferenceLink} from "@site/src/components/ReferenceLink";
 import {factValue, factsFor} from "@site/src/lib/facts";
 import {siteUrl} from "@site/src/lib/site";
 
@@ -16,58 +20,70 @@ export const f = factsFor("michelson");
 
 *Who this is for: an experimentalist who reads out a fringe pattern through a small number of
 detector segments, and wants to know whether equal segments are quietly costing them phase
-precision.*
+precision. The page follows the order every lesson follows: problem, model and score, binning
+decision, run, evaluation, one experiment, interpretation.*
 
-## The measurement
+## 1. The problem
 
 A Michelson interferometer turns a path-length difference into a fringe pattern, and the quantity
-of interest is the fringe phase. The detector does not report where each photon landed. It reports
-a count per segment: the aperture is divided into some number of regions, and each photon
-increments one counter. Everything downstream — the fit, the error bar, the comparison against the
-other arm — is built on those counts.
+of interest is the fringe phase. The detector does not report where each photon landed; it
+reports one count per segment, and everything downstream is built on those counts. The fringe
+frequency is never exactly what the nominal wavenumber says, and over a short baseline a small
+phase offset and a slightly wrong frequency produce almost the same pattern, so the fit must let
+the frequency float. That is the classic confounding of interferometric metrology, stated here
+as a nuisance parameter rather than waved at.
 
-There is a second unknown, and it is unavoidable rather than incidental. The fringe frequency is
-never exactly what the nominal wavenumber says it is. Over a short baseline, a small phase offset
-and a slightly wrong fringe frequency produce almost the same pattern, so the fit cannot fix the
-frequency and must let it float. That is the classic confounding of interferometric metrology, and
-it means the phase precision you actually get is not the precision the fringe contrast suggests.
+<ProblemContract
+  observation={<>The fringe phase <em>u</em> of each photon along the aperture, over {f("fringes")} whole fringes.</>}
+  interest={<>The fringe phase <em>φ</em>.</>}
+  nuisance={<>The fractional fringe-frequency error <em>ε</em>, profiled out of the phase information rather than fixed.</>}
+  referencePoint={<>The nominal fringe law, <em>(φ₀, ε₀) = (0, 0)</em>: zero phase offset and zero frequency error. Every score below is a derivative taken there.</>}
+  budget={<>{f("bins")} counters for the headline; the experiment in the sixth step sweeps {f("sweepBinsLow")}, {f("sweepBinsHeadline")}, {f("sweepBinsEight")} and {f("sweepBinsTen")}.</>}
+  admissibleLabels={<><strong>Any assignment of aperture positions to K counters.</strong> A counter may collect from a disjoint union of intervals, which is what a periodic mask or a modulo addressing scheme on a segmented detector already does. Contiguous-only segmentation, where each counter must be one interval, is a separate and harder-constrained problem this page does not solve; equal segments are its naive member and serve as the baseline.</>}
+  sourceMeasure={<>The fringe intensity law on the aperture. For the fixed-table task it is tabulated on {f("nNodes")} deterministic midpoint-quadrature nodes with the density as weights; for the reusable rule it is a bounded Gauss–Legendre <code>IntegrationSource</code>. No sampling, no seed, no Monte Carlo error.</>}
+  provenance={<>Exact. The score is the analytic derivative of the fringe law, declared through <code>ScoreFunction</code> with <code>kind="exact"</code> and the reference point recorded, so nothing downstream mistakes it for an estimate.</>}
+  taskOutput={<><code>optimize_partition</code> on the node table returns one label per node, which is the readout map on the aperture. <code>fit_quantizer</code> returns a rule for any position, and only the plain-D rule can be compiled from a partition; the profiled rule must be fitted directly, as the closing step shows.</>}
+  evaluation={<>Phase information retained <em>after</em> the fringe frequency is profiled out, as a fraction of the unbinned profiled information. The quadrature is deterministic, so the fixed-table task has no sampling split; the compiled plain-D rule is scored on a fresh quadrature sample as a held-out check.</>}
+/>
 
-So: given a fixed number of detector segments, and given that the fringe frequency will float
-alongside the phase, where should the segment boundaries go? The obvious answer is to space them
-equally across the aperture. This page measures what that answer costs.
+So the question is this: given K counters, and given that the fringe frequency will float alongside
+the phase, which aperture positions should each counter collect from? One word about words: the page
+says *counters* where the library says *bins* or *cells* and the code says `n_bins`. They are the
+same K labels.
 
-## Where the numbers come from
+## 2. The model and its score
 
-Nothing here is measured data, and the page is better for it. The arrival law is written down —
-the fringe density is a cosine of known visibility {f("visibility")} over {f("fringes")} whole
-fringes — so the sensitivity of a photon at a given fringe phase is available in closed form rather
-than estimated. That has a consequence worth stating plainly: on every other walkthrough, the
-library's numbers are an illustration of the mathematics. Here they are a *check* on it, because
-two of the unbinned sensitivity entries have exact analytic values the run has to reproduce.
+Conditioned on the photon count, the arrival law over $m$ whole fringes is the fringe shape
 
-There is no third-party dataset and therefore no third-party licence. What is committed is the
-generating program, `examples/michelson_phase.py`, its evidence JSON, and the deterministic
-quadrature it runs on — {f("nNodes")} nodes across the fringe interval for the fixed-sample fits. Every number on this page is read
-back from that evidence. The full record — the derivation of the closed forms, the complete bin
-budget sweep, and the figure showing the fitted segmentation against the fringe pattern — is the
-<a href="pathname:///reference/examples/michelson-phase/" target="_self">Michelson interferometer
-phase</a> page in the reference.
+$$
+p(u \mid \varphi, \epsilon) \;\propto\; 1 + V \cos\big((1+\epsilon)\,u + \varphi\big),
+\qquad u \in [0, 2\pi m),
+$$
 
-## Writing the sensitivity down
+with visibility $V$ fixed and known (here {f("visibility")}, over {f("fringes")} fringes), the
+phase $\varphi$ the parameter of interest and $\epsilon$ the nuisance. Over whole fringes the
+normaliser $Z = \int (1 + V\cos(u + \varphi))\,du$ equals the interval length at $\epsilon_0 = 0$,
+so $\partial_\varphi \log Z = 0$ while $\partial_\epsilon \log Z = V\cos\varphi_0$ does not
+vanish. At the reference point the conditional score is therefore closed-form:
 
-Because the model is exact, this study goes through the analytic door: a callback that returns, for
-each photon, how sensitive its arrival is to each of the two parameters. `ScoreFunction` wraps that
-callback and declares what it is — `kind="exact"` and the point the derivatives were taken at — so
-that everything downstream knows it is working with an exact quantity rather than an estimate.
+$$
+s_\varphi(u) = \frac{-V \sin u}{1 + V\cos u},
+\qquad
+s_\epsilon(u) = u\, s_\varphi(u) - V .
+$$
 
 Two columns, and it is worth being clear what each one is. The `phase` column is how much a photon
-at fringe phase `u` tells you about the phase; it is largest on the steep flanks of the fringe and
-vanishes at the crests and troughs, which is the familiar statement that a fringe carries phase
-information where it is *changing*, not where it is bright. The `fringe_frequency` column is the
-same quantity multiplied by `u`, plus a constant. That constant is not a centering convenience: it
-is the derivative of the normalizer, and dropping it would leave a column with nonzero mean and a
-wrong information matrix. Scores are never centred in this library, and this is the cleanest case
-of why — the origin here is fixed by the physics, not by preference.
+at fringe phase $u$ tells you about the phase: largest on the steep flanks of the fringe, zero at
+the crests and troughs, which is the familiar statement that a fringe carries phase information
+where it is *changing*, not where it is bright. The `fringe_frequency` column is the same quantity
+multiplied by $u$, minus $V$. That constant is not a centering convenience: it is the derivative of
+the normaliser, and it is what makes $E[s_\epsilon] = 0$ hold exactly. Dropping it would leave a
+column with nonzero mean and a wrong information matrix. Scores are never centred in this library,
+and this is the cleanest case of why: the origin is fixed by the physics, not by preference.
+
+Because the model is exact, the study goes through the analytic door. `ScoreFunction` wraps the
+callback and declares what it is, `kind="exact"` and the point the derivatives were taken at, so
+everything downstream knows it is working with an exact quantity.
 
 ```python
 import numpy as np
@@ -105,12 +121,13 @@ provider = sq.ScoreFunction(
 ```
 
 A callback alone cannot be fitted, and that is deliberate: a sensitivity map with no measure
-attached says nothing about how often each fringe phase actually occurs. The measure here is a
-bounded interval with an explicit density, which `IntegrationSource` turns into a deterministic
-Gauss-Legendre grid — no sampling, no seed, no Monte Carlo error. Alongside it, a plain midpoint
-rule over the same interval gives the finite weighted table the fixed-sample fits run on; because
-the fringe pattern is periodic, that rule converges fast enough to reproduce the analytic values to
-machine precision.
+attached says nothing about how often each fringe phase actually occurs. The measure is a bounded
+interval with an explicit density. `IntegrationSource` turns it into a deterministic Gauss–Legendre
+grid for the reusable rule, and a plain midpoint rule over the same interval gives the finite
+weighted table the fixed-table task runs on. Two entries of the unbinned information have closed
+forms, $I_{\varphi\varphi} = 1 - \sqrt{1 - V^2}$ and $I_{\varphi\epsilon} = \pi m\, I_{\varphi\varphi}$,
+and the table reproduces both to machine precision. On every other walkthrough the library's
+numbers illustrate the mathematics; here they check it.
 
 ```python
 source = sq.IntegrationSource(
@@ -135,19 +152,37 @@ assert abs(float(information[0, 1]) - float(information[0, 0]) * U_MAX / 2.0) < 
 
 Every call on this page runs on the NumPy backend at double precision, declared once in
 `EXECUTION` and passed explicitly. That is the portable CPU runtime rather than the JAX default,
-and it runs the same shared mathematics.
+and it runs the same shared mathematics. There is no third-party dataset and no third-party
+licence: the generating program is `examples/michelson_phase.py`, and every number on this page is
+read back from the evidence file it writes. The full record, with the derivation of the closed
+forms and the complete sweep, is the
+<ReferenceLink to="examples/michelson-phase/">Michelson interferometer
+phase</ReferenceLink> page in the reference.
 
-## Choosing the segment boundaries
+## 3. The binning decision
 
-The fit is `optimize_partition` on the weighted table. `ProfiledDOptimality(interest=INTEREST)`
-says what is being optimized: information about the phase *after* the fringe frequency has been
-profiled out — not information about the pair, which is a different and easier problem.
-`DExchangeConfig` is the exact finite solver, moving one node at a time and accepting only exactly
-positive gains.
+Three things are decided before anything runs, and the contract above already names them.
 
-`efficient_score_bound` is computed first, for two reasons. It gives a certified upper bound on
-what any rule with this many cells could retain from this space, and its labels are a justified
-starting point for the exchange. Both matter below.
+**What may be grouped together.** Any set of aperture positions may share a counter. The
+optimisation is over labelings of the node table, not over cut points, so a counter that collects
+from several separate stretches of the aperture is an ordinary candidate rather than a special
+case. If your hardware can only realise contiguous segments, the rule this page finds is a ceiling
+for what your readout could do, not a design you can copy.
+
+**Which criterion.** `ProfiledDOptimality(interest=INTEREST)` says what is being optimised:
+information about the phase *after* the fringe frequency has been profiled out. Plain
+`DOptimality` optimises information about the pair, which is a different and easier question, and
+the closing step shows that the difference is measurable. Picking the criterion that matches the measurement
+is not a tuning knob.
+
+**Which solver, and where it starts.** `DExchangeConfig` is the exact finite solver: it moves one
+node at a time and accepts only exactly positive gains, so the result is exchange-stable by
+construction. Before it runs, `efficient_score_bound` computes a certified upper bound on what any
+rule with this many cells could retain from this score space, and its labels are a justified
+starting point for the exchange. The bound matters twice: as the ceiling the result is judged
+against in the evaluation step, and as the reason the exchange starts somewhere sensible.
+
+## 4. The run
 
 ```python
 n_bins = 6
@@ -190,10 +225,14 @@ assert round(profiled_retention(np.asarray(result.labels), n_bins), 4) == 0.9483
 assert round(profiled_retention(equal_width_labels(n_bins), n_bins), 4) == 0.2054
 ```
 
-## What came out
+The output is `result.labels`: one counter index per quadrature node, which is the readout map.
+`profiled_retention` is the page's single yardstick, and it is applied to every labeling the same
+way. Its `geometric_mean_retention` is the retained fraction of profiled information per parameter
+of interest, combined as a geometric mean across them; with one parameter of interest, the phase,
+it is simply the fraction of profiled phase information the labels keep. What the run reports:
 
 <Diagnostics
-  caption={`Retentions are at ${f("bins")} segments, measured against the unbinned phase information that survives profiling — never against the phase information you would have if the fringe frequency were known.`}
+  caption={`Retentions are at ${f("bins")} counters, measured against the unbinned phase information that survives profiling — never against the phase information you would have if the fringe frequency were known.`}
   items={[
     {
       label: "Phase information, unbinned",
@@ -223,59 +262,38 @@ assert round(profiled_retention(equal_width_labels(n_bins), n_bins), 4) == 0.205
       label: "Phase information retained",
       value: f("profiledRetentionAtSix"),
       meaning:
-        "What the fitted segments keep of what remains. This is the number a phase measurement feels.",
+        "What the fitted counters keep of what remains. This is the number a phase measurement feels.",
     },
     {
       label: "Certified ceiling",
       value: f("ceilingRetentionAtSix"),
       meaning:
-        "The best any rule with this many cells could do on this space. At this budget the fitted segments reach it to the digits shown.",
+        "The best any rule with this many cells could do on this space. At this budget the fitted counters reach it to the digits shown.",
     },
     {
       label: "Certified gap",
       value: f("boundGapAtSix"),
       meaning:
-        "The remaining certified slack. The certificate is not decoration — it is a computable ceiling, and here the solver arrives at it.",
+        "The remaining certified slack. The certificate is a computable ceiling, and here the solver arrives at it.",
     },
     {
       label: "Intervals on the aperture",
       value: f("combRuns"),
       meaning:
-        "How many contiguous stretches of the aperture the fitted rule occupies. Far more than the number of segments, for the reason below.",
+        "How many contiguous stretches of the aperture the plain-D partition occupies once it is turned into a reusable rule (the closing step), counted on a fine grid of positions. Several times the number of counters, for the reason the evaluation step gives; the profiled partition's own intervals are drawn in the sixth step.",
     },
   ]}
 />
 
-<Figure
-  src={siteUrl("walkthrough-figures/michelson-phase.png")}
-  alt="Two panels: the fringe intensity across the aperture with the fitted bin boundaries marked, and retained profiled information against bin budget for the profiled, D-optimal and equal-width rules."
-  caption={`The two-panel study figure. The comb of boundaries in the left panel is the shape no contiguous segmentation of the aperture can express.`}
-  wide
-/>
+## 5. The evaluation
 
-## What that means for the readout
-
-The fitted rule is not a segmentation of the aperture at all, in the sense a detector designer
-would mean. The sensitivity of a photon depends on the fringe coordinate only through its phase
-within a fringe, so a single cell of the fitted rule pulls back to one interval *per fringe*. Laid
-out along the aperture the result is a comb: {f("combRuns")} separate intervals for {f("bins")}
-counters, each counter collecting from a repeating set of positions.
-
-That is a physically implementable readout — it is what a periodic mask, or a modulo addressing
-scheme on a segmented detector, already does — but it is not what equal segments give you, and no
-contiguous division of the aperture can imitate it. It is also the page's most transferable point:
-when the physics is periodic, the information-optimal readout is periodic, and a contiguous
-segmentation is fighting the model rather than following it.
-
-The browser experiment for this page, a bin-budget control with a refit of the committed
-partition, arrives with its lesson rewrite; the [lessons index](/lab) says what runs in the
-browser today.
-
-## What equal segments retain
+Four labelings of the same node table at the same budget, all put through the same yardstick.
+Equal segments are the readout a detector designer reaches for; plain D is the criterion a reader
+might reach for; the profiled partition is the page's result; the ceiling is the certificate.
 
 <BinningComparison
   axisLabel="Phase information retained, after profiling"
-  caption={`All four rules use ${f("bins")} segments on the same photon distribution. Higher is better.`}
+  caption={`All four rules use ${f("bins")} counters on the same photon distribution. Higher is better.`}
   rows={[
     {
       label: "Equal segments",
@@ -303,60 +321,93 @@ browser today.
 />
 
 Equal segments keep {f("equalWidthRetentionAtSix")} of the available phase information at this
-budget. That is bad, and the way it is bad is worse than the number suggests, because it does not
-improve monotonically as segments are added.
+budget; the profiled partition keeps {f("profiledRetentionAtSix")} and sits on the certified
+ceiling. The kind of information is worth stating with the number: this is exact-model,
+profiled phase information, measured on the same deterministic table the fit ran on. There is no
+sampling split to report for the fixed-table task because there is no sample; the one held-out
+check comes in the closing step, where the compiled plain-D rule is scored on a fresh quadrature sample.
 
-<Diagnostics
-  caption="Equal detector segments across the aperture, at four bin budgets. Refining the readout does not reliably refine what it retains."
-  items={[
-    {
-      label: `${f("sweepBinsLow")} segments`,
-      value: f("equalWidthRetentionAtFour"),
-      meaning:
-        "Exactly zero, up to floating point. Four equal segments over four whole fringes make each segment exactly one period, so by periodicity every segment sees the same average photon and the counts carry no phase information at all.",
-    },
-    {
-      label: `${f("sweepBinsHeadline")} segments`,
-      value: f("equalWidthRetentionAtSix"),
-      meaning:
-        "Small but no longer zero: the segments no longer line up with the fringe period, so they at least distinguish parts of a fringe from each other.",
-    },
-    {
-      label: `${f("sweepBinsEight")} segments`,
-      value: f("equalWidthRetentionAtEight"),
-      meaning:
-        "A clean two segments per fringe, and by far the best equal-segment readout in the sweep.",
-    },
-    {
-      label: `${f("sweepBinsTen")} segments`,
-      value: f("equalWidthRetentionAtTen"),
-      meaning:
-        "Worse than with two fewer segments. Ten segments over four fringes is two and a half per fringe, which aliases again — buying more counters made the measurement worse.",
-    },
-  ]}
+<Figure
+  src={siteUrl("walkthrough-figures/michelson-phase.png")}
+  alt="Two panels: the fringe intensity across the aperture with the fitted bin boundaries marked, and retained profiled information against bin budget for the profiled, D-optimal and equal-width rules."
+  caption={`The two-panel study figure. The comb of boundaries in the left panel is the shape no contiguous segmentation of the aperture can express.`}
+  wide
 />
 
-Both of those are the same effect: an equal segmentation beats against the fringe period. At
-{f("sweepBinsLow")} segments the beat is exact and the readout is worthless; at
-{f("sweepBinsTen")} it is partial and the readout is merely worse than it was. The general warning
-is that refining a partition helps only when the refinement genuinely subdivides the old cells, and
-an equal-width rule at a new segment count does not subdivide the old one — it is a different rule
-that happens to have more cells.
+The fitted rule is not a segmentation of the aperture in the sense a detector designer would mean.
+The sensitivity of a photon depends on its position only through its phase within a fringe, so one
+cell of the fitted rule pulls back to one interval *per fringe*. Laid out along the aperture the
+result is a comb, several intervals per counter, each counter collecting from a repeating set of
+positions: the compiled plain-D rule occupies {f("combRuns")} intervals for {f("bins")} counters,
+and the sixth step draws the profiled partition's intervals at every budget. That is exactly the
+disjoint label class the contract
+admitted, and it is the page's most transferable point: when the physics is periodic, the
+information-optimal readout is periodic, and a contiguous segmentation is fighting the model
+rather than following it.
 
-## Three things that are easy to read wrong
+## 6. One experiment: the bin budget
 
-**D-optimality is not the phase criterion, and the difference is measurable.** At
-{f("sweepBinsLow")} segments a plain-D partition of the same table retains
+One control, one question: as the number of counters changes, what do equal segments retain, what
+does the fitted rule retain, and what do the two readouts look like on the aperture? The picture
+is the committed sweep; the button beneath it reruns the profiled fit at the chosen budget in your
+browser, on the same node table with the same seed, solver and starting point, and redraws the
+aperture from the labels it gets back. Nothing loads until you ask.
+
+<MichelsonBudgetExplorer />
+
+<div className="table-scroll" role="region" aria-label="The committed sweep" tabIndex={0}>
+<table>
+  <caption>The committed sweep: phase information retained after profiling, by number of counters.</caption>
+  <thead>
+    <tr><th scope="col">Counters</th><th scope="col">Equal segments</th><th scope="col">Plain D</th><th scope="col">Profiled Ds</th><th scope="col">Certified ceiling</th></tr>
+  </thead>
+  <tbody>
+    {michelsonSweep.rows.map((row) => (
+      <tr key={row.nBins}>
+        <th scope="row">{row.nBins}</th>
+        <td>{row.text.equalWidth}</td>
+        <td>{row.text.dOptimal}</td>
+        <td>{row.text.profiled}</td>
+        <td>{row.text.ceiling}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+</div>
+
+Two rows of that table are the lesson. At {f("sweepBinsLow")} counters equal segments retain
+{f("equalWidthRetentionAtFour")}: four equal segments over four whole fringes make each segment
+exactly one period, so by periodicity every segment sees the same average photon and the counts
+carry no phase information at all. At {f("sweepBinsTen")} counters equal segments retain
+{f("equalWidthRetentionAtTen")}, which is *worse* than the {f("equalWidthRetentionAtEight")} of
+{f("sweepBinsEight")}: ten segments over four fringes is two and a half per fringe, which aliases
+again, so buying more counters made the measurement worse. Both are the same effect, an equal
+segmentation beating against the fringe period, and the general warning is that refining a
+partition helps only when the refinement genuinely subdivides the old cells. An equal-width rule at
+a new segment count does not subdivide the old one; it is a different rule that happens to have more
+cells. The fitted rule, by contrast, improves along the sweep and stays on or near the certified
+ceiling at every budget.
+
+## 7. What it means
+
+**Where this applies.** Whenever the physics is periodic and the readout is free to be periodic
+too: a periodic mask, a modulo-addressed segmented detector, an electronic grouping of channels.
+The result is a design ceiling for hardware that can only realise contiguous segments, and a design
+for hardware that cannot tell the difference. The profiling cost, {f("costOfProfiling")} of the
+phase information before any binning, is the part no readout can recover; the segmentation decides
+how much of the remainder survives.
+
+**Plain D is not the phase criterion, and the difference is measurable.** At
+{f("sweepBinsLow")} counters a plain-D partition of the same table retains
 {f("dOptimalRetentionAtFour")} of the phase information against the profiled partition's
 {f("profiledRetentionAtFour")}; at {f("sweepBinsHeadline")} it is {f("dOptimalRetentionAtSix")}
-against {f("profiledRetentionAtSix")}. Plain D is not misbehaving — it is optimal for the pair of
-parameters, which is a different question from the one an interferometer asks. Picking the
-criterion that matches the measurement is not a tuning knob.
+against {f("profiledRetentionAtSix")}. Plain D is not misbehaving; it is optimal for the pair of
+parameters, which is a different question from the one an interferometer asks.
 
-**The library refuses to compile the profiled rule, and the refusal is a result.** A
-D-optimal partition that is exchange-stable can be turned into a reusable rule — a distance
-computation that labels new photons without refitting. A finite profiled partition cannot, and
-asking produces an error rather than an approximation:
+**The library refuses to compile the profiled rule, and the refusal is a result.** A D-optimal
+partition that is exchange-stable can be turned into a reusable rule, a distance computation that
+labels new photons without refitting. A finite profiled partition cannot, and asking produces an
+error rather than an approximation:
 
 ```python
 d_partition = sq.optimize_partition(
@@ -379,10 +430,12 @@ except sq.RefusalError as error:
 assert refusal.endswith("[CE-DS-GLOBAL-GEOMETRY-001]")
 ```
 
-The message is <code>{f("refusalMessage")}</code>. That is a theorem-backed refusal rather than a missing
-feature: the geometry that makes a stable D-optimal partition equivalent to a distance rule does
-not hold for the profiled criterion, so there is no rule to compile into. The route to a reusable
-profiled rule is to fit one explicitly, which is what the source route is for.
+The message is <code>{f("refusalMessage")}</code>. That is a theorem-backed refusal rather than a
+missing feature: the geometry that makes a stable D-optimal partition equivalent to a distance rule
+does not hold for the profiled criterion, so there is no rule to compile into. The compiled plain-D
+rule, scored on a fresh quadrature sample it never saw, retains {f("compiledTestRetention")} of the
+overall (both-parameter) information, which is the one held-out number on this page. The route to
+a reusable profiled rule is to fit one explicitly, which is what the source route is for:
 
 ```python
 d_rule = sq.fit_quantizer(
@@ -414,18 +467,26 @@ assert d_rule.train_report is not None
 assert ds_rule.train_profiled_report is not None
 ```
 
-**The two reusable rules are reported in two columns, and only one of them compares.** On phase
-information — the same quantity, against the same ceiling, for both rules — the profiled rule
-retains {f("dsRuleProfiledRetention")} against the plain rule's {f("dRuleProfiledRetention")}, and
-the profiled rule wins, which is the entire reason it exists. Beside that sits each rule's score on
-the criterion it actually optimized: {f("dRuleOwnCriterion")} for the plain rule and
-{f("dsRuleOwnCriterion")} for the profiled one. Those two are *not* comparable — the first is an
-overall efficiency across both parameters and the second is a profiled phase retention, on
-different denominators — and they happen to sit close enough together to look like a comparison.
-Reading that column alone was a real mistake made while this study was being built and caught
-afterwards, which is why it is spelled out here rather than left as a footnote.
+**Two reusable rules, two columns, and only one of them compares.** On phase information, the
+same quantity against the same ceiling for both rules, the profiled rule retains
+{f("dsRuleProfiledRetention")} against the plain rule's {f("dRuleProfiledRetention")}, and the
+profiled rule wins, which is the entire reason it exists. Beside that sits each rule's score on the
+criterion it actually optimised: {f("dRuleOwnCriterion")} for the plain rule and
+{f("dsRuleOwnCriterion")} for the profiled one. Those two are *not* comparable: the first is the
+overall D-efficiency, a geometric mean over both parameters against the full unbinned information,
+and the second is phase retention against the profiled ceiling, and they happen to sit close enough
+to look like a comparison. Reading that column alone was a real
+mistake made while this study was being built, which is why it is spelled out here.
 
-## The same door, other inputs
+**Where the theory is.** The profiled criterion, its Schur-complement definition and the
+efficient-score ceiling are
+<ReferenceLink to="book/ch10-profiled-ds/">Nuisance parameters and profiled Ds</ReferenceLink>
+in the book; the compile bridge and its refusal are
+<ReferenceLink to="book/ch08-d-optimality/">D-optimality</ReferenceLink>; the two
+tasks and why a partition has no predict method are
+<ReferenceLink to="book/ch06-two-tasks/">Two tasks</ReferenceLink>.
+
+### Other inputs to the same task
 
 The analytic callback is one of several ways into this door, and the others take the same shape.
 When the model is a linear combination of known component densities, `LinearComponents` declares
@@ -453,8 +514,7 @@ component_score = sq.LinearComponentScore(model)
 
 With Monte Carlo events rather than a bounded integral, the source carries the measure. A uniform
 draw reweighted by the reference intensity is one honest way to build it, and prediction is always
-explicit — it takes sensitivities, never raw observations, so the conversion stays a line you
-wrote:
+explicit: it takes sensitivities, never raw observations, so the conversion stays a line you wrote.
 
 ```python
 events = rng.uniform(-2.0, 3.0, size=(2_000, 1))
@@ -471,8 +531,8 @@ grid_bins = quantizer.predict_scores(component_score.score(grid))
 ```
 
 And when the component matrix is already in memory, `scores_from_components` is the explicit
-adapter. It is a conversion rather than a fit, so the task is chosen afterwards — here a
-fixed-sample partition rather than a reusable rule:
+adapter. It is a conversion rather than a fit, so the task is chosen afterwards, here a fixed-sample
+partition rather than a reusable rule:
 
 ```python
 components = np.asarray(model.evaluate_components(events))
