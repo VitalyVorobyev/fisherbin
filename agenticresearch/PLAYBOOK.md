@@ -6,11 +6,11 @@ not authorization to resume it. One session executes one selected packet.
 ## Next session
 
 ```text
-Proposed (not yet packeted): extend O6 (RETENTION-PLUGIN-CLT-FROZEN-SCALAR) from the scalar
-retention ratio to the vector-score geometric-mean retention (det R)^(1/d) under a frozen rule --
-derive the matrix influence function of the same cell moments, state where log det degenerates,
-and run one coverage experiment on a two-parameter example. Alternatively, an independent audit
-of O6 before any library use. Choose from OPEN_PROBLEMS.md; write the packet first.
+Execute agenticresearch/WORK/active/AUDIT-SCORE-ORACLE-ROBUSTNESS.md in a fresh context.
+Check out branch score-oracle-robustness at a5f905e. Follow agenticresearch/README.md and
+protocols/audit.md. You did not produce O6: do not read the researcher's instrument or
+transcript, build your own, and stop at verified, refuted or reduced with the 16-item report.
+No src/ change, no public API.
 ```
 
 ## Other session types
