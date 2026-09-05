@@ -1,0 +1,42 @@
+{
+  "id": "RETENTION-PLUGIN-CLT-FROZEN-SCALAR",
+  "title": "Frozen-rule scalar retention: plug-in CLT with a consistent influence-function variance",
+  "criterion": [
+    "general",
+    "D"
+  ],
+  "level": "information_accounting",
+  "status": "bridge",
+  "publication_status": "derived_from_published",
+  "statement": "Conditional on a frozen provider s_hat and rule q, for an iid equally weighted evaluation sample with true scalar scores S_i and labels Z_i = q(s_hat(X_i)), the uncentred plug-in ratio eta_hat = sum_b m_hat_b^2/p_hat_b / v_hat (0/0 := 0 on empty cells) equals 1 - RSS/TSS exactly and satisfies sqrt(n)(eta_hat - eta) -> N(0, sigma^2) with sigma^2 = E[psi^2], psi = ((1-eta) S^2 - (S - c_Z)^2)/v, c_b = m_b/p_b, which carries the numerator-denominator covariance. The plug-in sigma_hat^2 = mean(psi_hat_i^2) is strongly consistent and sum_i psi_hat_i = 0 exactly; the Wald interval eta_hat +/- z sigma_hat/sqrt(n) has asymptotic level 1 - alpha whenever sigma^2 > 0. sigma^2 = 0 iff S given Z=b is supported on the roots of (s - c_b)^2 = (1 - eta) s^2 for every b (at most two atoms per cell), which includes eta = 0 and eta = 1; there the interval is unsupported. The interval is for the true retention Var(E[s | q(s_hat)])/Var(s); the proxy surrogate's population value is a different number and is excluded with probability -> 1.",
+  "assumptions": [
+    "A1: every cell has positive population probability under the reference law",
+    "A2: the true scalar score has a finite fourth moment (automatic for bounded scores, e.g. mixture-fraction scores at interior reference points)",
+    "A3: positive unbinned information E[S^2] > 0",
+    "A4: sigma^2 > 0 (holds automatically when S | Z=b is atomless on one cell of positive probability)",
+    "the rule, provider, training data, reference point and K are frozen; the evaluation sample is independent of them, iid, equally weighted, and scores are never centred",
+    "the retained-information reading of eta requires E[S] = 0 and the quantized Fisher identity with q fixed in theta; the CLT itself does not use E[S] = 0",
+    "first-order statement only: no finite-sample or uniform rare-cell coverage guarantee; measured O(1/n) bias and n = 100 under-coverage are recorded in O6.7"
+  ],
+  "dependencies": [
+    "PROXY-TRUE-RETAINED-FI",
+    "FI-QUANT-IDENTITY"
+  ],
+  "implies": [
+    "OPEN-RETENTION-UNCERTAINTY"
+  ],
+  "literature": [
+    "vanderVaart-1998",
+    "Cramer-1946",
+    "Serfling-1980",
+    "Hampel-Ronchetti-Rousseeuw-Stahel-1986"
+  ],
+  "literature_search_status": "prior_art_found",
+  "proof_location": {
+    "file": "KNOWN_RESULTS/10-oracle.md",
+    "section": "O6. Frozen-rule scalar retention: plug-in asymptotics and a consistent variance"
+  },
+  "artifact": "py/score_oracle_retention_uncertainty.py",
+  "role": "the frozen-rule, scalar, oracle-score special case of OP27; separates evaluation uncertainty from proxy bias",
+  "warning": "Bridge from the delta method (van der Vaart Thm 3.1; functions of sample moments, Cramer ch. 28). The closed-form influence function, the RSS identity and the sigma^2 = 0 characterisation are project algebra checked by the selftest and the CI pin, not independently audited. Does not resolve OPEN-RETENTION-UNCERTAINTY (vector scores, refitted rules, weights, no oracle) or OPEN-SCORE-PERTURBATION."
+}

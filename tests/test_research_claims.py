@@ -2512,3 +2512,50 @@ def test_ds19_audit_matrix_tilt_midpoint_violation_by_direct_evaluation() -> Non
         for r in range(2)
     ]
     assert tilted_form(probe) == expected
+
+
+def test_o6_plugin_retention_influence_function_matches_finite_differences() -> None:
+    """O6 (RETENTION-PLUGIN-CLT-FROZEN-SCALAR): finite identities behind the CLT.
+
+    Pins, on a deterministic sample with one empty cell: the residual-sum-of-
+    squares form of the plug-in ratio, agreement with the library's scalar
+    retention, the exact zero mean of the plug-in influence function, and the
+    closed form ``psi = ((1 - eta) S^2 - (S - c_Z)^2) / v`` against Gateaux
+    finite differences of the same functional on the empirical measure.
+    """
+    rng = np.random.default_rng(20260905)
+    n, n_bins = 40, 4
+    scores = rng.standard_t(df=5, size=n) + 0.3 * rng.integers(0, 2, size=n)
+    labels = rng.integers(0, n_bins, size=n)
+    labels[labels == 3] = 1  # cell 3 stays empty on purpose
+
+    def functional(weights: np.ndarray) -> float:
+        w = weights / weights.sum()
+        p = np.bincount(labels, weights=w, minlength=n_bins)
+        m = np.bincount(labels, weights=w * scores, minlength=n_bins)
+        v = float(np.sum(w * scores * scores))
+        between = float(np.sum(np.divide(m * m, p, out=np.zeros(n_bins), where=p > 0)))
+        return between / v
+
+    counts = np.bincount(labels, minlength=n_bins).astype(float)
+    sums = np.bincount(labels, weights=scores, minlength=n_bins)
+    means = np.divide(sums, counts, out=np.zeros(n_bins), where=counts > 0)
+    v_hat = float(np.mean(scores * scores))
+    eta_hat = functional(np.ones(n))
+    psi_hat = ((1.0 - eta_hat) * scores * scores - (scores - means[labels]) ** 2) / v_hat
+
+    rss = float(np.sum((scores - means[labels]) ** 2))
+    assert eta_hat == pytest.approx(1.0 - rss / float(np.sum(scores * scores)), abs=1e-14)
+    report = sq.information_report(scores[:, None], labels, n_bins=n_bins)
+    library = float(report.geometric_mean_retention)
+    assert library == pytest.approx(eta_hat, abs=1e-12)
+    assert float(np.sum(psi_hat)) == pytest.approx(0.0, abs=1e-12)
+
+    eps = 1e-6
+    for j in range(n):
+        plus = np.full(n, (1 - eps) / n)
+        plus[j] += eps
+        minus = np.full(n, (1 + eps) / n)
+        minus[j] -= eps
+        gateaux = (functional(plus) - functional(minus)) / (2 * eps)
+        assert gateaux == pytest.approx(psi_hat[j], abs=1e-7)

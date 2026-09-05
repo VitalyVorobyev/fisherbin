@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-09-02",
+  "updated": "2026-09-05",
   "purpose": "Reproducible literature-discovery state for citation snowballing (protocols/literature.md). One record per paper; papers link to claim ids, never merely to 'ScoreQuant'.",
   "record_schema": {
     "id": "short-slug",
@@ -290,6 +290,47 @@
         "Theorem-targeted triangulation, not a citation-saturation round.",
         "Carstensen 1983 is a secondary record (thesis not read).",
         "No forward-citation traversal was run on Toledo 1993; later fixed-dimension parametric-search and real-RAM-to-bit-complexity results may exist and are logged in gaps.md."
+      ]
+    },
+    {
+      "round": 9,
+      "date": "2026-09-05",
+      "mode": "researcher-triangulation",
+      "scope": "SCORE-ORACLE-ROBUSTNESS per-theorem triangulation for RETENTION-PLUGIN-CLT-FROZEN-SCALAR (O6): delta method for smooth functions of sample means, influence-function variance estimation, and the sampling theory of the correlation ratio / eta-squared. Retrieval delegated (metadata verification via web search over publisher pages, MathSciNet review, course notes quoting theorem statements, the Biometrika contents index and jstatsoft.org); triangulation judgments by the researcher session.",
+      "sources": [
+        "web search over publisher pages, MathSciNet, course notes and journal indexes",
+        "no primary-text reads; every theorem number carries the verification status recorded in its note"
+      ],
+      "query_count": 5,
+      "candidate_count": 12,
+      "candidate_count_scope": "Distinct textbook and article records returned by the five query families before deduplication.",
+      "relevant_count": 6,
+      "papers_added": [
+        "vandervaart-1998",
+        "cramer-1946",
+        "serfling-1980",
+        "hampel-etal-1986",
+        "wishart-1932",
+        "kelley-2007"
+      ],
+      "keys_registered": [
+        "vanderVaart-1998",
+        "Cramer-1946",
+        "Serfling-1980",
+        "Hampel-Ronchetti-Rousseeuw-Stahel-1986",
+        "Wishart-1932",
+        "Kelley-2007"
+      ],
+      "verdict": "prior_art_found",
+      "findings": [
+        "O6.2-O6.4 are a direct instance of the multivariate delta method for functions of sample means (van der Vaart Thm 3.1; Serfling Sec. 3.3 Thm B; Cramer Ch. 28) combined with the influence-function variance formula (Hampel et al. 1986); no novelty is claimed for the method.",
+        "The closed-form influence function of the uncentred correlation ratio with a fixed partition, the RSS identity, and the two-atoms-per-cell characterisation of sigma^2 = 0 were not located as stated in any source; they are recorded as project algebra inside a bridge node, not as a search gap and not as novelty.",
+        "The classical eta-squared interval literature (Wishart 1932; Kelley 2007) is normal-theory and centred, and does not transfer."
+      ],
+      "limitations": [
+        "Theorem-targeted triangulation, not a citation-saturation round.",
+        "No primary text was read; van der Vaart and Serfling theorem numbers rest on secondary quotations, Cramer's on memory, Hampel et al.'s section number is unverified.",
+        "Kendall and Stuart Vol. 2 (asymptotic variance of the sample correlation ratio) was not located to a section and is not registered."
       ]
     }
   ],
@@ -2321,6 +2362,131 @@
       ],
       "status": "screened",
       "note": "Ph.D. thesis, University of Michigan; secondary record only (2 Sep 2026). n^{Omega(log n)} parametric shortest-path breakpoints with matching upper bound; envelope warning, not a bound for the tilted interval DP."
+    },
+    {
+      "id": "vandervaart-1998",
+      "title": "Asymptotic Statistics",
+      "year": 1998,
+      "authors": [
+        "A. W. van der Vaart"
+      ],
+      "bibliography_key": "vanderVaart-1998",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "other",
+      "relevant_claims": [
+        "RETENTION-PLUGIN-CLT-FROZEN-SCALAR",
+        "OPEN-RETENTION-UNCERTAINTY"
+      ],
+      "status": "screened",
+      "note": "Delta method Thm 3.1; Ch. 3 sample-variance example under E X^4 < inf; Ch. 5 M-estimator sandwich. Theorem numbers verified only through secondary quotations (5 Sep 2026)."
+    },
+    {
+      "id": "cramer-1946",
+      "title": "Mathematical Methods of Statistics",
+      "year": 1946,
+      "authors": [
+        "H. Cramer"
+      ],
+      "bibliography_key": "Cramer-1946",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [
+        "serfling-1980"
+      ],
+      "research_area": "other",
+      "relevant_claims": [
+        "RETENTION-PLUGIN-CLT-FROZEN-SCALAR",
+        "OPEN-RETENTION-UNCERTAINTY"
+      ],
+      "status": "screened",
+      "note": "Classical normal limit for functions of sample moments (Ch. 28). Cited from memory; section numbering unverified."
+    },
+    {
+      "id": "serfling-1980",
+      "title": "Approximation Theorems of Mathematical Statistics",
+      "year": 1980,
+      "authors": [
+        "R. J. Serfling"
+      ],
+      "bibliography_key": "Serfling-1980",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [
+        "cramer-1946"
+      ],
+      "cited_by_relevant": [],
+      "research_area": "other",
+      "relevant_claims": [
+        "RETENTION-PLUGIN-CLT-FROZEN-SCALAR",
+        "OPEN-RETENTION-UNCERTAINTY"
+      ],
+      "status": "screened",
+      "note": "Ch. 3 transformations of given statistics; Sec. 3.3 Thm B multivariate delta method (corroborated by two secondary citations)."
+    },
+    {
+      "id": "hampel-etal-1986",
+      "title": "Robust Statistics: The Approach Based on Influence Functions",
+      "year": 1986,
+      "authors": [
+        "F. R. Hampel",
+        "E. M. Ronchetti",
+        "P. J. Rousseeuw",
+        "W. A. Stahel"
+      ],
+      "bibliography_key": "Hampel-Ronchetti-Rousseeuw-Stahel-1986",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [],
+      "research_area": "other",
+      "relevant_claims": [
+        "RETENTION-PLUGIN-CLT-FROZEN-SCALAR",
+        "OPEN-RETENTION-UNCERTAINTY"
+      ],
+      "status": "screened",
+      "note": "Asymptotic variance as the integral of the squared influence function; section number unverified."
+    },
+    {
+      "id": "wishart-1932",
+      "title": "A note on the distribution of the correlation ratio",
+      "year": 1932,
+      "authors": [
+        "J. Wishart"
+      ],
+      "bibliography_key": "Wishart-1932",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [],
+      "cited_by_relevant": [
+        "kelley-2007"
+      ],
+      "research_area": "other",
+      "relevant_claims": [
+        "RETENTION-PLUGIN-CLT-FROZEN-SCALAR",
+        "OPEN-RETENTION-UNCERTAINTY"
+      ],
+      "status": "screened",
+      "note": "Normal-theory exact distribution of the correlation ratio; lineage only, does not transfer. Existence verified from the Biometrika contents index; text not read."
+    },
+    {
+      "id": "kelley-2007",
+      "title": "Confidence intervals for standardized effect sizes: theory, application, and implementation",
+      "year": 2007,
+      "authors": [
+        "K. Kelley"
+      ],
+      "bibliography_key": "Kelley-2007",
+      "source_of_discovery": "concept-search",
+      "cites_relevant": [
+        "wishart-1932"
+      ],
+      "cited_by_relevant": [],
+      "research_area": "other",
+      "relevant_claims": [
+        "RETENTION-PLUGIN-CLT-FROZEN-SCALAR",
+        "OPEN-RETENTION-UNCERTAINTY"
+      ],
+      "status": "screened",
+      "note": "Noncentral-F intervals for eta-squared under normal-theory ANOVA; does not transfer. Verified at jstatsoft.org (v020i08)."
     }
   ]
 }

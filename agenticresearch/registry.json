@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0",
   "project": "ScoreQuant",
-  "updated": "2026-09-01",
+  "updated": "2026-09-05",
   "canonical_problem_file": "PROBLEM.md",
   "human_readable_ledger": "KNOWN_RESULTS/",
   "open_problem_ledger": "OPEN_PROBLEMS.md",
@@ -375,6 +375,30 @@
     "Carstensen-1983": {
       "title": "Complexity of some parametric integer and network programming problems",
       "note": "Ph.D. thesis, University of Michigan, 1983. Secondary record only (2 Sep 2026): cited by Gajjar-Radhakrishnan 2019 and by the 2025 linear-parametric optimisation survey arXiv:2501.11544 for n^{Omega(log n)} breakpoints of a linear-parametric shortest path with matching n^{O(log n)} upper bound. Envelope-materialisation warning; no bound for the tilted interval-segmentation DP."
+    },
+    "vanderVaart-1998": {
+      "title": "Asymptotic Statistics",
+      "note": "A. W. van der Vaart, Cambridge University Press, 1998. Theorem 3.1 (delta method) and the Chapter 3 sample-variance example under a finite fourth moment are the template for O6.2; Chapter 5 (M- and Z-estimators, Theorem 5.23) for plug-in sandwich variances. Registered 5 Sep 2026; theorem numbers verified via secondary quotations, no page access."
+    },
+    "Cramer-1946": {
+      "title": "Mathematical Methods of Statistics",
+      "note": "H. Cramer, Princeton University Press, 1946. Chapter 28 (asymptotic properties of sampling distributions), functions of sample moments: the classical normal limit for smooth functions of sample moments. Registered 5 Sep 2026 from memory; section numbering unverified."
+    },
+    "Serfling-1980": {
+      "title": "Approximation Theorems of Mathematical Statistics",
+      "note": "R. J. Serfling, Wiley, 1980. Chapter 3 (transformations of given statistics), Section 3.3 Theorem B: multivariate delta method for functions of asymptotically normal vectors. Registered 5 Sep 2026; Theorem B corroborated by secondary citations, Theorem A label unverified."
+    },
+    "Hampel-Ronchetti-Rousseeuw-Stahel-1986": {
+      "title": "Robust Statistics: The Approach Based on Influence Functions",
+      "note": "F. R. Hampel, E. M. Ronchetti, P. J. Rousseeuw, W. A. Stahel, Wiley, 1986. Asymptotic variance of a statistical functional as the integral of its squared influence function, V(T,F) = int IF^2 dF, the formula O6.2's sigma^2 = E[psi^2] instantiates. Registered 5 Sep 2026; section number unverified."
+    },
+    "Wishart-1932": {
+      "title": "A note on the distribution of the correlation ratio",
+      "note": "J. Wishart, Biometrika 24(3/4):441-456, 1932. Normal-theory exact distribution of the sample correlation ratio; establishes the eta-squared lineage of O6's uncentred ratio but does not transfer (normality, centred ratio). Registered 5 Sep 2026; existence verified from the Biometrika contents index, text not read."
+    },
+    "Kelley-2007": {
+      "title": "Confidence intervals for standardized effect sizes: theory, application, and implementation",
+      "note": "K. Kelley, Journal of Statistical Software 20(8), 2007. Noncentral-F intervals for eta-squared and R-squared under normal-theory ANOVA; the normality assumption O6 avoids. Registered 5 Sep 2026; verified at jstatsoft.org."
     }
   },
   "agent_usage": {

@@ -6,10 +6,11 @@ not authorization to resume it. One session executes one selected packet.
 ## Next session
 
 ```text
-Execute agenticresearch/WORK/active/SCORE-ORACLE-ROBUSTNESS.md.
-Follow agenticresearch/README.md and protocols/theorem.md.
-Derive the frozen-rule scalar retention uncertainty result, run its one falsification/
-coverage experiment, and stop at proved, refuted or reduced. No new public API.
+Proposed (not yet packeted): extend O6 (RETENTION-PLUGIN-CLT-FROZEN-SCALAR) from the scalar
+retention ratio to the vector-score geometric-mean retention (det R)^(1/d) under a frozen rule --
+derive the matrix influence function of the same cell moments, state where log det degenerates,
+and run one coverage experiment on a two-parameter example. Alternatively, an independent audit
+of O6 before any library use. Choose from OPEN_PROBLEMS.md; write the packet first.
 ```
 
 ## Other session types

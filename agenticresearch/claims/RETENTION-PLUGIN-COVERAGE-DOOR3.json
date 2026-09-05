@@ -1,0 +1,28 @@
+{
+  "id": "RETENTION-PLUGIN-COVERAGE-DOOR3",
+  "title": "Measured coverage of the frozen-rule retention interval on the door3 classifier rung",
+  "criterion": [
+    "general",
+    "D"
+  ],
+  "level": "application",
+  "status": "measured",
+  "publication_status": "internal",
+  "statement": "Measured evidence only. For the frozen door3 rung n_per_class = 15 (classifier seed 101, four cells, D-exchange seed 7), population references by two independent composite Gauss-Legendre routes agree to 1.1e-16: eta = 0.893663, sigma = 0.235410, proxy population value 0.967064 (gap 0.073402). Over 2000 independent evaluation samples per size (SeedSequence 20260905), the 95% Wald interval covers eta with frequency 0.913, 0.934, 0.953, 0.949 at n = 100, 300, 1000, 3000 (SE about 0.005-0.006); SD(eta_hat) matches sigma/sqrt(n) at every size; sigma_hat/sigma has relative RMSE 0.167 -> 0.029; n * bias is about 0.3; the plug-in studentized statistic has skew +1.06 at n = 100 (population-sigma studentized: -0.30), explaining the small-n shortfall; the interval covers the proxy population value with frequency 0.046 at n = 100 and 0 beyond; no interval left [0, 1]; no cell was empty.",
+  "assumptions": [
+    "population quantities are deterministic 1-D quadrature of the reference Gaussian mixture with cell boundaries located by bisection; integration error is the disagreement of two routes plus an analytic tail bound, not a rigorous bound",
+    "Monte Carlo coverage with deterministic seeds; measured, never theorem authority; nothing is claimed about coverage below n = 1000 beyond the recorded numbers",
+    "one frozen rule only; no statement about other rungs, other K, or refitted rules"
+  ],
+  "dependencies": [
+    "RETENTION-PLUGIN-CLT-FROZEN-SCALAR"
+  ],
+  "literature_search_status": "not_searched",
+  "proof_location": {
+    "file": "KNOWN_RESULTS/10-oracle.md",
+    "section": "O6. Frozen-rule scalar retention: plug-in asymptotics and a consistent variance"
+  },
+  "artifact": "py/score_oracle_retention_uncertainty.py",
+  "role": "falsification experiment for O6.2-O6.4, run before the proof was trusted; did not falsify",
+  "warning": "Measured coverage is not a proof (packet rule). The n = 100 under-coverage is a recorded second-order effect, not a counterexample to the first-order theorem."
+}
