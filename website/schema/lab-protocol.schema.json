@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://scorequant.dev/schema/lab-protocol.v2.json",
+  "$id": "https://scorequant.dev/schema/lab-protocol.v3.json",
   "title": "LabProtocol",
-  "description": "Versioned backend-neutral request and event contract for the ScoreQuant browser lab. Version 2 admits a named score schema, a criterion selection including profiled D_s, and score spaces up to six dimensions so real mixture scores fit.",
+  "description": "Versioned backend-neutral request and event contract for the ScoreQuant browser lab. Version 3 admits a choice of public task (fit_quantizer or optimize_partition), efficient-score-bound initialization, and a named profiled-retention report, and raises the score table ceiling to 8,000 rows.",
   "oneOf": [
     {
       "$ref": "#/$defs/LabRunRequest"
@@ -24,7 +24,7 @@
       ],
       "properties": {
         "protocolVersion": {
-          "const": 2
+          "const": 3
         },
         "type": {
           "const": "run"
@@ -59,14 +59,14 @@
       "properties": {
         "scores": {
           "type": "array",
-          "maxItems": 5000,
+          "maxItems": 8000,
           "items": {
             "$ref": "#/$defs/ScoreRow"
           }
         },
         "weights": {
           "type": "array",
-          "maxItems": 5000,
+          "maxItems": 8000,
           "items": {
             "type": "number",
             "minimum": 0
@@ -117,6 +117,35 @@
           "type": "string",
           "minLength": 1,
           "description": "Identifier of the score table the request was built from, recorded for provenance."
+        },
+        "task": {
+          "enum": [
+            "fit_quantizer",
+            "optimize_partition"
+          ],
+          "description": "Which public task to run. Absent means fit_quantizer (v2 semantics)."
+        },
+        "initialization": {
+          "enum": [
+            "efficient_score_bound"
+          ],
+          "description": "Seed the exchange from efficient_score_bound(...).labels; only with task optimize_partition and a profiled criterion."
+        },
+        "report": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "profiledInterest": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "Report the profiled retention of the result for these parameters of interest, resolved against schema, whatever criterion was solved."
+            }
+          }
         }
       }
     },
@@ -176,6 +205,15 @@
             "type": "string"
           },
           "description": "Parameters of interest, echoed back by name when the criterion profiled."
+        },
+        "profiledRetention": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Profiled retention for report.profiledInterest, whatever criterion the result was solved against."
+        },
+        "exchangeStable": {
+          "type": "boolean",
+          "description": "Whether the result is exchange-stable. optimize_partition only."
         }
       }
     },
@@ -189,7 +227,7 @@
       ],
       "properties": {
         "protocolVersion": {
-          "const": 2
+          "const": 3
         },
         "runId": {
           "type": "string"

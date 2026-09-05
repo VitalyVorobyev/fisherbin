@@ -72,31 +72,19 @@
 
   /* ------------------------------------------------------------------
      Tier 3 -- instrument. The dark palette already used, as literals, by
-     the "machine" surfaces embedded in the light page: score-space, code
-     blocks, and the entire browser Lab. Deliberately constant -- these do
-     not move in dark mode; the page ground moves toward them instead.
+     the "machine" surfaces embedded in the light page: score-space and
+     code blocks. Deliberately constant -- these do not move in dark
+     mode; the page ground moves toward them instead.
 
-     Ten of these were specified up front; three are added here because
-     their hex recurs at least twice in the file and the task explicitly
-     prefers a token for values that repeat (--inst-ground-lab,
-     --inst-line-score, --inst-label). --inst-ground and --inst-ground-lab
-     (likewise --inst-line and --inst-line-score) are one hex digit apart
-     in the stylesheet as found -- kept as distinct tokens rather than
-     merged onto one, since merging would shift a rendered colour by one
-     step. */
+     The free-form browser Lab console this tier also served (lab-workspace,
+     lab-panel, lab-field, and the rest) is gone; its tokens were removed
+     with it. `--inst-deep` and `--inst-text` stay pinned by
+     `tests/contrast.test.ts` even though nothing currently renders them. */
   --inst-ground: #091a37; /* score-space surface + its radial-gradient stop */
-  --inst-ground-lab: #091a36; /* lab-workspace / lab-lesson / lab-mobile-tabs ground */
-  --inst-deep: #061329; /* site-shell--lab page ground */
-  --inst-raised: #0c2242; /* lab-field select */
-  --inst-line: #263f60; /* lab-workspace / lab-panel / lab-limit / lab-lesson / lab-mobile-tabs borders */
-  --inst-line-quiet: #203858; /* lab-panel__title / lab-status / diagnostic-list row dividers */
+  --inst-deep: #061329; /* pinned by tests/contrast.test.ts */
   --inst-line-score: #213b5e; /* score-space's own toolbar/metrics dividers */
-  --inst-text: #e7eef8; /* site-shell--lab ink / lab-field select text */
-  --inst-muted: #8ea2ba; /* lab-field label */
-  --inst-faint: #66809e; /* lab-limit label */
-  --inst-label: #9cb0c8; /* lab-privacy / lab-panel__title label text */
-  --inst-accent: #68dace; /* complete-state / lesson eyebrow */
-  --inst-blue: #84b5ff; /* loading/running state */
+  --inst-text: #e7eef8; /* pinned by tests/contrast.test.ts */
+  --inst-muted: #8ea2ba; /* score-space placeholder/note text */
 
   --shadow-soft: 0 18px 54px rgb(7 20 45 / 9%);
   --font-heading: "Space Grotesk Variable", "Space Grotesk", sans-serif;
@@ -176,18 +164,11 @@
    light mint. Pinned to its original dark ink so the label keeps reading
    the same way it does today. */
 [data-theme="dark"] .snippet__output-label { color: #07142d; }
-/* `.site-shell--lab` is a Tier 3 surface and its own local `--good`
-   override already keeps most of its accents fixed across themes (see
-   the comment above that block); this one CTA button was missed --  it
-   names `--cyan` and `--ink-950` directly rather than through `--good`,
-   so it still flips. Pinned to the values it already renders. */
-[data-theme="dark"] .site-shell--lab .lab-link { border-color: #20bfae; color: #07142d; background: #20bfae; }
 /* The header's translucent background is a literal rgb() snapshot of
    --paper-warm/--line-strong with alpha baked in for the blur underneath --
    custom properties cannot carry a separate alpha channel here, so it was
    never going to follow the Tier 1 override the way `background:
-   var(--surface)` would. `.site-shell--lab .site-header` already has its
-   own dark literal for exactly this reason; this is the same snapshot taken
-   of the dark palette above instead of the light one. Without it, every
-   non-Lab route keeps a light header floating over the dark page. */
+   var(--surface)` would. This is the same snapshot taken of the dark
+   palette above instead of the light one. Without it, the header stays
+   light over a dark page. */
 [data-theme="dark"] .site-header { border-bottom-color: rgb(49 73 107 / 70%); background: rgb(6 19 41 / 92%); }

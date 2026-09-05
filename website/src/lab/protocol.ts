@@ -10,7 +10,7 @@ export type {
 } from "./protocol.generated";
 
 /** Wire version. Bumped with `schema/lab-protocol.schema.json`, never separately. */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 export const LAB_LIMITS = {
   maxBins: 16,
@@ -18,7 +18,7 @@ export const LAB_LIMITS = {
   // reference component is absorbed, and the exchange gain is quadratic in this
   // dimension, so the ceiling buys headroom without inviting arbitrary data.
   maxDimensions: 6,
-  maxRows: 5_000,
+  maxRows: 8_000,
   maxScans: 500,
   maxSteps: 500
 } as const;
@@ -40,23 +40,51 @@ export function validateProblem(problem: LabProblem): string | null {
 }
 
 /**
- * Check the objective against the score space it will be applied to.
+ * Check parameters of interest against the declared schema and score space.
+ *
+ * Shared by `criterion.interest` (which parameters the objective profiles) and
+ * `report.profiledInterest` (which parameters a post-hoc report profiles):
+ * both name score columns the same way and fail the same way.
+ */
+function validateInterestNames(names: readonly string[], schema: readonly string[] | undefined, dimensions: number): string | null {
+  if (names.length === 0) return "Choose at least one parameter of interest.";
+  if (names.length >= dimensions) return "At least one nuisance parameter must remain unprofiled.";
+  if (schema === undefined) return "Profiling by name needs a score schema.";
+  const unknown = names.filter((name) => !schema.includes(name));
+  if (unknown.length > 0) return `Unknown parameter${unknown.length > 1 ? "s" : ""}: ${unknown.join(", ")}.`;
+  return null;
+}
+
+/**
+ * Check the objective against the score space and task it will be applied to.
  *
  * The library refuses these pairings too, but it refuses them after the run has
  * been shipped to a worker and a 15 MB runtime has warmed up; saying so here
  * turns a slow failure into an immediate one.
  */
 function validateCriterion(problem: LabProblem, dimensions: number): string | null {
+  const task = problem.task ?? "fit_quantizer";
   const criterion = problem.criterion;
   const name = criterion?.name ?? "d_optimality";
 
-  // k-means implements the normalized trace and nothing else, so pairing it
-  // with a determinant objective is refused rather than quietly approximated.
-  if (problem.solver === "kmeans" && name !== "normalized_trace") {
-    return "The k-means solver fits the normalized trace. Choose that criterion, or another solver.";
-  }
-  if (name === "normalized_trace") {
-    return problem.solver === "kmeans" ? null : "Normalized trace is fitted by the k-means solver.";
+  if (task === "optimize_partition") {
+    // optimize_partition never accepts kmeans, scalar_dp, or soft_voronoi: it
+    // owns the exact exchange and the guarded Lloyd solver, and nothing else.
+    if (problem.solver !== "d_exchange" && problem.solver !== "mahalanobis_lloyd") {
+      return "optimize_partition runs the exact exchange and guarded Lloyd solvers only.";
+    }
+    if (name === "normalized_trace") {
+      return "Normalized trace is a fit_quantizer objective; optimize_partition has no k-means path.";
+    }
+  } else {
+    // k-means implements the normalized trace and nothing else, so pairing it
+    // with a determinant objective is refused rather than quietly approximated.
+    if (problem.solver === "kmeans" && name !== "normalized_trace") {
+      return "The k-means solver fits the normalized trace. Choose that criterion, or another solver.";
+    }
+    if (name === "normalized_trace") {
+      return problem.solver === "kmeans" ? null : "Normalized trace is fitted by the k-means solver.";
+    }
   }
 
   // Every D-optimal path needs at least as many bins as informative score
@@ -66,16 +94,29 @@ function validateCriterion(problem: LabProblem, dimensions: number): string | nu
   if (problem.nBins < dimensions) {
     return `D-optimality needs at least as many bins as informative score directions. This table has ${String(dimensions)}; raise the bin budget to ${String(dimensions)} or more.`;
   }
-  if (criterion === undefined || name === "d_optimality") return null;
-  if (problem.solver !== "soft_voronoi") {
-    return "Profiled Dₛ needs the soft Voronoi solver: an exchange-stable profiled partition has no canonical reusable rule.";
+
+  const profiled = criterion !== undefined && name === "profiled_d_optimality";
+  if (problem.initialization !== undefined && (task !== "optimize_partition" || !profiled)) {
+    return "initialization needs task optimize_partition and criterion profiled_d_optimality.";
   }
-  const interest = criterion.interest ?? [];
-  if (interest.length === 0) return "Choose at least one parameter of interest.";
-  if (interest.length >= dimensions) return "At least one nuisance parameter must remain unprofiled.";
-  if (problem.schema === undefined) return "Profiling by name needs a score schema.";
-  const unknown = interest.filter((name) => !problem.schema?.includes(name));
-  if (unknown.length > 0) return `Unknown parameter${unknown.length > 1 ? "s" : ""}: ${unknown.join(", ")}.`;
+
+  if (profiled) {
+    // Profiled Dₛ needs the soft Voronoi solver as a fit_quantizer objective: an
+    // exchange-stable profiled partition has no canonical reusable rule. As an
+    // optimize_partition objective it runs on the exact exchange or guarded
+    // Lloyd solver instead, already enforced above.
+    if (task === "fit_quantizer" && problem.solver !== "soft_voronoi") {
+      return "Profiled Dₛ needs the soft Voronoi solver: an exchange-stable profiled partition has no canonical reusable rule.";
+    }
+    const interestError = validateInterestNames(criterion.interest ?? [], problem.schema, dimensions);
+    if (interestError !== null) return interestError;
+  }
+
+  if (problem.report?.profiledInterest !== undefined) {
+    const reportError = validateInterestNames(problem.report.profiledInterest, problem.schema, dimensions);
+    if (reportError !== null) return reportError;
+  }
+
   return null;
 }
 

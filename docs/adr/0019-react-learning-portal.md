@@ -36,6 +36,8 @@ local ScoreQuant wheel only on Lab interaction, runs ScoreQuant's NumPy backend,
 result, error, and cancellation events, and is terminated for cancellation. Browser limits are
 explicit and inputs remain local. General routes must never request Pyodide or marimo assets.
 Locked marimo WASM lessons may be embedded lazily; arbitrary-code notebooks are outside v1.
+*(Superseded by ADR 0029: the console-style Lab and the marimo embed were removed; browser
+computation is reached only through a lesson's experiment.)*
 
 Initially MkDocs remains at the existing project root and the portal is published under
 `/portal/` in the same static artifact. Moving React to the root and narrowing MkDocs to

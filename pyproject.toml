@@ -64,7 +64,6 @@ dev = [
 ]
 portal = [
     "griffe>=1.14,<2",
-    "marimo>=0.17,<1",
 ]
 
 [build-system]

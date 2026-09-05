@@ -30,3 +30,4 @@ Only decisions that materially constrain future implementation are recorded here
 26. [ADR 0026 — One workflow builds and publishes the assembled site](0026-one-workflow-publishes-the-site.md) — completes ADR 0019's deployment authorization, amends ADR 0025
 27. [ADR 0027 — A landing page at the root, the documentation at `/docs/`, the portal at `/portal/`](0027-landing-page-at-the-root.md) — supersedes ADR 0025
 28. [ADR 0028 — Focus research on user decisions and documentation on executable lessons](0028-focused-research-and-teaching.md)
+29. [ADR 0029 — Lessons replace the free-form browser Lab](0029-lessons-replace-the-free-form-lab.md) — extends ADR 0028; supersedes ADR 0019's Lab console and marimo embed

@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 import type {LabEvent, LabRunRequest} from "../src/lab/protocol";
+import {PROTOCOL_VERSION} from "../src/lab/protocol";
 import {
   acquireRuntimeReference,
   cancelRun,
@@ -45,7 +46,7 @@ let instances: MockWorker[] = [];
 
 function requestFor(runId: string): LabRunRequest {
   return {
-    protocolVersion: 2,
+    protocolVersion: PROTOCOL_VERSION,
     type: "run",
     runId,
     runner: "pyodide-numpy",
@@ -150,13 +151,13 @@ describe("runtimeClient", () => {
     const second = callbacks();
     runOnRuntime(requestFor("run-2"), second);
 
-    instance.emit({protocolVersion: 2, runId: "run-1", type: "result", progress: 1, result: {
+    instance.emit({protocolVersion: PROTOCOL_VERSION, runId: "run-1", type: "result", progress: 1, result: {
       centers: [[0]], execution: "numpy/float64/cpu", labels: [0, 1], objective: 0, retention: 1
     }});
     expect(first.messages).toHaveLength(0);
     expect(second.messages).toHaveLength(0);
 
-    instance.emit({protocolVersion: 2, runId: "run-2", type: "result", progress: 1, result: {
+    instance.emit({protocolVersion: PROTOCOL_VERSION, runId: "run-2", type: "result", progress: 1, result: {
       centers: [[0]], execution: "numpy/float64/cpu", labels: [0, 1], objective: 0, retention: 1
     }});
     expect(second.messages).toHaveLength(1);
@@ -224,7 +225,7 @@ describe("runtimeClient", () => {
     const [instance] = instances;
     if (instance === undefined) throw new Error("expected a worker to have been constructed");
 
-    instance.emit({protocolVersion: 2, runId: "run-1", type: "error", message: "solver diverged"});
+    instance.emit({protocolVersion: PROTOCOL_VERSION, runId: "run-1", type: "error", message: "solver diverged"});
     expect(handlers.messages).toHaveLength(1);
     expect(instance.terminated).toBe(true);
     release();

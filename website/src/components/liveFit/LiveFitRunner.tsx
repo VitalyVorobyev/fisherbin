@@ -24,8 +24,10 @@ export function LiveFitRunner({
   committedRetention,
   formatRetention,
   liveLabel,
+  liveValue,
   onRelease,
-  problem
+  problem,
+  renderResult
 }: LiveFitRunnerProps): React.JSX.Element {
   const {cancel, error, progress, result, run, stage, state} = useLabRunner();
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -36,7 +38,7 @@ export function LiveFitRunner({
     started.current = true;
     problem()
       .then((resolved) => {
-        // Built without an inline conditional spread for `schema`/`datasetId`:
+        // Built without an inline conditional spread for the optional fields:
         // under `exactOptionalPropertyTypes`, a spread that can vanish still
         // widens the property's inferred type to include `undefined`, which
         // `LabProblem` (an optional property means *absent*, never present as
@@ -51,6 +53,12 @@ export function LiveFitRunner({
         };
         if (resolved.schema !== undefined) labProblem.schema = resolved.schema as unknown as ScoreSchemaTuple;
         if (resolved.datasetId !== undefined) labProblem.datasetId = resolved.datasetId;
+        if (resolved.task !== undefined) labProblem.task = resolved.task;
+        if (resolved.initialization !== undefined) labProblem.initialization = resolved.initialization;
+        if (resolved.criterion !== undefined) {
+          labProblem.criterion = resolved.criterion as NonNullable<LabProblem["criterion"]>;
+        }
+        if (resolved.report !== undefined) labProblem.report = resolved.report as NonNullable<LabProblem["report"]>;
         run(labProblem, "pyodide-numpy");
       })
       .catch((cause: unknown) => {
@@ -77,18 +85,21 @@ export function LiveFitRunner({
         </p>
       )}
       {result !== null && (
-        <div className="live-fit__results">
-          <div className="live-fit__result">
-            <span className="live-fit__badge">Committed result</span>
-            <span className="live-fit__value">{formatRetention(committedRetention)}</span>
-            <span className="live-fit__caption">{committedLabel}</span>
+        <>
+          <div className="live-fit__results">
+            <div className="live-fit__result">
+              <span className="live-fit__badge">Committed result</span>
+              <span className="live-fit__value">{formatRetention(committedRetention)}</span>
+              <span className="live-fit__caption">{committedLabel}</span>
+            </div>
+            <div className="live-fit__result live-fit__result--live">
+              <span className="live-fit__badge">Your browser&rsquo;s run</span>
+              <span className="live-fit__value">{formatRetention(liveValue ? liveValue(result) : result.retention)}</span>
+              <span className="live-fit__caption">{liveLabel}</span>
+            </div>
           </div>
-          <div className="live-fit__result live-fit__result--live">
-            <span className="live-fit__badge">Your browser&rsquo;s run</span>
-            <span className="live-fit__value">{formatRetention(result.retention)}</span>
-            <span className="live-fit__caption">{liveLabel}</span>
-          </div>
-        </div>
+          {renderResult?.(result)}
+        </>
       )}
       <div className="live-fit__actions">
         <button

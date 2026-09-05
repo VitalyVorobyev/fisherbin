@@ -26,7 +26,7 @@ describe("lab protocol", () => {
 
   it("enforces the browser capacity envelope", () => {
     const scores = Array.from({length: LAB_LIMITS.maxRows + 1}, () => [0] as [number]);
-    expect(validateProblem({...validProblem, scores, weights: scores.map(() => 1)})).toContain("5,000");
+    expect(validateProblem({...validProblem, scores, weights: scores.map(() => 1)})).toContain("8,000");
     expect(validateProblem({...validProblem, nBins: LAB_LIMITS.maxBins + 1})).toContain("16");
   });
 
@@ -100,5 +100,66 @@ describe("criterion selection", () => {
   it("labels the objective the retention is measured against", () => {
     expect(criterionLabel(undefined)).toBe("D-optimality");
     expect(criterionLabel({name: "profiled_d_optimality", interest: ["HSPC"]})).toContain("HSPC");
+  });
+});
+
+describe("optimize_partition task", () => {
+  const schema: [string, string, string] = ["T", "B", "HSPC"];
+  const partition: LabProblem = {
+    ...validProblem,
+    scores: Array.from({length: 8}, () => [0.1, 0.2, 0.3]),
+    weights: Array.from({length: 8}, () => 1),
+    nBins: 3,
+    solver: "d_exchange",
+    schema,
+    task: "optimize_partition"
+  };
+
+  it("keeps v2 behavior when task is absent", () => {
+    expect(validProblem.task).toBeUndefined();
+    expect(validateProblem(validProblem)).toBeNull();
+  });
+
+  it("refuses solvers other than the exact exchange and guarded Lloyd solvers", () => {
+    expect(validateProblem({...partition, solver: "soft_voronoi"}))
+      .toContain("optimize_partition runs the exact exchange and guarded Lloyd solvers only.");
+    expect(validateProblem({...partition, solver: "kmeans"}))
+      .toContain("optimize_partition runs the exact exchange and guarded Lloyd solvers only.");
+  });
+
+  it("accepts a profiled objective on the exact exchange solver", () => {
+    expect(validateProblem({...partition, criterion: {name: "profiled_d_optimality", interest: ["HSPC"]}}))
+      .toBeNull();
+    expect(validateProblem({
+      ...partition,
+      solver: "mahalanobis_lloyd",
+      criterion: {name: "profiled_d_optimality", interest: ["HSPC"]}
+    })).toBeNull();
+  });
+
+  it("refuses normalized trace: it has no k-means path", () => {
+    expect(validateProblem({...partition, criterion: {name: "normalized_trace"}}))
+      .toContain("Normalized trace is a fit_quantizer objective; optimize_partition has no k-means path.");
+  });
+
+  it("refuses initialization without task optimize_partition and a profiled criterion", () => {
+    expect(validateProblem({...validProblem, initialization: "efficient_score_bound"}))
+      .toContain("initialization needs task optimize_partition and criterion profiled_d_optimality.");
+    expect(validateProblem({...partition, initialization: "efficient_score_bound"}))
+      .toContain("initialization needs task optimize_partition and criterion profiled_d_optimality.");
+    expect(validateProblem({
+      ...partition,
+      initialization: "efficient_score_bound",
+      criterion: {name: "profiled_d_optimality", interest: ["HSPC"]}
+    })).toBeNull();
+  });
+
+  it("refuses report.profiledInterest covering every column", () => {
+    expect(validateProblem({...partition, report: {profiledInterest: [...schema]}})).toContain("nuisance");
+  });
+
+  it("refuses an unknown report.profiledInterest name", () => {
+    expect(validateProblem({...partition, report: {profiledInterest: ["HSPCs"]}}))
+      .toContain("Unknown parameter: HSPCs");
   });
 });

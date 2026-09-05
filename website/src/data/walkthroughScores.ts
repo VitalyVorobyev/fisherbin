@@ -1,8 +1,8 @@
 import {siteUrl} from "../lib/site";
 
 /**
- * One walkthrough's deterministic score table, in exactly the shape
- * `ScoreTable` (`website/src/lab/useScoreTable.ts`) consumes.
+ * One walkthrough's deterministic score table, in exactly the shape a
+ * `LiveFit` problem (`website/src/components/liveFit/types.ts`) needs.
  *
  * Written by `generate_walkthroughs.py`'s `write_walkthrough_score_tables`
  * to `website/static/walkthrough-scores/<slug>.json`; never edited by hand.
@@ -19,8 +19,9 @@ export interface WalkthroughScoreTable {
  * Fetch one walkthrough's committed score table on demand.
  *
  * Kept out of the bundle the same way `loadLabScores` keeps the FlowCyt table
- * out of it (`website/src/data/showcase.ts`): a `?job=` hand-off is the only
- * caller, so opening the Lab with no query fetches nothing extra.
+ * out of it (`website/src/data/showcase.ts`): a `LiveFit` problem resolver is
+ * the only caller, so a walkthrough that never activates its experiment
+ * fetches nothing extra.
  */
 export async function loadWalkthroughScoreTable(
   slug: string,

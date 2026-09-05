@@ -41,7 +41,7 @@ def test_the_shipped_score_table_is_within_the_browser_envelope() -> None:
     payload = json.loads((ROOT / "website/static/showcase-data/flowcyt-scores.json").read_text())
     scores = np.asarray(payload["scores"], dtype=np.float64)
     assert scores.ndim == 2
-    assert scores.shape[0] <= 5_000, "the browser refuses more rows than this"
+    assert scores.shape[0] <= 8_000, "the browser refuses more rows than this"
     assert scores.shape[1] <= 6, "the browser refuses more score dimensions than this"
     assert scores.shape[1] == len(payload["schema"]["parameters"])
     assert len(payload["weights"]) == scores.shape[0]
@@ -123,3 +123,71 @@ def test_browser_adapter_matches_committed_numpy_fixture() -> None:
     np.testing.assert_allclose(result["centers"], fixture["centers"], rtol=1e-12, atol=1e-12)
     np.testing.assert_allclose(result["retention"], fixture["retention"], rtol=1e-12, atol=1e-12)
     np.testing.assert_allclose(result["objective"], fixture["objective"], rtol=1e-12, atol=1e-12)
+
+
+def test_the_browser_adapter_runs_optimize_partition_shape() -> None:
+    """`optimize_partition` returns a result shaped like `fit_quantizer`, plus `exchangeStable`."""
+    result = json.loads(_run_lab()(json.dumps(_flowcyt_problem(task="optimize_partition"))))
+    assert len(result["labels"]) == 600
+    assert np.asarray(result["centers"]).shape == (6, 5)
+    assert 0.0 < result["retention"] <= 1.0
+    assert result["criterionLabel"] == "D-optimality"
+    assert result["exchangeStable"] is True
+    assert "interest" not in result
+    assert "profiledRetention" not in result
+
+
+def _michelson_sweep_rows() -> list[dict[str, object]]:
+    fixture = json.loads((ROOT / "docs/examples/assets/michelson-phase.json").read_text())
+    return cast(list[dict[str, object]], fixture["sweep"])
+
+
+def _michelson_score_table() -> dict[str, object]:
+    return cast(
+        dict[str, object],
+        json.loads((ROOT / "website/static/walkthrough-scores/michelson.json").read_text()),
+    )
+
+
+def test_optimize_partition_reproduces_the_committed_michelson_sweep() -> None:
+    """`optimize_partition` + `report.profiledInterest` should match the committed sweep."""
+    run_lab = _run_lab()
+    table = _michelson_score_table()
+    for row in _michelson_sweep_rows():
+        problem = {
+            "scores": table["scores"],
+            "weights": table["weights"],
+            "schema": table["schema"],
+            "nBins": row["n_bins"],
+            "solver": "d_exchange",
+            "seed": 4,
+            "task": "optimize_partition",
+            "report": {"profiledInterest": ["phase"]},
+        }
+        result = json.loads(run_lab(json.dumps(problem)))
+        assert result["exchangeStable"] is True
+        np.testing.assert_allclose(
+            result["profiledRetention"], row["d_optimal_retention"], rtol=1e-12, atol=1e-12
+        )
+
+
+def test_bound_seeded_profiled_exchange_reproduces_the_committed_headline() -> None:
+    """Profiled D_s seeded from `efficient_score_bound` should match the committed headline."""
+    run_lab = _run_lab()
+    table = _michelson_score_table()
+    for row in _michelson_sweep_rows():
+        problem = {
+            "scores": table["scores"],
+            "weights": table["weights"],
+            "schema": table["schema"],
+            "nBins": row["n_bins"],
+            "solver": "d_exchange",
+            "seed": 4,
+            "task": "optimize_partition",
+            "criterion": {"name": "profiled_d_optimality", "interest": ["phase"]},
+            "initialization": "efficient_score_bound",
+        }
+        result = json.loads(run_lab(json.dumps(problem)))
+        np.testing.assert_allclose(
+            result["retention"], row["profiled_retention"], rtol=1e-12, atol=1e-12
+        )

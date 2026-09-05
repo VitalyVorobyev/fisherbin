@@ -89,7 +89,7 @@ kbd {
   font-family: var(--font-mono);
   font-size: 10px;
 }
-.lab-link, .button-primary {
+.button-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -103,7 +103,7 @@ kbd {
   font-weight: 650;
   transition: transform 160ms ease, background 160ms ease;
 }
-.lab-link:hover, .button-primary:hover { color: var(--on-accent); background: var(--accent-strong); transform: translateY(-1px); }
+.button-primary:hover { color: var(--on-accent); background: var(--accent-strong); transform: translateY(-1px); }
 .menu-trigger { display: none; }
 
 .site-footer {
