@@ -21,6 +21,11 @@ once already, which retroactively asserted that unshipped work had shipped.
 - The portal's free-form Lab console (solver pickers, file upload, notebook embed) is removed;
   `/portal/lab/` is a lesson index and browser computation is reached only through a lesson's
   experiment (ADR 0029).
+- The Michelson walkthrough is the first lesson in the seven-step pattern of ADR 0028: a problem
+  contract before any exposition, the model and score as displayed equations, and one experiment
+  (the bin budget) whose browser refit reproduces the committed profiled partition on the same
+  table. The walkthroughs' links into the reference now resolve through `ReferenceLink`; the
+  hand-written `pathname:///reference/…` anchors reached the browser verbatim and were not URLs.
 
 ## [0.2.0] — 2026-09-04
 

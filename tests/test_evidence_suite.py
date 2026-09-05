@@ -1227,6 +1227,28 @@ def test_michelson_json_matches_the_published_compile_bridge_and_comb() -> None:
     )
 
 
+def test_michelson_headline_row_runs_show_the_comb_against_the_aperture() -> None:
+    """`label_runs` output already committed shows the comb the study is about.
+
+    Read from `michelson-phase.json` only -- no refit -- since `label_runs`'s
+    run-length encoding of the headline row's three labelings is exactly what
+    `sweep_bin_budget` wrote there. The equal-width aperture cannot express
+    the fitted rule's cell boundaries contiguously, so the fitted rule's runs
+    outnumber its own bin budget while the aperture's own runs equal it
+    exactly.
+    """
+    metrics = _load(MICHELSON_METRICS)
+    headline_bins = int(metrics["headline_bins"])  # type: ignore[call-overload]
+    sweep = {int(row["n_bins"]): row for row in _listing(metrics, "sweep")}  # type: ignore[call-overload]
+    headline = sweep[headline_bins]
+    equal_width_runs = headline["equal_width_runs"]
+    profiled_runs = headline["profiled_runs"]
+    assert isinstance(equal_width_runs, list)
+    assert isinstance(profiled_runs, list)
+    assert len(equal_width_runs) == headline_bins
+    assert len(profiled_runs) > headline_bins
+
+
 def test_michelson_closed_forms_hold_to_machine_precision() -> None:
     """The page's reason to exist: a check on the library, not only an illustration."""
     provider = build_provider()

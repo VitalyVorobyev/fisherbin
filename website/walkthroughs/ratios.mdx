@@ -8,6 +8,7 @@ import {BinningComparison} from "@site/src/components/BinningComparison";
 import {Diagnostics} from "@site/src/components/Diagnostics";
 import {Figure} from "@site/src/components/Figure";
 import {RatiosLiveFit} from "@site/src/components/RatiosLiveFit";
+import {ReferenceLink} from "@site/src/components/ReferenceLink";
 import {factValue, factsFor} from "@site/src/lib/facts";
 import {siteUrl} from "@site/src/lib/site";
 
@@ -53,7 +54,7 @@ and the numbers on this page are read from the evidence file it writes,
 `docs/examples/assets/door3-classifier.json`. The exhaustive record — the full ladder, the
 per-rung table, the figure, and the discussion of which parts of classifier error cost information
 — is the reference page at{" "}
-<a href="pathname:///reference/examples/door3-classifier/" target="_self">Door 3, classifier-estimated density ratios</a>,
+<ReferenceLink to="examples/door3-classifier/">Door 3, classifier-estimated density ratios</ReferenceLink>,
 which this page deliberately does not restate.
 
 ```python

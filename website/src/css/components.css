@@ -144,3 +144,12 @@
 .lessons-matrix th, .lessons-matrix td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; line-height: 1.45; }
 .lessons-matrix th { color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
 .lessons-matrix td:last-child { color: var(--text-muted); }
+
+/* The contract every lesson opens with (`ProblemContract`). Two columns on a
+   wide screen, one on a phone; the row labels are the same mono eyebrow the
+   lesson index uses so the two read as one vocabulary. */
+.problem-contract { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 40px; margin: 28px 0 36px; padding: 0; border-top: 2px solid var(--border-strong); }
+.problem-contract__row { display: grid; grid-template-columns: minmax(120px, 150px) minmax(0, 1fr); gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.problem-contract dt { margin: 0; color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; line-height: 1.6; text-transform: uppercase; }
+.problem-contract dd { margin: 0; color: var(--text); font-size: 14.5px; line-height: 1.55; }
+.problem-contract dd code { font-size: 13px; }

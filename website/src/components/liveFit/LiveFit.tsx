@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from "react";
 import type {ComponentType} from "react";
 
 import {useLiveFit} from "./LiveFitProvider";
-import type {LiveFitProblemLoader, LiveFitRunnerProps} from "./types";
+import type {LiveFitProblemLoader, LiveFitResult, LiveFitRunnerProps} from "./types";
 
 const BLOCKED_MESSAGE = "Only one live demo can run at a time on this page. Finish or reset the active one first.";
 
@@ -21,8 +21,18 @@ export interface LiveFitProps {
   id: string;
   /** Human label for what the reader's own run measures. */
   liveLabel: string;
+  /**
+   * Which number to show as "your browser's run", read from the result.
+   * Forwarded to `LiveFitRunner` unchanged; see `LiveFitRunnerProps`.
+   */
+  liveValue?: (result: LiveFitResult) => number;
   /** Resolve the problem to actually run, once activated. */
   problem: LiveFitProblemLoader;
+  /**
+   * Render extra content below the two result cards, once a result exists.
+   * Forwarded to `LiveFitRunner` unchanged; see `LiveFitRunnerProps`.
+   */
+  renderResult?: (result: LiveFitResult) => React.ReactNode;
 }
 
 /**
@@ -45,7 +55,18 @@ export interface LiveFitProps {
  * cancel/reset control, and side-by-side results.
  */
 export function LiveFit(props: LiveFitProps): React.JSX.Element {
-  const {activationHint, activationLabel, committedLabel, committedRetention, formatRetention, id, liveLabel, problem} = props;
+  const {
+    activationHint,
+    activationLabel,
+    committedLabel,
+    committedRetention,
+    formatRetention,
+    id,
+    liveLabel,
+    liveValue,
+    problem,
+    renderResult
+  } = props;
   const {isBlocked, release, requestActivation} = useLiveFit(id);
   const [Runner, setRunner] = useState<ComponentType<LiveFitRunnerProps> | null>(null);
   const [loading, setLoading] = useState(false);
@@ -79,19 +100,22 @@ export function LiveFit(props: LiveFitProps): React.JSX.Element {
   };
 
   if (Runner !== null) {
-    return (
-      <Runner
-        committedLabel={committedLabel}
-        committedRetention={committedRetention}
-        formatRetention={formatRetention}
-        liveLabel={liveLabel}
-        onRelease={() => {
-          release();
-          setRunner(null);
-        }}
-        problem={problem}
-      />
-    );
+    const runnerProps: LiveFitRunnerProps = {
+      committedLabel,
+      committedRetention,
+      formatRetention,
+      liveLabel,
+      onRelease: () => {
+        release();
+        setRunner(null);
+      },
+      problem
+    };
+    // Under `exactOptionalPropertyTypes`, assigning only when defined keeps
+    // an absent optional prop absent rather than explicitly `undefined`.
+    if (liveValue !== undefined) runnerProps.liveValue = liveValue;
+    if (renderResult !== undefined) runnerProps.renderResult = renderResult;
+    return <Runner {...runnerProps} />;
   }
 
   return (

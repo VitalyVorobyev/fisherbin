@@ -218,3 +218,20 @@
  */
 .doc-article .markdown a code,
 .blog-frame .markdown a code { color: var(--accent-strong); }
+
+/* Displayed equations (KaTeX, walkthroughs only). A scroll container would
+   have to be keyboard-focusable (axe: scrollable-region-focusable), and MDX
+   cannot wrap a `$$` block in one, so on a narrow screen the equation is
+   allowed to wrap and set slightly smaller instead of scrolling. */
+.doc-article .katex-display { padding: 4px 0; }
+@media (max-width: 640px) {
+  .doc-article .katex-display > .katex { white-space: normal; font-size: 1.05em; }
+}
+
+/* A wide table a page wraps by hand: the wrapper is the scroll container and
+   is focusable, so the region is reachable from the keyboard; the table
+   itself must then lay out as a table rather than as Infima's own block
+   scroller. */
+.doc-article .table-scroll { overflow-x: auto; margin: 20px 0; }
+.doc-article .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.doc-article .table-scroll table:not(.visually-hidden) { display: table; overflow: visible; width: 100%; }

@@ -2,6 +2,8 @@ import type {Config} from "@docusaurus/types";
 import type {Options as ClassicOptions} from "@docusaurus/preset-classic";
 import {BannerPlugin} from "webpack";
 import {themes} from "prism-react-renderer";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
 
 // Palenight with one token colour lifted. Its numeric/constant pink `#ff5874`
 // measures 4.48:1 against the code background `#292d3e`, just under the WCAG AA
@@ -82,7 +84,12 @@ const config: Config = {
         // AppShell (src/theme/Layout) owns navigation; the stock Docusaurus
         // sidebar is not wanted. No editUrl: these pages have no upstream
         // source to edit against.
-        sidebarPath: false
+        sidebarPath: false,
+        // A lesson writes its model and score down as equations, with the
+        // reference point visible (ADR 0028). Only the walkthrough instance
+        // renders TeX; KaTeX's stylesheet is listed with the site CSS below.
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex]
       }
     ],
     [
@@ -180,6 +187,9 @@ const config: Config = {
         // queries override at equal specificity. live-fit.css stays last.
         theme: {
           customCss: [
+            // KaTeX first: its rules are scoped to `.katex` and the portal's
+            // own files may size or colour the rendered math after it.
+            "./node_modules/katex/dist/katex.min.css",
             "./src/css/tokens.css",
             "./src/css/base.css",
             "./src/css/shell.css",

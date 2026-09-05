@@ -555,6 +555,82 @@ FACTS: tuple[Fact, ...] = (
 )
 
 
+#: Aperture runs for every swept bin budget of the committed Michelson study,
+#: read straight from its evidence rather than through the fact table: a
+#: walkthrough chart needs the whole sweep's run-length encoding, not a single
+#: formatted scalar.
+MICHELSON_SWEEP_OUTPUT = ROOT / "website/src/generated/michelson-sweep.json"
+
+
+def build_michelson_sweep() -> dict[str, object]:
+    """Assemble the Michelson sweep's aperture runs for every swept bin budget.
+
+    Read straight from the committed evidence file
+    ``docs/examples/assets/michelson-phase.json`` -- the study's own sweep
+    rows, not a re-run -- so a walkthrough can draw the aperture (equal-width
+    contiguous segments versus the fitted rule's comb) for every bin budget
+    the study compares, and a browser refit can redraw it against the same
+    shape.
+
+    Returns
+    -------
+    dict
+        ``{"schemaVersion", "uMax", "fringes", "headlineBins", "rows"}``, one
+        row per swept bin budget, each row carrying its three retentions, the
+        certified ceiling, the bound gap, the three labelings' aperture runs,
+        and a ``text`` object formatted with the same renderers the fact
+        table uses -- a page never formats a value itself, and a static
+        fallback table renders these strings verbatim.
+    """
+    evidence = json.loads((ROOT / MICHELSON).read_text(encoding="utf-8"))
+    retention_text = _fixed(4)
+    bound_gap_text = _fixed(6)
+    rows = [
+        {
+            "nBins": row["n_bins"],
+            "equalWidth": row["equal_width_retention"],
+            "dOptimal": row["d_optimal_retention"],
+            "profiled": row["profiled_retention"],
+            "ceiling": row["ceiling_retention"],
+            "boundGap": row["bound_gap"],
+            "text": {
+                "equalWidth": retention_text(row["equal_width_retention"]),
+                "dOptimal": retention_text(row["d_optimal_retention"]),
+                "profiled": retention_text(row["profiled_retention"]),
+                "ceiling": retention_text(row["ceiling_retention"]),
+                "boundGap": bound_gap_text(row["bound_gap"]),
+            },
+            "runs": {
+                "equalWidth": row["equal_width_runs"],
+                "dOptimal": row["d_runs"],
+                "profiled": row["profiled_runs"],
+            },
+        }
+        for row in evidence["sweep"]
+    ]
+    return {
+        "schemaVersion": 1,
+        "uMax": evidence["u_max"],
+        "fringes": evidence["fringes"],
+        "headlineBins": evidence["headline_bins"],
+        "rows": rows,
+    }
+
+
+def write_michelson_sweep() -> int:
+    """Write the Michelson sweep's aperture runs to committed JSON.
+
+    Returns
+    -------
+    int
+        Byte size of the written file.
+    """
+    payload = json.dumps(build_michelson_sweep(), indent=2, sort_keys=True) + "\n"
+    MICHELSON_SWEEP_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    MICHELSON_SWEEP_OUTPUT.write_text(payload, encoding="utf-8")
+    return len(payload.encode("utf-8"))
+
+
 def resolve(document: object, pointer: str) -> object:
     """Resolve a JSON Pointer (RFC 6901) against a loaded document.
 
@@ -848,6 +924,9 @@ def main() -> None:
     sizes = write_walkthrough_score_tables()
     for slug, size in sorted(sizes.items()):
         print(f"wrote {(SCORE_TABLES_OUTPUT / f'{slug}.json').relative_to(ROOT)} ({size:,} bytes)")
+
+    sweep_size = write_michelson_sweep()
+    print(f"wrote {MICHELSON_SWEEP_OUTPUT.relative_to(ROOT)} ({sweep_size:,} bytes)")
 
 
 if __name__ == "__main__":
