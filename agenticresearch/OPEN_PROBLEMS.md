@@ -1,6 +1,6 @@
 # Open problems — the research programme queue
 
-**Version:** 4.0 · 1 September 2026
+**Version:** 4.1 · 5 September 2026
 **Rule:** this file contains only genuinely unresolved questions. Results established in `KNOWN_RESULTS/` are inputs, not open tasks.
 
 This is the **single priority queue** of the project, organized as seven live
@@ -11,39 +11,45 @@ branches. A session works on a `WORK/active/` packet drawn from a programme —
 the whole branch, not one OP leaf. OP numbers are stable ids; claim
 `proof_location`s point at them.
 
+## Current work limit (5 September 2026)
+
+One scientific question is active: **P2, true-score information evaluation
+of a frozen quantizer fitted from estimated scores**, as scoped in
+`WORK/active/SCORE-ORACLE-ROBUSTNESS.md`. The first result must change what a
+user can conclude from an independent evaluation sample. Boundary movement,
+refitting stability, and end-to-end classifier calibration are subsequent
+questions, not prerequisites for that first result.
+
+OP31 and `WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` are **parked until an
+explicit reopening decision**. The packet remains at its existing path to
+preserve references; its older active header does not override this queue.
+DS19's deployment verdict stands. Exact bit complexity is not a library
+delivery gate. Other programmes remain a backlog, not concurrent work.
+
+A bounded independent audit or formal verification of a frozen claim may
+accompany the active question. It does not open another exploratory branch.
+At the packet's effort checkpoint, record a proof, a refutation, or a precise
+reduction and its practical consequence. Propose the next question for
+selection; do not activate it automatically. Promotion to a shipped guarantee
+or a publication claim requires an independent audit under `protocols/audit.md`.
+
 ---
 
 ## Closed programme P1 — deployment verdict (1 September 2026)
 
-P1 is complete and is no longer a live programme. DS19 closes its deployment
-question with a **Tier A REDUCED** verdict: the scalar tilt-DP bracket is valid,
-has an exact saddle closure condition, admits fixed-tilt exact evaluation and
-polynomial certified-accuracy minimization, and its DS18 interval-DP primal is
-value-consistent; exact polynomial bit complexity for variable
-\((K,d_\lambda)\) is isolated as OP31. Strong duality fails by an exact
-order-one gap. The observable decision is therefore to certify an exhibited
-regular saddle, report a nonclosed bracket without claiming optimality, use the
-distinct projected efficient-score route where authorized, apply a DS14
-companion only under all audited sequence hypotheses, and otherwise refuse.
-DS19 was independently audited on 2 September 2026
-(`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`): verified with hardened
-assumptions; two exact boundary fixtures added (`CE-DS-TILT-DUAL-GAP-002`,
-`CE-DS-TILT-DUAL-TIE-MASK-001`); the exact-computation scope widened to
-\(d_\lambda=1\) for every \(K\) (polynomial bit complexity) and to fixed
-\(d_\lambda\) (arithmetic complexity, Toledo 1993). No public compile
-surface follows from the audit; compilation remains governed by
-`DS-PROFILED-COMPILE-CERTIFICATE`.
-
-Tier B is **DISPROVED**: the multivariate matrix-tilt outer objective need not
-be quasiconvex (`DS-MATRIX-TILT-NONQUASICONVEX`). The remaining academic
-margins and stable-basin questions are OP29 in P6 and OP30 in P7.
+Closed by DS19 and its independent audit (`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`):
+certify an exhibited regular saddle, report a nonclosed bracket without claiming optimality, use
+the projected efficient-score route where authorized, otherwise refuse. The record is
+`KNOWN_RESULTS/05b-ds-bridge.md`; the academic remainders are OP29 (P6), OP30 and OP31 (P7).
 
 ---
 
 # P2 · SCORE-ORACLE-ROBUSTNESS — estimated scores and classifiers
 
-*Descends from research-plan-proposal.md Session 10 (moved to "Now").*
-*Product payoff: honest error bars for every real dataset; the library book calls this "the largest practical gap in the framework". Active packet: `WORK/active/SCORE-ORACLE-ROBUSTNESS.md`.*
+*Descends from research-plan-proposal.md Session 10.*
+*First payoff: a defensible evaluation statement when independent true scores are available;
+uncertainty on real data without that oracle remains a separate question. Active packet:
+`WORK/active/SCORE-ORACLE-ROBUSTNESS.md`.*
 
 ## OP17. Perturbation theory for estimated scores
 
@@ -356,8 +362,9 @@ variable \(d_\lambda\). General parametric-shortest-path envelope lower
 bounds do not transfer to this grouping DP, and parametric search shows the
 envelope need not be materialized.
 
-Target claim: `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`. Active packet:
-`WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` (opened 2 September 2026).
+Target claim: `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`. Parked packet:
+`WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` (opened 2 September 2026;
+parked by the current work limit above).
 
 ---
 

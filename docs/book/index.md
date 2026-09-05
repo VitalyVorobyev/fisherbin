@@ -13,8 +13,8 @@ You do not need to be running the ScoreQuant library to read this. The book stan
 own as an account of hard quantization for parameter estimation, connecting classical
 optimal-design and quantization theory to modern simulation-based inference. If you do use
 the package, the book is also the reference for what each criterion, solver, and
-diagnostic actually computes and why it is the right thing to compute — no function names,
-no code.
+diagnostic actually computes and under which assumptions. Executable examples accompany
+the mathematics; the API reference carries the complete interface contracts.
 
 ## A gradual, 1D-first structure
 
@@ -58,7 +58,8 @@ application and never serves as proof of a theorem.
 7. [The trace criterion and whitened k-means](ch07-trace-kmeans.md) — the cheapest scalar
    summary of retained information, and the weighted k-means problem it reduces to.
 8. [D-optimality and exact exchange](ch08-d-optimality.md) — maximizing the determinant of
-   retained information, and the exact relocation algorithm that finds it.
+   retained information, and the exact-gain relocation algorithm that finds an exchange-stable
+   partition.
 9. [Mahalanobis geometry and guarded Lloyd](ch09-mahalanobis-lloyd.md) — the Voronoi
    structure a terminal D partition must have, and a faster batch algorithm that respects it.
 10. [Nuisance parameters and profiled Ds](ch10-profiled-ds.md) — quantizing well for one
@@ -66,8 +67,8 @@ application and never serves as proof of a theorem.
 11. [E-optimality, why not](ch11-e-optimality.md) — the classical worst-direction criterion,
     and the deterministic counterexample that keeps it out of the library.
 12. [Soft rules, purification, and consistency](ch12-soft-rules.md) — making the finite
-    objective differentiable, and the asymptotic guarantee that hardening a good soft rule
-    does not throw information away.
+    objective differentiable, and the assumptions behind purification and consistency. These
+    results do not guarantee that hardening a fitted soft rule preserves its objective.
 13. [Estimated density ratios and scores](ch13-estimated-scores.md) — what changes
     when the score vectors themselves come from a trained classifier rather than a known law.
 14. [Diagnostics and choosing a method](ch14-choosing-a-method.md) — a decision guide from

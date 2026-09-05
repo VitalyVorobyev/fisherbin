@@ -9,7 +9,7 @@ agrees with the evidence.
 
 Without this, the generator could compute anything and call it traceable, and a
 re-run of any example would silently leave the portal quoting superseded
-numbers. See ``docs/programme/S08-the-four-walkthroughs.md``, decision D2.
+numbers.
 """
 
 from __future__ import annotations
@@ -272,7 +272,7 @@ def test_home_page_contains_no_numeric_literal() -> None:
     would strip almost everything and prove nothing. So the home page is held to
     a blunter rule instead: after comments, imports, JSX expressions and tags are
     removed, no digit may remain. Every number it shows therefore arrives through
-    `factsFor("home")`. See `docs/programme/S10-portal-front-door.md`, decision D7.
+    `factsFor("home")`.
     """
     path = ROOT / "website/src/pages/index.tsx"
     text = path.read_text(encoding="utf-8")

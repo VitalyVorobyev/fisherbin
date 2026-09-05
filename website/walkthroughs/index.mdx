@@ -28,11 +28,10 @@ Pick by the situation you are in, not by the domain.
 two-component mixture where the exact Bayes score is known, so the number the library reports
 about an estimated score can be checked against what that score actually achieved. Read this if
 you want to know how far to trust a classifier-derived score, and what the ratio-closure
-diagnostic does and does not tell you. Synthetic by design: it is the only one of the four where
-ground truth exists.
+diagnostic does and does not tell you. Synthetic by design, with a truth score against which the estimated score can be evaluated.
 
 **[You are measuring a rate and a systematic is eating your sensitivity](./hep)** — *profiled
-information with a nuisance.* Real LHC-like events, a signal-strength parameter of interest, and
+information with a nuisance.* Simulated LHC-like events, a signal-strength parameter of interest, and
 a tau-energy-scale nuisance that moves ten of twenty-eight observables at once. Read this if your
 problem has a nuisance parameter and you want to see what binning for the profiled criterion buys
 over binning the classifier output, and how much of that gap depends on which baseline binning
@@ -46,16 +45,15 @@ one, and that is the point.
 
 **[Your score is known in closed form](./michelson)** — *an analytic score with an explicit
 nuisance.* An interferometer phase measured against a fringe-frequency nuisance, on the NumPy
-backend. Read this if you can differentiate your model by hand: it is the one walkthrough where
-the comparison against the optimum is exact rather than estimated, and where a natural-looking
-binning turns out to retain nothing at all.
+backend. Read this if you can differentiate your model by hand: it provides analytic unbinned checks and a projected efficient-score benchmark, while the
+finite profiled optimum is a separate question. Equal-width bins can lose all phase sensitivity.
 
 ## What each one uses
 
 | Walkthrough | Input route | Data | Criterion | The thing it teaches |
 | --- | --- | --- | --- | --- |
 | [Ratio door](./ratios) | Density ratios from a classifier | Synthetic, with exact ground truth | D-optimality | What an estimated score's self-reported number is worth |
-| [HEP classifier](./hep) | Density ratios + a central log-ratio | Real events, FAIR Universe HiggsML | Profiled D<sub>s</sub> | Binning for the nuisance, and how much the baseline choice matters |
+| [HEP classifier](./hep) | Density ratios + a central log-ratio | Simulated events, FAIR Universe HiggsML | Profiled D<sub>s</sub> | Binning for the nuisance, and how much the baseline choice matters |
 | [FlowCyt](./flowcyt) | Density ratios from a classifier | Real cells, FlowCyt benchmark | D-optimality | When hard bins are enough, and when they are not an improvement |
 | [Michelson phase](./michelson) | An analytic score function | Deterministic quadrature | Profiled D<sub>s</sub> | Aliasing, and a theorem-backed refusal |
 

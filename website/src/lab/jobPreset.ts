@@ -22,8 +22,7 @@ export interface JobPresetSeed {
  * leading `?`) into the Lab's seeded control state, or `null` when there is
  * nothing to seed.
  *
- * Design decision D5 (`docs/programme/S08-the-four-walkthroughs.md`): an
- * absent, malformed, or unknown slug returns `null`, indistinguishable to
+ * An absent, malformed, or unknown slug returns `null`, indistinguishable to
  * the caller from "no job requested" -- the Lab opens on its ordinary
  * defaults, never an error. `runner` is always `"pyodide-numpy"`: none of
  * the committed presets is the built-in Gaussian fixture, the only table

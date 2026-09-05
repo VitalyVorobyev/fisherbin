@@ -10,7 +10,7 @@ executes to capture the output the page displays. This module executes the
 same cells through the same splitter, so the page, the generator and this test
 cannot drift apart: there is one source, and all three read it. The cells share
 a single namespace and run in order, because that is how the page presents
-them. See ``docs/programme/S10-portal-front-door.md``, decisions D3 and D4.
+them.
 
 ``website/walkthroughs/*.mdx`` holds the four walkthrough pages. Their fences
 are ordinary Markdown code fences, so they reuse ``_extract_blocks`` from
@@ -24,8 +24,8 @@ arc reaches a fit once.
 
 These fences execute published prose, so this module carries the
 ``docs_execution`` marker that ``tests/conftest.py`` assigns to that tier.
-
-See ``docs/programme/S08-the-four-walkthroughs.md``, decision D3.
+Both surfaces are held to that same tier for the same reason: published prose
+that only parses, without producing a result, has not actually been checked.
 """
 
 from __future__ import annotations

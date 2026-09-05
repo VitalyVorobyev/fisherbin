@@ -1,6 +1,6 @@
 # ScoreQuant LLM research workspace
 
-**Version:** 4.0 · 28 August 2026
+**Version:** 4.2 · 5 September 2026
 
 A theorem-oriented scientific memory for **D- and \(D_s\)-optimal hard
 quantization of multivariate score space**, operated by research agents
@@ -24,8 +24,7 @@ A map, not a manual. Read 1–3 always; read everything else on demand.
    (`theorem`, `audit`, `literature`, `numerical`, `algorithm`).
 6. `manuscripts/README.md` — only if the task concerns the paper; never load
    the article bodies.
-7. `archive/`, `design/` — historical/meta context only; canonical files win
-   on any conflict.
+7. `archive/` — historical context only; canonical files win on any conflict.
 
 `AGENT.md` and `registry.json` defer to this order; no other file defines one
 (`LITERATURE/index.md`'s reading order is for literature study, not a
@@ -39,12 +38,12 @@ workspace read order).
 | `PROBLEM.md` | Canonical scientific target |
 | `AGENT.md` | Non-negotiable invariants + map (short) |
 | `registry.json` | Shared vocabularies, programme queue, bibliography |
-| `claims/` | Fine-grained theorem/claim graph, one file per claim (103 nodes) |
+| `claims/` | Fine-grained theorem/claim graph, one file per claim; current counts in the generated index |
 | `claims/INDEX.md` | **Generated** claim digest, grouped by programme in queue order |
 | `py/registry.py` | `validate` / `reindex` / `show <ID> --deps --proof` |
 | `KNOWN_RESULTS/` | Human-readable current mathematical state, one file per chapter |
-| `OPEN_PROBLEMS.md` | The single priority queue: 8 programmes, OP sub-items |
-| `research-plan-proposal.md` | North star, session model, roadmap narrative |
+| `OPEN_PROBLEMS.md` | The single priority queue, current work limit, and parked questions |
+| `research-plan-proposal.md` | North star and the session-to-programme crosswalk; history is in `archive/` |
 | `WORK/active/`, `WORK/completed/` | Coarse work packets (one per session) |
 | `protocols/` | Detailed recipes, read when relevant |
 | `COUNTEREXAMPLES/` | Immutable exact falsification fixtures |
@@ -53,8 +52,7 @@ workspace read order).
 | `NUMERICAL_EVIDENCE.md` | Measured ledger; never theorem authority |
 | `manuscripts/` | Frozen paper snapshots (lagging; see its README) |
 | `py/` | Workspace numerical scripts and the registry tool |
-| `design/` | Meta-reviews of the workspace itself |
-| `archive/` | Historical documents |
+| `archive/` | Historical documents, including superseded plans and workspace design reviews |
 
 CI keeps the memory honest: `tests/test_research_registry.py` runs
 `py/registry.py validate` and the index-freshness check, and

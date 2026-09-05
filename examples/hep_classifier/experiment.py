@@ -1,16 +1,15 @@
 """The HEP classifier study: profiled D_s against two naive baselines.
 
-Runs the whole arc `docs/programme/S07-hep-classifier-showcase.md` designs:
-a profiled-\\(D_s\\) partition at a headline bin budget and a sweep against
-the certified `efficient_score_bound` ceiling (D6, D7); the two naive
-baselines a physicist would reach for first, scored on the *same* criteria
-(D5); a three-point `delta` convergence study (D4); and a reusable
-`fit_quantizer`/`SoftVoronoiConfig` rule (D8).
+Runs the whole arc: a profiled-\\(D_s\\) partition at a headline bin budget and
+a sweep against the certified `efficient_score_bound` ceiling; the two naive
+baselines a physicist would reach for first, scored on the *same* criteria; a
+three-point `delta` convergence study; and a reusable
+`fit_quantizer`/`SoftVoronoiConfig` rule.
 
 Every labeling is scored twice -- full-D and profiled D_s -- because that
-disagreement is the whole point (D7). D6 states the central claim as a
-*prediction*: measure it, and report whatever the run produces, including a
-small, zero, or reversed gap.
+disagreement is the whole point. The central claim is a *prediction*: measure
+it, and report whatever the run produces, including a small, zero, or reversed
+gap.
 """
 
 from __future__ import annotations
@@ -41,13 +40,13 @@ from .scores import (
 FIGURE_PATH = Path("docs/examples/assets/hep-classifier.png")
 METRICS_PATH = Path("docs/examples/assets/hep-classifier.json")
 
-#: Bin budget of the headline comparison. The spike's own record (D9) reports
-#: an effective rank of 3 -- the full parameter count -- at this budget.
+#: Bin budget of the headline comparison. The spike's own record reports an
+#: effective rank of 3 -- the full parameter count -- at this budget.
 HEADLINE_BINS = 6
 #: Bin budgets swept against the certified profiled ceiling.
 BUDGET_SWEEP = (3, 4, 6, 8)
-#: Headline finite-difference half-offset (D4) and the three-point
-#: convergence study around it, matching the fixture's committed tes points.
+#: Headline finite-difference half-offset and the three-point convergence
+#: study around it, matching the fixture's committed tes points.
 HEADLINE_DELTA = 0.05
 DELTA_SWEEP = (0.025, 0.05, 0.10)
 #: Seed shared by every finite-D and soft solver in the study.
@@ -111,8 +110,8 @@ def unbinned_profiled_information(scores: np.ndarray, weights: np.ndarray) -> fl
 def equal_frequency_labels(signal_posterior: np.ndarray, n_bins: int) -> np.ndarray:
     """Bin events into equal-frequency cells of the calibrated signal posterior.
 
-    This is D5's first naive baseline: "bin the network output", the
-    standard practice a physicist reaches for first.
+    This is the first naive baseline: "bin the network output", the standard
+    practice a physicist reaches for first.
     """
     edges = np.quantile(signal_posterior, np.linspace(0.0, 1.0, n_bins + 1)[1:-1])
     return np.digitize(signal_posterior, edges)
@@ -140,7 +139,7 @@ def threshold_cut_labels(
 ) -> tuple[np.ndarray, float]:
     """Return the two-bin signal-region cut maximizing weighted S/sqrt(B).
 
-    D5's second naive baseline: the most recognizable one there is.
+    The second naive baseline: the most recognizable one there is.
     """
     order = np.argsort(signal_posterior)
     sorted_posterior = signal_posterior[order]
@@ -386,7 +385,7 @@ class DeltaRow:
 def delta_convergence_study(
     data: HepData, sigbg: SignalBackgroundOOF, fold_ids: np.ndarray, *, max_iter: int
 ) -> tuple[list[DeltaRow], dict[str, float]]:
-    """Recompute the tes score at each swept delta and report the agreement (D4).
+    """Recompute the tes score at each swept delta and report the agreement.
 
     Parameters
     ----------
@@ -405,7 +404,7 @@ def delta_convergence_study(
     tuple
         The three-point table, and an agreement summary between the headline
         delta and delta/2 -- "a disagreement is a result to report, not a
-        parameter to tune away" (D4).
+        parameter to tune away".
     """
     rows: list[DeltaRow] = []
     tes_columns: dict[float, np.ndarray] = {}
@@ -477,13 +476,13 @@ class ReusableRuleRow:
 def reusable_rule(
     data: HepData, provider: HepScoreProvider, *, n_bins: int, soft_steps: int
 ) -> ReusableRuleRow:
-    """Fit a reusable rule with `fit_quantizer`/`SoftVoronoiConfig` (D8).
+    """Fit a reusable rule with `fit_quantizer`/`SoftVoronoiConfig`.
 
     Finite profiled-D_s labels have no compile bridge, so a reusable profiled
     rule must be fitted as one. The rule is trained and scored on the
-    full-sample classifiers (D8: "the classifier is trained inside the
-    example"): an honest, explicitly in-sample deliverable given the fixture
-    has no separate held-out split. Its train report is *not* re-derived
+    full-sample classifiers ("the classifier is trained inside the example"):
+    an honest, explicitly in-sample deliverable given the fixture has no
+    separate held-out split. Its train report is *not* re-derived
     against the leakage-free out-of-fold study sample -- the two score
     tables are different realizations of the same classifiers (full-fit
     versus cross-fitted), and predicting one rule's labels onto the other's

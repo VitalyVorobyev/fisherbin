@@ -1,7 +1,7 @@
 # Novelty ledger — manuscript v8 → v9
 
 **Version:** 1.0 · 3 September 2026 · programme M12 session S2
-(`docs/programme/S02-manuscript-reconciliation.md`; companion packet
+(the M12 manuscript session, recorded in git history; companion packet
 `WORK/completed/MANUSCRIPT-V9-RECONCILIATION.md`).
 
 **Purpose.** One row per central statement of manuscript v8 (26 Aug 2026) and per registry

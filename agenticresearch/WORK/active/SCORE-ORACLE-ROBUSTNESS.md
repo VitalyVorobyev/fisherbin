@@ -1,57 +1,101 @@
-# SCORE-ORACLE-ROBUSTNESS — perturbation theory for estimated scores
+# SCORE-ORACLE-ROBUSTNESS — true-score evaluation of a frozen rule
 
 **Programme:** P2 (OPEN_PROBLEMS.md) · **Opened:** 28 Aug 2026 · **Status:** active
-**Descends from:** research-plan-proposal.md Session 10 (reprioritized to "Now" by the product-first decision)
+**Scope revised:** 5 September 2026; first deliverable only, not the full P2 programme.
 
-## Goal
+## Scientific question and user decision
 
-Bound the error induced in cell moments, \(I_q\), the D/\(D_s\) objective,
-efficiency, and geometric boundaries when the score oracle is an estimate
-\(\hat s\) with stated error (\(\|\hat s-s\|_{L^2}\le\varepsilon\) or
-stronger); identify conditions under which the reported surrogate is
-conservative.
+For a quantizer fitted from estimated scores and then frozen, what can an
+independent evaluation sample with true scores establish about its retained
+Fisher information? The result should tell a user which retention number is
+supported by truth-score evaluation, how uncertain it is, and when the data
+do not support that conclusion.
 
-## Why it matters
+Keep the fitted score provider and quantizer fixed. Write
+\(Z=q(\hat s(X))\). The population target is
+\(I_Z=\operatorname{Var}(E[s(X)\mid Z])\) under the stated regular model,
+not the corresponding surrogate computed from \(\hat s\). State the score
+origin, sampling measure, weights, reference point, and conditioning on the
+training data explicitly. Do not center empirical scores to enforce a
+population identity. Explain any finite-sample bias of the estimator rather
+than calling an empirical second moment exact population information.
 
-Every real dataset (FlowCyt, HEP classifier-derived scores) hits this gap; the
-library book calls it "the largest practical gap in the framework." Even a
-one-model result with explicit constants upgrades the empirical error ladder
-from suggestive measurement to an instance of a theorem, and yields an honest
-error-bar story for shipped retention numbers.
+## Bounded first deliverable
+
+Use one existing analytic example with true scores and an intentionally
+imperfect score proxy. Fit on training data, freeze the complete rule, and
+evaluate on independent data. Start with a scalar score and full D retention.
+Reuse existing example/evaluation machinery; do not create a general solver
+or a new public API.
+
+1. Define the cell-moment and retention estimands and estimators. State the
+   treatment of empty or low-mass evaluation cells, singular information,
+   random denominators, and the shared evaluation sample used for the
+   unbinned reference. Start with independent, equal-weight observations;
+   importance weights require their own assumptions.
+2. Establish one quantitative bound or uncertainty statement for this
+   frozen-rule problem with explicit assumptions and constants or a stated
+   asymptotic regime. Distinguish conditional evaluation uncertainty from
+   variation caused by retraining. A bootstrap experiment alone is measured
+   evidence, not a coverage theorem.
+3. Check the statement in a deterministic, seeded falsification experiment
+   against known population quantities. Compare true-score retained
+   information with the proxy surrogate. Report the practical consequence,
+   including when an error bar or a retention comparison is unsupported.
+
+The deliverable is an evaluation result or a precise limitation. It need not
+establish geometric boundary stability, recover representation information
+\(I_R\), or prove that the surrogate is conservative.
 
 ## Relevant claims
 
-OPEN-SCORE-PERTURBATION (target), OPEN-CLASSIFIER-CALIBRATION-FI,
-OPEN-REPRESENTATION-LOSS-ESTIMATION, PROXY-TRUE-RETAINED-FI,
-REPRESENTATION-QUANTIZATION-LOSS, RATIO-LOCAL-SCORE,
-CLASSIFIER-MIXTURE-SCORE-FORMULA, FI-LOSS-DECOMPOSITION.
+Start with `PROXY-TRUE-RETAINED-FI`, `REPRESENTATION-QUANTIZATION-LOSS`, and
+`FI-LOSS-DECOMPOSITION` through the graph lookup protocol. The open targets
+are `OPEN-SCORE-PERTURBATION` and the adjacent
+`OPEN-RETENTION-UNCERTAINTY`; use their actual scope when recording results.
+`OPEN-CLASSIFIER-CALIBRATION-FI` and
+`OPEN-REPRESENTATION-LOSS-ESTIMATION` remain later questions. This narrower
+packet does not close them by implication.
 
-## Known blockers
+## Separate mathematical questions
 
-- Hard assignment makes every functional non-smooth at cell boundaries; any
-  bound needs a boundary-margin condition, and margins are data-dependent.
-- The claim must keep representation loss (score estimation) and quantization
-  loss separated — the levels are distinct in the registry and in the library.
+- **Frozen-label evaluation and perturbation:** compare true and proxy cell
+  moments for the same deployed labels. Establish the needed moment and
+  conditioning assumptions; do not assume that every such bound needs a
+  geometric margin.
+- **Changed labels or refitting:** changing the provider, partition, or
+  training sample can move boundaries. Margin, identifiability, and
+  optimizer-selection assumptions belong to this separate problem.
+- **Classifier-to-score and representation loss:** calibration, tail ratios,
+  training priors, and estimation of \(E[s\mid R]\) require their own
+  arguments. They are not prerequisites for evaluating fixed labels when
+  true evaluation scores are available.
 
-## Recommended starting points
+## Effort checkpoints and stop outcomes
 
-- Matrix perturbation of the log-det objective composed with stability of
-  D-optimal Voronoi boundaries under score perturbation, composed with known
-  classifier excess-risk → ratio-error rates.
-- The empirical infrastructure (error ladder, closure report, analytic
-  laboratory in the library docs) already exists to falsify candidate bounds
-  cheaply — use it before polishing constants.
-- A one-dimensional exactly solvable model first; the scalar DP solver gives
-  ground truth.
+Use one derivation session for the scoped question. Set its concrete effort
+limit before starting; do not extend it silently or start exhaustive searches
+without a bounded search plan. At the checkpoint return one of:
 
-## Required deliverables
+- **Proved:** the specified evaluation statement, with assumptions and the
+  seeded check; no claim of end-to-end training or classifier robustness.
+- **Refuted:** a minimized counterexample to a precise candidate statement,
+  plus the evaluation claim that must consequently be withheld.
+- **Reduced:** the exact missing assumption or lemma, the evidence gathered,
+  and what remains usable for the example. A reduction does not authorize
+  automatically opening another packet.
 
-Registry patches; any counterexample fixtures; a ledger row linking the bound
-to a falsification sweep; proposed diagnostic surface for the library (what a
-user-facing error bar would report) recorded in the packet, not implemented.
+An independent audit is a separate session with the frozen statement, proof,
+and artifacts, not the researcher's transcript. Follow `protocols/audit.md`
+before promoting a result to a shipped guarantee or publication claim.
 
-## Stop conditions
+## Artifacts and handoff
 
-A perturbation bound with explicit constants for at least one model class,
-a counterexample showing no such bound holds without a margin condition, or
-reduction to a stated conjecture node.
+Follow `protocols/theorem.md`: patch only claims justified by the outcome,
+serialize any exact counterexample, link measured checks in
+`NUMERICAL_EVIDENCE.md`, and preserve the truth/proxy and
+representation/quantization distinctions. Record a short proposed user
+explanation and the diagnostic implications here; implementation belongs to
+a separately scoped library change. Run registry validation and the relevant
+research regression checks. End with the verdict and one proposed next
+question for selection under `OPEN_PROBLEMS.md`.

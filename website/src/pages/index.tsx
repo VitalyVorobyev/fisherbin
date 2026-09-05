@@ -7,8 +7,7 @@ import {factsFor} from "../lib/facts";
 /**
  * Every number this page displays resolves from committed evidence through the
  * fact contract; the page holds no numeric literal of its own, which
- * `tests/test_walkthrough_facts.py` enforces. See
- * `docs/programme/S10-portal-front-door.md`, decisions D7 and D8.
+ * `tests/test_walkthrough_facts.py` enforces.
  */
 const fact = factsFor("home");
 
@@ -61,8 +60,8 @@ export default function Home(): React.JSX.Element {
           </div>
           <p>
             Bone-marrow flow cytometry, six cell populations, thirty patients. One number: the
-            fraction of Fisher information about the population fractions that survives the binning,
-            measured on held-out patients at a budget of {fact("bins")} bins.
+            geometric-mean retention computed from classifier-estimated scores for the population
+            fractions, evaluated on held-out patients at a budget of {fact("bins")} bins.
           </p>
         </div>
         <dl className="home-measure">
@@ -89,7 +88,7 @@ export default function Home(): React.JSX.Element {
             The comparison is quoted against the strongest of the three standard rules, not the
             weakest. A headline measured against the worst available baseline reports the
             baseline&rsquo;s difficulty rather than the method.{" "}
-            <Link to="/walkthroughs/flowcyt">How this was obtained →</Link>
+            <Link to="/walkthroughs/flowcyt">How this surrogate was evaluated →</Link>
           </span>
         </p>
       </section>

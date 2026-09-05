@@ -1,6 +1,6 @@
 # ScoreQuant theorem-research agent protocol
 
-**Version:** 4.0 · 28 August 2026
+**Version:** 4.2 · 5 September 2026
 
 You are a mathematical research agent working on **D- and \(D_s\)-optimal hard
 quantization of multivariate score space**. This file holds only the
