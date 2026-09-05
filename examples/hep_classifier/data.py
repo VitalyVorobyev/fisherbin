@@ -20,12 +20,12 @@ import numpy as np
 FIXTURE_PATH = Path("examples/data/hep_higgsml_fixture.npz")
 PROVENANCE_PATH = Path("examples/data/hep_higgsml_fixture.json")
 
-#: `tes` points the fixture commits, matching D4's convergence-study offsets:
+#: `tes` points the fixture commits, matching the convergence-study offsets:
 #: delta in {0.025, 0.05, 0.10} around the reference `tes = 1.0`.
 TES_POINTS: tuple[float, ...] = (0.90, 0.95, 0.975, 1.00, 1.025, 1.05, 1.10)
 
-#: The process name D1 treats as signal; every other detailed label
-#: (`ztautau`, `ttbar`, `diboson`) is collapsed into one background component.
+#: The process name treated as signal; every other detailed label (`ztautau`,
+#: `ttbar`, `diboson`) is collapsed into one background component.
 SIGNAL_PROCESS = "htautau"
 
 
@@ -41,15 +41,15 @@ class HepData:
     ----------
     variants
         Mapping from each committed `tes` value to its ``[N, 28]`` feature
-        matrix. Every matrix shares the same row order (D3/C2: upstream
-        selection is held fixed, so the variants never lose or gain rows).
+        matrix. Every matrix shares the same row order (upstream selection is
+        held fixed, so the variants never lose or gain rows).
     weights
         Nonnegative Monte Carlo event weights, shape ``[N]``, with at least
         one strictly positive entry.
     is_signal
         Boolean signal/background label, shape ``[N]`` -- `True` where
         `detailed_labels == "htautau"`, collapsing `ztautau`, `ttbar`, and
-        `diboson` into one background component (D1).
+        `diboson` into one background component.
     detailed_labels
         Process name per event, shape ``[N]``.
     feature_names
@@ -155,7 +155,7 @@ def load_provenance(path: Path = PROVENANCE_PATH) -> dict[str, object]:
     dict
         The parsed ``hep_higgsml_fixture.json`` mapping: dataset name,
         licence, the Zenodo DOI, the upstream commit and byte source, the
-        `dopostprocess=False` note, and the composition/weight facts D3
+        `dopostprocess=False` note, and the composition/weight facts
         measured directly against the upstream code.
     """
     with path.open(encoding="utf-8") as stream:

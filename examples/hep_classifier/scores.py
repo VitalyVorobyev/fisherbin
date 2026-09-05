@@ -10,13 +10,13 @@ Two classifiers, two different ratio doors:
   column (`tes`) that has no closed form.
 
 Both classifiers are cross-fitted out-of-fold with **one fold id per event**,
-reused by every `tes` copy of that event (D9/F1): a plain per-row split lets
-the `tes` classifier memorize an event from its eighteen `tes`-inert columns
-and invert the label. Both are trained with **per-class normalized weights**
-and declared training priors `(0.5, 0.5)` (D9/F2): the raw Monte Carlo
-weights make the signal class statistically invisible (weighted fraction
-~0.001), so the physical rate ratio enters through
-`IntensityParameterization` coefficients instead, never through the priors.
+reused by every `tes` copy of that event: a plain per-row split lets the
+`tes` classifier memorize an event from its eighteen `tes`-inert columns and
+invert the label. Both are trained with **per-class normalized weights** and
+declared training priors `(0.5, 0.5)`: the raw Monte Carlo weights make the
+signal class statistically invisible (weighted fraction ~0.001), so the
+physical rate ratio enters through `IntensityParameterization` coefficients
+instead, never through the priors.
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ SCHEMA = sq.ScoreSchema(("mu_htautau", "nu_background", "tes"))
 INTEREST = SCHEMA.select("mu_htautau")
 
 #: A calibrated posterior within this of 0.5 counts as "not separated" for
-#: the `tes` near-boundary diagnostic D4 asks for.
+#: the `tes` near-boundary diagnostic.
 NEAR_HALF_TOLERANCE = 0.01
 
 
@@ -65,9 +65,9 @@ def _weighted_log_loss(
 def _fit_temperature(probabilities: np.ndarray, labels: np.ndarray, weights: np.ndarray) -> float:
     """Minimize weighted binary log loss with a deterministic golden-section search.
 
-    Mirrors the calibration bridge in `examples/cell_population/scores.py`
-    (D8), simplified to a flat weight vector: this example has no patient
-    grouping to balance across.
+    Mirrors the calibration bridge in `examples/cell_population/scores.py`,
+    simplified to a flat weight vector: this example has no patient grouping
+    to balance across.
     """
     left, right = np.log(0.25), np.log(4.0)
     golden = (np.sqrt(5.0) - 1.0) / 2.0
@@ -91,9 +91,8 @@ def _balanced_class_weights(labels: np.ndarray, raw_weights: np.ndarray) -> np.n
     """Normalize raw weights so each of the two classes carries mass 0.5.
 
     Without this, the raw Monte Carlo weights make the signal class
-    statistically invisible to the classifier (D9/F2): background events
-    carry weight ~1582, signal ~3, so the weighted signal fraction is
-    ~0.001.
+    statistically invisible to the classifier: background events carry weight
+    ~1582, signal ~3, so the weighted signal fraction is ~0.001.
     """
     weights = np.zeros_like(raw_weights)
     for label in (0, 1):
@@ -108,9 +107,9 @@ def _balanced_class_weights(labels: np.ndarray, raw_weights: np.ndarray) -> np.n
 def event_folds(is_signal: np.ndarray, *, n_folds: int, seed: int) -> np.ndarray:
     """Assign one deterministic fold id per event, stratified by signal label.
 
-    Both classifiers reuse this same per-event assignment (D9/F1): the `tes`
-    minus and plus copies of one event always share its fold id, so a fold
-    boundary never separates an event from its own paired variant.
+    Both classifiers reuse this same per-event assignment: the `tes` minus
+    and plus copies of one event always share its fold id, so a fold boundary
+    never separates an event from its own paired variant.
 
     Parameters
     ----------
@@ -228,7 +227,7 @@ def fit_signal_background_oof(
     Returns
     -------
     SignalBackgroundOOF
-        Calibrated out-of-fold posteriors and the diagnostics D9/F2 reports.
+        Calibrated out-of-fold posteriors and related diagnostics.
     """
     features = data.features_at(1.0)
     labels = data.is_signal.astype(np.int64)
@@ -274,7 +273,7 @@ class TesOOF:
         (unweighted; the pairing is already balanced 1:1 by construction).
     near_half_fraction
         Fraction of events whose nominal-point calibrated posterior falls
-        within `NEAR_HALF_TOLERANCE` of 0.5 -- D4's noise diagnostic.
+        within `NEAR_HALF_TOLERANCE` of 0.5 -- a noise diagnostic.
     """
 
     delta: float
@@ -298,7 +297,7 @@ def fit_tes_oof(
         both be committed `tes` points.
     fold_ids
         Per-event fold assignment from `event_folds`, reused for both the
-        minus and plus copy of every event (D9/F1).
+        minus and plus copy of every event.
     max_iter
         Boosting round budget per fold's classifier.
     seed
@@ -307,7 +306,7 @@ def fit_tes_oof(
     Returns
     -------
     TesOOF
-        Calibrated nominal-point posteriors and the diagnostics D4 asks for.
+        Calibrated nominal-point posteriors and related diagnostics.
     """
     nominal = data.features_at(1.0)
     minus = data.features_at(round(1.0 - delta, 4))
@@ -398,7 +397,7 @@ class HepScoreProvider:
 
     Implements the open `scorequant.ScoreProvider` protocol directly -- see
     its docstring in `src/scorequant/providers.py` -- rather than subclassing
-    a built-in: the two halves go through different ratio doors (D2) and only
+    a built-in: the two halves go through different ratio doors and only
     their concatenated output is a valid three-column ScoreQuant score table.
     """
 
@@ -421,9 +420,9 @@ def fit_final_provider(
 
     Unlike `assemble_score_sample`'s out-of-fold scores, this provider is
     meant to be applied to new observations -- the deliverable
-    `fit_quantizer`'s reusable rule needs (D8: "the classifier is trained
-    inside the example"). Scoring it back on its own training fixture is
-    therefore in-sample, unlike the leakage-free finite-partition study.
+    `fit_quantizer`'s reusable rule needs ("the classifier is trained inside
+    the example"). Scoring it back on its own training fixture is therefore
+    in-sample, unlike the leakage-free finite-partition study.
 
     Parameters
     ----------
