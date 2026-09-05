@@ -3,6 +3,84 @@
 This is the single executable planning document. User-facing reference pages describe only
 implemented interfaces.
 
+## M13 — Focused research and teaching
+
+**Status:** planned; review and priority reset completed on 5 September 2026.
+This is the current execution entry point. M1–M12 below record delivered capabilities and
+historical gates. In particular, M12's root-portal description was superseded by
+[ADR 0027](adr/0027-landing-page-at-the-root.md): landing `/`, documentation `/docs/`, portal
+`/portal/`. Keep those routes during this milestone.
+
+**Basis:** [review and evidence](programme/2026-09-05-review.md),
+[ADR 0028](adr/0028-focused-research-and-teaching.md). The objective is a reader who can select
+and reproduce the correct statistical task, and research that changes a concrete inference
+or implementation decision. No new solver, public abstraction or site-stack migration is required.
+
+### Execution order and gates
+
+| Phase | Status | Depends on | Outcome and owned surface | Validation and stop condition |
+| --- | --- | --- | --- | --- |
+| A — Interpretation and geometry | queued | review | Correct remaining theorem summaries, route-to-example mismatches and the `ScoreSpace` metric/boundary depiction; state the surrogate meaning at every headline. Owns portal explanations, book summaries and chart data contract. | Test plotted boundaries against `predict_scores` with a nonidentity metric and unequal display-axis scales, or remove the unsupported boundary overlay. Explain label colors, axes and cached/live states. No remaining false guarantee in audited entry paths; targeted tests, full handoff gate and `pnpm validate` pass. |
+| B — One teaching exemplar | queued | A | Rework Michelson into problem → model/score → admissible labels → run → evaluation → one experiment. Distinguish contiguous physical segments from potentially disjoint electronic labels at the opening. Keep existing evidence and URLs. | A reader outside the authoring context can identify POI/nuisance, reference law, task/output, score provenance and the meaning of the benchmark, and reproduce the result. Keyboard/reset/static-fallback checks pass. Stop after this page passes; do not mass-rewrite the rest before the pattern works. |
+| C — Four coherent walkthroughs | queued | B | Apply the pattern to ratios, FlowCyt and HEP; shorten portal entry and group navigation by tasks. Give each page its distinct lesson from the review. Explain benchmark tasks and achieved hard quality; move incidental blog/performance navigation below primary learning paths. | Each page has its full problem contract before detailed prose, a runnable path and one meaningful interaction; all numbers retain provenance and information kind. Reader checks for all four, snippet/fact tests, `pnpm validate`, desktop/mobile e2e, assembly/link gate. Preserve old pages until their replacement covers their examples. |
+| D — Frozen-rule evidence | queued | reset complete; independent of B/C | Execute the P2 packet in `agenticresearch/WORK/active/SCORE-ORACLE-ROBUSTNESS.md`. Owns that packet and its research/example artifacts; no production estimator yet. | One reproducible truth-score evaluation with explicit conditioning and a theorem, estimator limitation or counterexample. Independent audit for promotion; registry/index/fixture gates. At the packet's effort checkpoint, close, reduce or name a precise blocker; do not activate unrelated DS work. |
+| E — Existing formal pilot integration | queued | separate branch review | Reconcile `codex/formal-verification-pilot` with current registry, CI, ADR numbering and roadmap; preserve reviewed scalar spec and coverage. No expansion to population or Ds proofs. | `lake build --wfail`, statement correspondence audit, allowed-axiom audit, checker and main regression gates. Resolve ADR 0024/M12 collisions before integration. Merge requires owner authorization. Stop at accepted pilot; next formal dependency gets its own bounded decision. |
+| F — Research graph semantics | queued | D yields a stable handoff; E metadata known | Separate theorem prerequisites from audit/evidence/remainder links. Owns registry schema/tool/tests and migrated links. Preserve claim IDs, proof locations and statuses. | Inspect every moved edge; mathematical dependency DAG validates, audit links remain retrievable, indexes regenerate, old fixtures pass. A compile query no longer imports an open complexity problem as proof authority. Do not split the long Ds proof file until link migration is verified. |
+
+A–C form the documentation spine. D is the **only active scientific question** once started;
+E is bounded verification of existing work, not a second exploratory programme. These rows are
+not a mandate to run six agents. Start A next; D may run in an independent research session.
+
+### Reader acceptance script
+
+Use a fresh reviewer who has not authored the page. Ask them, without hints, to:
+
+1. State what is observed, what is estimated, and what K constrains.
+2. Identify whether the output labels existing rows or predicts labels for future scores.
+3. Identify the reference point and whether the information is exact-model or surrogate.
+4. Reproduce the displayed fit and explain its hard metric, evaluation split and baseline.
+5. Change one control and explain why the output changed and which guarantee still applies.
+
+Record misunderstandings and the corresponding edit. Automated checks are necessary but cannot
+replace this script. An agent review is a useful rehearsal; it is not evidence of actual user
+usability. Owner/external-reader feedback is the final learning-quality gate, not a prerequisite
+to implementing a concrete page for review.
+
+### Session workflow
+
+The implementer reads this current phase, the relevant contributor rules, and its named source
+files. Work from the code and mathematical record; historical session prompts are not active
+instructions. Delegate only an independently useful read, implementation boundary or audit.
+The research derivation owner remains responsible for its mathematics; its promotion audit uses
+a fresh context and the frozen statement/artifact. No model names are prescribed.
+
+Each handoff records: the user/scientific decision changed, files and evidence, exact checks,
+remaining uncertainty, and one next action. The coordinator verifies any decisive negative
+finding before cutting a capability. A remaining question is parked unless deliberately selected
+in the research queue. The paper is updated from audited results when a publication decision
+requires it, not after every packet.
+
+### Explicit cuts and deferred work
+
+- Retire M12's universal delegation/model-tier workflow from future execution; retain its reports.
+- Park OP31 exact Ds bit-complexity and the broad Ds margins tail in the research queue.
+- Keep generic profiled compilation unsupported; a restricted research certificate does not
+  imply a stable production compiler.
+- Keep the two task APIs, versioned quantizer, providers, shared backend mathematics and fixtures.
+- Defer a public uncertainty API, universal bin-budget recommender, new solvers, full-site
+  migration and full theorem-chain formalization until their own evidence supports them.
+
+### Risks and decision points
+
+| Risk / unknown | Owner and resolution |
+| --- | --- |
+| Attractive figures imply unsupported geometry | A implementer supplies numerical correspondence tests; reviewer checks actual plotted meaning. |
+| Michelson labels require hardware freedom the reader lacks | B author states the admissible label class before comparison; contiguous-only hardware is a separate problem. |
+| No truth-score oracle on real data | D researcher states simulation/conditional scope; do not infer true information from calibration closure alone. |
+| Formal branch carries obsolete planning identifiers and CI assumptions | E integrator reconciles only pilot changes; preserve later main-branch work and record the checker actually run. |
+| Human learning gate cannot be automated | C owner schedules reader review after a concrete pilot; until then report that gate as pending. |
+| Graph cleanup accidentally changes proof authority | F migration reviewer audits relations and status preservation; no automatic status downgrades. |
+
 ## M1 — Canonical contracts and documentation
 
 **Status:** implemented in the architectural update; keep as a permanent gate.

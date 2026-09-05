@@ -43,7 +43,9 @@ public registry or provisional backend class.
 - Add public concepts only when they are reusable, stable, documented, and non-duplicative. Prefer private helpers over provisional public APIs.
 - Avoid aliases and overlapping entry points. Document intentional compatibility breaks and update the API guide, examples, and an ADR when the decision is durable.
 - Keep optional visualization dependencies lazy and outside numerical hot paths.
-- Avoid `O(N^2)` work. Optimization histories store aggregate metrics and center snapshots, never per-observation responsibilities.
+- Avoid `O(N^2)` work in general-purpose solvers. The exact rank-one interval DP is an
+  intentional capacity-limited exception guarded by `ScalarDPConfig.max_rows`. Optimization
+  histories store aggregate metrics and center snapshots, never per-observation responsibilities.
 
 ## Research workflow
 

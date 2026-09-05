@@ -13,7 +13,7 @@
       "name": "CertificationConfig",
       "reference": "/reference/symbols/configuration/",
       "signature": "CertificationConfig(max_nodes: int = 2000000, max_rows: int = 64, gain_tolerance: float = 1e-10)",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L60",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L62",
       "summary": "Configure explicit branch-and-bound certification of a D partition."
     },
     {
@@ -341,7 +341,7 @@
       "name": "certify_partition",
       "reference": "/reference/symbols/index/",
       "signature": "certify_partition(scores: ArrayLike, *, weights: ArrayLike | None = None, n_bins: int, incumbent: ArrayLike | None = None, criterion: DOptimality | ProfiledDOptimality | None = None, rank_rtol: float | None = None, config: CertificationConfig | None = None, execution: ExecutionConfig | None = None) -> PartitionCertificate",
-      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L100",
+      "source": "https://github.com/VitalyVorobyev/scorequant/blob/main/src/scorequant/certify.py#L102",
       "summary": "Prove or bound the global optimality of a finite D partition."
     },
     {

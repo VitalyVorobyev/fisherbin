@@ -1,5 +1,9 @@
 # Consolidation programme (M12) — orchestrator contract
 
+> **Historical programme, closed 4 September 2026.** Its delegation ladder and session
+> prompts describe M12 only. Current work starts at M13 in `docs/roadmap.md` and follows
+> ADR 0028. The portal-at-root description below was subsequently superseded by ADR 0027.
+
 This directory is the standing memory of the M12 consolidation programme. It exists so that a
 session started in any harness (Codex, Claude Code, or a person) can pick up the programme cold,
 do one session's work, and leave the next session the same footing. Status lives in one place

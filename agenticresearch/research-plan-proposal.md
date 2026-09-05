@@ -1,10 +1,16 @@
 # Research plan — goal, session model, and roadmap
 
-**Version:** 1.2 · 28 August 2026
+**Version:** 1.3 · 5 September 2026
 **Status:** canonical narrative. The executable priority queue lives in
-`OPEN_PROBLEMS.md` (eight programmes P1–P8); this file holds the goal, the
+`OPEN_PROBLEMS.md`; this file holds the goal, the
 session model, and the roadmap rationale. On any priority conflict,
 `OPEN_PROBLEMS.md` wins.
+
+The session plan and 28 August priority snapshot below are historical
+rationale, not instructions to resume their branches. P1's deployment
+question has since closed with a restricted certificate/refusal verdict.
+Current work is the bounded P2 frozen-rule evaluation packet; DS exact
+complexity is parked under the work limit in `OPEN_PROBLEMS.md`.
 
 ScoreQuant research is organized around **one scientific question**, not
 around a collection of individual theorems.
@@ -33,7 +39,7 @@ as the Session 8 row did within a day of being written.
 | 11 — information loss vs systematics | P3/P5 |
 | 12 — synthesis and novelty audit | P8 (deferred until the publication decision) |
 
-**Why the reorder (product-first decision, 28 Aug 2026):** this research is
+**Historical rationale for the reorder (28 Aug 2026):** this research is
 attached to a shipping library, not free-standing. The library hard-refuses
 profiled compilation today (Session 8's theorem is the blocker), and every
 real dataset already runs through an estimated score (Session 10's gap). Those
@@ -579,12 +585,13 @@ They do not become twenty project tasks.
 
 ---
 
-# Priority order (product-first, 28 August 2026)
+# Historical priority snapshot (28 August 2026)
 
-The executable form of this ordering is the programme queue in
-`OPEN_PROBLEMS.md`; this is the rationale.
+This records the ordering at that date, including P1 before its closure.
+It is not the current work queue. Use `OPEN_PROBLEMS.md` for current
+priorities, parked questions, and the limit on active work.
 
-**Now**
+**Now, as of that snapshot**
 
 1. **P1 · DS-POPULATION-BRIDGE** — the finite→population profiled-\(D_s\)
    theory (was Session 8, "Later"). Unblocks the profiled compile bridge the
@@ -616,9 +623,9 @@ The executable form of this ordering is the programme queue in
    statements at the publication decision.
 
 The important discipline is unchanged: **resist opening every interesting
-mathematical branch simultaneously.** The programme queue is the enforcement
-mechanism — a session executes one `WORK/active/` packet drawn from the
-highest programme that is not blocked.
+mathematical branch simultaneously.** The current work limit in
+`OPEN_PROBLEMS.md` governs selection. An interesting follow-up question does
+not automatically become the next active packet.
 
 The clearest north-star sentence for the project is therefore:
 

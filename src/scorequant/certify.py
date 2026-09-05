@@ -18,8 +18,10 @@ partial cells together with one singleton cell per remaining atom, so
 
 and Loewner monotonicity of \(\log\det\) makes
 \(\log\det(I_{\text{partial}}+R_t)\) a valid ceiling that tightens with depth.
-This is exactly the property that does not transfer to the profiled Schur
-objective, which is why certification is D-only.
+This implementation certifies D only. On a fixed regular block decomposition,
+the profiled Schur complement is also Loewner-monotone; D-only support must not
+be interpreted as a mathematical impossibility of profiled bounds. A profiled
+search would need its own singular-block policy and validated objective bounds.
 
 The tree search is sequential and its nodes are tiny, so the inner algebra is
 plain NumPy in float64: dispatching each node through JAX would dominate the

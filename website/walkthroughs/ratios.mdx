@@ -36,9 +36,9 @@ ground truth to check it against. This one does, because its data was generated 
 
 ## The data, and why it is simulated
 
-Every other walkthrough uses data that was measured. This one uses data that was generated, and
-that is the point: to catch a self-report being wrong you need something to compare it against,
-and only a problem whose answer is known in closed form provides one.
+This walkthrough uses a synthetic mixture with an analytic truth score. It lets us compare
+reported surrogate retention with true-score retention for the same fitted labels. The Michelson
+walkthrough also has an analytic model; FlowCyt uses measured cells and HEP uses simulated events.
 
 The mixture is two normal components with different means and different widths, mixed at a signal
 fraction of {f("signalFraction")}. Two independent samples come from that mixture:

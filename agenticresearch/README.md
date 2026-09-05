@@ -39,11 +39,11 @@ workspace read order).
 | `PROBLEM.md` | Canonical scientific target |
 | `AGENT.md` | Non-negotiable invariants + map (short) |
 | `registry.json` | Shared vocabularies, programme queue, bibliography |
-| `claims/` | Fine-grained theorem/claim graph, one file per claim (103 nodes) |
+| `claims/` | Fine-grained theorem/claim graph, one file per claim; current counts in the generated index |
 | `claims/INDEX.md` | **Generated** claim digest, grouped by programme in queue order |
 | `py/registry.py` | `validate` / `reindex` / `show <ID> --deps --proof` |
 | `KNOWN_RESULTS/` | Human-readable current mathematical state, one file per chapter |
-| `OPEN_PROBLEMS.md` | The single priority queue: 8 programmes, OP sub-items |
+| `OPEN_PROBLEMS.md` | The single priority queue, current work limit, and parked questions |
 | `research-plan-proposal.md` | North star, session model, roadmap narrative |
 | `WORK/active/`, `WORK/completed/` | Coarse work packets (one per session) |
 | `protocols/` | Detailed recipes, read when relevant |

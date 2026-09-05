@@ -1,6 +1,6 @@
 # Open problems — the research programme queue
 
-**Version:** 4.0 · 1 September 2026
+**Version:** 4.1 · 5 September 2026
 **Rule:** this file contains only genuinely unresolved questions. Results established in `KNOWN_RESULTS/` are inputs, not open tasks.
 
 This is the **single priority queue** of the project, organized as seven live
@@ -10,6 +10,28 @@ theorems unblock shippable ScoreQuant capabilities outrank purely academic
 branches. A session works on a `WORK/active/` packet drawn from a programme —
 the whole branch, not one OP leaf. OP numbers are stable ids; claim
 `proof_location`s point at them.
+
+## Current work limit (5 September 2026)
+
+One scientific question is active: **P2, true-score information evaluation
+of a frozen quantizer fitted from estimated scores**, as scoped in
+`WORK/active/SCORE-ORACLE-ROBUSTNESS.md`. The first result must change what a
+user can conclude from an independent evaluation sample. Boundary movement,
+refitting stability, and end-to-end classifier calibration are subsequent
+questions, not prerequisites for that first result.
+
+OP31 and `WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` are **parked until an
+explicit reopening decision**. The packet remains at its existing path to
+preserve references; its older active header does not override this queue.
+DS19's deployment verdict stands. Exact bit complexity is not a library
+delivery gate. Other programmes remain a backlog, not concurrent work.
+
+A bounded independent audit or formal verification of a frozen claim may
+accompany the active question. It does not open another exploratory branch.
+At the packet's effort checkpoint, record a proof, a refutation, or a precise
+reduction and its practical consequence. Propose the next question for
+selection; do not activate it automatically. Promotion to a shipped guarantee
+or a publication claim requires an independent audit under `protocols/audit.md`.
 
 ---
 
@@ -43,7 +65,9 @@ margins and stable-basin questions are OP29 in P6 and OP30 in P7.
 # P2 · SCORE-ORACLE-ROBUSTNESS — estimated scores and classifiers
 
 *Descends from research-plan-proposal.md Session 10 (moved to "Now").*
-*Product payoff: honest error bars for every real dataset; the library book calls this "the largest practical gap in the framework". Active packet: `WORK/active/SCORE-ORACLE-ROBUSTNESS.md`.*
+*First payoff: a defensible evaluation statement when independent true scores are available;
+uncertainty on real data without that oracle remains a separate question. Active packet:
+`WORK/active/SCORE-ORACLE-ROBUSTNESS.md`.*
 
 ## OP17. Perturbation theory for estimated scores
 
@@ -356,8 +380,9 @@ variable \(d_\lambda\). General parametric-shortest-path envelope lower
 bounds do not transfer to this grouping DP, and parametric search shows the
 envelope need not be materialized.
 
-Target claim: `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`. Active packet:
-`WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` (opened 2 September 2026).
+Target claim: `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY`. Parked packet:
+`WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` (opened 2 September 2026;
+parked by the current work limit above).
 
 ---
 
