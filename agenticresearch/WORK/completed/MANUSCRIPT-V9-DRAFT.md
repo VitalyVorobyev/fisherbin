@@ -78,8 +78,8 @@ brackets; E and A; differentiable quantizers and consistency; fixture catalogue 
 placement). Every ledger row is still placed (Appendix H, generated from the tags), the tags are
 unchanged in the source and rendered as hidden provenance marks, and no `CE-*` id appears in
 the main text. The renumbering (first draft → revision) is in the README crosswalk. The
-`docs/programme/S05-manuscript-v9-draft.md` revision spec records the design; its closing
-report records what was verified and what remains open.
+revision spec for the M12 manuscript session (recorded in git history) records the design; its
+closing report records what was verified and what remains open.
 
 ## Next dependency-blocking question
 

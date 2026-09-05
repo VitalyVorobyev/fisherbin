@@ -3,9 +3,9 @@
 The fixture is built offline by ``examples/hep_classifier/fixture.py`` (never
 run by this module, the tests, or CI) and committed at
 ``examples/data/hep_higgsml_fixture.npz`` with provenance recorded in the
-sibling ``.json``. See ``docs/programme/S07-hep-classifier-showcase.md``
-(design decisions D1, D3) for why the fixture holds seven `tes` variants of
-the same 1,000 row-aligned events rather than a single feature table.
+sibling ``.json``. It holds seven `tes` variants of the same 1,000 row-aligned
+events rather than a single feature table: the reference value plus the three
+delta offsets the convergence study sweeps.
 """
 
 from __future__ import annotations

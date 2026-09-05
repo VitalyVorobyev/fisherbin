@@ -34,8 +34,7 @@ export default function Lab(): React.JSX.Element {
   const lab = useLabRunner();
   const data = useScoreTable();
   const {chooseFlowCyt, chooseGaussian, loadPreset} = data;
-  // Seeded from `?job=<slug>` once on mount (D5,
-  // docs/programme/S08-the-four-walkthroughs.md). This page is server-rendered
+  // Seeded from `?job=<slug>` once on mount. This page is server-rendered
   // by Docusaurus, so the query is read in an effect rather than during
   // render: an effect runs only after hydration, so the server render and the
   // client's first paint both see the same unseeded defaults above, and only

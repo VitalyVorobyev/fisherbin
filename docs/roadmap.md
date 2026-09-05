@@ -1,13 +1,13 @@
 # ScoreQuant development roadmap
 
 This is the single executable planning document. User-facing reference pages describe only
-implemented interfaces.
+implemented interfaces. Delivered milestones are summarized in one table near the end; their
+detail lives in the ADRs, `CHANGELOG.md` and git history, not here.
 
 ## M13 — Focused research and teaching
 
 **Status:** planned; review and priority reset completed on 5 September 2026.
-This is the current execution entry point. M1–M12 below record delivered capabilities and
-historical gates. In particular, M12's root-portal description was superseded by
+This is the current execution entry point. The site topology is
 [ADR 0027](adr/0027-landing-page-at-the-root.md): landing `/`, documentation `/docs/`, portal
 `/portal/`. Keep those routes during this milestone.
 
@@ -62,7 +62,8 @@ requires it, not after every packet.
 
 ### Explicit cuts and deferred work
 
-- Retire M12's universal delegation/model-tier workflow from future execution; retain its reports.
+- Retire M12's universal delegation/model-tier workflow from future execution; its packets are
+  deleted and live in git history.
 - Park OP31 exact Ds bit-complexity and the broad Ds margins tail in the research queue.
 - Keep generic profiled compilation unsupported; a restricted research certificate does not
   imply a stable production compiler.
@@ -81,486 +82,41 @@ requires it, not after every packet.
 | Human learning gate cannot be automated | C owner schedules reader review after a concrete pilot; until then report that gate as pending. |
 | Graph cleanup accidentally changes proof authority | F migration reviewer audits relations and status preservation; no automatic status downgrades. |
 
-## M1 — Canonical contracts and documentation
-
-**Status:** implemented in the architectural update; keep as a permanent gate.
-
-- Use ScoreQuant consistently.
-- Separate population design, empirical quantizer fitting, and finite assignment.
-- Separate sources from score providers and exact from surrogate information.
-- Maintain the independent book, how-to/API reference, ADRs, and research provenance.
-
-**Gate:** one glossary; no nonexistent APIs in published pages; documentation tests and strict
-MkDocs pass.
-
-### Phase 2 documentation overhaul
-
-**Status:** done.
-
-- Replaced the 12-chapter book with the gradual, 1D-first 14-chapter book (`docs/book/ch01`–`ch14`)
-  and swapped the mkdocs nav and every cross-link to match.
-- Rewrote `docs/book/index.md` as a book overview with a chapter list and two reading paths.
-- Rewrote `docs/bibliography.md` with one anchored entry per citation used by the book, grouped by
-  theme, verified against every `bibliography.md#anchor` reference in the published docs.
-- Rewrote `docs/glossary.md` in alphabetical order with terms consistent with the new book
-  (sample partitioning, space quantization, three doors, exchange stability, compile bridge,
-  efficient score, retention).
-- Swept `docs/api.md` of stale TODO markers and verified its claims against `src/scorequant/`.
-- Removed dev-only notation (TODO/phase references) from published pages; tutorial pages keep
-  their planned-for-replacement content with neutralized skip-marker wording.
-
-### Phase 3 — synthetic examples and evidence suite
-
-**Status:** done.
-
-- 3A: shared examples infrastructure — `examples/baselines.py` (the three canonical naive
-  baselines), `examples/_env.py` fast-mode helper, and the `tests/test_notebooks.py` harness.
-- 3B: replaced the `Tutorials` nav section with `Examples`; added door1-score-events,
-  door2-mixture-densities, and door3-classifier pages and notebooks.
-- 3C: added the solver-shootout page and notebook, and rebuilt the gallery as a comparison
-  dashboard.
-- 3D: added the nuisance-profiled-ds and soft-purification pages and notebooks.
-- 3E: added the three theorem-demonstration pages and notebooks — lloyd-nonmonotone,
-  ds-geometry-counterexample, global-certification.
-- 3F: added the flowcyt-teaser page (a pointer into the FlowCyt study, no notebook) and the
-  `examples/index.md` section overview; verified every notebook-backed example page links its
-  notebook and vice versa, and every example page links at least one book chapter; added
-  reciprocal "runnable example" pointers on the relevant book chapters; closed orphaned-number
-  gaps found in the claim-assertion sweep; updated the README and docs front matter to reference
-  the Examples section.
-
-**Gate:** all ten example pages and nine notebooks execute under `tests/test_docs_snippets.py`
-and `tests/test_notebooks.py`; every headline number in prose is asserted in a page snippet or
-in `tests/test_evidence_suite.py`/`tests/test_research_claims.py` from committed JSON; strict
-MkDocs build passes.
-
-### Phase 4 — FlowCyt master showcase and performance closure
-
-**Status:** done.
-
-- 4A: restructured the 534-line `docs/usecases/cellpopulation.md` wall into the six-page
-  `docs/usecases/flowcyt/` section (index, data, scores, quantization, profiled, solvers) and
-  added the profiled-\(D_s\) study extension on real data; every inbound link re-pointed, the old
-  page deleted.
-- 4B: added the real-data solver comparison (`docs/usecases/flowcyt/solvers.md`) covering every
-  dispatch-table solver plus the three canonical baselines, on both the frozen CI fixture and the
-  600,000-cell bounded sample, with committed JSON evidence and publish-grade figures.
-- 4C: ran the profiling campaign to \(N=10^6\) (`benchmarks/README.md`: bottleneck table, machine
-  roofline, folded-stack profiles under `benchmarks/profiles/`), applied three bit-identical
-  numerical wins, refreshed `benchmarks/baselines.json`, reached a measured Rust no-go for the
-  numerical core, and fixed the terminal geometry check that had blocked the converged
-  \(N=10^6\) D-exchange measurement ([ADR 0016](adr/0016-tolerance-consistent-geometry-verification.md)).
-- 4D: closure sweep — this page, `docs/system-design.md`, `docs/development.md`, and `README.md`
-  truth-passed against final `src/`, `benchmarks/`, and `tests/`; repo-wide dev-notation and
-  stray-artifact sweep; full exit gate re-run.
-
-**Gate:** every number quoted from the 600,000-cell sample or the full corpus states its
-provenance and is asserted from committed JSON; `tests/test_cell_population.py` and
-`tests/test_readme.py` stay green; strict MkDocs build passes; the full validation gate at the
-bottom of this page passes, plus `uv run python benchmarks/bench.py --check
-benchmarks/baselines.json --time-tolerance 10 --quality-rtol 1e-6`.
-
-## M2 — Exact finite D reference core
-
-**Status:** implemented baseline.
-
-- Exact cell statistics, rank-two relocation gain, deterministic monotone exchange, terminal scan,
-  small-instance exhaustive oracle, zero-weight handling, and explicit compilation.
-- Regression gates cover direct recomputation, monotonicity, small global optima, the D separation
-  bound, invariants, and reproduction of positive-weight labels.
-
-**Next:** profile factorization updates before optimizing performance further. The branch-and-bound
-certificate workflow this milestone deferred is implemented; see the M7 certificate gate.
-
-## M3 — Breaking task-explicit API
-
-**Status:** implemented; compatibility break is intentional.
-
-- `optimize_partition`/`PartitionResult` for fixed labels.
-- `fit_quantizer`/`QuantizerResult` for reusable score rules.
-- `DOptimality`, `NormalizedTrace`, and solver-specific configurations.
-- Old `fit`, `fit_components`, and `fit_scores` names are removed without aliases.
-
-**Gate:** examples, notebooks, API pages, and migration table use only the new surface; ordinary
-partitions expose no prediction semantics.
-
-## M4 — Sources, providers, and bounded integration
-
-**Status:** first wave implemented.
-
-- `ScoreSample`, `ObservationSample`, and low-dimensional bounded `IntegrationSource`.
-- `ScoreFunction`, `LinearComponentScore`, ready classifier-derived providers, central-ratio and
-  mixture constructions, and score provenance (reshaped around density ratios in M8).
-- Deterministic tensor Gauss-Legendre quadrature with explicit density and capacity guard.
-
-**Gate:** equivalent materializations agree; invalid combinations fail clearly; analytic quadrature
-agrees with known moments and deterministic sampling; validation never affects fitting state.
-
-**Deferred:** autodiff-model convenience, population samplers, direct score samplers, streaming,
-and moment oracles.
-
-## M5 — Book and FlowCyt capstone
-
-**Status:** book and task-explicit 600k workflow integrated, including the exact-D reference.
-
-- Maintain theorem/proposition/numerical-evidence/open-problem labels.
-- Use analytic and rational laboratories for mathematical claims, never FlowCyt as proof.
-- Compare finite D assignment, compiled D rule, trace k-means, soft D, marker/PCA/random baselines,
-  and the unbinned classifier-ratio fit on the frozen patient split.
-- Report score provenance/calibration, mean-score closure, compression loss, rank, occupancy,
-  patient shift, hardening/geometry gaps, and downstream error.
-
-**Completed solver gate:** vectorized exact-D scanning is included in the normative workflow on the
-same 27,607-row partition sample as the learned quantizers. The compiled rule must reproduce every
-positive-weight training label. This is deliberately not described as optimization over all 600,000
-events.
-
-**Solver-scale gate completed:** exact rank-two state/inverse updates and deterministic
-memory-bounded candidate scans agree with full recomputation over repeated moves. The recorded CPU
-benchmark covers 200k rows/ten moves and one million rows/one scan. Stored arrays and initialization
-remain \(O(N)\), so this is not a claim of full-corpus or one-pass fitting.
-
-**Data gate completed:** the reproducible downloader reconstructed all 30 `Case_*.csv` files
-(21,254,866 events), and the frozen 600k sample was audited against every full-corpus row without
-retuning. Maximum patient/class fraction error is \(3.39\times10^{-5}\); maximum standardized
-marker-mean error is 0.0296. Hashes, aggregates, the patient table, and the plot are committed;
-raw CSV/FCS data remain external.
-
-## M6 — Profiled \(D_s\)
-
-**Status:** implemented.
-
-Implement finite exchange and a separate inductive solver. Add efficient scores, the finite
-geometry-gap bound, the full-information upper problem, and exact scalar dynamic programming where
-applicable.
-
-**Gate:** exact relocation tests; rational non-Voronoi counterexample; no implicit compilation from
-finite labels; clear same-data versus external-nuisance semantics.
-
-**Upper-problem gate completed:** `efficient_score_bound` certifies a ceiling on the profiled
-objective by solving the exact scalar interval program on the full-data efficient score, in the same
-log-determinant convention the finite profiled solver reports, and its labels initialize profiled
-exchange through `optimize_partition(..., initial_labels=...)`. The certificate is limited to one
-interest column; a multivariate efficient score would need a multivariate solver and is refused
-rather than approximated.
-
-**Exact scalar gate completed:** the interval dynamic program is evaluated in memory-bounded
-vectorized stripes instead of a per-stop Python loop, reproduces the previous implementation's
-labels and objective bit for bit, and attains the exhaustive small-instance optimum.
-
-## M7 — Population, scale, and persistence
-
-In order: population samplers and moment oracles; streaming and factorization updates; then
-versioned persistence. Signed weights, additional backends, and advanced objectives remain outside
-scope until their mathematical contracts and independent use cases exist.
-
-**Certificate gate completed:** `exchange_stability_report` certifies any supplied labeling with one
-exact scan and reproduces the engine's own `best_remaining_gain`; `PartitionResult.geometry` reports
-the Voronoi violation, the Theorem-3 guaranteed gain, and the cell-separation residual of a D
-partition; and `certify_partition` proves global optimality by branch and bound with the
-singleton-completion bound, agreeing with the exhaustive oracle on seeded weighted and unweighted
-instances and downgrading to `status="budget_exhausted"` with a genuine outstanding bound when its
-node budget runs out. Certification is D-only and never runs implicitly, per ADR 0014.
-
-**Scale gate completed:** every certificate states the `gain_tolerance` it holds at, and every
-geometry verification judges the exact relocation gain against that same tolerance instead of
-against zero. A converged 1 000 000-row D-exchange or Mahalanobis-Lloyd fit therefore returns,
-certifies, and compiles, where a zero-tolerance comparison previously rejected it over 13 boundary
-rows in a million, per ADR 0016.
-
-## M8 — Density ratios as a first-class representation
-
-**Status:** implemented.
-
-Per [ADR 0017](adr/0017-density-ratio-representation.md): the statistical representation layer is
-named — exact densities, model density ratios, and scores — with the classifier decomposed into
-one estimator of ratios. `ratios.py` owns `ratios_from_posteriors`, `mixture_scores_from_ratios`,
-the two declared parameterizations, and `ratio_closure_report`; `DensityRatioScore` (with
-`from_classifier`) and `CentralLogRatioScore` replace `ClassifierScore` and its transforms;
-`ScoreProvenance` carries a structured `RatioProvenance`; model ratios and importance ratios keep
-disjoint API homes (providers versus source weights).
-
-**Gate:**
-
-- The decomposition is equivalence-tested: `DensityRatioScore` over \(\Phi/\phi_{\rm ref}\)
-  reproduces `LinearComponentScore` exactly, the two-step posterior chain reproduces the former
-  composed transform, and gauge invariance holds for both parameterizations.
-- Closure is exercised by an analytic laboratory (exact ratios close to numerical precision, a
-  misdeclared prior does not) and two applications (door-3 example, FlowCyt calibration audit).
-- Invalid combinations fail by name; ratio provenance round-trips through `to_dict()`.
-- No repository reference to the removed names (`ClassifierScore`, `MixturePosteriorTransform`,
-  `CentralLogRatioTransform`, `mixture_scores_from_posteriors`) outside ADR history and this gate.
-- Reference pages and navigation cover the new surface; the full handoff gate passes.
-
-## M9 — Explicit multi-backend execution
-
-**Status:** implemented; parity and browser smoke gates pass.
-
-1. Architecture foundation: land ADR 0018, the code-quality audit, dependency rules, the
-   `ExecutionConfig` contract, and import-boundary checks.
-2. Backend-neutral JAX extraction: canonicalize public arrays as NumPy, move JAX imports behind a
-   private adapter, split solver responsibilities, and preserve the existing default path.
-3. NumPy parity: run every hard solver and certificate, implement one analytic soft objective and
-   gradient, apply it through Optax and a matching private NumPy Adam implementation, and build one
-   backend-parameterized conformance suite.
-4. Browser packaging: omit JAX/Optax on Emscripten, build a wheel, and pass a Pyodide smoke run.
-
-**Gate:** every declared task/configuration/criterion combination runs under JAX and NumPy and
-induces the same partition, compared up to bin relabeling; in float64 the retained information and
-objective agree at `rtol=1e-10, atol=1e-12`, and the annealed soft solver at `rtol=1e-4`. In float32
-only the *continuous* quantities are gated across backends (`rtol=1e-5, atol=1e-6`): a relocation
-gain can fall inside the float32 noise floor, so the discrete solvers may walk to different,
-individually exchange-stable optima, and each backend is gated on its own validity instead. Public
-arrays are NumPy; invalid execution requests fail before work; default JAX benchmarks have no
-unexplained quality regression; both architecture reviews pass.
-
-## M10 — React learning portal and browser Lab
-
-**Status:** initial vertical slice implemented. Root-site promotion and publication were carried
-out by M12 (ADR 0025 and ADR 0026); the research expansion in item 5 below remains future work.
-
-1. Product foundation: land ADR 0019, route/content manifests, design tokens, responsive
-   wireframes, the custom Docusaurus shell, Pagefind command palette, and generated data contracts.
-2. Polished vertical slice: ship Home, Docs, API, Examples, Theory, Benchmarks, Research, and Lab
-   routes using real fixtures and authoritative source adapters rather than placeholder science.
-3. Browser Lab: generate TypeScript from the versioned JSON Schema; lazily load Pyodide and the
-   local ScoreQuant wheel in a cancellable worker; synchronize controls, score-space graphics, and
-   diagnostics; include one locked lazy marimo lesson.
-4. Dual-site publication: assemble MkDocs at the existing root and React at `/portal/`; keep
-   deployment preview-only. Move React to the root only after content/link parity and a reviewed
-   redirect manifest.
-5. Research growth: expand the opt-in claim preview into history, implication, counterexample, and
-   evidence-provenance views without exposing private registry state.
-6. Development blog (ADR 0020): the Docusaurus blog at `/blog`, rendered through the ScoreQuant
-   shell, with one plain-English post per merged research or feature arc — negative results
-   included — and a selective backfill of the arcs that changed direction.
-
-**Gate:** strict TypeScript, lint, unit/component tests, schema consistency, broken-link failure,
-desktop/mobile Playwright flows, automated accessibility plus keyboard/reduced-motion review,
-non-Lab Lighthouse LCP below 2.5 seconds and CLS below 0.1 on CI, no Pyodide/marimo requests on
-ordinary routes, representative manual visual inspection, and a seeded browser scenario agreeing
-with native NumPy in under ten seconds after warm-up.
-
-## M12 — Consolidation programme
-
-**Status:** done, 4 September 2026. All eleven sessions are `done`; none was cut. The portal is
-published at the site root and the exit gate below is evaluated. The remaining portal
-work was split on 4 September 2026: S10 writes the front door, and a new S11 does the visual
-design pass, the inline demos and the deployment. The remaining sessions are the
-user-facing half of the programme and were re-scoped on 3 September 2026 around one direction:
-the portal becomes the site root and explains rather than sells, MkDocs narrows to the
-exhaustive reference, and four detailed walkthroughs — one per input route, two on real data —
-carry the applied stories.
-
-Theorem research paused with P1 closed on DS19 (2 Sep 2026). With 0.1.0 out, the project reflects
-on what it has before the next release. Four things were wrong when the milestone opened: the
-manuscript was three research sessions behind the claim registry, the library carried pre-1.0
-design debt that would be breaking to fix later, the portal narrated research with hardcoded
-timelines and sold rather than explained, and half of the documented input routes had only toy
-examples. S3 and S5 closed the first two. The remaining two are what the user-facing half
-addresses, and they are the reason a released library is still not a presentable one: a reader who
-follows the URL the package advertises arrives at an exhaustive reference that re-derives the same
-three concepts up to seven times and never states the problem in plain language.
-
-This milestone is a multi-session programme; its standing memory is
-`docs/programme/README.md` (orchestrator contract and session prompt) and one packet per session
-under `docs/programme/`, each closed by a plain-English report. Nothing else holds programme
-status: this table is the single source of truth for what is queued, active, and done.
-
-Four workstreams, each with its own gate:
-
-- **W1 — Manuscript v9.** `agenticresearch/manuscripts/NOVELTY_LEDGER.md` labels every central
-  statement as known / direct corollary / adaptation / apparently new / unresolved, with
-  attribution; v9 folds in every finding since v8 (DS11–DS19, A-optimality, information
-  efficiency, the new counterexamples) and corrects every entry of the README staleness ledger.
-  **Gate:** every ledger row is placed in v9 or marked deliberately omitted with a reason; an
-  independent fresh-context audit read of v9 against the ledger records a verdict per statement;
-  `registry.py validate` is green.
-- **W2 — Library design pass.** No exported name that nothing accepts; every published code
-  string executes in a test; the backend is documented; a small error hierarchy names contract
-  violations and theorem-backed refusals; `fit_quantizer` is one pipeline with the profiled guard
-  at one boundary; validation is single-sourced; results are constructed once. **Gate:** golden
-  engine and backend conformance suites bit-identical before and after; an architecture test pins
-  the layering; ADR 0024 and the CHANGELOG record every breaking change.
-- **W3 — Portal.** The portal is the public face, served at the site root, and MkDocs is the
-  exhaustive reference under `/reference/`; narrative duplicated between them moves out of
-  MkDocs. The front door explains the problem and hands the reader onward — no slogans, no proof
-  strip, and every published snippet shown with its actual output. The hardcoded research
-  timeline and graph are replaced by a plain-English research section written from the novelty
-  ledger. **Gate:** every portal snippet is executed by a test and every output it displays is
-  captured from a run rather than typed; every research page states who it is for and links every
-  claim it makes; every pre-cut MkDocs URL resolves — 51 of the 53 through stubs from a committed
-  redirect manifest, the site root and `/reference/` by deliberately serving new content, with the
-  parity checked against the assembled tree rather than by eye; Playwright end-to-end runs in CI;
-  the root deployment is live. **S8 done** (`website/walkthroughs/`): four walkthroughs — the
-  ratio door, HEP, FlowCyt, Michelson — each carrying one applied question from the problem to a
-  fitted result and ending in a measured limitation rather than a summary. The 51st redirect is
-  new: `three-doors.md` was retired here and its stub re-points to `walkthroughs/ratios/`, the
-  only stub in the manifest whose target is a portal route rather than the reference, listed as a
-  deliberate exception in `website/tests/redirects.test.ts`. `examples/` moved the other way,
-  from a deliberate non-stub back to a real stub into `reference/examples/`, because the portal
-  route that occupied that URL was deleted with `showcase.tsx`. No number on the four pages is
-  typed: each resolves from a JSON Pointer into committed evidence through
-  `website/scripts/generate_walkthroughs.py`, a missing key fails `pnpm build`, and
-  `tests/test_walkthrough_facts.py` re-resolves every pointer and refuses a numeric literal in
-  prose. The gate's own last clause — that the root deployment is live — was delivered by **S11**,
-  not S10: the remaining portal work was split on 4 September 2026 so that the surface is
-  published only once it is finished. **S11 done**: the assembled tree is published from one
-  workflow (ADR 0026), a pull request builds and uploads it and only a push to `main` deploys.
-  The deployment ran on 4 September 2026 and the site is live at the root. The parity check
-  that no local run can perform — every pre-cut URL resolving against the live host — is
-  recorded in **S9**'s closing report, which S11 handed it to as an inherited obligation:
-  53 of 53 resolve, each stub verified to name the target the manifest promises and each
-  target verified to answer.
-- **W4 — Showcases.** A realistic end-to-end example for each input route: score sample and
-  density ratios (FlowCyt, already real), an analytic `ScoreFunction` with an explicit nuisance on
-  the NumPy backend (Michelson fringe phase against a fringe-frequency nuisance), and an executed
-  `CentralLogRatioScore` path on a HEP classifier route on the FAIR Universe HiggsML public
-  dataset; the FlowCyt three-interface fallback is cut because that dataset check succeeded.
-  **Gate:** each example executes in both test tiers in fast mode, has its evidence JSON pinned,
-  is reachable from the portal's walkthrough index, and the roadmap names the provenance of every
-  number it reports. **S7 done** (`examples/hep_classifier/`,
-  `docs/usecases/hep/index.md`): every number in the study comes from
-  `docs/examples/assets/hep-classifier.json`, itself computed by
-  `uv run python -m examples.hep_classifier` on the committed 1,000-event fixture
-  (`examples/data/hep_higgsml_fixture.npz`, hash and licence recorded in the sibling `.json`) —
-  bytes fetched from the unlicensed `FAIR-Universe/HEP-Challenge` code repository, the CC-BY-4.0
-  licence claimed under its Zenodo archival record (DOI 10.5281/zenodo.15131565), not under that
-  code repository. The classifier diagnostics (weighted signal AUC 0.8345, weighted signal
-  fraction 0.00099, grouped-fold `tes` minus/plus AUC 0.5674) are measured by the same run and
-  confirm the fixes for the two failure modes the design record documents (fold leakage inverting the `tes` score,
-  raw Monte Carlo weights making the signal class invisible), and land close to the design
-  record's own target numbers. The central prediction — ScoreQuant's profiled-\(D_s\) partition
-  beats binning the classifier output at the same six-bin budget — held, and is quoted against the
-  strongest of two one-dimensional binnings rather than the first tried: a **0.5008**
-  profiled-retention gap against logit-equal-width cells, against 0.7106 for the equal-frequency
-  cells the study first used. The 0.2098 spread between two binnings of the same posterior is
-  published alongside, because it sets how much of the headline number is the method and how much
-  is the baseline's difficulty. The ScoreQuant partition lands within 0.0009 of the certified
-  `efficient_score_bound` ceiling.
-
-Sessions (one branch, one PR, one closing report each; `Needs` is the merge lock):
-
-| # | Session | Workstream | Needs | Status |
-|---|---|---|---|---|
-| S1 | Scaffold + public-surface truth pass | memory, W2 | — | done |
-| S2 | Manuscript reconciliation + novelty ledger | W1 | S1 | done |
-| S3 | Library internals refactor | W2 | S1 | done |
-| S4 | Showcase foundations (Michelson phase, NumPy example, HEP data spike) | W4 | S3 | done |
-| S5 | Manuscript v9 draft | W1 | S2 | done |
-| S6 | Portal topology, reference cut, research narrative | W3 | S2, S3 | done |
-| S7 | HEP classifier showcase (FAIR Universe HiggsML) | W4 | S4 | done |
-| S8 | The four walkthroughs | W3, W4 | S6, S7 | done |
-| S10 | Portal front door: home, get-started, captured outputs | W3 | S8 | done |
-| S11 | Portal design pass, inline demos, and launch | W3 | S10 | done |
-| S9 | Closure: independent v9 audit, exit gate, teardown | all | S5, S8, S11 | done |
-
-Deliberately cut, because it serves no user: renaming the six iteration-budget parameters (one
-table in the API guide instead); `PartitionResult.from_dict` (`Quantizer.save`/`load` is the
-round trip); flattening or regrouping the public namespace; a fresh adversarial literature search
-(P8 stays deferred; only attribution facts already in the README ledger are used).
-
-One cut is retired. Moving the portal to the site root was cut on the grounds that ADR 0019
-requires link parity and a redirect manifest. That reasoning held while the portal was a second
-reading surface; it stops holding once the portal is the explanatory front door, because a
-visitor who lands on the documentation URL — the one the published package advertises — then
-arrives at the reference rather than at the explanation. S6 does the promotion and pays ADR 0019's
-price directly: a committed manifest of every pre-cut MkDocs URL, and a test that fails if any of
-them stops resolving.
-
-**Exit gate:** all four workstream gates hold; every session row reads `done` or `cut`; the full
-handoff gate and `pnpm validate` are green on `main`; the session prompt in
-`docs/programme/README.md` is retired; M11's gate can be evaluated.
-
-**Evaluated 4 September 2026 (S9): the gate holds.** Each clause, checked against its own text
-rather than against the closing reports that claim it:
-
-- **W1 holds.** All 103 novelty-ledger rows are placed in v9, one row each in Appendix H, with
-  none unplaced and none placed that is not a ledger row. An independent fresh-context audit read
-  v9 against the ledger and recorded a verdict per statement — 90 confirmed, 11 needs revision, 2
-  disputed, 0 absent — with **no category-1 failure**: nowhere does v9 claim novelty for a `known`,
-  `direct corollary`, `adaptation` or `unresolved` row. Its revisions are applied, or recorded as
-  debt where they need a literature read, in `agenticresearch/WORK/completed/MANUSCRIPT-V9-AUDIT.md`.
-  `registry.py validate` reports `registry clean`.
-- **W2 holds.** `test_golden_engine.py`, `test_execution_backends.py` and `test_architecture.py`
-  pass; ADR 0024 records the error hierarchy and the one-pipeline `fit_quantizer`; the CHANGELOG
-  records the breaking change — under `[Unreleased]`, which S9 had to create, because the entries
-  had been appended while the version heading read `unreleased` and a later commit dated that
-  heading, retroactively asserting they shipped in 0.1.0. Checked at the tag: `RefusalError` is
-  absent from `src/` and `LinearProblem` is still exported there.
-- **W3 holds.** Every portal snippet is executed by a test and every displayed output is captured
-  from a run (`test_portal_snippets.py`, `test_docs_snippets.py`, `test_walkthrough_facts.py`);
-  Playwright runs in CI through `site.yml`; and the gate's last clause — the root deployment is
-  live — is discharged. **53 of 53 pre-cut URLs resolve against the live host**, each stub verified
-  to name the target the committed manifest promises and each target verified to answer.
-- **W4 holds.** Each showcase executes in both test tiers with its evidence JSON pinned, is
-  reachable from the walkthrough index, and this roadmap names the provenance of every number it
-  reports.
-
-Every session row reads `done`; none was cut. The full handoff gate and `pnpm validate` ran green
-on the closure branch (553 passed, 4 passed float32, `--strict` MkDocs clean, 118 website tests)
-and are re-run on `main` by `ci.yml` and `site.yml`, both of which trigger on push to the default
-branch. The session prompt is retired in place rather than deleted, with the reason recorded.
-
-**M11's gate is now evaluable**, which was this gate's last clause and the reason S9 ran last.
-
-## M11 — First public release
-
-**Status:** done. Tag `v0.1.0` was pushed on 30 August 2026 and both artifacts
-(`scorequant-0.1.0-py3-none-any.whl`, `scorequant-0.1.0.tar.gz`) were published to PyPI the same
-day. This status line said "the tag is unpushed and nothing is published" until 3 September 2026,
-which had been false for four days; `CHANGELOG.md` carried the same error as `[0.1.0] —
-unreleased`. Both are corrected. The published project page advertises
-`https://vitalyvorobyev.github.io/scorequant/` as both Homepage and Documentation, which is why
-S6's redirect manifest is not optional: that URL is the one the world already holds.
-
-The library had been installable only from git. That is a real barrier: it makes the package
-unusable in a locked dependency set, gives no stable artifact to cite, and means every reported bug
-has to be traced to a commit rather than a version.
-
-1. Version single-sourcing: `scorequant.__version__` resolved from installed metadata, so
-   `pyproject.toml` stays the only place a version is written.
-2. `CHANGELOG.md`, and `Homepage`/`Changelog` project URLs.
-3. `release.yml`: tag-triggered, gated on the full handoff gate, publishing through PyPI Trusted
-   Publishing so no API token exists. `workflow_dispatch` runs the same gate and build without
-   publishing, so an artifact can be inspected before a tag exists.
-4. Two guards that cannot be fixed after publication: the git tag must match the packaged version,
-   and `twine check` must pass so the README does not render as raw text on the project page.
-
-**Gate** (met for 0.1.0 except its first clause, which the publication predated; it now gates
-the next release rather than the first): M12 is done; the full handoff gate passes; `uv build`
-produces a `py3-none-any` wheel
-and an sdist that `twine check` accepts; the wheel installs into a clean environment and
-`import scorequant` there reports the packaged version and completes a fit-and-predict round trip
-from the installed package rather than the source tree; the trusted publisher is configured on the
-index; and the tag is pushed deliberately.
-
-Publication is an authorized action, not a merge side effect. Landing this milestone does not
-publish anything.
-
-**Gate run in full, 4 September 2026: `0.2.0` is published.** M12 closed, satisfying the first
-clause, and the rest were then met rather than assumed. Tag `v0.2.0` points at `ed219d5`;
-`release.yml` reports `verify: success`, `build: success`, `publish-pypi: success`, so the
-artifacts went to PyPI through Trusted Publishing with no token. `twine check` passed on both.
-The clause no CI job covers — a clean-environment install — was run outside the repository so the
-import cannot resolve to `src/`: the wheel reports `0.2.0` from `site-packages` and completes a
-`fit_quantizer`/`predict_scores` round trip.
-
-The release existed because the site had got ahead of the package. The portal published on
-4 September documents `main`, and its `/get-started` page displays captured output from a program
-that catches `sq.RefusalError` — which does not exist anywhere in `0.1.0`'s `src/`. A reader
-following that page's own `uv add scorequant` got an `AttributeError`. Verified closed after
-publication: `scorequant==0.2.0` installed fresh from PyPI runs that page's refusal cell and
-raises the documented `RefusalError` with its `[CE-DS-GLOBAL-GEOMETRY-001]` counterexample id.
-
-`0.2.0` is a minor bump rather than a patch because `LinearProblem` and `LinearComponents.evaluate`
-are removed; `ContractError`, `RefusalError` and `ScoreQuantError` are added.
-
-**Site topology reversed, 4 September 2026.** The owner rejected the portal front door on review.
-A hand-written landing page now owns the site root, the MkDocs documentation is mounted at `/docs/`
-with its three retired narrative pages restored, and the portal is published unchanged at
-`/portal/` ([ADR 0027](adr/0027-landing-page-at-the-root.md), superseding ADR 0025). The portal's
-own pages are future work under the owner's review notes and are not scheduled here.
+## Delivered milestones
+
+One row per milestone. Nothing here is a standing instruction; the durable decisions are the
+ADRs named in the last column.
+
+| Milestone | Delivered | Durable record |
+| --- | --- | --- |
+| M1 Canonical contracts and documentation | Consistent naming; population design, empirical quantizer fitting and finite assignment kept distinct; sources separate from providers and exact from surrogate information; the 1D-first book, glossary, bibliography, examples suite and the six-page FlowCyt study; the profiling campaign to \(N=10^6\). | ADR 0001–0010, 0016; `docs/book/`, `docs/usecases/flowcyt/`, `benchmarks/README.md` |
+| M2 Exact finite D core | Exact cell statistics, rank-two relocation gain, deterministic monotone exchange, terminal scan, small-instance exhaustive oracle, explicit compilation. | ADR 0009, 0014 |
+| M3 Task-explicit API | `optimize_partition`/`PartitionResult` and `fit_quantizer`/`QuantizerResult`; criterion plus solver configuration pairs; old fitting names removed without aliases. | ADR 0009, 0011, 0013 |
+| M4 Sources and providers | `ScoreSample`, `ObservationSample`, bounded tensor-quadrature `IntegrationSource`; the provider protocol; named score schema and provenance. | ADR 0010, 0021, 0022 |
+| M5 Book and FlowCyt capstone | The task-explicit 600,000-cell workflow with the exact-D reference on the frozen sample; exact rank-two state updates at one million rows; audited data reconstruction. | `docs/usecases/flowcyt/`, ADR 0015 |
+| M6 Profiled \(D_s\) | Finite profiled exchange, the soft inductive solver, the efficient-score upper bound, the exact scalar interval dynamic program. | ADR 0014, 0015 |
+| M7 Certificates, scale and persistence | Exchange-stability and geometry reports, branch-and-bound `certify_partition`, tolerance-consistent verification, the versioned `Quantizer` artifact. | ADR 0014, 0016, 0023 |
+| M8 Density ratios | Exact densities, model density ratios and scores named as the representation layer; `DensityRatioScore`, `CentralLogRatioScore`, ratio provenance and the closure diagnostic. | ADR 0017 |
+| M9 Explicit multi-backend execution | `ExecutionConfig`; JAX and NumPy behind one mathematical core; one conformance suite; the browser wheel. | ADR 0018 |
+| M10 React portal and browser Lab | The Docusaurus shell, generated data contracts, the Pyodide Lab, the development blog. | ADR 0019, 0020 |
+| M11 First public releases | 0.1.0 on 30 August 2026 and 0.2.0 on 4 September 2026 through PyPI Trusted Publishing, gated on the full handoff gate. | `CHANGELOG.md`, `.github/workflows/release.yml` |
+| M12 Consolidation programme | Novelty ledger and manuscript v9; the error hierarchy and one fit pipeline; the HEP classifier showcase; the four walkthroughs; the portal launch, whose root placement was then reversed. Closed 4 September 2026. | ADR 0024–0027, `CHANGELOG.md` |
+
+### Standing gates carried over
+
+These clauses were stated inside the delivered milestones and still apply.
+
+- One glossary; no nonexistent API in a published page; every published code fence executes in a
+  test; MkDocs builds strictly.
+- Every number quoted from a study or benchmark is asserted from committed evidence
+  (`tests/test_evidence_suite.py`, `tests/test_walkthrough_facts.py`,
+  `benchmarks/bench.py --check`).
+- Certification is D-only and never runs implicitly (ADR 0014); every certificate and geometry
+  verification states the `gain_tolerance` it holds at (ADR 0016).
+- A compiled rule reproduces every positive-weight training label of the partition it came from.
+- Backend parity tolerances are pinned in `tests/test_execution_backends.py`. In float32 only the
+  continuous quantities are compared across backends: a relocation gain can fall inside the float32
+  noise floor, so the discrete solvers may reach different, individually exchange-stable optima.
 
 ## Explicitly outside the development plan
 
@@ -605,6 +161,9 @@ What stays deliberately out of scope, and why, in one place:
   scalar tilt dynamic program with strong duality false. There is no compile route to implement;
   the refusal stands, and the remaining vector branches of OP29 are academic rigidity questions.
   Reconsider only on a new theorem, not on a further open-problem resolution.
+- **Research views in the portal** — history, implication, counterexample and evidence-provenance
+  views of the claim registry (the last open item of M10) remain unscheduled; the plain-English
+  research section is the published surface.
 - **Signed weights and advanced statistical objectives** — remain gated on a new mathematical
   contract and independent use case. NumPy is now the approved second backend in M9; PyTorch still
   requires a concrete workload, complete capability mapping, conformance evidence, and benchmark.

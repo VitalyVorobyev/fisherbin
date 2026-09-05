@@ -99,6 +99,9 @@ Use `uv add`, `uv remove`, and `uv lock` for dependency changes. Run commands th
 - Validate in proportion to risk: targeted tests while iterating, then the full commands above before handoff.
 - Update user guides when workflows change. Run MkDocs in strict mode so broken navigation, links, or reference collection fail CI.
 - Keep architecture decisions in `docs/adr/` and executable phase gates in `docs/roadmap.md`; do not create parallel planning files.
+- Completed programmes and session packets are deleted or archived when they close; git history is
+  their record. Only the current milestone, the ADRs and dated reviews under `docs/programme/`
+  are standing text.
 - Do not commit caches, local environments, build output, or `site/`. Commit gallery images only when intentionally regenerated and visually inspected.
 - Do not push, merge, tag, publish, or deploy unless the user authorizes that action.
 

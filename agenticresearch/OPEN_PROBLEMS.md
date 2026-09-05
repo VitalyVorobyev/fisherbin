@@ -37,34 +37,16 @@ or a publication claim requires an independent audit under `protocols/audit.md`.
 
 ## Closed programme P1 — deployment verdict (1 September 2026)
 
-P1 is complete and is no longer a live programme. DS19 closes its deployment
-question with a **Tier A REDUCED** verdict: the scalar tilt-DP bracket is valid,
-has an exact saddle closure condition, admits fixed-tilt exact evaluation and
-polynomial certified-accuracy minimization, and its DS18 interval-DP primal is
-value-consistent; exact polynomial bit complexity for variable
-\((K,d_\lambda)\) is isolated as OP31. Strong duality fails by an exact
-order-one gap. The observable decision is therefore to certify an exhibited
-regular saddle, report a nonclosed bracket without claiming optimality, use the
-distinct projected efficient-score route where authorized, apply a DS14
-companion only under all audited sequence hypotheses, and otherwise refuse.
-DS19 was independently audited on 2 September 2026
-(`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`): verified with hardened
-assumptions; two exact boundary fixtures added (`CE-DS-TILT-DUAL-GAP-002`,
-`CE-DS-TILT-DUAL-TIE-MASK-001`); the exact-computation scope widened to
-\(d_\lambda=1\) for every \(K\) (polynomial bit complexity) and to fixed
-\(d_\lambda\) (arithmetic complexity, Toledo 1993). No public compile
-surface follows from the audit; compilation remains governed by
-`DS-PROFILED-COMPILE-CERTIFICATE`.
-
-Tier B is **DISPROVED**: the multivariate matrix-tilt outer objective need not
-be quasiconvex (`DS-MATRIX-TILT-NONQUASICONVEX`). The remaining academic
-margins and stable-basin questions are OP29 in P6 and OP30 in P7.
+Closed by DS19 and its independent audit (`AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md`):
+certify an exhibited regular saddle, report a nonclosed bracket without claiming optimality, use
+the projected efficient-score route where authorized, otherwise refuse. The record is
+`KNOWN_RESULTS/05b-ds-bridge.md`; the academic remainders are OP29 (P6), OP30 and OP31 (P7).
 
 ---
 
 # P2 · SCORE-ORACLE-ROBUSTNESS — estimated scores and classifiers
 
-*Descends from research-plan-proposal.md Session 10 (moved to "Now").*
+*Descends from research-plan-proposal.md Session 10.*
 *First payoff: a defensible evaluation statement when independent true scores are available;
 uncertainty on real data without that oracle remains a separate question. Active packet:
 `WORK/active/SCORE-ORACLE-ROBUSTNESS.md`.*

@@ -1,10 +1,9 @@
 """The HEP classifier study: profiled D_s against two naive baselines.
 
-Runs the whole arc `docs/programme/S07-hep-classifier-showcase.md` designs:
-a profiled-\\(D_s\\) partition at a headline bin budget and a sweep against
-the certified `efficient_score_bound` ceiling (D6, D7); the two naive
-baselines a physicist would reach for first, scored on the *same* criteria
-(D5); a three-point `delta` convergence study (D4); and a reusable
+Runs the whole arc: a profiled-\\(D_s\\) partition at a headline bin budget and
+a sweep against the certified `efficient_score_bound` ceiling (D6, D7); the two
+naive baselines a physicist would reach for first, scored on the *same*
+criteria (D5); a three-point `delta` convergence study (D4); and a reusable
 `fit_quantizer`/`SoftVoronoiConfig` rule (D8).
 
 Every labeling is scored twice -- full-D and profiled D_s -- because that

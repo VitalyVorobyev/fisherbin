@@ -1,7 +1,6 @@
 """Classifier-to-score bridge for the FAIR Universe HiggsML showcase.
 
-Two classifiers, two different ratio doors (design decision D2 in
-`docs/programme/S07-hep-classifier-showcase.md`):
+Two classifiers, two different ratio doors:
 
 * a signal-vs-background classifier feeds `scorequant.DensityRatioScore` under
   `scorequant.IntensityParameterization`, giving the two rate columns

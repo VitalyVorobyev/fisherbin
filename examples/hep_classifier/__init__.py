@@ -5,8 +5,7 @@ the FAIR Universe HiggsML public dataset, following the module shape of
 `examples.cell_population`: `data.py` loads and validates the committed
 fixture, `scores.py` is the classifier-to-score bridge, `experiment.py` runs
 the study, and `figures.py` renders the committed figure. See
-`docs/programme/S07-hep-classifier-showcase.md` for the binding statistical
-design decisions (D1-D9) and `docs/usecases/hep/index.md` for the narrative.
+`docs/usecases/hep/index.md` for the narrative.
 
 ``examples/hep_classifier/fixture.py`` is the recorded fixture-build
 procedure; it is never run by this package, an example script, or a test.

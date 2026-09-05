@@ -7,8 +7,7 @@ import {factsFor} from "../lib/facts";
 /**
  * Every number this page displays resolves from committed evidence through the
  * fact contract; the page holds no numeric literal of its own, which
- * `tests/test_walkthrough_facts.py` enforces. See
- * `docs/programme/S10-portal-front-door.md`, decisions D7 and D8.
+ * `tests/test_walkthrough_facts.py` enforces.
  */
 const fact = factsFor("home");
 

@@ -88,5 +88,4 @@ Criterion/configuration pairs are a closed set (e.g. `DOptimality` + `DExchangeC
 - Never spawn `fable` subagents: the owner's plan budget cannot absorb them (session limit hit
   on 3 September 2026 with two parallel fable writers). Delegate to `opus`, `sonnet` or `haiku`
   and keep the count low. Work that needs the strongest model is done inline by the
-  orchestrating session, one section at a time. `docs/programme/README.md` carries the same
-  rule for the consolidation programme.
+  orchestrating session, one section at a time.

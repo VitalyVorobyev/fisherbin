@@ -7,8 +7,8 @@ import rawData from "../generated/walkthrough-data.json";
  * `value` is the raw value as it appears in the committed evidence file,
  * `text` is the generator's formatting of it (pages never format a value
  * themselves), and `source` is a repo-relative path plus a JSON Pointer into
- * the evidence that produced it. See `docs/programme/S08-the-four-walkthroughs.md`,
- * decision D2, for the full contract this type is part of.
+ * the evidence that produced it. This type is the full contract every
+ * displayed fact must satisfy.
  *
  * `value` is `number | string` because some facts are not numbers: a
  * provenance kind, a licence identifier, the text of a theorem-backed

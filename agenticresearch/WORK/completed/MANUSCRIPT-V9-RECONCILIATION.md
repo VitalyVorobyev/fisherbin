@@ -2,8 +2,8 @@
 
 **Programme:** P6 (D-CORE-COMPLETION; manuscript by-product) · **Opened:** 3 September 2026 · **Closed:** 3 September 2026 · **Status:** completed
 
-Companion to the M12 programme packet `docs/programme/S02-manuscript-reconciliation.md`;
-that packet owns the session mechanics, this one owns the scientific deliverable.
+Companion to the M12 manuscript session (recorded in git history); that
+session owned the session mechanics, this one owns the scientific deliverable.
 
 ## Goal
 

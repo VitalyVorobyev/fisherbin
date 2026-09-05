@@ -7,13 +7,11 @@ is the whole point: a page cannot print a number that no run produced, and
 evidence so the generated file cannot drift from the studies behind it.
 
 The fact table below *is* the contract. Adding a number to a page means adding a
-row here, which means naming the evidence it comes from. See
-``docs/programme/S08-the-four-walkthroughs.md``, decision D2.
+row here, which means naming the evidence it comes from.
 
-S10 extended the table from the four walkthroughs to the front door: the ``home``
-page keys below feed ``website/src/pages/index.tsx``, which may contain no numeric
-literal of its own (``docs/programme/S10-portal-front-door.md``, decision D8 —
-one generator, not two).
+The table was later extended from the four walkthroughs to the front door: the
+``home`` page keys below feed ``website/src/pages/index.tsx``, which may contain
+no numeric literal of its own -- one generator, not two.
 
 Run through ``pnpm generate``, or directly::
 
@@ -612,8 +610,8 @@ def build() -> dict[str, object]:
 
 
 #: Deterministic per-walkthrough score tables for the browser Lab's ``?job=``
-#: hand-off (design decision D5, ``docs/programme/S08-the-four-walkthroughs.md``).
-#: Each slug is written to ``website/static/walkthrough-scores/<slug>.json`` in
+#: hand-off. Each slug is written to
+#: ``website/static/walkthrough-scores/<slug>.json`` in
 #: exactly the shape ``ScoreTable`` consumes
 #: (``website/src/lab/useScoreTable.ts``): ``scores``, ``weights``, plus
 #: ``schema``, ``label`` and ``detail``. FlowCyt is not included: it already
@@ -789,8 +787,7 @@ def _build_ratios_score_table() -> dict[str, object]:
 def write_walkthrough_score_tables() -> dict[str, int]:
     """Write each walkthrough's deterministic score table to committed JSON.
 
-    Design decision D5, ``docs/programme/S08-the-four-walkthroughs.md``: the
-    Lab's ``?job=<slug>`` hand-off needs one small, deterministic score table
+    The Lab's ``?job=<slug>`` hand-off needs one small, deterministic score table
     per walkthrough, in exactly the shape ``ScoreTable``
     (``website/src/lab/useScoreTable.ts``) consumes. FlowCyt is excluded: it
     already has an on-demand table at
