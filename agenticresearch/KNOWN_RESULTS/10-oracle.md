@@ -81,7 +81,11 @@ This separates oracle/representation loss from hard-quantization loss whenever t
 corollary of the delta method; the special case of OP27 it settles is stated
 exactly below and the broad claim `OPEN-RETENTION-UNCERTAINTY` stays open.
 Instrument `py/score_oracle_retention_uncertainty.py`; artifacts under
-`WORK/artifacts/SCORE-ORACLE-ROBUSTNESS/`. Not independently audited.*
+`WORK/artifacts/SCORE-ORACLE-ROBUSTNESS/`. **Independently audited 5 September 2026**
+(`AUDITS/AUDIT-SCORE-ORACLE-ROBUSTNESS-001.md`, instrument
+`py/audit_score_oracle_retention_uncertainty.py`): O6.1–O6.3 and the Wald statement of
+O6.4 verified; the \(\sigma^2=0\) characterisation hardened at \(\eta=0\) (see the
+audit notes in O6.4); population references and coverage replicated with fresh seeds.*
 
 ### O6.0 Normalized target (protocol A)
 
@@ -211,14 +215,23 @@ limit point, and its value there is \(E[\psi^2]\) expanded in the same moments.
 Under (A1)–(A4), \(P\big(\eta\in\hat\eta\pm z_{1-\alpha/2}\,\hat\sigma/\sqrt n\big)\to1-\alpha\)
 (O6.2, O6.3 and Slutsky). **Unsupported cases and degeneracies:**
 
-- *(A4) fails* iff \(\psi=0\) a.s., i.e. iff for a.e. \(b\) the conditional law
-  of \(S\) given \(Z=b\) is supported on the roots of
-  \((s-c_b)^2=(1-\eta)s^2\) — at most two atoms per cell. This includes both
-  endpoints: \(\eta=1\) (\(S=c_Z\) a.s.) and \(\eta=0\) (all \(c_b=0\)). There the
-  first-order limit is degenerate, \(n(\hat\eta-\eta)\) has a non-normal
-  quadratic-form limit (not derived here), and the Wald interval is not
-  supported. If \(S\mid Z=b\) is atomless on one cell of positive probability,
-  (A4) holds automatically.
+- *(A4) fails* iff \(\psi=0\) a.s., i.e. iff for every \(b\) with \(p_b>0\) the
+  conditional law of \(S\) given \(Z=b\) is supported on the roots of
+  \((s-c_b)^2=(1-\eta)s^2\). **[Audit 5 Sep 2026, hardened.]** For \(0<\eta<1\)
+  the roots are \(s_\pm=c_b/(1\mp\sqrt{1-\eta})\), so at most two atoms per cell
+  (one, \(s=0\), when \(c_b=0\)); the mean constraint fixes the upper-root weight
+  \(w=\eta/(2(1+\sqrt{1-\eta}))\) and forces \(E[S^2\mid Z=b]=c_b^2/\eta\), and such
+  laws exist (cells \(\{2/3,2\}\) and \(\{-2/3,-2\}\) with weights \((3/4,1/4)\),
+  \(p_b=1/2\): \(\eta=3/4\), \(E[S]=0\), \(\sigma^2=0\)). At \(\eta=1\) the single
+  root is \(s=c_b\) (\(S=c_Z\) a.s.). At \(\eta=0\) every \(c_b=0\) and the equation is
+  the identity \(s^2=s^2\): *every* law with vanishing cell means has \(\psi\equiv0\),
+  with any number of atoms or none (`CE-O6-ETA-ZERO-MULTIATOM-VARIANCE-001`; the
+  atomless probe in the audit's `coverage.json`). Hence: an atomless cell of positive
+  probability implies (A4) **iff \(\eta>0\)**; the original sentence omitted the
+  qualifier. Where (A4) fails the first-order limit is degenerate, \(n(\hat\eta-\eta)\)
+  has a non-normal quadratic-form limit (not derived here), and the Wald interval is
+  not supported: measured, it is *conservative* there (coverage \(\to1\) with width
+  \(O(1/n)\), \(\hat\eta\ge\eta\) exactly in the two-atom law), not liberal.
 - *Empty evaluation cells:* handled by \(0/0:=0\); their probability vanishes
   exponentially under (A1). No uniformity over small \(p_b\) is claimed: a cell
   with \(p_b\) of order \(1/n\) is outside the theorem.
@@ -249,6 +262,7 @@ applies (OP27's remainder, and OP17/OP18).
   undefined, matching the library's refusal.
 - *Nuisance singularity, \(D_s\):* out of scope (scalar, no nuisance).
 - *Atomic laws:* the only route to (A4) failure with \(0<\eta<1\); recorded above.
+  [Audit: at \(\eta=0\) atomless laws also fail (A4); see O6.4.]
 - *Hidden compactness:* none used.
 - *First-order-to-finite jumps:* none claimed; measured \(O(1/n)\) bias below.
 - *Empirical-to-population jumps:* none — the rule is frozen, the sample is

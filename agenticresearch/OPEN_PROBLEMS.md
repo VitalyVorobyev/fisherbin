@@ -150,7 +150,10 @@ hard assignment at cell boundaries. Pairs naturally with OP17.
 scalar true score, iid equally weighted oracle-score evaluation sample — plug-in ratio, delta-method
 CLT, consistent influence-function variance, Wald interval valid iff \(\sigma^2>0\). Remaining:
 vector scores and \((\det R)^{1/d}\) as a matrix functional of the same moments; rules refitted on
-the evaluation sample (where the boundary non-smoothness actually enters); weights; no oracle.*
+the evaluation sample (where the boundary non-smoothness actually enters); weights; no oracle;
+the degenerate limit of \(n(\hat\eta-\eta)\) when \(\sigma^2=0\) (\(\eta\in\{0,1\}\) or two-atom cells).
+Audited 5 September 2026 (`AUDITS/AUDIT-SCORE-ORACLE-ROBUSTNESS-001.md`): verified with the (A4)
+wording hardened at \(\eta=0\).*
 
 ---
 

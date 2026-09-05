@@ -2559,3 +2559,100 @@ def test_o6_plugin_retention_influence_function_matches_finite_differences() -> 
         minus[j] -= eps
         gateaux = (functional(plus) - functional(minus)) / (2 * eps)
         assert gateaux == pytest.approx(psi_hat[j], abs=1e-7)
+
+
+def _o6_audit_plugin(
+    scores: list[Fraction], labels: list[int], n_bins: int
+) -> tuple[Fraction, Fraction]:
+    """Exact plug-in retention (0/0 := 0) and its influence variance for one sample."""
+    n = len(scores)
+    counts = [labels.count(b) for b in range(n_bins)]
+    sums = [sum(s for s, z in zip(scores, labels, strict=True) if z == b) for b in range(n_bins)]
+    means = [sums[b] / counts[b] if counts[b] else Fraction(0) for b in range(n_bins)]
+    v = sum(s * s for s in scores) / n
+    if v == 0:
+        return Fraction(0), Fraction(0)
+    eta = sum(sums[b] ** 2 / counts[b] for b in range(n_bins) if counts[b]) / (n * v)
+    psi = [
+        ((1 - eta) * s * s - (s - means[z]) ** 2) / v for s, z in zip(scores, labels, strict=True)
+    ]
+    assert sum(psi) == 0
+    return eta, sum(x * x for x in psi) / n
+
+
+def test_o6_audit_eta_zero_law_has_zero_influence_variance_with_many_atoms() -> None:
+    """CE-O6-ETA-ZERO-MULTIATOM-VARIANCE-001 (AUDIT-SCORE-ORACLE-ROBUSTNESS).
+
+    At eta = 0 the root equation (s - c_b)^2 = (1 - eta) s^2 is the identity,
+    so every law whose cell means vanish has psi = 0 identically: sigma^2 = 0
+    is not restricted to two atoms per cell, and an atomless cell does not
+    imply (A4) unless eta > 0. The fixture has four atoms in cell 0.
+    """
+    fixture_path = (
+        RESEARCH_WORKSPACE / "COUNTEREXAMPLES" / "CE-O6-ETA-ZERO-MULTIATOM-VARIANCE-001.json"
+    )
+    assert fixture_path.is_file(), f"counterexample fixture missing at {fixture_path}"
+    fixture = json.loads(fixture_path.read_text())
+    atoms = [
+        (Fraction(row[0]), label, Fraction(weight))
+        for row, label, weight in zip(
+            fixture["scores"], fixture["labels_before"], fixture["weights"], strict=True
+        )
+    ]
+    n_bins = fixture["K"]
+    assert sum(w for _, _, w in atoms) == 1
+    p = [sum(w for _, z, w in atoms if z == b) for b in range(n_bins)]
+    m = [sum(w * s for s, z, w in atoms if z == b) for b in range(n_bins)]
+    v = sum(w * s * s for s, _, w in atoms)
+    assert all(x == 0 for x in m) and v > 0 and all(x > 0 for x in p)
+    eta = sum(m[b] ** 2 / p[b] for b in range(n_bins)) / v
+    assert eta == 0
+    psi = [((1 - eta) * s * s - (s - m[z] / p[z]) ** 2) / v for s, z, _ in atoms]
+    assert psi == [0] * len(atoms)
+    assert sum(1 for _, z, _ in atoms if z == 0) == 4
+    # The same numbers through the library on the weighted atom sample.
+    report = sq.information_report(
+        np.array([[float(s)] for s, _, _ in atoms]),
+        np.array([z for _, z, _ in atoms]),
+        np.array([float(w) for _, _, w in atoms]),
+        n_bins=n_bins,
+    )
+    assert float(report.geometric_mean_retention) == 0.0
+
+
+def test_o6_audit_two_atom_law_has_zero_variance_and_upward_biased_plugin() -> None:
+    """AUDIT-SCORE-ORACLE-ROBUSTNESS: an explicit sigma^2 = 0 law with 0 < eta < 1.
+
+    Two cells of probability 1/2; on each, S sits on the roots c/(1 -+ sqrt(1 - eta))
+    with weights (3/4, 1/4), giving eta = 3/4, E[S] = 0 and psi = 0 at every atom.
+    Exhaustive enumeration of every sample composition with n <= 6 shows the
+    plug-in ratio never falls below eta and equals eta only when sigma_hat = 0.
+    """
+    atoms = [
+        (Fraction(2, 3), 0, Fraction(3, 8)),
+        (Fraction(2), 0, Fraction(1, 8)),
+        (Fraction(-2, 3), 1, Fraction(3, 8)),
+        (Fraction(-2), 1, Fraction(1, 8)),
+    ]
+    p = [Fraction(1, 2), Fraction(1, 2)]
+    c = [Fraction(1), Fraction(-1)]
+    v = sum(w * s * s for s, _, w in atoms)
+    eta = sum(p[b] * c[b] ** 2 for b in range(2)) / v
+    assert v == Fraction(4, 3) and eta == Fraction(3, 4)
+    assert sum(w * s for s, _, w in atoms) == 0
+    root = 1 - eta
+    assert all((s - c[z]) ** 2 == root * s * s for s, z, _ in atoms)
+    assert all(((1 - eta) * s * s - (s - c[z]) ** 2) == 0 for s, z, _ in atoms)
+    for n in range(1, 7):
+        for counts in product(range(n + 1), repeat=4):
+            if sum(counts) != n:
+                continue
+            scores: list[Fraction] = []
+            labels: list[int] = []
+            for (s, z, _), count in zip(atoms, counts, strict=True):
+                scores.extend([s] * count)
+                labels.extend([z] * count)
+            eta_hat, sigma2_hat = _o6_audit_plugin(scores, labels, 2)
+            assert eta_hat >= eta
+            if eta_hat == eta:
+                assert sigma2_hat == 0

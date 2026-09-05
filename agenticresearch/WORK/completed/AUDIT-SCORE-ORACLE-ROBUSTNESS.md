@@ -1,6 +1,6 @@
 # AUDIT-SCORE-ORACLE-ROBUSTNESS — independent audit of O6
 
-**Programme:** P2 (target claim belongs to P4) · **Opened:** 5 September 2026 · **Status:** active
+**Programme:** P2 (target claim belongs to P4) · **Opened:** 5 September 2026 · **Closed:** 5 September 2026 · **Status:** completed
 **Source:** branch `score-oracle-robustness` at `a5f905e` (unmerged; check it out before starting)
 
 ## Goal
@@ -161,3 +161,66 @@ retention \((\det\hat R)^{1/d}\) under a frozen rule as a smooth matrix
 functional of the same cell moments, its matrix influence function, and where
 \(\log\det\) degenerates. If reduced or refuted: whichever step failed, as its
 own packet.
+
+## Outcome
+
+**Verified with hardened assumptions.** Every component received an
+independent decision (`AUDITS/AUDIT-SCORE-ORACLE-ROBUSTNESS-001.md`, sixteen
+items); the instrument `py/audit_score_oracle_retention_uncertainty.py` was
+built without reading the researcher's.
+
+- **O6.1** — verified exactly (ties, duplicates, singleton, empty declared
+  cell, \(\hat\eta\in\{0,1\}\)); library agreement to \(2\cdot10^{-16}\);
+  all-zero scores refused.
+- **O6.2** — verified; the empty-cell transfer is complete and is replaced
+  by applying the delta method to the estimator's own everywhere-defined
+  functional \(\phi\); gradient reduction and covariance form exact on 60
+  random rational laws.
+- **O6.3** — verified; the order-four expansion written out and checked
+  exactly; a.s. is correct (Borel–Cantelli makes empty cells transient).
+- **O6.4** — Wald statement verified. **H1:** the \(\sigma^2=0\)
+  characterisation was wrong at \(\eta=0\): the root equation is the
+  identity there, every law with vanishing cell means has \(\psi\equiv0\),
+  atomless or not (`CE-O6-ETA-ZERO-MULTIATOM-VARIANCE-001`, atomless probe).
+  For \(0<\eta<1\) the two-atom laws exist explicitly (roots
+  \(c_b/(1\mp\sqrt{1-\eta})\), forced weight \(\eta/(2(1+\sqrt{1-\eta}))\);
+  \(\eta=3/4\) witness) and there \(\hat\eta\ge\eta\) always.
+- **O6.5** — verified with **H2:** the retention reading needs the evaluation
+  law to be \(P_{\theta_0}\); the CLT never uses \(E[S]=0\).
+- **Population references** — closed-form boundaries (quadratic roots of the
+  logit) and Gaussian-CDF cell moments reproduce the recorded values to
+  rounding and the researcher's artifact to \(2\cdot10^{-15}\).
+- **Coverage** — fresh seeds replicate O6.7 (0.918, 0.937, 0.952, 0.946);
+  rung 300 under-covers to 0.896 at \(n=100\) and its interval contains the
+  proxy value at practical \(n\); both \(\sigma^2=0\) laws give a
+  *conservative* interval (coverage \(\to1\), width \(O(1/n)\)).
+- **Literature** — method is textbook prior art (delta method, influence
+  variance); the exact fixed-partition uncentred statement is a search gap,
+  not novelty; no re-attribution. Theorem-number verification recorded in
+  `LITERATURE/audits/AUDIT-SCORE-ORACLE-ROBUSTNESS-5-September-2026.md`.
+
+No `src/`, public API or example change; the audit removes the "not
+independently audited" notes and nothing more.
+
+## Artifacts
+
+- `AUDITS/AUDIT-SCORE-ORACLE-ROBUSTNESS-001.md`; `claims/AUDIT-SCORE-ORACLE-ROBUSTNESS.json`
+- `py/audit_score_oracle_retention_uncertainty.py`;
+  `AUDITS/artifacts/AUDIT-SCORE-ORACLE-ROBUSTNESS-001/{exact,popref,coverage,fixtures}.json`
+- `COUNTEREXAMPLES/CE-O6-ETA-ZERO-MULTIATOM-VARIANCE-001.json` (+ catalogue entry)
+- `tests/test_research_claims.py`: two new exact regressions
+- patched: `claims/{RETENTION-PLUGIN-CLT-FROZEN-SCALAR,RETENTION-PLUGIN-COVERAGE-DOOR3,OPEN-RETENTION-UNCERTAINTY}.json`,
+  `KNOWN_RESULTS/10-oracle.md`, `OPEN_PROBLEMS.md` (OP27), `manuscripts/README.md`,
+  `NUMERICAL_EVIDENCE.md` (four `N-ORACLE-AUDIT-*` rows),
+  `LITERATURE/{audits,topics/08-plug-in-asymptotics.md,graph.json,reviewed.md}`
+
+## Validation
+
+`registry.py reindex` and `validate` clean; `tests/test_research_claims.py`
+and `tests/test_research_registry.py` green; `ruff check` and `ruff format
+--check` clean on the gated tree.
+
+## Next dependency-blocking question
+
+The vector case: `WORK/active/RETENTION-PLUGIN-VECTOR.md`.
+

@@ -399,6 +399,18 @@
     "Kelley-2007": {
       "title": "Confidence intervals for standardized effect sizes: theory, application, and implementation",
       "note": "K. Kelley, Journal of Statistical Software 20(8), 2007. Noncentral-F intervals for eta-squared and R-squared under normal-theory ANOVA; the normality assumption O6 avoids. Registered 5 Sep 2026; verified at jstatsoft.org."
+    },
+    "Bhattacharya-Ghosh-1978": {
+      "title": "On the validity of the formal Edgeworth expansion",
+      "note": "R. N. Bhattacharya and J. K. Ghosh, Annals of Statistics 6(2):434-451, 1978. Edgeworth validity for smooth functions of sample-mean vectors; backdrop of the O6.7 second-order readings. Registered 5 Sep 2026 (audit); abstract read."
+    },
+    "Hall-1992": {
+      "title": "The Bootstrap and Edgeworth Expansion",
+      "note": "P. Hall, Springer, 1992. Smooth function model; studentized-statistic skewness explains the small-n under-coverage of plug-in Wald intervals. Registered 5 Sep 2026 (audit); record only."
+    },
+    "Donner-Koval-1980": {
+      "title": "The large sample variance of an intraclass correlation",
+      "note": "A. Donner and J. J. Koval, Biometrika 67(3):719-722, 1980. Delta-method variance of a between-over-total ratio under a normal random-effects model; nearest applied kin of O6. Registered 5 Sep 2026 (audit); journal record."
     }
   },
   "agent_usage": {

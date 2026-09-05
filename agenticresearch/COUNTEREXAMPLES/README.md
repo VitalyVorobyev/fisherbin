@@ -574,3 +574,28 @@ equation holds, and never read an open reported interval as a gap.
 **Fixture:** `CE-DS-TILT-DUAL-TIE-MASK-001.json`.
 **Regression:** `tests/test_research_claims.py::test_ds19_audit_tie_masked_closure_fixture`.
 
+## CE-O6-ETA-ZERO-MULTIATOM-VARIANCE-001 — zero influence variance with four atoms in one cell
+
+**Status:** exact rational boundary counterexample (independent O6 audit, 5 Sep 2026).
+
+**Claim falsified:**
+
+> The influence variance \(\sigma^2\) of the frozen-rule scalar retention
+> plug-in vanishes only when \(S\mid Z=b\) is supported on at most two atoms
+> per cell; in particular an atomless cell of positive probability implies
+> \(\sigma^2>0\).
+
+Two cells of probability \(1/2\): cell 0 carries \(S\in\{-3,-1,1,3\}\) with
+weight \(1/8\) each, cell 1 carries \(S\in\{-2,2\}\) with weight \(1/4\) each.
+Every cell mean is zero, so \(\eta=0\) and
+\(\psi=((1-\eta)S^2-(S-c_Z)^2)/v=0\) identically: at \(\eta=0\) the root
+equation \((s-c_b)^2=(1-\eta)s^2\) is the identity \(s^2=s^2\), not a
+two-root quadratic. The same holds for any atomless \(S\) whose cells all have
+conditional mean zero (measured on \(S\sim N(0,1)\) with cells split at
+\(|S|=0.6745\): the Wald interval is then conservative, coverage \(\to1\),
+width \(O(1/n)\)). Correct statement: at most two atoms per cell for
+\(0<\eta\le1\); at \(\eta=0\) every law has \(\sigma^2=0\); (A4) is automatic
+iff \(\eta>0\) and some positive-probability cell is atomless.
+
+**Fixture:** `CE-O6-ETA-ZERO-MULTIATOM-VARIANCE-001.json`.
+**Regression:** `tests/test_research_claims.py::test_o6_audit_eta_zero_law_has_zero_influence_variance_with_many_atoms`.

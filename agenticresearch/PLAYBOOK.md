@@ -6,11 +6,13 @@ not authorization to resume it. One session executes one selected packet.
 ## Next session
 
 ```text
-Execute agenticresearch/WORK/active/AUDIT-SCORE-ORACLE-ROBUSTNESS.md in a fresh context.
-Check out branch score-oracle-robustness at a5f905e. Follow agenticresearch/README.md and
-protocols/audit.md. You did not produce O6: do not read the researcher's instrument or
-transcript, build your own, and stop at verified, refuted or reduced with the 16-item report.
-No src/ change, no public API.
+Execute agenticresearch/WORK/active/RETENTION-PLUGIN-VECTOR.md in a fresh context.
+Check out branch score-oracle-robustness at its tip (the AUDIT-SCORE-ORACLE-ROBUSTNESS
+commit). Follow agenticresearch/README.md and protocols/theorem.md: falsify in exact
+arithmetic before proving, derive the matrix influence function of the geometric-mean
+retention yourself, and stop at proved, reduced or refuted with the O7 section, the
+claim nodes and the measured table. No src/ change, no public API. Close with a
+plain-English report of what was proved and what remains.
 ```
 
 ## Other session types
