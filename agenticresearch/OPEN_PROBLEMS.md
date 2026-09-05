@@ -3,9 +3,7 @@
 **Version:** 4.1 · 5 September 2026
 **Rule:** this file contains only genuinely unresolved questions. Results established in `KNOWN_RESULTS/` are inputs, not open tasks.
 
-This is the **single priority queue** of the project, organized as seven live
-research programmes (the narrative and goal live in
-`research-plan-proposal.md`). Ordering is **product-first**: programmes whose
+This is the **single priority queue** of the project, organized by research programme. Ordering is **product-first**: programmes whose
 theorems unblock shippable ScoreQuant capabilities outrank purely academic
 branches. A session works on a `WORK/active/` packet drawn from a programme —
 the whole branch, not one OP leaf. OP numbers are stable ids; claim
@@ -15,14 +13,16 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 One scientific question is active: **P2, true-score information evaluation
 of a frozen quantizer fitted from estimated scores**, as scoped in
-`WORK/active/SCORE-ORACLE-ROBUSTNESS.md`. The first result must change what a
+`WORK/active/SCORE-ORACLE-ROBUSTNESS.md`. Its next deliverable is a conditional scalar
+retention interval, a restricted subresult of P4 `OPEN-RETENTION-UNCERTAINTY`; it does not
+close P2 perturbation or calibration questions. The first result must change what a
 user can conclude from an independent evaluation sample. Boundary movement,
 refitting stability, and end-to-end classifier calibration are subsequent
 questions, not prerequisites for that first result.
 
 OP31 and `WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` are **parked until an
 explicit reopening decision**. The packet remains at its existing path to
-preserve references; its older active header does not override this queue.
+preserve references.
 DS19's deployment verdict stands. Exact bit complexity is not a library
 delivery gate. Other programmes remain a backlog, not concurrent work.
 

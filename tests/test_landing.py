@@ -4,8 +4,8 @@ The landing page is one hand-written HTML file with no build step, so nothing
 executes its code or checks its links unless a test does. Three things are
 pinned here:
 
-- Its code block is byte-for-byte the first Python fence of ``docs/index.md``,
-  which ``test_docs_snippets`` executes. The landing page therefore never shows
+- Its code block is byte-for-byte the first Python fence of ``README.md``,
+  which ``test_readme`` executes. The landing page therefore never shows
   code no run executed.
 - Every link into ``docs/`` names a page that exists in the MkDocs source. The
   portal side and the assembled tree are checked by
@@ -22,16 +22,16 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LANDING = REPO_ROOT / "landing" / "index.html"
-DOCS_INDEX = REPO_ROOT / "docs" / "index.md"
+README = REPO_ROOT / "README.md"
 
 
 def _landing() -> str:
     return LANDING.read_text(encoding="utf-8")
 
 
-def test_landing_code_block_is_the_docs_quickstart() -> None:
-    fences = re.findall(r"```python\n(.*?)```", DOCS_INDEX.read_text(encoding="utf-8"), flags=re.S)
-    assert fences, "docs/index.md carries no Python fence to mirror"
+def test_landing_code_block_is_the_readme_quickstart() -> None:
+    fences = re.findall(r"```python\n(.*?)```", README.read_text(encoding="utf-8"), flags=re.S)
+    assert fences, "README.md carries no Python fence to mirror"
     blocks = re.findall(r"<pre><code>(.*?)</code></pre>", _landing(), flags=re.S)
     assert len(blocks) == 1, "the landing page carries exactly one code block"
     assert html.unescape(blocks[0]) == fences[0]

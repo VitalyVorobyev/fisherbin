@@ -27,8 +27,8 @@ authoring remark leaked to the public surface.
 
 **The home page is definitions and references.** It defines, in order, the reference point and
 the score, the Fisher information, hard binning and the identity that prices it, the two tasks
-and what each returns, the criteria and the solvers they pair with, and exact versus estimated
-score provenance; then it lists where each definition is derived, in the book, the API guide,
+and what each returns, the criteria (the solver pairs stay in the method overview), and exact
+versus estimated score provenance; then it lists where each definition is derived, in the book, the API guide,
 the examples and the portal's own pages. It quotes no measurement and runs nothing. Ordinary
 type sizes.
 
@@ -37,8 +37,10 @@ into the MkDocs documentation. The Lessons index, the API catalogue, the Benchma
 the blog are removed rather than demoted. The search dialog keeps the public symbols as hits and
 sends them to the generated reference.
 
-**The walkthroughs index is a card per problem:** a title, one paragraph saying what problem
-is solved on what data, and tags naming the task, input route, criterion, solver and data kind.
+**The walkthroughs index is a card per problem:** a title, one paragraph stating what is
+measured and what is to be estimated, one line naming the data and what kind of evidence it is,
+and then tags naming the task, input route, criterion and solver. The problem and the data come
+before any API name; the task tag is always present.
 
 **A walkthrough is an article.** The seven-step order of ADR 0028 remains the author's
 checklist: a page must still state the problem, the model and its score, the admissible labels

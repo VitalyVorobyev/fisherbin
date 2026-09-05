@@ -20,39 +20,31 @@ export const f = factsFor("michelson");
 
 ## The instrument
 
-A Michelson interferometer does one thing with light: it splits a beam in two, sends the halves
-down two arms, reflects them back and lets them recombine. If the two arms have exactly the same
-length the halves arrive in step and add up. If one arm is longer by half a wavelength they arrive
-out of step and cancel. Tilt one mirror slightly and the path difference varies across the beam,
-so the recombined light shows alternating bright and dark bands, the *fringes*. Move a mirror by
-a quarter of a wavelength and every fringe shifts by half a fringe width. The instrument turns a
-length into a position on a screen, with the wavelength of light as its ruler.
+A Michelson interferometer splits a beam between two mirrors and recombines the returning
+light. A small mirror tilt produces bright and dark fringes across the detector. Moving one
+mirror changes the round-trip optical path by twice its displacement: a quarter-wavelength
+move shifts the pattern by half a fringe. The fringe phase therefore measures displacement.
+See the <a href="https://physlab.ep.nycu.edu.tw/wp-content/uploads/2016/11/23-Unit11-Michelson-InterferometerI060825.pdf">NYCU laboratory handout</a>
+for the optical layout and path-length derivation, and
+[LIGO's instrument introduction](https://www.ligo.caltech.edu/page/what-is-interferometer)
+for the historical experiment and its modern use.
 
 <MichelsonBench
-  caption="One beam, two arms, one recombined beam. The detector at the bottom is not a screen but a row of K counters, each reporting how many photons it collected."
+  caption="Schematic optical layout, not measured data. The segmented detector illustrates the equal-width baseline; the fitted readout may group disconnected detector regions into one counter."
 />
 
-Albert Michelson built the first one in 1881 and, with Edward Morley in 1887, used it to look for
-the motion of the Earth through the ether; the fringes refused to shift, and that null result is
-part of the road to special relativity. The design has never gone out of use. A Fourier-transform
-spectrometer is a Michelson interferometer with one mirror scanning; the gravitational-wave
-observatories are Michelson interferometers with four-kilometre arms, and what they detect is a
-change of fringe phase.
+Here we study an idealized photon-arrival model, not a recorded interferometer experiment.
+The design question is how to retain phase sensitivity when the readout stores only K counts
+and fringe frequency must also be estimated.
 
 ## What is measured
 
-The quantity such an instrument exists to report is the *phase* of the fringe pattern: where the
-bright bands sit, in units of the fringe period, which is the path difference in units of the
-wavelength. Call it $\varphi$.
+The parameter of interest is the fringe *phase* $\varphi$, in radians. A full fringe period
+corresponds to $2\pi$ radians.
 
-There is a complication, and it is not a decorative one. The *spacing* of the fringes depends on
-the wavelength and the tilt geometry, and neither is known to the precision the phase is wanted
-at. Write the fractional error of the fringe frequency as $\epsilon$. Over a short stretch of
-pattern, a small phase offset and a small frequency error produce almost the same picture: both
-slide the bands a little. So the fit cannot fix $\epsilon$ at its nominal value; it must let it
-float and estimate both, and the phase estimate pays for that freedom. In the vocabulary of
-estimation, $\varphi$ is the parameter of interest and $\epsilon$ is a nuisance parameter that
-is *profiled out*.
+We model uncertain fringe spacing with a fractional frequency error $\epsilon$. Phase and
+frequency both move the bright bands, so treating the frequency as known would overstate phase
+precision. The fit estimates both; $\epsilon$ is the nuisance parameter.
 
 Along the detector, write $u$ for the fringe phase coordinate: it advances by $2\pi$ per fringe
 and runs over $m$ whole fringes. Conditioned on the number of photons, each photon's arrival law
@@ -80,15 +72,11 @@ those K numbers. So the design question is: given K counters, and given that the
 frequency will float in the fit, which positions along the pattern should each counter collect
 from?
 
-The obvious answer is K equal segments, one counter per stretch of detector. It is also the
-answer this page shows to be wrong, sometimes catastrophically. The alternative is not
-restricted to contiguous stretches at all. A counter may be wired to collect from a *set* of
-positions: a periodic mask in front of the detector, or a segmented sensor whose channels are
-grouped electronically, does exactly that. The page therefore allows any assignment of positions
-to K counters, disjoint unions included, and treats equal segments as the naive member of that
-class and the baseline to beat. Hardware that can realise only contiguous segments faces a harder,
-more constrained problem that this page does not solve; for such hardware the result here is a
-ceiling on what any readout could do.
+We compare equal contiguous segments with unrestricted assignments to K counters, including
+disconnected regions grouped electronically. This assumes that the sensor can distinguish
+those regions before combining their counts. The optimized assignment is not a design for
+hardware limited to K contiguous segments; only the certified information ceiling also bounds
+that more restricted problem.
 
 ## What a photon tells you
 
@@ -154,12 +142,11 @@ provider = sq.ScoreFunction(
 A sensitivity map alone says nothing about how often each fringe phase occurs; the fringe law
 does. `IntegrationSource` carries that law as a bounded interval with an explicit density, and
 a plain midpoint rule over the same interval gives the table the fixed-table task runs on:
-{f("nNodes")} positions along the detector, each weighted by the fringe intensity there. There
-is no sample, no seed and no Monte Carlo error anywhere on this page. Two entries of the
+{f("nNodes")} positions along the detector, each weighted by the fringe intensity there. The table is deterministic quadrature, with discretization error rather than Monte Carlo error.
+The optimization uses a fixed seed. Two entries of the
 unbinned information matrix have closed forms, $I_{\varphi\varphi} = 1 - \sqrt{1 - V^2}$ and
 $I_{\varphi\epsilon} = \pi m\, I_{\varphi\varphi}$, and the table reproduces both to machine
-precision. On the other walkthroughs the library's numbers illustrate the mathematics; here they
-check it.
+precision.
 
 ```python
 source = sq.IntegrationSource(
@@ -191,10 +178,10 @@ the counters decide is how much of the remainder survives.
 
 Every call on this page runs on the NumPy backend at double precision, declared once in
 `EXECUTION` and passed explicitly; that is the portable runtime, and it runs the same
-mathematics as the JAX default. The generating program is `examples/michelson_phase.py`, every
-number here is read back from the evidence file it writes, and the full record with the
-derivations is the <ReferenceLink to="examples/michelson-phase/">Michelson interferometer
-phase</ReferenceLink> page of the reference.
+mathematics as the JAX default. The generating program is `examples/michelson_phase.py`; the
+full record with the derivations is the{" "}
+<ReferenceLink to="examples/michelson-phase/">Michelson interferometer phase</ReferenceLink> page
+of the reference.
 
 ## The objective
 
@@ -202,7 +189,7 @@ A readout is judged by one number: the phase information the K counts retain, *a
 frequency has been profiled out, as a fraction of the unbinned profiled information. That is the
 information a phase measurement actually feels. The criterion that optimises it is
 `ProfiledDOptimality(interest=INTEREST)`. Plain `DOptimality` would optimise the information
-about the pair $(\varphi, \epsilon)$ together, which is a different and easier question; the
+about the pair $(\varphi, \epsilon)$ together, which is a different question; the
 difference turns out to be measurable.
 
 The solver is exact finite relocation, `DExchangeConfig`: it moves one position at a time between
@@ -296,10 +283,9 @@ for. The profiled partition is the page's result. The ceiling is the certificate
 Equal segments keep {f("equalWidthRetentionAtSix")} of the available phase information; the
 profiled partition keeps {f("profiledRetentionAtSix")}, against a certified ceiling of
 {f("ceilingRetentionAtSix")}, so the solver has reached the best any rule with this many cells
-can do to the digits shown. These are exact-model numbers, measured on the same deterministic
-table the fit ran on. There is no held-out split for the fixed-table task because there is no
-sample to split; the one held-out check on this page comes at the end, where a compiled rule is
-scored on positions it never saw.
+can do on this finite table to the digits shown. These values use analytic scores on the
+quadrature table used for fitting. The ceiling certifies that table, not the continuum model beyond quadrature accuracy. A separate grid below
+checks the compiled plain-D rule; it does not evaluate the profiled partition.
 
 <Figure
   src={siteUrl("walkthrough-figures/michelson-phase.png")}
@@ -308,13 +294,11 @@ scored on positions it never saw.
   wide
 />
 
-What the fitted readout looks like is the page's most transferable point. A photon's evidence
-depends on its position only through its phase within a fringe, so a counter that is right for
-one flank of one fringe is right for the same flank of every fringe. Each counter therefore
-collects from one interval *per fringe*, and laid along the detector the readout is a comb: the
-compiled plain-D rule occupies {f("combRuns")} separate intervals for {f("bins")} counters. When
-the physics is periodic, the information-optimal readout is periodic, and a contiguous
-segmentation is fighting the model rather than following it.
+The compiled plain-D rule occupies {f("combRuns")} disconnected intervals for {f("bins")}
+counters. Its layout repeats features of the fringes, but is not generally periodic:
+$s_\varphi(u)$ repeats while $s_\epsilon(u)=u s_\varphi(u)-V$ distinguishes positions in
+different fringes. The illustrated plain-D rule and the profiled partition in the table optimize
+different criteria.
 
 ## Try it: the counter budget
 
@@ -361,22 +345,21 @@ contrast, improves along the sweep and stays on or near the certified ceiling at
 
 ## What it means
 
-**Where this applies.** Wherever the physics is periodic and the readout is free to be periodic
-too: a periodic mask, a modulo-addressed segmented detector, an electronic grouping of channels.
-For hardware that can only realise contiguous segments the result is a design ceiling; for
-hardware that cannot tell the difference it is a design.
+**Where this applies.** A sensor that resolves detector regions before grouping their counts
+can implement disconnected assignments. A counter budget alone does not establish hardware
+feasibility. For contiguous-only hardware, use the certified ceiling as an upper bound, not the
+fitted assignment as a realizable design.
 
 **Plain D is not the phase criterion.** At {f("sweepBinsLow")} counters a plain-D partition of
 the same table retains {f("dOptimalRetentionAtFour")} of the phase information against the
 profiled partition's {f("profiledRetentionAtFour")}; at {f("sweepBinsHeadline")} it is
 {f("dOptimalRetentionAtSix")} against {f("profiledRetentionAtSix")}. Plain D is not misbehaving.
-It is optimal for the pair of parameters, which is a different question from the one an
-interferometer asks.
+It optimizes joint information about both parameters; this exchange-stable result is not
+claimed to be a global optimum.
 
-**The library refuses to turn the profiled readout into a reusable rule, and the refusal is a
-result.** A D-optimal partition that is stable against every single move can be compiled into a
-rule that labels new photons by a distance computation, without refitting. A profiled partition
-cannot, and asking produces an error rather than an approximation:
+**Deploying a readout.** The library can compile a full-D partition after verifying its
+stability and geometry. It rejects generic compilation of a profiled partition because that
+geometric guarantee does not extend to Ds:
 
 ```python
 d_partition = sq.optimize_partition(
@@ -399,12 +382,11 @@ except sq.RefusalError as error:
 assert refusal.endswith("[CE-DS-GLOBAL-GEOMETRY-001]")
 ```
 
-The message is <code>{f("refusalMessage")}</code>. The geometry that makes a stable D-optimal
-partition equivalent to a distance rule does not hold for the profiled criterion, so there is no
-rule to compile into; that is a theorem, not a missing feature. The compiled plain-D rule, scored
-on a fresh set of positions it never saw, retains {f("compiledTestRetention")} of the
-two-parameter information, which is the one held-out number on this page. A reusable
-*profiled* rule has to be fitted as one, from the source directly:
+The message is <code>{f("refusalMessage")}</code>. This rules out a general guaranteed
+Mahalanobis compilation, not every possible rule for a particular profiled partition.
+On a separate quadrature grid, the compiled plain-D rule retains {f("compiledTestRetention")}
+of the two-parameter information. To fit a reusable profiled rule within the supported soft
+Voronoi family, use `fit_quantizer`:
 
 ```python
 d_rule = sq.fit_quantizer(
@@ -436,16 +418,10 @@ assert d_rule.train_report is not None
 assert ds_rule.train_profiled_report is not None
 ```
 
-**Two rules, two columns, and only one of them compares.** On phase information, the same
-quantity against the same ceiling for both, the profiled rule retains
-{f("dsRuleProfiledRetention")} against the plain rule's {f("dRuleProfiledRetention")}, and the
-profiled rule wins, which is the entire reason it exists. Beside that sits each rule's score on
-the criterion it actually optimised: {f("dRuleOwnCriterion")} for the plain rule and
-{f("dsRuleOwnCriterion")} for the profiled one. Those two are *not* comparable: the first is the
-overall two-parameter efficiency against the full unbinned information and the second is phase
-retention against the profiled ceiling, and they happen to sit close enough to look like a
-comparison. Reading that column alone was a real mistake made while this study was built, which
-is why it is spelled out.
+On the same phase-information metric, the fitted profiled rule retains
+{f("dsRuleProfiledRetention")} versus {f("dRuleProfiledRetention")} for plain D.
+Their own-objective reports, {f("dRuleOwnCriterion")} and {f("dsRuleOwnCriterion")}, measure
+two-parameter D-efficiency and phase retention respectively and cannot be compared directly.
 
 **Where the theory is.** The profiled criterion, its Schur-complement definition and the
 efficient-score ceiling are

@@ -1,6 +1,6 @@
 # DS-TILT-DUAL-EXACT-COMPLEXITY — exact bit complexity of the tilt-DP dual beyond one nuisance direction
 
-**Programme:** P7 (OP31) · **Opened:** 2 September 2026 · **Status:** active
+**Programme:** P7 (OP31) · **Opened:** 2 September 2026 · **Status:** parked; reopen only by explicit queue decision
 **Descends from:** `AUDITS/AUDIT-DS-PRACTICAL-CERTIFIED-SOLVER-001.md` §16 (the DS19 audit's next dependency-blocking question)
 
 ## Goal

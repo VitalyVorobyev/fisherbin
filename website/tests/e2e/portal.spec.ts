@@ -66,7 +66,7 @@ test("home defines the task and runs nothing", async ({page}) => {
   // Definitions and references, in ordinary type: no slogan, no demo, no
   // measured comparison. The equations render through KaTeX at build time.
   await expect(page.getByRole("heading", {name: "ScoreQuant", level: 1})).toBeVisible();
-  const sections = ["The setting", "Hard binning, and what it costs", "The task, stated twice", "The criteria and their solvers", "Where the scores come from", "Where each of these is derived"];
+  const sections = ["The setting", "Hard binning, and what it costs", "The task, stated twice", "The criteria", "Where the scores come from", "Where each of these is derived"];
   const headings = (await page.getByRole("heading", {level: 2}).allInnerTexts()).map((text) => text.replace(/[\u200B\s]+$/g, ""));
   expect(headings).toEqual(sections);
   expect(await page.locator(".katex-display").count()).toBeGreaterThan(1);
@@ -170,8 +170,8 @@ test("the flowcyt walkthrough tells the study end to end without loading a runti
 
   await expect(page.getByRole("heading", {name: /Bone-marrow cell populations/})).toBeVisible();
   for (const section of [
-    "The report is a few fractions; the instrument measures every cell",
-    "The data, and what travels with it",
+    "The cells, their labels, and a patient's fractions",
+    "The data and its licence",
     "The numbers"
   ]) {
     await expect(page.getByRole("heading", {name: section})).toBeVisible();
@@ -210,7 +210,7 @@ test("the michelson article runs from the instrument to the experiment without l
   // labels (disjoint counters) are stated in the readout section, before the result.
   await expect(page.getByRole("img", {name: /Michelson interferometer bench/})).toBeVisible();
   await expect(page.getByRole("img", {name: "Fringe intensity along the aperture"})).toBeVisible();
-  await expect(page.getByText(/disjoint unions included/)).toBeVisible();
+  await expect(page.getByText(/disconnected regions grouped electronically/)).toBeVisible();
   expect(await page.locator(".katex-display").count()).toBeGreaterThan(1);
 
   // The experiment: one control, keyboard-operable, with a reset and a static table.

@@ -151,14 +151,9 @@
       <section class="intro">
         <h1>Information-preserving hard binning for parameter estimation</h1>
         <p class="lede">
-          ScoreQuant is a Python library. Given a weighted sample of events and the statistical model
-          whose parameters you will estimate from their counts, it assigns each event to one of a few
-          hard labels by maximizing a matrix criterion of the Fisher information that survives the
-          labelling — D-optimality, normalized trace, or profiled D<sub>s</sub> when nuisance
-          parameters are present — and reports the retained fraction as a number. It separates the
-          fixed-sample task (label this table) from the reusable-rule task (a quantizer applied to
-          future events), certifies when a solver's optimum is exchange-stable, and records the
-          provenance of scores that were estimated by a classifier rather than derived from a model.
+          ScoreQuant chooses hard bins from model scores to retain Fisher information at a reference
+          parameter point. It returns either labels for a fixed sample or a rule for future scores.
+          Estimated scores produce a surrogate information measure.
         </p>
         <div class="install">
           <code>uv add scorequant</code>
@@ -172,14 +167,9 @@
         <div>
           <h3 id="identity-heading">The identity the method rests on</h3>
           <p class="note" style="margin-top:10px">
-            Write each event's local sensitivity as its <i>score</i>, the gradient of its log-likelihood in
-            the parameters. The unbinned Fisher information is the second moment of the score. A hard
-            rule that sends each event to one of the labels keeps only the between-cell part, and the
-            difference is the within-cell scatter of the score. Binning can therefore only lose
-            information, and the loss depends on how the <i>score</i> varies inside a cell, not on how
-            the measurement does. ScoreQuant optimizes the partition in score space, where this
-            identity is written, so the loss becomes a quantity you choose and report instead of one
-            you inherit from axis ticks.
+            The score is the log-likelihood gradient at the reference parameter point. For a regular
+            model and a fixed binning rule, information loss equals within-bin score scatter.
+            The book derives this identity and the optimization criteria built from it.
           </p>
         </div>
         <div class="equation" role="img" aria-label="I infinity minus I q equals the sum over cells b of the expectation of the indicator that q equals b times the outer product of s minus mu b, which is positive semidefinite">
@@ -197,11 +187,11 @@
               <li><a href="docs/motivation/">Why ScoreQuant</a> and the <a href="docs/method/">method overview</a>: the problem, score space, why the two tasks stay apart, and the pipeline from score to certificate.</li>
               <li><a href="docs/three-doors/">Three doors</a> and <a href="docs/user-workflow/">Choosing your workflow</a>: which input you have (scores, component densities, or density ratios), which task, which criterion and solver.</li>
               <li><a href="docs/book/">The book</a>: fourteen chapters developed independently of the API, from why bin at all and exact one-dimensional binning to D-optimality, profiled D<sub>s</sub>, soft rules, and choosing a method.</li>
-              <li><a href="docs/examples/">Eleven runnable examples</a> and the evidence: a <a href="docs/gallery/">synthetic gallery</a>, a <a href="docs/usecases/flowcyt/">flow-cytometry study</a> on real patients, and a <a href="docs/usecases/hep/">HEP classifier study</a> on public HiggsML data.</li>
+              <li><a href="docs/examples/">Runnable examples</a> and the evidence: a <a href="docs/gallery/">synthetic gallery</a>, a <a href="docs/usecases/flowcyt/">flow-cytometry study</a> on real patients, and a <a href="docs/usecases/hep/">HEP classifier study</a> on public HiggsML data.</li>
               <li><a href="docs/api/">API guide</a> and the <a href="docs/symbols/">generated reference</a> for every public object, including the errors and refusals.</li>
             </ul>
             <nav aria-label="Documentation shortcuts">
-              <a href="docs/#quickstart">Quickstart</a>
+              <a href="portal/get-started/">Quickstart</a>
               <a href="docs/book/">Book</a>
               <a href="docs/examples/">Examples</a>
               <a href="docs/symbols/">API reference</a>
@@ -213,8 +203,8 @@
             <h2><a href="portal/">Learning portal</a></h2>
             <p class="lead">Guided paths with captured outputs, and browser refits behind a button.</p>
             <ul>
-              <li><a href="portal/get-started/">Get started</a>: one problem followed from installation to a rule you can ship. Every printed output on the page was captured from the program that produced it, not typed.</li>
-              <li><a href="portal/walkthroughs/">Four walkthroughs</a>, each from raw data to a fitted result with every number traced to a committed run: binning a classifier's ratios, profiled information with a nuisance at the LHC, a Michelson interferometer phase, and flow cytometry at scale.</li>
+              <li><a href="portal/get-started/">Get started</a>: installation, one fit, and prediction with the resulting rule.</li>
+              <li><a href="portal/walkthroughs/">Four walkthroughs</a>: binning a classifier's ratios, profiled information with a nuisance at the LHC, a Michelson interferometer phase, and flow cytometry at scale.</li>
               <li><a href="portal/research/">The research record</a>: what was already known, what ScoreQuant adds, what cannot be certified, and what is still open.</li>
             </ul>
             <nav aria-label="Portal shortcuts">
@@ -231,24 +221,22 @@
         <pre><code>import numpy as np
 import scorequant as sq
 
-rng = np.random.default_rng(3)
-scores = rng.normal(size=(2_000, 2))
-
-partition = sq.optimize_partition(
-    scores,
-    n_bins=5,
-    criterion=sq.DOptimality(),
-    config=sq.DExchangeConfig(seed=3),
+rng = np.random.default_rng(7)
+sample = sq.ScoreSample(
+    rng.normal(size=(4_000, 2)),
+    provenance=sq.ScoreProvenance(kind=&quot;exact&quot;, reference_point=(0.0, 0.0)),
 )
-stable = bool(partition.exchange_stable)
-efficiency = float(partition.train_report.geometric_mean_retention)
+fit = sq.fit_quantizer(
+    sample, n_bins=6, criterion=sq.DOptimality(), config=sq.DExchangeConfig(seed=7)
+)
+rule = fit.quantizer
+future_bins = rule.predict_scores(rng.normal(size=(1_000, 2)))
+print(float(fit.train_report.geometric_mean_retention))
 </code></pre>
         <p class="after">
-          <code>optimize_partition</code> labels the rows it was given and nothing else. When a rule for
-          events you have not seen is what you need, <code>fit_quantizer</code> returns one with an
-          explicit <code>predict_scores</code>. Which task you have is the first decision, and
-          <a href="docs/user-workflow/">Choosing your workflow</a> walks through it; the same fit with
-          its printed output and the meaning of each number is on <a href="portal/get-started/">Get started</a>.
+          This Gaussian example fits a reusable rule. Its printed training retention is an empirical
+          estimate, not a population guarantee. For fixed-sample labels use <code>optimize_partition</code>.
+          See <a href="portal/get-started/">Get started</a> for the full workflow.
         </p>
       </section>
     </main>

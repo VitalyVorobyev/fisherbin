@@ -16,44 +16,49 @@ export const f = factsFor("ratios");
 
 # A classifier instead of a likelihood
 
-## You have a classifier, not a likelihood
+## The mixture
 
-The measurement is a mixture. Events arrive from two sources — call them signal and background —
-and the quantity wanted is how much of the sample is signal. If both components' densities could
-be written down, everything that follows would be arithmetic. In practice they cannot: the
-generator is a simulation, the observable is engineered, and what exists instead is labelled
-simulated events for each component and a classifier trained to tell them apart.
+Events come from one of two components, signal and background, and the quantity to estimate is
+the signal fraction $\theta$. The mixture on this page is synthetic and both components are known
+normal densities, $\phi_{\rm sig}=\mathcal N(1.0,\,0.5^2)$ and $\phi_{\rm bkg}=\mathcal N(0.0,\,1.5^2)$,
+so that the event density is
 
-That classifier is enough to compress with. Its calibrated output, divided by the proportions it
-was trained on, is an estimate of the ratio of the two densities, and a ratio is all the
-compression needs — a common factor in both densities cancels out of it.
+$$
+p(x\mid\theta) \;=\; \theta\,\phi_{\rm sig}(x) + (1-\theta)\,\phi_{\rm bkg}(x),
+$$
 
-Then the library hands back a number: this much of the measurement survived the compression. The
-question this page answers is whether that number is about your data or about your classifier. The
-other pages that reach for a classifier the same way — the cells, the collision events — have no
-ground truth to check it against. This one does, because its data was generated on purpose.
+with the reference point $\theta_0$ at a signal fraction of {f("signalFraction")}. The score of an
+event, the derivative of its log-likelihood at $\theta_0$, depends on the two components only
+through their ratio:
 
-## The data, and why it is simulated
+$$
+s(x) \;=\; \frac{\phi_{\rm sig}(x)-\phi_{\rm bkg}(x)}{\theta_0\,\phi_{\rm sig}(x)+(1-\theta_0)\,\phi_{\rm bkg}(x)}
+\;=\; \frac{r(x)-1}{\theta_0\,r(x)+(1-\theta_0)},
+\qquad
+r(x)=\frac{\phi_{\rm sig}(x)}{\phi_{\rm bkg}(x)} .
+$$
 
-This walkthrough uses a synthetic mixture with an analytic truth score. It lets us compare
-reported surrogate retention with true-score retention for the same fitted labels. The Michelson
-walkthrough also has an analytic model; FlowCyt uses measured cells and HEP uses simulated events.
+Any common factor in the two densities cancels in $r$, so the compression never needs the
+densities themselves. It needs the likelihood ratio.
 
-The mixture is two normal components with different means and different widths, mixed at a signal
-fraction of {f("signalFraction")}. Two independent samples come from that mixture:
-{f("nTrain")} events to fit the compression on and {f("nTest")} held-out events to evaluate it.
-A third and much larger sample of {f("nClosure")} events is drawn from the *balanced* mixture
-instead — the measure the density ratios are defined against — and never enters a fit; it exists
-so that one diagnostic below has a tight enough noise floor to be worth reading.
+In an analysis that reaches for a classifier the densities are not available: the generator is a
+simulation, the observable is engineered, and what exists is labelled simulated events for each
+component and a classifier trained to tell them apart. That classifier estimates $r$. The library
+then reports how much of the score the bins preserve, and the question this page answers is
+whether that number is about the data or about the classifier. The mixture is synthetic so that
+the exact $r$ is also available and the two can be compared on the same fitted labels.
 
-There is no third-party data here and no third-party licence. The generator is
-`examples/door3_classifier.py`, committed under the same MIT licence as the rest of the library,
-and the numbers on this page are read from the evidence file it writes,
-`docs/examples/assets/door3-classifier.json`. The exhaustive record — the full ladder, the
-per-rung table, the figure, and the discussion of which parts of classifier error cost information
-— is the reference page at{" "}
-<ReferenceLink to="examples/door3-classifier/">Door 3, classifier-estimated density ratios</ReferenceLink>,
-which this page deliberately does not restate.
+## The data
+
+Two independent samples come from the mixture: {f("nTrain")} events to fit the compression on and
+{f("nTest")} held-out events to evaluate it. A third and much larger sample of {f("nClosure")}
+events is drawn from the *balanced* mixture instead, the measure the classifier's ratios are
+defined against, and never enters a fit; it exists so that one diagnostic below has a tight
+enough noise floor to be worth reading.
+
+The generating program is `examples/door3_classifier.py`. The full ladder, the per-rung table and
+the figure are on the reference page{" "}
+<ReferenceLink to="examples/door3-classifier/">Door 3, classifier-estimated density ratios</ReferenceLink>.
 
 ```python
 import numpy as np
@@ -86,18 +91,36 @@ test_observations = draw(999, 600, reference_fractions[0])
 closure_observations = draw(4242, 50_000, 0.5)
 ```
 
-## From posteriors to a score
+## From a classifier to a ratio
 
-The route from a classifier to a score is three explicit steps, and it helps to run them once by
-hand before letting a provider package them.
+A classifier is trained on labelled events from the two components, drawn in the training
+proportions $\pi_{\rm sig}$ and $\pi_{\rm bkg}$. Its output $\eta_{\rm sig}(x)$ estimates the
+posterior probability that an event at $x$ is signal under that training mixture. If the output
+is *calibrated*, that is, if $\eta_{\rm sig}(x)$ equals the actual conditional probability under
+the training mixture, then Bayes' rule gives
 
-A calibrated classifier's posteriors are estimates of the component densities weighted by the
-proportions it was trained on, so dividing by those proportions leaves the density ratios;
-`ratios_from_posteriors` does exactly that division. The mixture parameterization then turns
-ratios into the derivative of an event's log likelihood with respect to the mixture fractions —
-the score. With two components on the simplex, one is absorbed as the reference, so the score
-here has a single coordinate: how strongly this event's likelihood responds to the signal
-fraction moving.
+$$
+\frac{\eta_{\rm sig}(x)}{\eta_{\rm bkg}(x)}
+\;=\;
+\frac{\pi_{\rm sig}}{\pi_{\rm bkg}}\cdot\frac{\phi_{\rm sig}(x)}{\phi_{\rm bkg}(x)},
+\qquad\text{so}\qquad
+r(x)\;=\;\frac{\eta_{\rm sig}(x)/\pi_{\rm sig}}{\eta_{\rm bkg}(x)/\pi_{\rm bkg}} .
+$$
+
+The likelihood ratio is the posterior odds divided by the prior odds. Two assumptions carry that
+statement: the posteriors are calibrated with respect to the training mixture, and the training
+proportions are known. A classifier that only ranks events correctly, or one whose probabilities
+are miscalibrated, does not give $r$; calibration is application work done before the library is
+called.
+
+The route from a classifier to a score is then two explicit steps, and it helps to run them once
+by hand before letting a provider package them. `ratios_from_posteriors` divides each posterior by
+its training proportion, which gives $\eta_k/\pi_k=\phi_k/p_{\rm train}$ with
+$p_{\rm train}=\sum_k\pi_k\phi_k$ the training mixture; the common factor $p_{\rm train}$ cancels
+in the score formula above, which depends only on the ratio of the two. `mixture_scores_from_ratios`
+then evaluates that formula at the declared reference fraction. With two components on the
+simplex one is absorbed as the reference, so the score has a single coordinate: how strongly the
+event's likelihood responds to the signal fraction moving.
 
 ```python
 def exact_posteriors(x):

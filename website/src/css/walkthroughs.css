@@ -6,6 +6,8 @@
 .walkthrough-card h2 a { color: var(--text); text-decoration: none; }
 .walkthrough-card h2 a:hover { color: var(--accent-strong); text-decoration: underline; text-underline-offset: 4px; }
 .walkthrough-card p { margin: 0; color: var(--ink-700); font-size: 15px; line-height: 1.6; }
+.walkthrough-card__data { color: var(--ink-700); font-size: 14px; line-height: 1.55; }
+.walkthrough-card__data span { margin-right: 6px; color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
 .walkthrough-card__tags { display: flex; flex-direction: column; gap: 6px; margin: auto 0 0; padding-top: 12px; border-top: 1px solid var(--border); }
 .walkthrough-card__tags > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 8px; padding-left: calc(5.5em + 8px); }
 .walkthrough-card__tags dt { margin: 0 0 0 calc(-5.5em - 8px); width: 5.5em; color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }

@@ -45,10 +45,9 @@ export default function Home(): React.JSX.Element {
           <p>
             one coordinate per parameter, whatever the dimension of <Tex>x</Tex>. The{" "}
             <em>Fisher information</em> of one observation is the second moment of its score,{" "}
-            <Tex>{String.raw`I = \mathbb{E}\big[s(X)\,s(X)^{\top}\big]`}</Tex>. Its inverse is the
-            asymptotic covariance floor of any unbiased estimator of <Tex>{String.raw`\theta`}</Tex>{" "}
-            built from such observations: information is the exchange rate between what a
-            measurement keeps and how precisely a parameter can be estimated from it.
+            <Tex>{String.raw`I = \mathbb{E}\big[s(X)\,s(X)^{\top}\big]`}</Tex>. For independent observations in a regular model, the inverse of the total information
+            bounds the covariance of unbiased estimators of <Tex>{String.raw`\theta`}</Tex>{" "}
+            when that information is nonsingular.
           </p>
         </section>
 
@@ -56,7 +55,7 @@ export default function Home(): React.JSX.Element {
           <h2 id="binning">Hard binning, and what it costs</h2>
           <p>
             A <em>hard binning</em> is a map <Tex>{String.raw`q : x \mapsto \{1, \dots, K\}`}</Tex>.
-            After it, the data are <Tex>K</Tex> counts, and the counts have their own Fisher
+            For a fixed rule in a regular model, the bin label has per-observation Fisher
             information <Tex>{String.raw`I_q`}</Tex>. The difference is an identity, not an
             estimate:
           </p>
@@ -66,8 +65,8 @@ export default function Home(): React.JSX.Element {
             follow. Binning never creates information. And the loss is the within-cell scatter of
             the <em>score</em>, not of the observation, so the space in which to choose cells is
             score space. ScoreQuant reports the <em>retention</em>, a normalised ratio of{" "}
-            <Tex>{String.raw`I_q`}</Tex> to <Tex>I</Tex> that is one when nothing is lost and zero
-            when everything is.
+            <Tex>{String.raw`I_q`}</Tex> to <Tex>I</Tex> according to the chosen criterion. Zero D-efficiency can mean that just one parameter
+            direction was lost; it does not imply that no information remains.
           </p>
         </section>
 
@@ -90,56 +89,41 @@ export default function Home(): React.JSX.Element {
             trigger, a gate, a categorisation shipped with an analysis.
           </p>
           <p>
-            The one bridge between them is a theorem: an exchange-stable D-optimal partition
-            compiles into a Mahalanobis rule that reproduces its labels. No other partition does,
-            and the library refuses rather than approximates.
+            A full-D partition can be compiled after its stability and geometry are verified,
+            reproducing positive-weight training labels. The library does not provide a generic
+            compiler for profiled Ds.
           </p>
         </section>
 
         <section aria-labelledby="criteria">
-          <h2 id="criteria">The criteria and their solvers</h2>
-          <ul className="home-article__list">
-            <li>
-              <strong>D-optimality</strong> maximises{" "}
-              <Tex>{String.raw`\det I_q`}</Tex> over the informative subspace. Exact finite
-              relocation (<code>DExchangeConfig</code>), guarded Lloyd steps in the
-              retained-information metric (<code>MahalanobisLloydConfig</code>), or a soft rule
-              hardened afterwards (<code>SoftVoronoiConfig</code>).
-            </li>
-            <li>
-              <strong>Profiled <Tex>{String.raw`D_s`}</Tex>-optimality</strong> maximises the
-              determinant of the Schur complement for the parameters of interest, after the
-              nuisance parameters are profiled out. Exact profiled exchange on a fixed table; the
-              soft family for a reusable rule.
-            </li>
-            <li>
-              <strong>Normalised trace</strong> maximises{" "}
-              <Tex>{String.raw`\operatorname{tr}(I^{-1} I_q)`}</Tex>, which whitened{" "}
-              <Tex>k</Tex>-means solves (<code>KMeansConfig</code>).
-            </li>
-            <li>
-              <strong>Rank one</strong> score space admits the exact interval solution by dynamic
-              programming (<code>ScalarDPConfig</code>).
-            </li>
-          </ul>
+          <h2 id="criteria">The criteria</h2>
           <p>
-            A criterion and a solver configuration form a closed pair; an unsupported pair fails
-            before anything runs.
+            A criterion turns the retained information matrix into one number to maximise.{" "}
+            <strong>D-optimality</strong> maximises <Tex>{String.raw`\det I_q`}</Tex> over the
+            informative subspace, weighing every parameter direction at once.{" "}
+            <strong>Profiled <Tex>{String.raw`D_s`}</Tex>-optimality</strong> maximises the
+            determinant of the Schur complement for the parameters of interest, after the nuisance
+            parameters are profiled out. The <strong>normalised trace</strong> maximises{" "}
+            <Tex>{String.raw`\operatorname{tr}(I^{-1} I_q)`}</Tex>, which after whitening is the
+            <Tex>k</Tex>-means objective. Each criterion pairs with a fixed set of solvers, and an
+            unsupported pair fails before anything runs; the{" "}
+            <ReferenceLink to="method/">method overview</ReferenceLink> lists the pairs and{" "}
+            <ReferenceLink to="user-workflow/">Choosing your workflow</ReferenceLink> decides
+            between them.
           </p>
         </section>
 
         <section aria-labelledby="provenance">
           <h2 id="provenance">Where the scores come from</h2>
           <p>
-            An <em>exact</em> score is the derivative of a model you can write down:{" "}
-            <code>ScoreFunction</code> for an analytic model, <code>LinearComponentScore</code>{" "}
-            for a linear combination of known component densities, or an array of scores you
-            computed yourself. An <em>estimated</em> score comes from density ratios, typically
-            a calibrated classifier: <code>DensityRatioScore</code>, or{" "}
-            <code>CentralLogRatioScore</code> for paired central variants. The optimisation is the
-            same in both cases. The information is not: an estimated score yields a{" "}
-            <em>surrogate</em> information whose Fisher meaning is only as good as the estimate,
-            and every result records which of the two it reported.
+            An <em>exact</em> score is the derivative of a model you can write down, or an array
+            of scores you computed from one. An <em>estimated</em> score comes from density ratios,
+            typically a calibrated classifier whose posterior odds over its prior odds estimate
+            the likelihood ratio. The optimisation is the same in both cases. The information is
+            not: an estimated score yields a <em>surrogate</em> information whose Fisher meaning
+            is only as good as the estimate, and every result records which of the two it
+            reported. <ReferenceLink to="three-doors/">Three doors</ReferenceLink> describes the
+            input routes.
           </p>
         </section>
 
