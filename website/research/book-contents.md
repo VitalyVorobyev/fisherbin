@@ -6,8 +6,6 @@ sidebar_position: 8
 
 # The book, chapter by chapter
 
-*Who this is for: a reader who wants the derivations rather than the summaries, and needs to know which chapter to open.*
-
 The reference carries a fourteen-chapter derivation that starts from a one-parameter example
 worked by hand and ends with a decision table. It is written to be read in order, but each chapter
 states the question it answers, so it also works as a lookup. The chapters live in the reference

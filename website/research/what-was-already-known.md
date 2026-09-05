@@ -6,8 +6,6 @@ sidebar_position: 3
 
 # What was already known
 
-*Who this is for: a reader from a neighbouring field who wants to know which part of this is new and which part is textbook.*
-
 Choosing a quantizer so that it preserves Fisher information is not a new idea. It sits at the
 intersection of four traditions that developed largely independently, and most of the ingredients
 used here are established results in one of them. This page is a plain-English tour of that

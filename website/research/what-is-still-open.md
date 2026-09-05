@@ -6,8 +6,6 @@ sidebar_position: 6
 
 # What is still open
 
-*Who this is for: a reader who wants to know which of their questions the project cannot answer, and a researcher looking for something to work on.*
-
 The previous page listed statements that are proved *false*. This page lists statements that are
 neither proved nor refuted. Each entry has a registry claim of its own, so "open" here means
 recorded and tracked, not forgotten.

@@ -26,6 +26,12 @@ once already, which retroactively asserted that unshipped work had shipped.
   (the bin budget) whose browser refit reproduces the committed profiled partition on the same
   table. The walkthroughs' links into the reference now resolve through `ReferenceLink`; the
   hand-written `pathname:///reference/…` anchors reached the browser verbatim and were not URLs.
+- The portal is reduced to four surfaces after the owner's review of 5 September 2026 (ADR
+  0031): the home page is definitions and references in ordinary type, with no measurement and
+  no demo; the Lessons index, the API catalogue, the Benchmarks page and the development blog
+  are removed; the walkthroughs index is a card per problem with API tags; the Michelson page is
+  an article (the instrument, its history, a bench diagram, the fringe law, the readout question)
+  rather than a numbered procedure with a contract table; every "who this is for" preface is gone.
 
 ## [0.2.0] — 2026-09-04
 

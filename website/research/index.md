@@ -6,8 +6,6 @@ sidebar_position: 1
 
 # Research
 
-*Who this is for: a reader deciding how much of ScoreQuant's mathematics to trust, and for what.*
-
 This section explains the research question behind the library, what the literature had settled
 before the project started, which results the project proved itself, and — at the same length —
 which parts are not proved and are recorded as open, or as numerical observation only.

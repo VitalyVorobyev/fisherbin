@@ -36,15 +36,12 @@ async function setTheme(page: Page, theme: "light" | "dark"): Promise<void> {
 const ROUTES = [
   "./",
   "./get-started/",
-  "./api/",
   "./walkthroughs/",
   "./walkthroughs/flowcyt/",
   "./walkthroughs/hep/",
   "./walkthroughs/michelson/",
   "./walkthroughs/ratios/",
-  "./benchmarks/",
-  "./research/",
-  "./lab/"
+  "./research/"
 ];
 
 /**
@@ -61,18 +58,20 @@ const SCANNED = [
   "./walkthroughs/flowcyt/",
   "./walkthroughs/hep/",
   "./walkthroughs/michelson/",
-  "./walkthroughs/ratios/",
-  "./lab/"
+  "./walkthroughs/ratios/"
 ];
 
-test("home states the problem and then measures it", async ({page}) => {
+test("home defines the task and runs nothing", async ({page}) => {
   await page.goto("./");
-  // The assertions target the page's shape rather than a slogan: the opening
-  // names the task (labels for the parameters you estimate), the figure shows
-  // the committed partition, and the comparison is the measured one.
-  await expect(page.getByRole("heading", {name: /Choose K labels for the parameters/})).toBeVisible();
-  await expect(page.getByRole("img", {name: /Score-space partition/})).toBeVisible();
-  await expect(page.getByText("ScoreQuant, same data, same bin budget")).toBeVisible();
+  // Definitions and references, in ordinary type: no slogan, no demo, no
+  // measured comparison. The equations render through KaTeX at build time.
+  await expect(page.getByRole("heading", {name: "ScoreQuant", level: 1})).toBeVisible();
+  const sections = ["The setting", "Hard binning, and what it costs", "The task, stated twice", "The criteria and their solvers", "Where the scores come from", "Where each of these is derived"];
+  const headings = (await page.getByRole("heading", {level: 2}).allInnerTexts()).map((text) => text.replace(/[\u200B\s]+$/g, ""));
+  expect(headings).toEqual(sections);
+  expect(await page.locator(".katex-display").count()).toBeGreaterThan(1);
+  await expect(page.getByRole("link", {name: "Why bin at all"})).toHaveAttribute("href", /\/scorequant\/docs\/book\/ch01-why-bin\//);
+  await expect(page.getByRole("button", {name: /browser/i})).toHaveCount(0);
 });
 
 test("every route renders one main landmark and none of them loads a runtime", async ({page}) => {
@@ -83,17 +82,16 @@ test("every route renders one main landmark and none of them loads a runtime", a
   for (const route of ROUTES) {
     await page.goto(route);
     // #main-content is AppShell's own landmark, and it must be the only one.
-    // The stock layouts of both the blog and the docs plugin render a second
-    // <main> of their own inside it; src/theme/BlogLayout and
-    // src/theme/DocRoot/Layout/Main exist to strip those. Nested landmarks are
-    // invalid HTML and an accessibility failure, and the axe scan below only
-    // covers SCANNED, so this count is what catches a regression on the routes
-    // it does not reach.
+    // The stock layout of the docs plugin renders a second <main> of its own
+    // inside it; src/theme/DocRoot/Layout/Main exists to strip that. Nested
+    // landmarks are invalid HTML and an accessibility failure, and the axe
+    // scan below only covers SCANNED, so this count is what catches a
+    // regression on the routes it does not reach.
     await expect(page.locator("#main-content")).toBeVisible();
     expect(await page.locator("main").count(), `nested landmark on ${route}`).toBe(1);
   }
-  // Including ./lab/: the Lab page itself must cost an ordinary page load, and
-  // only pressing a run button may reach the runtime.
+  // Every route must cost an ordinary page load; only pressing a run button
+  // on a walkthrough may reach the runtime.
   expect(heavyRequests).toEqual([]);
 });
 
@@ -119,6 +117,8 @@ for (const route of SCANNED) {
 test("core learning routes render and search opens from the keyboard", async ({page}) => {
   await page.goto("./walkthroughs/");
   await expect(page.getByRole("heading", {name: "Walkthroughs", level: 1})).toBeVisible();
+  await expect(page.locator(".walkthrough-card")).toHaveCount(4);
+  await expect(page.getByRole("link", {name: "A classifier instead of a likelihood"})).toBeVisible();
   await page.keyboard.press("Control+k");
   await expect(page.getByRole("dialog", {name: "Search ScoreQuant"})).toBeVisible();
   await page.getByPlaceholder("Search concepts, tasks, and symbols").fill("ExecutionConfig");
@@ -192,40 +192,26 @@ test("the flowcyt walkthrough tells the study end to end without loading a runti
   expect(accessibility.violations).toEqual([]);
 });
 
-test("the lessons page lists one lesson per walkthrough and loads no runtime", async ({page}) => {
-  const heavyRequests: string[] = [];
-  page.on("request", (request) => {
-    if (/pyodide|marimo|scorequant-.*\.whl/.test(request.url())) heavyRequests.push(request.url());
-  });
-  await page.goto("./lab/");
-  await expect(page.getByRole("heading", {name: /One dataset, one task/, level: 1})).toBeVisible();
-  const walkthroughLinks = page.locator('a[href*="/walkthroughs/"]');
-  expect(await walkthroughLinks.count()).toBeGreaterThanOrEqual(4);
-  expect(heavyRequests).toEqual([]);
-});
-
-test("the michelson lesson runs problem to experiment without loading a runtime", async ({page}) => {
+test("the michelson article runs from the instrument to the experiment without loading a runtime", async ({page}) => {
   const heavyRequests: string[] = [];
   page.on("request", (request) => {
     if (/pyodide|marimo|scorequant-.*\.whl|walkthrough-scores/.test(request.url())) heavyRequests.push(request.url());
   });
   await page.goto("./walkthroughs/michelson/");
-  await expect(page.getByRole("heading", {name: /Detector segments for an interferometer phase/, level: 1})).toBeVisible();
+  await expect(page.getByRole("heading", {name: /A Michelson interferometer read out through K counters/, level: 1})).toBeVisible();
 
-  // The seven steps, in order: the page pattern every lesson follows.
-  const steps = ["1. The problem", "2. The model and its score", "3. The binning decision", "4. The run", "5. The evaluation", "6. One experiment: the bin budget", "7. What it means"];
+  // The article order: the subject before the library, the experiment last.
+  const sections = ["The instrument", "What is measured", "The readout", "What a photon tells you", "The objective", "The result", "Try it: the counter budget", "What it means"];
   // Docusaurus appends a zero-width-space anchor to every heading; strip it.
   const headings = (await page.getByRole("heading", {level: 2}).allInnerTexts()).map((text) => text.replace(/[\u200B\s]+$/g, ""));
-  expect(headings.filter((text) => steps.some((step) => text.startsWith(step)))).toEqual(steps);
+  expect(headings).toEqual(sections);
 
-  // The contract sits before any exposition and names the admissible labels
-  // (disjoint counters) at the opening rather than after the result.
-  const contract = page.getByLabel("Problem contract");
-  await expect(contract).toBeVisible();
-  for (const term of ["Observation", "Parameters of interest", "Nuisance", "Reference point", "Admissible labels", "Score provenance", "Task and output", "Evaluation"]) {
-    await expect(contract.getByText(term, {exact: true})).toBeVisible();
-  }
-  await expect(contract.getByText(/disjoint union of intervals/)).toBeVisible();
+  // The bench diagram and the fringe law come before any code; the admissible
+  // labels (disjoint counters) are stated in the readout section, before the result.
+  await expect(page.getByRole("img", {name: /Michelson interferometer bench/})).toBeVisible();
+  await expect(page.getByRole("img", {name: "Fringe intensity along the aperture"})).toBeVisible();
+  await expect(page.getByText(/disjoint unions included/)).toBeVisible();
+  expect(await page.locator(".katex-display").count()).toBeGreaterThan(1);
 
   // The experiment: one control, keyboard-operable, with a reset and a static table.
   const radios = page.getByRole("radiogroup", {name: "Counters K"}).getByRole("radio");

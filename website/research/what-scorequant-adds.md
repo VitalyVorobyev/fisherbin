@@ -6,8 +6,6 @@ sidebar_position: 4
 
 # What ScoreQuant adds
 
-*Who this is for: a reader who has read the prior art and wants the short list of results that were not already there, with the label each one actually carries.*
-
 The novelty ledger has 103 rows, one per central statement. Their labels break down as: 34 *direct
 corollary*, 31 *unresolved*, 20 *known*, 10 *adaptation*, 8 *apparently new*. Most of the machinery
 is therefore inherited, a small number of statements are the project's own, and the largest single

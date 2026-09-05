@@ -4,64 +4,14 @@ sidebar_label: Overview
 sidebar_position: 1
 ---
 
+import {WalkthroughCards} from "@site/src/components/WalkthroughCards";
+
 # Walkthroughs
 
-*Who this is for: a reader who wants one applied question followed end to end, with real
-numbers, rather than a method described in the abstract.*
+Four applied problems, each taken from the raw data to a fitted result and what it means. The
+tags name the task, the input route, the criterion and the solver each page uses.
 
-A walkthrough here takes a single applied question from the raw problem to a fitted result: the
-data and where it came from, which of the three input routes it uses and why, the fit, the
-numbers that came out, what they mean for the original question, and what the binning you would
-otherwise have reached for would have retained on the same data. Each one ends with a measured
-limitation rather than a summary, because the limitations are the part that is hard to find
-elsewhere.
+<WalkthroughCards />
 
-None of the numbers on these pages is typed by hand. Each is read from a committed evidence file
-produced by the example it describes, and a test resolves every one of them back to the run that
-produced it.
-
-## Which one to read
-
-Pick by the situation you are in, not by the domain.
-
-**[You have a trained classifier and want to bin its output](./ratios)** — *the ratio door.* A
-two-component mixture where the exact Bayes score is known, so the number the library reports
-about an estimated score can be checked against what that score actually achieved. Read this if
-you want to know how far to trust a classifier-derived score, and what the ratio-closure
-diagnostic does and does not tell you. Synthetic by design, with a truth score against which the estimated score can be evaluated.
-
-**[You are measuring a rate and a systematic is eating your sensitivity](./hep)** — *profiled
-information with a nuisance.* Simulated LHC-like events, a signal-strength parameter of interest, and
-a tau-energy-scale nuisance that moves ten of twenty-eight observables at once. Read this if your
-problem has a nuisance parameter and you want to see what binning for the profiled criterion buys
-over binning the classifier output, and how much of that gap depends on which baseline binning
-you compare against.
-
-**[You count cells or events into categories and want fewer bins](./flowcyt)** — *estimated
-ratios on real data.* Real bone-marrow flow cytometry, six populations, a per-patient composition
-to estimate. Read this if your scores come from a classifier trained on labelled reference data
-and you need a small, fixed binning that generalises to new subjects. Its result is a negative
-one, and that is the point.
-
-**[Your score is known in closed form](./michelson)** — *an analytic score with an explicit
-nuisance, and the one page already in the lesson pattern.* An interferometer phase measured against
-a fringe-frequency nuisance, on the NumPy backend. It opens with the problem contract, writes the
-model and its score down, and ends with one experiment: change the number of counters, watch what
-equal segments and the fitted rule retain, and refit the committed partition in your browser. Read
-this if you can differentiate your model by hand; it provides analytic unbinned checks and a
-projected efficient-score benchmark, while the finite profiled optimum is a separate question.
-Equal-width bins can lose all phase sensitivity.
-
-## What each one uses
-
-| Walkthrough | Input route | Data | Criterion | The thing it teaches |
-| --- | --- | --- | --- | --- |
-| [Ratio door](./ratios) | Density ratios from a classifier | Synthetic, with exact ground truth | D-optimality | What an estimated score's self-reported number is worth |
-| [HEP classifier](./hep) | Density ratios + a central log-ratio | Simulated events, FAIR Universe HiggsML | Profiled D<sub>s</sub> | Binning for the nuisance, and how much the baseline choice matters |
-| [FlowCyt](./flowcyt) | Density ratios from a classifier | Real cells, FlowCyt benchmark | D-optimality | When hard bins are enough, and when they are not an improvement |
-| [Michelson phase](./michelson) | An analytic score function | Deterministic quadrature | Profiled D<sub>s</sub> | Aliasing, and a theorem-backed refusal |
-
-Every walkthrough links onward to its full record in the reference, which carries the derivations,
-the complete sweeps and the diagnostics these pages only quote from. The [lessons index](/lab)
-states each page's problem contract side by side and says which pages run an experiment in the
-browser today.
+Every number on these pages is read from a committed evidence file written by the program the
+page describes, and a test resolves each one back to the run that produced it.

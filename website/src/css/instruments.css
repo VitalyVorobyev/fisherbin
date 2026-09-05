@@ -1,30 +1,5 @@
-/* Dark instrument surfaces outside the Lab: score-space, code blocks,
-   snippets, the API symbol code panel. Split from global.css. */
+/* Dark instrument surfaces: code blocks and snippets. Split from global.css. */
 
-/* Real score-space fixture. An instrument surface: its colours are the
-   Tier 3 tokens above, direct, never through the Tier 2 semantic layer --
-   this component renders unchanged whether it sits on the light page or
-   inside the (also instrument) Lab, so it cannot depend on a role token
-   that a page context would repoint. */
-.score-space { overflow: hidden; border: 1px solid #294568; border-radius: 11px; background: var(--inst-ground); box-shadow: 0 30px 75px rgb(0 0 0 / 28%); }
-.score-space__toolbar { display: flex; justify-content: space-between; align-items: center; min-height: 48px; padding: 0 16px; border-bottom: 1px solid var(--inst-line-score); color: #91a4bd; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; }
-.score-space__toolbar span { display: flex; align-items: center; gap: 7px; }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 0 4px rgb(32 191 174 / 12%); }
-.score-space__toolbar label { display: flex; align-items: center; gap: 10px; }
-.score-space input[type="range"] { width: 80px; accent-color: var(--cyan); }
-.score-space__toolbar strong { min-width: 12px; color: white; }
-.score-space svg { display: block; width: 100%; height: auto; background: radial-gradient(circle at 50% 46%, #102a50 0, var(--inst-ground) 67%); }
-.score-grid path { fill: none; stroke: #1b3455; stroke-width: 1; }
-.score-regions rect { pointer-events: none; }
-.score-center circle { fill: #07142d; stroke: white; stroke-width: 1.5; }
-.score-center path { stroke: white; stroke-width: 1.5; }
-.score-space svg text { fill: #7188a5; font-family: var(--font-mono); font-size: 10px; }
-.score-space__metrics { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--inst-line-score); }
-.score-space__metrics span { padding: 13px 16px; border-right: 1px solid var(--inst-line-score); }
-.score-space__metrics span:last-child { border-right: 0; }
-.score-space__metrics small { display: block; color: #7f93ad; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; }
-.score-space__metrics strong { color: white; font-family: var(--font-heading); font-size: 16px; font-weight: 560; }
-.score-space--compact { border-color: #263e5e; box-shadow: none; }
 .code-block { overflow-x: auto; padding: 22px; border: 1px solid #263d5c; border-radius: 7px; color: #dbe8f8; background: var(--ink-950); font-family: var(--font-mono); font-size: 12px; line-height: 1.8; white-space: pre; }
 /*
  * Snippet (get-started, S10 B1): one program cell's code, then the captured
@@ -40,6 +15,3 @@
 .snippet__output { margin-top: 10px; }
 .snippet__output-label { display: inline-block; margin-bottom: 6px; padding: 2px 9px; border-radius: 3px; color: var(--text); background: #cdf1ea; font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
 .code-block.snippet__output-block { border-left: 3px solid var(--cyan); color: #bfe9e2; background: #05141f; }
-.api-symbol code { display: block; overflow-x: auto; margin: 14px 0; padding: 10px 12px; color: #cae0ff; background: var(--ink-900); font-family: var(--font-mono); font-size: 11px; white-space: pre; }
-.score-space__placeholder { display: flex; align-items: center; justify-content: center; min-height: 260px; margin: 0; padding: 32px; color: var(--inst-muted); font-size: 13px; text-align: center; }
-.score-space__note { margin: 8px 0 0; color: var(--inst-muted); font-size: 11px; }

@@ -6,8 +6,6 @@ sidebar_position: 5
 
 # What cannot be certified
 
-*Who this is for: anyone deciding whether to rely on a fitted rule, and anyone who has just met a refusal message.*
-
 The previous page listed what is proved. This page lists where those proofs stop, which is the part
 that decides whether a given result may be relied on. Most of the entries are **exact
 counterexamples**: small tables of rational numbers, enumerated exhaustively, that show a plausible

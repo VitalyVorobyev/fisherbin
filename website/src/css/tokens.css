@@ -72,19 +72,19 @@
 
   /* ------------------------------------------------------------------
      Tier 3 -- instrument. The dark palette already used, as literals, by
-     the "machine" surfaces embedded in the light page: score-space and
-     code blocks. Deliberately constant -- these do not move in dark
-     mode; the page ground moves toward them instead.
+     the "machine" surfaces embedded in the light page: code blocks.
+     Deliberately constant -- these do not move in dark mode; the page
+     ground moves toward them instead.
 
-     The free-form browser Lab console this tier also served (lab-workspace,
-     lab-panel, lab-field, and the rest) is gone; its tokens were removed
-     with it. `--inst-deep` and `--inst-text` stay pinned by
-     `tests/contrast.test.ts` even though nothing currently renders them. */
-  --inst-ground: #091a37; /* score-space surface + its radial-gradient stop */
+     The free-form browser Lab console and the score-space fixture this
+     tier also served are gone; their now-unused tokens were removed with
+     them. `--inst-ground`, `--inst-deep`, `--inst-text` and `--inst-muted`
+     stay pinned by `tests/contrast.test.ts` even though nothing currently
+     renders them. */
+  --inst-ground: #091a37; /* pinned by tests/contrast.test.ts */
   --inst-deep: #061329; /* pinned by tests/contrast.test.ts */
-  --inst-line-score: #213b5e; /* score-space's own toolbar/metrics dividers */
   --inst-text: #e7eef8; /* pinned by tests/contrast.test.ts */
-  --inst-muted: #8ea2ba; /* score-space placeholder/note text */
+  --inst-muted: #8ea2ba; /* pinned by tests/contrast.test.ts */
 
   --shadow-soft: 0 18px 54px rgb(7 20 45 / 9%);
   --font-heading: "Space Grotesk Variable", "Space Grotesk", sans-serif;
@@ -104,7 +104,7 @@
 /* ------------------------------------------------------------------
    Dark mode does not recolour the site -- it promotes the Tier 3
    instrument ground (already the palette of the "machine" surfaces:
-   score-space, code blocks, the Lab) to be the *page* ground. Overriding
+   code blocks) to be the *page* ground. Overriding
    Tier 1 here, and nothing else, is what does that: Tier 2 is aliases of
    Tier 1, so the whole semantic layer repoints automatically, and so do
    the handful of rules elsewhere that still name a Tier 1 token
@@ -147,17 +147,14 @@
    ground entirely, since Tier 1 flips. Fixed here, dark mode only, with
    the smallest touch that restores a visible panel; light mode is
    untouched and none of these are restyled. */
-[data-theme="dark"] .score-space { border-color: #3a5a86; }
-[data-theme="dark"] .score-space--compact { border-color: #35507a; }
-/* `.code-block` and `.api-symbol code` render a dark code panel on the
-   light page by painting a Tier 1 ink token as their background rather
-   than a Tier 3 instrument token -- exactly the "still name a Tier 1
-   token directly" case the block above calls out, except here the token
-   is standing in for a ground, not a text colour, so the flip empties it
-   out instead of completing it. Pinned back to the value it already
-   rendered, so the panel is unchanged in both themes. */
+/* `.code-block` renders a dark code panel on the light page by painting a
+   Tier 1 ink token as its background rather than a Tier 3 instrument token
+   -- exactly the "still name a Tier 1 token directly" case the block above
+   calls out, except here the token is standing in for a ground, not a text
+   colour, so the flip empties it out instead of completing it. Pinned back
+   to the value it already rendered, so the panel is unchanged in both
+   themes. */
 [data-theme="dark"] .code-block { background: #07142d; }
-[data-theme="dark"] .api-symbol code { background: #0b1b38; }
 /* The snippet output label is a light mint pill with dark text (`--text`)
    sitting on top of the dark output block; `--text` flips light along
    with the rest of Tier 1, which would put near-white text on the same

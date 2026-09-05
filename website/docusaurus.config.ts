@@ -146,37 +146,7 @@ const config: Config = {
       "classic",
       {
         docs: false,
-        // The development blog is the portal's plain-English record of what
-        // changed and why. Docusaurus owns routing, MDX, tags, and the feed;
-        // `src/theme/Layout` renders every one of those routes in the
-        // ScoreQuant shell rather than the stock Docusaurus chrome.
-        blog: {
-          path: "blog",
-          routeBasePath: "blog",
-          // Docusaurus appends the site title, so this must not repeat it.
-          blogTitle: "Development blog",
-          blogDescription:
-            "Plain-English notes on what changed in ScoreQuant, why it matters, and what is next.",
-          // No recent-posts rail: `src/theme/BlogLayout` drops it, so generating
-          // one would only ship unused data. The index and the post paginator
-          // carry navigation instead.
-          blogSidebarCount: 0,
-          postsPerPage: 10,
-          showReadingTime: true,
-          // Each of these is a real editorial rule, enforced at build time: a
-          // post declares an author who exists, carries only known tags, and
-          // states its own summary above the fold.
-          onInlineAuthors: "throw",
-          onInlineTags: "throw",
-          onUntruncatedBlogPosts: "throw",
-          feedOptions: {
-            type: ["rss", "atom"],
-            title: "ScoreQuant development blog",
-            description:
-              "Plain-English notes on what changed in ScoreQuant, why it matters, and what is next.",
-            copyright: `Copyright © ${String(new Date().getFullYear())} ScoreQuant contributors.`
-          }
-        },
+        blog: false,
         pages: {},
         sitemap: {changefreq: "weekly", priority: 0.6},
         // Order matters for the cascade: tokens.css declares every semantic
@@ -195,6 +165,7 @@ const config: Config = {
             "./src/css/shell.css",
             "./src/css/components.css",
             "./src/css/home.css",
+            "./src/css/walkthroughs.css",
             "./src/css/instruments.css",
             "./src/css/responsive.css",
             "./src/css/prose.css",

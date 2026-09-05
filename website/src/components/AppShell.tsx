@@ -13,12 +13,8 @@ import {SearchDialog} from "./SearchDialog";
 const navigation = [
   ["Get started", "/get-started"],
   ["Walkthroughs", "/walkthroughs"],
-  ["Lessons", "/lab"],
-  ["API", "/api"],
   ["Research", "/research"],
-  ["Benchmarks", "/benchmarks"],
-  ["Reference", REFERENCE_BASE],
-  ["Blog", "/blog"]
+  ["Reference", REFERENCE_BASE]
 ] as const;
 
 /**
@@ -114,7 +110,7 @@ export function AppShell({children}: AppShellProps): React.JSX.Element {
             <p>Hard bins, and a measurement of what the binning cost.</p>
           </div>
           <div className="site-footer__links">
-            <span>Learn</span><Link to="/get-started">Get started</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/blog">Blog</Link>
+            <span>Learn</span><Link to="/get-started">Get started</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/research">Research</Link>
           </div>
           <div className="site-footer__links">
             <span>Reference</span><a href={REFERENCE_BASE}>Documentation</a><a href="https://github.com/VitalyVorobyev/scorequant">GitHub</a>

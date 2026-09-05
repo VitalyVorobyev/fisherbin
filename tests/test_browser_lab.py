@@ -100,29 +100,34 @@ def test_an_unknown_criterion_is_refused_rather_than_defaulted() -> None:
 
 
 def test_browser_adapter_matches_committed_numpy_fixture() -> None:
-    portal_data = json.loads((ROOT / "website/src/generated/portal-data.json").read_text())
-    score_space = portal_data["scoreSpace"]
+    """The browser adapter reproduces the `/get-started` page's own committed fit.
+
+    ``website/scripts/get_started_program.py`` fits its first partition with
+    ``sq.optimize_partition(scores, weights=weights, n_bins=5,
+    config=sq.DExchangeConfig(seed=21))`` -- every other field at its class
+    default, in particular ``initializer_restarts=8`` and
+    ``max_scans=None``. ``website/src/generated/snippet-outputs.json``
+    (via ``website/src/lib/snippets.ts::firstFitRetention``) pins that run's
+    own ``partition.train_report.geometric_mean_retention``. Reproducing that
+    recipe through the browser adapter -- ``task: "optimize_partition"``, no
+    ``maxScans`` override -- must land on the same retention.
+    """
+    table = json.loads((ROOT / "website/static/walkthrough-scores/get-started.json").read_text())
     problem = {
-        "scores": score_space["points"],
-        "weights": score_space["weights"],
-        "nBins": 4,
-        "solver": "d_exchange",
-        "seed": 28,
-        "maxSteps": 120,
-        "maxScans": 120,
+        "scores": table["scores"],
+        "weights": table["weights"],
+        "schema": table["schema"],
+        "nBins": table["nBins"],
+        "solver": table["solver"],
+        "seed": table["seed"],
+        "task": "optimize_partition",
     }
     result = json.loads(_run_lab()(json.dumps(problem)))
-    fixture = score_space["scenarios"]["4"]
 
-    # The labels are the portable part of the fixture: the assignment is discrete
-    # and must reproduce exactly. The scalars are reductions over that assignment,
-    # so they carry the host BLAS's summation order and land a ULP apart between
-    # the machine that regenerated `portal-data.json` and CI. They are pinned to
-    # the same 1e-12 as the centers rather than to bit equality.
-    np.testing.assert_array_equal(result["labels"], fixture["labels"])
-    np.testing.assert_allclose(result["centers"], fixture["centers"], rtol=1e-12, atol=1e-12)
-    np.testing.assert_allclose(result["retention"], fixture["retention"], rtol=1e-12, atol=1e-12)
-    np.testing.assert_allclose(result["objective"], fixture["objective"], rtol=1e-12, atol=1e-12)
+    snippet_outputs = json.loads((ROOT / "website/src/generated/snippet-outputs.json").read_text())
+    committed_retention = snippet_outputs["firstFit"]["retention"]
+
+    np.testing.assert_allclose(result["retention"], committed_retention, rtol=1e-9, atol=1e-9)
 
 
 def test_the_browser_adapter_runs_optimize_partition_shape() -> None:

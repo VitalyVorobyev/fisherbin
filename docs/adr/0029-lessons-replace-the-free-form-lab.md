@@ -1,6 +1,6 @@
 # ADR 0029: Lessons replace the free-form browser Lab
 
-**Status:** Accepted
+**Status:** Accepted; superseded in part by [ADR 0031](0031-portal-reduced-to-four-surfaces.md), which removes the lesson index at `/portal/lab/` and keeps the rest of this decision (no free-form console, computation only behind a page's explicit action, protocol v3).
 
 **Extends:** ADR 0028 (teaching pages open with a contract and load computation only through an
 explicit action). **Supersedes in part:** ADR 0019 (the locked marimo lesson embed and the
