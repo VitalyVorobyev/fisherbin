@@ -3,9 +3,9 @@
 ``website/scripts/generate_data.py`` derives the single criterion/solver compatibility
 table from ``scorequant.api._SOLVER_TABLE`` and writes it into
 ``website/src/generated/portal-data.json`` and into a marked region of ``docs/method.md``,
-``README.md`` and ``docs/book/ch06-two-tasks.md``. This module checks those two derived
-artifacts against the registry and against each other -- a hand edit inside a generated
-region, or a registry change without regeneration, fails here.
+``README.md``, ``docs/book/ch06-two-tasks.md`` and ``docs/api.md``. This module checks those
+derived artifacts against the registry and against each other -- a hand edit inside a
+generated region, or a registry change without regeneration, fails here.
 
 Behaviour-versus-registry (does the library actually accept or refuse each pairing) is
 already covered by the executed fence in ``docs/book/ch14-choosing-a-method.md``, which
@@ -29,12 +29,14 @@ ROOT = Path(__file__).resolve().parents[1]
 GENERATE_DATA_MODULE = ROOT / "website" / "scripts" / "generate_data.py"
 PORTAL_DATA = ROOT / "website" / "src" / "generated" / "portal-data.json"
 
-# The three Markdown files whose ``<!-- generated: solver-matrix -->`` region must equal
-# the table rendered from the current registry. README carries the extra "Contract" column.
+# The four Markdown files whose ``<!-- generated: solver-matrix -->`` region must equal
+# the table rendered from the current registry. README and the API guide carry the extra
+# "Contract" column.
 _CONSUMERS = (
     (ROOT / "docs" / "method.md", False),
     (ROOT / "README.md", True),
     (ROOT / "docs" / "book" / "ch06-two-tasks.md", False),
+    (ROOT / "docs" / "api.md", True),
 )
 
 

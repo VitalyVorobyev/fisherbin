@@ -13,6 +13,15 @@ import {REFERENCE_BASE} from "@site/src/lib/site";
 *One problem, followed from installation to a rule you can ship. Every number on this page was
 printed by the program that produced it, not typed into the page.*
 
+## Which of the two tasks is yours
+
+If you have a finite weighted score table and only those rows need labels, read as far as
+[The smallest real fit](#the-smallest-real-fit): that is `optimize_partition`, and it returns no
+predictor. If observations you have not seen yet must receive labels, continue to
+[The same problem, as a reusable rule](#the-same-problem-as-a-reusable-rule): that is
+`fit_quantizer`, whose result predicts through `predict_scores`. Both start from the same setup
+cell below, and both report the information kind they were evaluated with.
+
 ## Install it
 
 `uv add scorequant`, or `pip install scorequant` outside a `uv` project. Python 3.12 or newer.

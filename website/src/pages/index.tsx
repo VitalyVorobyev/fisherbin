@@ -20,21 +20,18 @@ export default function Home(): React.JSX.Element {
       <section className="home-section section-wrap">
         <div className="home-opening">
           <div className="home-lede">
-            <h1>Some analyses have to bin.</h1>
+            <h1>Choose K labels for the parameters you estimate, and know what they kept.</h1>
             <p>
-              A great deal of statistical practice ends in counts. A template fit needs the expected
-              number of events per category for each model component. A trigger has to route an
-              event into one of a few tiers. A cytometry protocol reports the fraction of cells in
-              named gates. A binned likelihood needs bins. In every one of these a continuous
-              measurement is
-              replaced by an integer label, and that step is irreversible.
+              ScoreQuant groups observations into a fixed number of labels for parameter
+              estimation. You supply scores at a reference model point, or a model that computes
+              them. The library optimizes a partition of a fixed sample, or fits a rule that labels
+              future scores, and reports the Fisher information the hard labels retain.
             </p>
             <p>
-              The bins are usually chosen for readability: equal width, equal population, a
-              threshold on one discriminant, or whatever the previous analysis used. Those are
-              choices about presentation. They are also, silently, choices about how much parameter
-              sensitivity survives — and nothing in the usual workflow reports the size of what was
-              given up.
+              The two tasks are chosen explicitly. <code>optimize_partition</code> labels the rows
+              you have and returns no predictor. <code>fit_quantizer</code> returns a rule for
+              scores you have not seen yet. Every result names its information kind: exact under
+              the model you supplied, or a surrogate computed from estimated scores.
             </p>
           </div>
           <aside className="home-identity" aria-label="What ScoreQuant is">
@@ -107,30 +104,21 @@ export default function Home(): React.JSX.Element {
         <div className="home-explain">
           <div>
             <p>
-              Write each event&rsquo;s local sensitivity as its <em>score</em>: the gradient of its
-              log-likelihood with respect to the parameters, at a reference point. The information
-              in the unbinned sample is the second moment of the score. A hard rule that sends each
-              event to one of K labels keeps only the between-cell part, and the difference is the
-              within-cell scatter of the score.
+              An event&rsquo;s <em>score</em> is the gradient of its log-likelihood at the
+              reference point. The unbinned information is the second moment of the score; K hard
+              labels keep the between-cell part, and the loss is the within-cell scatter of the
+              score, not of the observation.
             </p>
             <div className="math-display">
               I<sub>∞</sub> − I<sub>q</sub> = Σ<sub>b</sub> E[ 1{"{"}q=b{"}"} (s − μ
               <sub>b</sub>)(s − μ<sub>b</sub>)<sup>T</sup> ] ⪰ 0
             </div>
             <p>
-              Two things follow. Refining a partition can only help. And the loss is governed
-              entirely by how the <em>score</em> varies inside each cell, not by how the observation
-              does — a bin that is narrow in the measurement but flat in s costs almost nothing,
-              while a bin that looks perfectly reasonable on a histogram but straddles a region
-              where s swings costs a great deal. Equal-width and equal-population rules know nothing
-              about s, which is why their loss is arbitrary with respect to the quantity anyone
-              actually cares about.
-            </p>
-            <p>
-              ScoreQuant optimizes in score space, where that identity is written. Score space also
-              has one coordinate per parameter however many measurement variables an event carries,
-              so a forty-channel measurement feeding a two-parameter fit is a two-dimensional
-              problem.
+              ScoreQuant optimizes in score space, where that identity is written, with one
+              coordinate per parameter however many measurement variables an event carries. The
+              figure shows a committed fixture: points coloured by their label, the cell regions of
+              the compiled rule, and the D-efficiency those labels retain. Refitting it in your
+              browser runs the same solver on the same points.
             </p>
           </div>
           <ScoreSpaceLiveFit />

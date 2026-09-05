@@ -162,6 +162,32 @@ def _research_data() -> list[dict[str, object]]:
     ]
 
 
+#: Grid resolution for the rasterized cell regions ``ScoreSpace.tsx`` draws behind the points.
+_REGION_GRID_NX = 72
+_REGION_GRID_NY = 48
+
+
+def _display_window(points: np.ndarray, quantile: float) -> tuple[float, float, float, float]:
+    """Return the raw-coordinate display window ``(x0, x1, y0, y1)`` the plot fits to.
+
+    Mirrors ``makeProjector`` in ``ScoreSpace.tsx`` exactly, including its
+    ``pad = (high - low) * 0.08 or 1`` fallback: per axis, the window is the
+    ``quantile``/``1 - quantile`` interval of ``points`` padded by 8% of its
+    span, so a region grid built on this window lines up pixel-for-pixel with
+    what the TS projector draws.
+    """
+    bounds: list[tuple[float, float]] = []
+    for axis in range(2):
+        values = np.sort(points[:, axis])
+        count = values.shape[0]
+        low = float(values[int(np.floor((count - 1) * quantile))])
+        high = float(values[int(np.ceil((count - 1) * (1 - quantile)))])
+        pad = (high - low) * 0.08 or 1.0
+        bounds.append((low - pad, high + pad))
+    (x0, x1), (y0, y1) = bounds
+    return x0, x1, y0, y1
+
+
 def _score_space_data() -> dict[str, object]:
     rng = np.random.default_rng(28)
     scores = np.concatenate(
@@ -182,11 +208,49 @@ def _score_space_data() -> dict[str, object]:
             config=sq.DExchangeConfig(seed=28, initializer_restarts=2, max_scans=120),
             execution=execution,
         )
+        # Every committed fixture is exchange-stable and nonsingular, so Theorem 3
+        # compiles it into the canonical Mahalanobis rule; ``compile_quantizer``
+        # itself raises a clear ``RefusalError`` if a future fixture is not, rather
+        # than this generator silently skipping the region export.
+        quantizer = result.compile_quantizer()
+        predicted = quantizer.predict_scores(scores)
+        if not np.array_equal(predicted, result.labels):
+            raise RuntimeError(
+                f"compiled quantizer for n_bins={n_bins} disagrees with the fitted "
+                "partition's own labels; the committed fixture is no longer a "
+                "self-consistent Mahalanobis Voronoi partition"
+            )
+        if quantizer.metric is None:
+            raise RuntimeError(
+                f"compiled quantizer for n_bins={n_bins} carries no Mahalanobis metric"
+            )
+        x0, x1, y0, y1 = _display_window(np.concatenate([scores, result.cell_score_means]), 0.01)
+        nx, ny = _REGION_GRID_NX, _REGION_GRID_NY
+        cell_x = x0 + (np.arange(nx) + 0.5) * (x1 - x0) / nx
+        cell_y = y0 + (np.arange(ny) + 0.5) * (y1 - y0) / ny
+        grid_x, grid_y = np.meshgrid(cell_x, cell_y)
+        grid_points = np.stack([grid_x.ravel(), grid_y.ravel()], axis=1)
+        region_labels = quantizer.predict_scores(grid_points)
+        # One digit per grid cell keeps the committed JSON and the home-page bundle
+        # small: 3,456 cells serialize to one short string instead of 3,456 lines.
+        if n_bins > 10:
+            raise RuntimeError("region labels are exported as single digits; n_bins must be <= 10")
+        region_digits = "".join(str(int(label)) for label in region_labels)
         scenarios[str(n_bins)] = {
             "labels": result.labels.tolist(),
             "centers": result.cell_score_means.tolist(),
             "retention": result.train_report.geometric_mean_retention,
             "objective": result.objective,
+            "regions": {
+                "x0": x0,
+                "x1": x1,
+                "y0": y0,
+                "y1": y1,
+                "nx": nx,
+                "ny": ny,
+                "labels": region_digits,
+            },
+            "metric": quantizer.metric.tolist(),
         }
     return {"points": scores.tolist(), "weights": weights.tolist(), "scenarios": scenarios}
 
@@ -258,6 +322,7 @@ def _rewrite_solver_matrix_docs(rows: list[dict[str, object]]) -> None:
     _rewrite_generated_region(ROOT / "docs" / "method.md", plain_table)
     _rewrite_generated_region(ROOT / "README.md", contract_table)
     _rewrite_generated_region(ROOT / "docs" / "book" / "ch06-two-tasks.md", plain_table)
+    _rewrite_generated_region(ROOT / "docs" / "api.md", contract_table)
 
 
 def main() -> None:

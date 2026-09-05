@@ -29,10 +29,23 @@ export interface ResearchClaim {
   title: string;
 }
 
+export interface ScoreRegions {
+  /** One digit per grid cell, row-major (`ny` rows of `nx`); decode with `charCodeAt(i) - 48`. */
+  labels: string;
+  nx: number;
+  ny: number;
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+}
+
 export interface ScoreScenario {
   centers: number[][];
   labels: number[];
+  metric?: number[][];
   objective: number;
+  regions?: ScoreRegions;
   retention: number;
 }
 

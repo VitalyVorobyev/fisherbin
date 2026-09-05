@@ -66,11 +66,10 @@ const SCANNED = [
 
 test("home states the problem and then measures it", async ({page}) => {
   await page.goto("./");
-  // Both assertions deliberately target that shape rather than a slogan: S10
-  // removed the hero line and the proof strip these used to check, and
-  // replacing them with the problem statement and the measured comparison
-  // keeps the coverage pointed at what the page is now for.
-  await expect(page.getByRole("heading", {name: /Some analyses have to bin/})).toBeVisible();
+  // The assertions target the page's shape rather than a slogan: the opening
+  // names the task (labels for the parameters you estimate), the figure shows
+  // the committed partition, and the comparison is the measured one.
+  await expect(page.getByRole("heading", {name: /Choose K labels for the parameters/})).toBeVisible();
   await expect(page.getByRole("img", {name: /Score-space partition/})).toBeVisible();
   await expect(page.getByText("ScoreQuant, same data, same bin budget")).toBeVisible();
 });

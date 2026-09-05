@@ -226,7 +226,7 @@ assert ratios[-1] > 0.99
 print([round(ratio, 5) for ratio in ratios])
 ```
 
-It also guarantees something the optimal rule does not: every cell holds the same number of
+It also guarantees something the information-optimized rule does not: every cell holds the same number of
 events, so no downstream statistic is computed from a nearly empty bin. When occupancy is a
 hard requirement, spending 2% of the information to buy it is usually the right trade.
 
