@@ -11,14 +11,13 @@ the whole branch, not one OP leaf. OP numbers are stable ids; claim
 
 ## Current work limit (5 September 2026)
 
-One scientific question is active: **P2, true-score information evaluation
-of a frozen quantizer fitted from estimated scores**, as scoped in
-`WORK/active/SCORE-ORACLE-ROBUSTNESS.md`. Its next deliverable is a conditional scalar
-retention interval, a restricted subresult of P4 `OPEN-RETENTION-UNCERTAINTY`; it does not
-close P2 perturbation or calibration questions. The first result must change what a
-user can conclude from an independent evaluation sample. Boundary movement,
-refitting stability, and end-to-end classifier calibration are subsequent
-questions, not prerequisites for that first result.
+No scientific question is active. The P2 packet `SCORE-ORACLE-ROBUSTNESS` closed on 5 September
+2026 (`WORK/completed/SCORE-ORACLE-ROBUSTNESS.md`) with the conditional scalar retention
+interval **proved** as a bridge (`RETENTION-PLUGIN-CLT-FROZEN-SCALAR`, O6): a user with an
+independent oracle-score evaluation sample can now put a valid \(n^{-1/2}\) error bar on the
+true retention of a frozen rule and see the proxy surrogate's discrepancy as bias outside that
+bar. P2's perturbation and calibration questions (OP17, OP18) and P4's `OPEN-RETENTION-UNCERTAINTY`
+remainder stay open; the next packet is chosen explicitly (see `PLAYBOOK.md`), not resumed.
 
 OP31 and `WORK/active/DS-TILT-DUAL-EXACT-COMPLEXITY.md` are **parked until an
 explicit reopening decision**. The packet remains at its existing path to
@@ -47,9 +46,11 @@ the projected efficient-score route where authorized, otherwise refuse. The reco
 # P2 · SCORE-ORACLE-ROBUSTNESS — estimated scores and classifiers
 
 *Descends from research-plan-proposal.md Session 10.*
-*First payoff: a defensible evaluation statement when independent true scores are available;
-uncertainty on real data without that oracle remains a separate question. Active packet:
-`WORK/active/SCORE-ORACLE-ROBUSTNESS.md`.*
+*First payoff delivered 5 September 2026 (`WORK/completed/SCORE-ORACLE-ROBUSTNESS.md`,
+`RETENTION-PLUGIN-CLT-FROZEN-SCALAR`, O6): with an independent oracle-score evaluation sample, the
+true scalar retention of a frozen rule carries a valid \(n^{-1/2}\) Wald interval, and the proxy
+surrogate's discrepancy is bias the interval excludes. Uncertainty on real data without that oracle
+remains a separate question (OP17, OP18, OP27).*
 
 ## OP17. Perturbation theory for estimated scores
 
@@ -144,6 +145,15 @@ Every retention number the library reports is a point estimate. Develop
 influence-function or bootstrap confidence intervals for retention
 functionals (e.g. geometric-mean retention), handling the non-smoothness of
 hard assignment at cell boundaries. Pairs naturally with OP17.
+
+*Special case settled 5 September 2026 (`RETENTION-PLUGIN-CLT-FROZEN-SCALAR`, O6): frozen rule,
+scalar true score, iid equally weighted oracle-score evaluation sample — plug-in ratio, delta-method
+CLT, consistent influence-function variance, Wald interval valid iff \(\sigma^2>0\). Remaining:
+vector scores and \((\det R)^{1/d}\) as a matrix functional of the same moments; rules refitted on
+the evaluation sample (where the boundary non-smoothness actually enters); weights; no oracle;
+the degenerate limit of \(n(\hat\eta-\eta)\) when \(\sigma^2=0\) (\(\eta\in\{0,1\}\) or two-atom cells).
+Audited 5 September 2026 (`AUDITS/AUDIT-SCORE-ORACLE-ROBUSTNESS-001.md`): verified with the (A4)
+wording hardened at \(\eta=0\).*
 
 ---
 

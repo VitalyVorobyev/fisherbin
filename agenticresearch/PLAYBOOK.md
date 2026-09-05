@@ -6,10 +6,13 @@ not authorization to resume it. One session executes one selected packet.
 ## Next session
 
 ```text
-Execute agenticresearch/WORK/active/SCORE-ORACLE-ROBUSTNESS.md.
-Follow agenticresearch/README.md and protocols/theorem.md.
-Derive the frozen-rule scalar retention uncertainty result, run its one falsification/
-coverage experiment, and stop at proved, refuted or reduced. No new public API.
+Execute agenticresearch/WORK/active/RETENTION-PLUGIN-VECTOR.md in a fresh context.
+Check out branch score-oracle-robustness at its tip (the AUDIT-SCORE-ORACLE-ROBUSTNESS
+commit). Follow agenticresearch/README.md and protocols/theorem.md: falsify in exact
+arithmetic before proving, derive the matrix influence function of the geometric-mean
+retention yourself, and stop at proved, reduced or refuted with the O7 section, the
+claim nodes and the measured table. No src/ change, no public API. Close with a
+plain-English report of what was proved and what remains.
 ```
 
 ## Other session types

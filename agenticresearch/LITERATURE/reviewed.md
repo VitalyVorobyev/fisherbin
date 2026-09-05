@@ -324,3 +324,26 @@ path. One scope repair: the exact-computation clause of
 complexity (audit proof); `OPEN-DS-TILT-DUAL-EXACT-COMPLEXITY` is narrowed
 accordingly. One complexity repair: fixed-tilt evaluation is \(O(KN)\) after
 sorting.
+
+## Round 10 — AUDIT-SCORE-ORACLE-ROBUSTNESS (5 September 2026)
+
+Independent audit triangulation for `RETENTION-PLUGIN-CLT-FROZEN-SCALAR`;
+table in `audits/AUDIT-SCORE-ORACLE-ROBUSTNESS-5-September-2026.md`.
+
+- **Bhattacharya & Ghosh (1978), `Bhattacharya-Ghosh-1978`:** abstract read;
+  Edgeworth validity for smooth functions of sample moments — backdrop of
+  the O6.7 second-order readings.
+- **Hall (1992), `Hall-1992`:** record only; studentized-statistic skewness
+  in the smooth function model explains the measured sign flip.
+- **Donner & Koval (1980), `Donner-Koval-1980`:** journal record; the
+  nearest applied delta-method ratio variance (normal random effects).
+- Verification notes corrected on `vanderVaart-1998` (Thm 3.1 primary
+  text; Example 3.2; Ch. 20), `Cramer-1946` (Ch. 28 §28.4 primary text),
+  `Serfling-1980` (theorem labels unresolved), `Hampel-Ronchetti-Rousseeuw-Stahel-1986`
+  (p. 85, §2.1, secondary).
+
+### Search verdict
+
+Method prior art; the exact fixed-partition uncentred statement is a search
+gap; no re-attribution.
+

@@ -107,4 +107,10 @@ novelty for a known result. Applied revisions and the remaining debt are recorde
 `WORK/completed/MANUSCRIPT-V9-AUDIT.md`. Two bibliographic items stay unverified (a Haynsworth
 1968 attribution key; the Jakubowski 2021 volume details). Results proved after 3 September 2026
 are in the registry only; the next revision is written when a publication decision requires it.
+Registry-only since then: O6 (`RETENTION-PLUGIN-CLT-FROZEN-SCALAR`, 5 September 2026) — a
+delta-method error bar for true scalar retention under a frozen rule; a v10 would cite it beside
+the door3 surrogate-gap discussion, as a bridge, not as novelty. Independently audited 5 September
+2026 (`AUDITS/AUDIT-SCORE-ORACLE-ROBUSTNESS-001.md`): verified; the \(\sigma^2=0\) characterisation
+is corrected at \(\eta=0\) (no two-atom restriction there, atomless cells do not rescue (A4)) — any
+v10 text must carry the hardened statement; no re-attribution to prior art.
 The dated staleness log that preceded this section is `../archive/manuscript-staleness-log.md`.

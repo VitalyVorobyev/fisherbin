@@ -23,6 +23,7 @@
 - `topics/05-hep-inference-aware.md` — 5. Inference-aware summaries and HEP categorization
 - `topics/06-software-landscape.md` — 6. Software landscape
 - `topics/07-score-compression.md` — 9. Additional score-compression and ratio-estimation sources (v2 update)
+- `topics/08-plug-in-asymptotics.md` — 10. Plug-in asymptotics for retention functionals
 
 ## 7. Paper reading order for literature study
 

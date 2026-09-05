@@ -85,3 +85,10 @@ Communities, venues, or periods suspected under-covered by the current graph.
   strata and may hold a rigidity lemma in exactly the form DS18 needs. It sits
   on a terminology island from the quantization literature and is invisible to
   the standing vocabulary in `protocols/literature.md`.
+- **Two unresolved primary-text items for O6 (5 September 2026 audit).**
+  Serfling (1980) §3.3: which of Theorem A / Theorem B is the real-valued
+  delta method needing only differentiability at the point; Kendall &
+  Stuart Vol. 2 Ch. 26: the section giving the correlation ratio's
+  large-sample variance and whether a non-normal moment-based form exists.
+  Both need a physical or lending copy; every web route returned no text.
+
