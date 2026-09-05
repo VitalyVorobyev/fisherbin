@@ -1,7 +1,7 @@
 /* Generated from schema/lab-protocol.schema.json. Do not edit. */
 
 /**
- * Versioned backend-neutral request and event contract for the ScoreQuant browser lab. Version 2 admits a named score schema, a criterion selection including profiled D_s, and score spaces up to six dimensions so real mixture scores fit.
+ * Versioned backend-neutral request and event contract for the ScoreQuant browser lab. Version 3 admits a choice of public task (fit_quantizer or optimize_partition), efficient-score-bound initialization, and a named profiled-retention report, and raises the score table ceiling to 8,000 rows.
  */
 export type LabProtocol = LabRunRequest | LabEvent;
 /**
@@ -19,7 +19,7 @@ export type ScoreRow =
   | [number, number, number, number, number, number];
 
 export interface LabRunRequest {
-  protocolVersion: 2;
+  protocolVersion: 3;
   type: "run";
   runId: string;
   runner: "fixture" | "pyodide-numpy" | "remote-jax" | "remote-pytorch";
@@ -27,11 +27,11 @@ export interface LabRunRequest {
 }
 export interface LabProblem {
   /**
-   * @maxItems 5000
+   * @maxItems 8000
    */
   scores: ScoreRow[];
   /**
-   * @maxItems 5000
+   * @maxItems 8000
    */
   weights: number[];
   nBins: number;
@@ -57,6 +57,28 @@ export interface LabProblem {
    * Identifier of the score table the request was built from, recorded for provenance.
    */
   datasetId?: string;
+  /**
+   * Which public task to run. Absent means fit_quantizer (v2 semantics).
+   */
+  task?: "fit_quantizer" | "optimize_partition";
+  /**
+   * Seed the exchange from efficient_score_bound(...).labels; only with task optimize_partition and a profiled criterion.
+   */
+  initialization?: "efficient_score_bound";
+  report?: {
+    /**
+     * Report the profiled retention of the result for these parameters of interest, resolved against schema, whatever criterion was solved.
+     *
+     * @minItems 1
+     * @maxItems 5
+     */
+    profiledInterest?:
+      | [string]
+      | [string, string]
+      | [string, string, string]
+      | [string, string, string, string]
+      | [string, string, string, string, string];
+  };
 }
 /**
  * The objective to optimize. Profiled D_s requires parameters of interest.
@@ -77,7 +99,7 @@ export interface LabCriterion {
     | [string, string, string, string, string];
 }
 export interface LabEvent {
-  protocolVersion: 2;
+  protocolVersion: 3;
   runId: string;
   type: "ready" | "progress" | "result" | "error" | "cancelled";
   stage?: string;
@@ -99,4 +121,12 @@ export interface LabResult {
    * Parameters of interest, echoed back by name when the criterion profiled.
    */
   interest?: string[];
+  /**
+   * Profiled retention for report.profiledInterest, whatever criterion the result was solved against.
+   */
+  profiledRetention?: number;
+  /**
+   * Whether the result is exchange-stable. optimize_partition only.
+   */
+  exchangeStable?: boolean;
 }

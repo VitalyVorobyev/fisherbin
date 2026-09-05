@@ -229,8 +229,8 @@ export default function Home(): React.JSX.Element {
               The Lab loads ScoreQuant into your browser and fits a partition there, on the same
               NumPy backend the library ships.
             </p>
-            <Link className="plain-link" to="/lab?job=ratios">
-              Open a prefilled run →
+            <Link className="plain-link" to="/lab">
+              Open the lessons →
             </Link>
           </article>
           <article className="exit">

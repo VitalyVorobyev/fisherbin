@@ -18,6 +18,9 @@ once already, which retroactively asserted that unshipped work had shipped.
   surfaces; the MkDocs documentation is mounted at `docs/` with *Why ScoreQuant*, *Three doors*
   and *Choosing your workflow* restored to it; the portal is published unchanged at `portal/`.
   The package's Documentation URL now points at `docs/`; every pre-portal URL still redirects.
+- The portal's free-form Lab console (solver pickers, file upload, notebook embed) is removed;
+  `/portal/lab/` is a lesson index and browser computation is reached only through a lesson's
+  experiment (ADR 0029).
 
 ## [0.2.0] — 2026-09-04
 

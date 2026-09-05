@@ -102,9 +102,9 @@
 .filter-row--tight .filter-chip { display: flex; flex-direction: column; gap: 1px; align-items: flex-start; padding: 6px 10px; line-height: 1.25; }
 .filter-row--tight .filter-chip small { color: var(--ink-600); font-size: 10px; }
 
-/* Visually hidden but reachable: the file input is triggered by its chip, and
-   removing it from the accessibility tree would remove the only control a
-   keyboard or screen-reader user has for choosing a file. */
+/* Visually hidden but reachable: headings that only structure the page for
+   assistive technology, and the text alternatives charts render beside their
+   SVG. */
 .visually-hidden {
   position: absolute;
   overflow: hidden;
@@ -113,3 +113,34 @@
   height: 1px;
   white-space: nowrap;
 }
+
+/* Lesson index (`pages/lab.tsx`). Cards are prose-width contracts, not tiles:
+   the reader is choosing by the shape of a problem, which takes sentences. */
+.lessons-order { padding: 0 0 40px; }
+.lesson-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 0; padding: 0; counter-reset: lesson-step; list-style: none; }
+.lesson-steps li { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--border); background: var(--surface-raised); counter-increment: lesson-step; }
+.lesson-steps li::before { color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; content: "0" counter(lesson-step); }
+.lesson-steps strong { font-family: var(--font-heading); font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+.lesson-steps span { color: var(--text-muted); font-size: 13px; line-height: 1.45; }
+.lessons-list, .lessons-runtime { padding: clamp(40px, 4.2vw, 60px) 0; }
+.lesson { padding: 30px 0 34px; border-top: 1px solid var(--border); }
+.lesson:first-of-type { border-top: 0; padding-top: 0; }
+.lesson__head h2 { margin: 6px 0 10px; font-family: var(--font-heading); font-size: clamp(24px, 2.6vw, 32px); font-weight: 580; letter-spacing: -.035em; line-height: 1.1; }
+.lesson__head h2 a { color: var(--text); }
+.lesson__head h2 a:hover { color: var(--accent-strong); text-decoration: underline; text-underline-offset: 5px; }
+.lesson__status { color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+.lesson__status--complete { color: var(--accent-strong); }
+.lesson__question { max-width: var(--reading); margin: 0 0 20px; color: var(--ink-700); font-size: 16px; line-height: 1.6; }
+.lesson__contract { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0 40px; margin: 0 0 18px; padding: 0; border-top: 1px solid var(--border); }
+.lesson__contract > div { display: grid; grid-template-columns: minmax(120px, 150px) minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.lesson__contract dt { margin: 0; color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; line-height: 1.6; text-transform: uppercase; }
+.lesson__contract dd { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.55; }
+.lesson__contract .lesson__browser dd { color: var(--text); }
+.lessons-matrix { overflow-x: auto; margin: 28px 0 22px; }
+/* Infima makes every `table` its own scroll container; the focusable wrapper
+   above is the one that scrolls, so the table must lay out as a table. */
+.lessons-matrix table { display: table; overflow: visible; width: 100%; border-collapse: collapse; font-size: 14px; }
+.lessons-matrix caption { padding: 0 0 10px; color: var(--text-muted); font-size: 13px; text-align: left; }
+.lessons-matrix th, .lessons-matrix td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; line-height: 1.45; }
+.lessons-matrix th { color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+.lessons-matrix td:last-child { color: var(--text-muted); }

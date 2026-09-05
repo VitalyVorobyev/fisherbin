@@ -49,8 +49,8 @@ HISTOGRAM_BINS = 32
 #: Bin budget the study reports as its operating point.
 OPERATING_BINS = 8
 
-#: Rows handed to the browser. The Lab caps a run at 5,000 rows; a stratified
-#: subsample of that size keeps every population represented.
+#: Rows handed to the browser. The Lab caps a run at 8,000 rows; a stratified
+#: subsample of this size keeps every population represented.
 LAB_ROWS = 5_000
 
 #: Score column names. The mixture score absorbs one component as the

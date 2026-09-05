@@ -4,7 +4,7 @@ import {useColorMode} from "@docusaurus/theme-common";
 import clsx from "clsx";
 import {useEffect, useState} from "react";
 
-import {isActiveNavEntry, isLabRoute} from "../lib/navigation";
+import {isActiveNavEntry} from "../lib/navigation";
 import {REFERENCE_BASE} from "../lib/site";
 import {LiveFitProvider} from "./liveFit/LiveFitProvider";
 import {Logo} from "./Logo";
@@ -13,7 +13,7 @@ import {SearchDialog} from "./SearchDialog";
 const navigation = [
   ["Get started", "/get-started"],
   ["Walkthroughs", "/walkthroughs"],
-  ["Lab", "/lab"],
+  ["Lessons", "/lab"],
   ["API", "/api"],
   ["Research", "/research"],
   ["Benchmarks", "/benchmarks"],
@@ -52,7 +52,6 @@ interface AppShellProps {
 
 export function AppShell({children}: AppShellProps): React.JSX.Element {
   const {pathname} = useLocation();
-  const lab = isLabRoute(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -69,7 +68,7 @@ export function AppShell({children}: AppShellProps): React.JSX.Element {
 
   return (
     <LiveFitProvider>
-      <div className={clsx("site-shell", lab && "site-shell--lab")}>
+      <div className="site-shell">
         <a className="skip-link" href="#main-content">Skip to content</a>
         <header className="site-header">
           <div className="site-header__inner">
@@ -97,7 +96,6 @@ export function AppShell({children}: AppShellProps): React.JSX.Element {
                 <span aria-hidden="true">⌕</span><span>Search</span><kbd>⌘ K</kbd>
               </button>
               <ThemeToggle />
-              <Link className="lab-link" to="/lab">Open Lab <span aria-hidden="true">↗</span></Link>
               <button
                 className="menu-trigger"
                 aria-expanded={menuOpen}
@@ -110,21 +108,19 @@ export function AppShell({children}: AppShellProps): React.JSX.Element {
           </div>
         </header>
         <main id="main-content" data-pagefind-body>{children}</main>
-        {!lab && (
-          <footer className="site-footer">
-            <div>
-              <Logo />
-              <p>Hard bins, and a measurement of what the binning cost.</p>
-            </div>
-            <div className="site-footer__links">
-              <span>Learn</span><Link to="/get-started">Get started</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/blog">Blog</Link>
-            </div>
-            <div className="site-footer__links">
-              <span>Reference</span><a href={REFERENCE_BASE}>Documentation</a><a href="https://github.com/VitalyVorobyev/scorequant">GitHub</a>
-            </div>
-            <small>Open source · research provenance is explicit · no browser data leaves your device</small>
-          </footer>
-        )}
+        <footer className="site-footer">
+          <div>
+            <Logo />
+            <p>Hard bins, and a measurement of what the binning cost.</p>
+          </div>
+          <div className="site-footer__links">
+            <span>Learn</span><Link to="/get-started">Get started</Link><Link to="/walkthroughs">Walkthroughs</Link><Link to="/blog">Blog</Link>
+          </div>
+          <div className="site-footer__links">
+            <span>Reference</span><a href={REFERENCE_BASE}>Documentation</a><a href="https://github.com/VitalyVorobyev/scorequant">GitHub</a>
+          </div>
+          <small>Open source · research provenance is explicit · no browser data leaves your device</small>
+        </footer>
         <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
       </div>
     </LiveFitProvider>

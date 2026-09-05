@@ -61,7 +61,8 @@ const SCANNED = [
   "./walkthroughs/flowcyt/",
   "./walkthroughs/hep/",
   "./walkthroughs/michelson/",
-  "./walkthroughs/ratios/"
+  "./walkthroughs/ratios/",
+  "./lab/"
 ];
 
 test("home states the problem and then measures it", async ({page}) => {
@@ -124,32 +125,6 @@ test("core learning routes render and search opens from the keyboard", async ({p
   await expect(page.getByRole("link", {name: /ExecutionConfig/})).toBeVisible();
 });
 
-test("fixture lab runs without loading Pyodide and mobile panels remain reachable", async ({page}) => {
-  const pyodideRequests: string[] = [];
-  page.on("request", (request) => {
-    if (/pyodide|scorequant-.*\.whl/.test(request.url())) pyodideRequests.push(request.url());
-  });
-  await page.goto("./lab/");
-  if ((page.viewportSize()?.width ?? 1000) < 820) await page.getByRole("button", {name: "controls"}).click();
-  await page.getByRole("button", {name: /Load verified result/}).click();
-  if ((page.viewportSize()?.width ?? 1000) < 820) {
-    await page.getByRole("button", {name: "diagnostics"}).click();
-    await expect(page.getByText("Retained information")).toBeVisible();
-  }
-  await expect(page.getByText("complete", {exact: true})).toBeVisible();
-  expect(pyodideRequests).toEqual([]);
-});
-
-test("the native browser runner executes the local ScoreQuant wheel", async ({page}, testInfo) => {
-  test.skip(testInfo.project.name !== "desktop", "One cold-runtime smoke test is sufficient.");
-  test.setTimeout(120_000);
-  await page.goto("./lab/");
-  await page.getByLabel("Runner").selectOption("pyodide-numpy");
-  await page.getByRole("button", {name: "Run locally"}).click();
-  await expect(page.getByText("complete", {exact: true})).toBeVisible({timeout: 110_000});
-  await expect(page.getByText("numpy/float64/cpu", {exact: true})).toBeVisible();
-});
-
 test("the get-started LiveFit demo stays behind its click, then actually reaches the runtime", async ({page}, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "One activation-gated runtime pass is sufficient.");
   test.setTimeout(120_000);
@@ -179,26 +154,6 @@ test("the get-started LiveFit demo stays behind its click, then actually reaches
   expect(heavyRequests.length).toBeGreaterThan(0);
   const liveValue = await page.locator(".live-fit__result--live .live-fit__value").innerText();
   expect(liveValue).toBe(committedValue);
-});
-
-test("lab validation, cancellation, and lazy lesson states are explicit", async ({page}, testInfo) => {
-  test.skip(testInfo.project.name !== "desktop", "Desktop covers worker controls; mobile tabs are covered separately.");
-  await page.goto("./lab/");
-  await page.route("**/runtime/manifest.json", async (route) => route.abort());
-  await page.getByLabel("Runner").selectOption("pyodide-numpy");
-  await page.getByRole("button", {name: "Run locally"}).click();
-  await expect(page.getByText(/runtime manifest is unavailable|Failed to fetch/)).toBeVisible();
-
-  await page.unroute("**/runtime/manifest.json");
-  await page.getByRole("button", {name: "Run locally"}).click();
-  await page.getByRole("button", {name: "Cancel and terminate worker"}).click();
-  await expect(page.getByText("cancelled", {exact: true})).toBeVisible();
-
-  await page.getByRole("button", {name: "Load marimo lesson"}).click();
-  await expect(page.getByTitle("ScoreQuant marimo lesson")).toHaveAttribute(
-    "src",
-    "/scorequant/portal/lessons/score-space/"
-  );
 });
 
 test("the flowcyt walkthrough tells the study end to end without loading a runtime", async ({page}) => {
@@ -237,85 +192,14 @@ test("the flowcyt walkthrough tells the study end to end without loading a runti
   expect(accessibility.violations).toEqual([]);
 });
 
-test("the lab runs the study's real five-dimensional scores, warm on the second run", async ({page}, testInfo) => {
-  test.skip(testInfo.project.name !== "desktop", "One cold-runtime pass is enough; it costs a Pyodide bootstrap.");
-  test.setTimeout(300_000);
-  await page.goto("./lab/");
-
-  // The score table is fetched only when chosen, so the fixture path stays free.
-  await page.getByRole("button", {name: /FlowCyt scores/}).click();
-  await expect(page.getByText(/5 dimensions/)).toBeVisible({timeout: 30_000});
-
-  await page.getByLabel("Criterion").selectOption("profiled_d_optimality");
-  await page.getByRole("button", {name: "HSPCs", exact: true}).click();
-  await page.getByLabel("Solver").selectOption("soft_voronoi");
-  await page.getByLabel("Runner").selectOption("pyodide-numpy");
-
-  await page.getByRole("button", {name: "Run locally"}).click();
-  // Waiting only for "complete" turns any refusal into a full timeout, which
-  // reads as a hang and hides the message that would explain it.
-  await expect(page.locator(".lab-state")).toHaveText(/complete|error/, {timeout: 280_000});
-  await expect(page.locator(".lab-state")).toHaveText("complete");
-
-  // The reported retention must be the profiled one, and must say so: the
-  // full-D retention of a D_s fit answers a different question.
-  await expect(page.getByText(/Profiled D_s \(HSPCs\)/)).toBeVisible();
-  await expect(page.getByText("numpy/float64/cpu", {exact: true})).toBeVisible();
-
-  // A second run reuses the warmed runtime rather than reinstalling the wheel.
-  const started = Date.now();
-  await page.getByRole("button", {name: "Run locally"}).click();
-  await expect(page.locator(".lab-state")).toHaveText(/complete|error/, {timeout: 120_000});
-  await expect(page.locator(".lab-state")).toHaveText("complete");
-  await expect(page.getByText(/warm — reruns skip the cold start/)).toBeVisible();
-  testInfo.annotations.push({type: "warm-run-ms", description: String(Date.now() - started)});
-});
-
-test("a local file is read in the tab and validated before anything runs", async ({page}, testInfo) => {
-  test.skip(testInfo.project.name !== "desktop", "One file-handling pass is sufficient.");
-  await page.goto("./lab/");
-
-  const uploads: string[] = [];
+test("the lessons page lists one lesson per walkthrough and loads no runtime", async ({page}) => {
+  const heavyRequests: string[] = [];
   page.on("request", (request) => {
-    if (request.method() === "POST" || request.method() === "PUT") uploads.push(request.url());
+    if (/pyodide|marimo|scorequant-.*\.whl/.test(request.url())) heavyRequests.push(request.url());
   });
-
-  await page.setInputFiles('input[type="file"]', {
-    name: "scores.csv",
-    mimeType: "text/csv",
-    buffer: Buffer.from("alpha,beta,weight\n1,2,1\n2,1,1\n0.5,0.4,2\n-1,0.2,1\n"),
-  });
-  await expect(page.getByText("scores.csv")).toBeVisible();
-  await expect(page.getByText(/4 rows · 2 dimensions/)).toBeVisible();
-
-  // The header row became the score schema, so profiling can name a column.
-  await page.getByLabel("Criterion").selectOption("profiled_d_optimality");
-  await expect(page.getByRole("button", {name: "alpha", exact: true})).toBeVisible();
-
-  // A malformed file is refused with the row that caused it, not a generic failure.
-  await page.setInputFiles('input[type="file"]', {
-    name: "broken.csv",
-    mimeType: "text/csv",
-    buffer: Buffer.from("a,b\n1,2\n3,oops\n"),
-  });
-  await expect(page.getByText(/Row 3 contains a non-numeric value/)).toBeVisible();
-
-  // Nothing was sent anywhere: there is no server to send it to.
-  expect(uploads).toEqual([]);
-});
-
-test("?job=ratios seeds the Lab's controls before any interaction", async ({page}, testInfo) => {
-  test.skip(testInfo.project.name !== "desktop", "One seeded-hand-off pass is sufficient.");
-  await page.goto("./lab/?job=ratios");
-
-  // The dataset switched away from the default Gaussian fixture without a
-  // click: this is the ratios walkthrough's own committed score table.
-  await expect(page.getByText("Density-ratio classifier scores")).toBeVisible();
-  await expect(page.getByText(/600 rows · 1 dimensions/)).toBeVisible();
-
-  // The runner seeded to the browser runtime: "fixture" only covers the
-  // built-in Gaussian table, which this job is not.
-  await expect(page.getByLabel("Runner")).toHaveValue("pyodide-numpy");
-  await expect(page.locator(".lab-field--range input[type='range']")).toHaveValue("4");
-  await expect(page.getByLabel("Criterion")).toHaveValue("d_optimality");
+  await page.goto("./lab/");
+  await expect(page.getByRole("heading", {name: /One dataset, one task/, level: 1})).toBeVisible();
+  const walkthroughLinks = page.locator('a[href*="/walkthroughs/"]');
+  expect(await walkthroughLinks.count()).toBeGreaterThanOrEqual(4);
+  expect(heavyRequests).toEqual([]);
 });

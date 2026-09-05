@@ -186,7 +186,6 @@ const config: Config = {
             "./src/css/components.css",
             "./src/css/home.css",
             "./src/css/instruments.css",
-            "./src/css/lab.css",
             "./src/css/responsive.css",
             "./src/css/prose.css",
             "./src/css/charts.css",

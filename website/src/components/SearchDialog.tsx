@@ -36,7 +36,7 @@ const routes = [
   ["Walkthroughs", "/walkthroughs", "One applied question followed end to end, with real numbers."],
   ["Benchmarks", "/benchmarks", "Compare speed, scale, and retained information."],
   ["Research", "/research", "Follow claims, dependencies, and counterexamples."],
-  ["Lab", "/lab", "Run ScoreQuant locally in the browser."]
+  ["Lessons", "/lab", "One dataset and one task, taught in order; the browser runs at the end."]
 ] as const;
 
 export function SearchDialog({open, onClose}: SearchDialogProps): React.JSX.Element | null {

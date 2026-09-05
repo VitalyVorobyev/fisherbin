@@ -609,22 +609,17 @@ def build() -> dict[str, object]:
     return {"schemaVersion": 1, "pages": pages}
 
 
-#: Deterministic per-walkthrough score tables for the browser Lab's ``?job=``
-#: hand-off. Each slug is written to
-#: ``website/static/walkthrough-scores/<slug>.json`` in
-#: exactly the shape ``ScoreTable`` consumes
-#: (``website/src/lab/useScoreTable.ts``): ``scores``, ``weights``, plus
-#: ``schema``, ``label`` and ``detail``. FlowCyt is not included: it already
-#: has an on-demand table at ``website/static/showcase-data/flowcyt-scores.json``.
+#: Deterministic per-walkthrough score tables each walkthrough's `LiveFit`
+#: experiment fetches on demand. Each slug is written to
+#: ``website/static/walkthrough-scores/<slug>.json`` in exactly the shape a
+#: ``LiveFit`` problem needs (``website/src/components/liveFit/types.ts``):
+#: ``scores``, ``weights``, plus ``schema``, ``label`` and ``detail``.
+#: FlowCyt is not included: it already has an on-demand table at
+#: ``website/static/showcase-data/flowcyt-scores.json``.
 SCORE_TABLES_OUTPUT = ROOT / "website/static/walkthrough-scores"
 
-#: The committed Lab preset registry the ``?job=<slug>`` query reads:
-#: ``website/src/pages/lab.tsx`` seeds its existing control state from this,
-#: once on mount.
-LAB_PRESETS_OUTPUT = ROOT / "website/src/generated/lab-presets.json"
 
-
-def _round(values: object, digits: int = 6) -> object:
+def _round(values: object, digits: int | None = 6) -> object:
     """Round nested numeric data so a committed score table has no float noise.
 
     Parameters
@@ -632,7 +627,10 @@ def _round(values: object, digits: int = 6) -> object:
     values
         A NumPy array, or a nested Python list/float/int built from one.
     digits
-        Decimal places to round every float to.
+        Decimal places to round every float to. ``None`` keeps full precision:
+        a table a browser run must reproduce *bit for bit* against a committed
+        study (the Michelson sweep) cannot be rounded, because the exchange
+        solver's discrete optimum moves under a 1e-6 perturbation.
 
     Returns
     -------
@@ -645,7 +643,7 @@ def _round(values: object, digits: int = 6) -> object:
     if isinstance(values, list):
         return [_round(item, digits) for item in values]
     if isinstance(values, float | np.floating):
-        return round(float(values), digits)
+        return float(values) if digits is None else round(float(values), digits)
     if isinstance(values, int | np.integer):
         return int(values)
     return values
@@ -730,8 +728,10 @@ def _build_michelson_score_table() -> dict[str, object]:
             f"{rows:,} midpoint-quadrature nodes × {columns} score dimensions · "
             "analytic ScoreFunction, deterministic seed"
         ),
-        "scores": _round(sample.scores),
-        "weights": _round(sample.weights),
+        # Full precision: the lesson's browser refit reproduces the committed
+        # sweep on exactly this table, and `tests/test_browser_lab.py` pins it.
+        "scores": _round(sample.scores, digits=None),
+        "weights": _round(sample.weights, digits=None),
     }
 
 
@@ -787,10 +787,10 @@ def _build_ratios_score_table() -> dict[str, object]:
 def write_walkthrough_score_tables() -> dict[str, int]:
     """Write each walkthrough's deterministic score table to committed JSON.
 
-    The Lab's ``?job=<slug>`` hand-off needs one small, deterministic score table
-    per walkthrough, in exactly the shape ``ScoreTable``
-    (``website/src/lab/useScoreTable.ts``) consumes. FlowCyt is excluded: it
-    already has an on-demand table at
+    Each walkthrough's ``LiveFit`` experiment needs one small, deterministic
+    score table, in exactly the shape a ``LiveFit`` problem
+    (``website/src/components/liveFit/types.ts``) needs. FlowCyt is excluded:
+    it already has an on-demand table at
     ``website/static/showcase-data/flowcyt-scores.json``.
 
     Returns
@@ -810,67 +810,6 @@ def write_walkthrough_score_tables() -> dict[str, int]:
         (SCORE_TABLES_OUTPUT / f"{slug}.json").write_text(payload, encoding="utf-8")
         sizes[slug] = len(payload.encode("utf-8"))
     return sizes
-
-
-def write_lab_presets() -> dict[str, object]:
-    """Write the committed Lab preset registry the ``?job=`` query reads.
-
-    Every value named here is one ``website/src/pages/lab.tsx`` already
-    accepts: ``dataset`` a ``DatasetId`` (``website/src/lab/useScoreTable.ts``)
-    and ``criterion`` a ``LabCriterion["name"]``
-    (``website/src/lab/protocol.generated.ts``), with each ``interest`` name
-    a column in the matching score table's schema.
-
-    Returns
-    -------
-    dict
-        The registry payload, also written to
-        ``website/src/generated/lab-presets.json``.
-    """
-    payload: dict[str, object] = {
-        "hep": {
-            "dataset": "hep",
-            "label": "HEP classifier walkthrough",
-            "bins": 6,
-            "criterion": "profiled_d_optimality",
-            "interest": ["mu_htautau"],
-            "detail": (
-                "Profiled D_s at six bins: mu_htautau against the tes and nu_background nuisances."
-            ),
-        },
-        "michelson": {
-            "dataset": "michelson",
-            "label": "Michelson interferometer phase walkthrough",
-            "bins": 6,
-            "criterion": "profiled_d_optimality",
-            "interest": ["phase"],
-            "detail": "Profiled D_s at six bins: phase against the fringe-frequency nuisance.",
-        },
-        "ratios": {
-            "dataset": "ratios",
-            "label": "Density-ratio classifier ladder walkthrough",
-            "bins": 4,
-            "criterion": "d_optimality",
-            "detail": (
-                "Plain D-optimality at four bins on the ladder's largest-training-set "
-                "classifier-ratio score."
-            ),
-        },
-        "flowcyt": {
-            "dataset": "flowcyt",
-            "label": "FlowCyt walkthrough",
-            "bins": 8,
-            "criterion": "d_optimality",
-            "detail": (
-                "Plain D-optimality at eight bins on the study's five-dimensional mixture score."
-            ),
-        },
-    }
-    LAB_PRESETS_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    LAB_PRESETS_OUTPUT.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    return payload
 
 
 #: Committed example figures the walkthroughs display, copied into the portal's
@@ -898,7 +837,7 @@ def copy_walkthrough_figures() -> None:
 
 
 def main() -> None:
-    """Write the generated walkthrough facts, score tables, and Lab presets."""
+    """Write the generated walkthrough facts and score tables."""
     copy_walkthrough_figures()
     payload = build()
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
@@ -909,9 +848,6 @@ def main() -> None:
     sizes = write_walkthrough_score_tables()
     for slug, size in sorted(sizes.items()):
         print(f"wrote {(SCORE_TABLES_OUTPUT / f'{slug}.json').relative_to(ROOT)} ({size:,} bytes)")
-
-    write_lab_presets()
-    print(f"wrote {LAB_PRESETS_OUTPUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
