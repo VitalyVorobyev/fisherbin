@@ -1,101 +1,55 @@
-# SCORE-ORACLE-ROBUSTNESS — true-score evaluation of a frozen rule
+# SCORE-ORACLE-ROBUSTNESS — uncertainty for a frozen rule
 
-**Programme:** P2 (OPEN_PROBLEMS.md) · **Opened:** 28 Aug 2026 · **Status:** active
-**Scope revised:** 5 September 2026; first deliverable only, not the full P2 programme.
+**Status:** ready for the next derivation session; no result established yet.
+**Execution programme:** P2. **Claim target:** a restricted subresult of
+`OPEN-RETENTION-UNCERTAINTY` (P4), not a resolution of `OPEN-SCORE-PERTURBATION`.
 
-## Scientific question and user decision
+## Question
 
-For a quantizer fitted from estimated scores and then frozen, what can an
-independent evaluation sample with true scores establish about its retained
-Fisher information? The result should tell a user which retention number is
-supported by truth-score evaluation, how uncertain it is, and when the data
-do not support that conclusion.
+Conditional on a fitted score provider and quantizer, can an independent sample with true
+scalar scores support an asymptotically valid confidence interval for retained Fisher information?
+This would separate evaluation uncertainty from the discrepancy between proxy and true information.
 
-Keep the fitted score provider and quantizer fixed. Write
-\(Z=q(\hat s(X))\). The population target is
-\(I_Z=\operatorname{Var}(E[s(X)\mid Z])\) under the stated regular model,
-not the corresponding surrogate computed from \(\hat s\). State the score
-origin, sampling measure, weights, reference point, and conditioning on the
-training data explicitly. Do not center empirical scores to enforce a
-population identity. Explain any finite-sample bias of the estimator rather
-than calling an empirical second moment exact population information.
+Freeze training data, provider, rule, reference point and finite K. Evaluation observations are
+iid, equally weighted pairs \((S_i,Z_i)\), where \(S_i\) is the true score and
+\(Z_i=q(\hat s(X_i))\). Under a regular model, \(E[S]=0\). Target
 
-## Bounded first deliverable
+\[
+p_b=P(Z=b),\quad m_b=E[S\mathbf1_{Z=b}],\quad
+\eta=\frac{\sum_b m_b^2/p_b}{E[S^2]}.
+\]
 
-Use one existing analytic example with true scores and an intentionally
-imperfect score proxy. Fit on training data, freeze the complete rule, and
-evaluate on independent data. Start with a scalar score and full D retention.
-Reuse existing example/evaluation machinery; do not create a general solver
-or a new public API.
+Study the ordinary plug-in ratio of empirical cell moments and the unbinned second moment,
+using the same evaluation sample for both. Never center the empirical scores.
 
-1. Define the cell-moment and retention estimands and estimators. State the
-   treatment of empty or low-mass evaluation cells, singular information,
-   random denominators, and the shared evaluation sample used for the
-   unbinned reference. Start with independent, equal-weight observations;
-   importance weights require their own assumptions.
-2. Establish one quantitative bound or uncertainty statement for this
-   frozen-rule problem with explicit assumptions and constants or a stated
-   asymptotic regime. Distinguish conditional evaluation uncertainty from
-   variation caused by retraining. A bootstrap experiment alone is measured
-   evidence, not a coverage theorem.
-3. Check the statement in a deterministic, seeded falsification experiment
-   against known population quantities. Compare true-score retained
-   information with the proxy surrogate. Report the practical consequence,
-   including when an error bar or a retention comparison is unsupported.
+## One result to attempt
 
-The deliverable is an evaluation result or a precise limitation. It need not
-establish geometric boundary stability, recover representation information
-\(I_R\), or prove that the surrogate is conservative.
+Prove the conditional asymptotic distribution and consistency of an implementable variance
+estimate. Include numerator–denominator covariance. Candidate assumptions: fixed positive
+cell probabilities, finite fourth score moment, positive unbinned information and nonzero
+asymptotic variance. State how empty evaluation cells are handled and where the interval is
+unsupported; no uniform rare-cell or finite-sample coverage guarantee is requested.
 
-## Relevant claims
+Use `examples/door3_classifier.py` for one frozen imperfect provider/rule. Compare the proxy
+surrogate with true retention; run one seeded coverage experiment over independent evaluation
+samples. Obtain population references analytically or by controlled integration, labeling any
+integration error. Do not interpret measured coverage as a proof.
 
-Start with `PROXY-TRUE-RETAINED-FI`, `REPRESENTATION-QUANTIZATION-LOSS`, and
-`FI-LOSS-DECOMPOSITION` through the graph lookup protocol. The open targets
-are `OPEN-SCORE-PERTURBATION` and the adjacent
-`OPEN-RETENTION-UNCERTAINTY`; use their actual scope when recording results.
-`OPEN-CLASSIFIER-CALIBRATION-FI` and
-`OPEN-REPRESENTATION-LOSS-ESTIMATION` remain later questions. This narrower
-packet does not close them by implication.
+## Read and stop
 
-## Separate mathematical questions
+Follow `AGENT.md` and `protocols/theorem.md`. The needed claim closures are
+`PROXY-TRUE-RETAINED-FI` and `OPEN-RETENTION-UNCERTAINTY` via `registry.py show --deps --proof`.
+Read representation-loss material only if a dependency requires it. Check the statistical
+literature for the plug-in/delta-method result before claiming novelty; a correct application
+of established theory is an acceptable outcome.
 
-- **Frozen-label evaluation and perturbation:** compare true and proxy cell
-  moments for the same deployed labels. Establish the needed moment and
-  conditioning assumptions; do not assume that every such bound needs a
-  geometric margin.
-- **Changed labels or refitting:** changing the provider, partition, or
-  training sample can move boundaries. Margin, identifiability, and
-  optimizer-selection assumptions belong to this separate problem.
-- **Classifier-to-score and representation loss:** calibration, tail ratios,
-  training priors, and estimation of \(E[s\mid R]\) require their own
-  arguments. They are not prerequisites for evaluating fixed labels when
-  true evaluation scores are available.
+One derivation session, one candidate estimator, one experiment. After the first proof attempt
+and falsification experiment, return **proved**, **refuted**, or **reduced** with a precise missing
+assumption or degeneracy. Stop there; do not switch estimators or launch a new programme silently.
+Exclude importance weights, growing K, refitting, boundary stability, Ds, classifier-calibration
+theory, bootstrap comparisons and a public uncertainty API.
 
-## Effort checkpoints and stop outcomes
-
-Use one derivation session for the scoped question. Set its concrete effort
-limit before starting; do not extend it silently or start exhaustive searches
-without a bounded search plan. At the checkpoint return one of:
-
-- **Proved:** the specified evaluation statement, with assumptions and the
-  seeded check; no claim of end-to-end training or classifier robustness.
-- **Refuted:** a minimized counterexample to a precise candidate statement,
-  plus the evaluation claim that must consequently be withheld.
-- **Reduced:** the exact missing assumption or lemma, the evidence gathered,
-  and what remains usable for the example. A reduction does not authorize
-  automatically opening another packet.
-
-An independent audit is a separate session with the frozen statement, proof,
-and artifacts, not the researcher's transcript. Follow `protocols/audit.md`
-before promoting a result to a shipped guarantee or publication claim.
-
-## Artifacts and handoff
-
-Follow `protocols/theorem.md`: patch only claims justified by the outcome,
-serialize any exact counterexample, link measured checks in
-`NUMERICAL_EVIDENCE.md`, and preserve the truth/proxy and
-representation/quantization distinctions. Record a short proposed user
-explanation and the diagnostic implications here; implementation belongs to
-a separately scoped library change. Run registry validation and the relevant
-research regression checks. End with the verdict and one proposed next
-question for selection under `OPEN_PROBLEMS.md`.
+Record the statement/proof or counterexample once, link its measured check, and update only
+claims justified by the outcome. Preserve the broad open claim if only this special case is
+settled. Run registry validation and research regression tests. Promotion requires a separate
+independent audit. End with the practical interpretation and one proposed next action.

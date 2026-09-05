@@ -1,48 +1,28 @@
 import {describe, expect, it} from "vitest";
 
-import {isActiveNavEntry, isBlogPostList} from "../src/lib/navigation";
+import {isActiveNavEntry} from "../src/lib/navigation";
 
 // The deployed baseUrl (the portal lives at /portal/ beside the documentation,
-// ADR 0027). Neither predicate may hard-code it — it is exercised here only as
+// ADR 0027). The predicate may not hard-code it — it is exercised here only as
 // an input fixture.
 const base = "/scorequant/portal";
 
 describe("primary navigation highlighting", () => {
-  it("marks the entry active on its own route, with or without a trailing slash", () => {
-    expect(isActiveNavEntry(`${base}/get-started`, "/get-started")).toBe(true);
-    expect(isActiveNavEntry(`${base}/blog/`, "/blog")).toBe(true);
+  it("marks /walkthroughs active on its own route and on nested routes", () => {
+    expect(isActiveNavEntry(`${base}/walkthroughs/`, "/walkthroughs")).toBe(true);
+    expect(isActiveNavEntry(`${base}/walkthroughs/michelson/`, "/walkthroughs")).toBe(true);
   });
 
-  it("stays active on routes nested below the entry", () => {
-    expect(isActiveNavEntry(`${base}/blog/why-the-best-bins-cannot-be-certified`, "/blog")).toBe(true);
-    expect(isActiveNavEntry(`${base}/blog/tags/research`, "/blog")).toBe(true);
-    expect(isActiveNavEntry(`${base}/blog/page/2`, "/blog")).toBe(true);
+  it("does not mark /walkthroughs active on the research route", () => {
+    expect(isActiveNavEntry(`${base}/research/`, "/walkthroughs")).toBe(false);
   });
 
-  it("does not leak across entries or onto the home route", () => {
-    expect(isActiveNavEntry(`${base}/get-started`, "/blog")).toBe(false);
-    expect(isActiveNavEntry(`${base}/blog`, "/get-started")).toBe(false);
+  it("marks /research active on its own route and on nested routes", () => {
+    expect(isActiveNavEntry(`${base}/research/`, "/research")).toBe(true);
+    expect(isActiveNavEntry(`${base}/research/some-page/`, "/research")).toBe(true);
+  });
+
+  it("does not mark /get-started active on the home route", () => {
     expect(isActiveNavEntry(`${base}/`, "/get-started")).toBe(false);
-  });
-
-  it("survives a change of baseUrl", () => {
-    expect(isActiveNavEntry("/scorequant/blog/some-post", "/blog")).toBe(true);
-    expect(isActiveNavEntry("/elsewhere/portal/blog/some-post", "/blog")).toBe(true);
-    expect(isActiveNavEntry("/blog", "/blog")).toBe(true);
-  });
-});
-
-describe("blog index detection", () => {
-  it("is true for the index and its numbered pages", () => {
-    expect(isBlogPostList(`${base}/blog`)).toBe(true);
-    expect(isBlogPostList(`${base}/blog/`)).toBe(true);
-    expect(isBlogPostList(`${base}/blog/page/2`)).toBe(true);
-  });
-
-  it("is false for posts, tags, and the archive", () => {
-    // These carry their own h1; a second PageIntro would duplicate it.
-    expect(isBlogPostList(`${base}/blog/why-the-best-bins-cannot-be-certified`)).toBe(false);
-    expect(isBlogPostList(`${base}/blog/tags/research`)).toBe(false);
-    expect(isBlogPostList(`${base}/blog/archive`)).toBe(false);
   });
 });

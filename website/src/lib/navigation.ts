@@ -1,9 +1,9 @@
 /**
- * Route predicates shared by the shell and the blog frame.
+ * Route predicates shared by the shell.
  *
- * Both take a `pathname` straight from the router, which carries the site
- * `baseUrl` (see `SITE_BASE` in `./site`). Neither may assume a fixed prefix,
- * so both match on the trailing segments instead.
+ * Takes a `pathname` straight from the router, which carries the site
+ * `baseUrl` (see `SITE_BASE` in `./site`). It may not assume a fixed prefix,
+ * so it matches on the trailing segments instead.
  */
 
 function withoutTrailingSlash(pathname: string): string {
@@ -20,10 +20,4 @@ function withoutTrailingSlash(pathname: string): string {
 export function isActiveNavEntry(pathname: string, href: string): boolean {
   const normalized = withoutTrailingSlash(pathname);
   return normalized.endsWith(href) || normalized.includes(`${href}/`);
-}
-
-/** Whether a route is the blog index or one of its numbered pages. */
-export function isBlogPostList(pathname: string): boolean {
-  const normalized = withoutTrailingSlash(pathname);
-  return normalized.endsWith("/blog") || /\/blog\/page\/\d+$/.test(normalized);
 }

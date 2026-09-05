@@ -27,22 +27,20 @@ export const shownMarkers = exploration.markers;
 
 # Bone-marrow cell populations
 
-*Who this is for: anyone whose instrument measures every event and whose result is a handful of counts, and who wants to know what that reduction costs.*
+## The cells, their labels, and a patient's fractions
 
-## The report is a few fractions; the instrument measures every cell
+The data is the FlowCyt classification benchmark: bone-marrow aspirates measured by flow
+cytometry, one cell at a time. For every cell the instrument records a forward-scatter and a
+side-scatter intensity and one fluorescence intensity per marker channel, twelve numbers in all,
+and an expert has labelled each cell as one of six populations: T cells, B cells, monocytes, mast
+cells, the CD34-positive progenitors (HSPCs), and everything else. The quantity to estimate for a
+patient is the composition, the fraction of that patient's cells in each population.
 
-A bone-marrow flow-cytometry report is written around population fractions: how much of this
-marrow is T cells, how much B cells, monocytes, mast cells, and the CD34-positive progenitor compartment. The measurement underneath is per cell — one fluorescence or scatter intensity per
-channel, for hundreds of thousands of cells in a single tube.
-
-Something has to get from one to the other, and conventionally that something is gating: an
-operator draws polygons on two-dimensional projections of the channels and counts the cells inside
-each one. Gating is reproducible, it is interpretable, and those are the properties it was chosen
-for. It was not chosen for how well the resulting counts let anyone recover the fractions.
-
-This page asks the other question. Suppose a patient must be summarised by a few integer counts —
-the smallest thing that survives being written into a report, archived, and refitted years later.
-Which categories should those counts be, and how much of the answer do they cost?
+This page asks what happens when a patient is summarised by a few integer counts instead of the
+cells themselves: each cell is assigned to one of a small number of categories, and the population
+fractions are then fitted from the category counts. Which categories should they be, and how much
+of the composition do they cost? The categories here are chosen from the estimation problem and
+frozen before the held-out patients are seen.
 
 <CompositionBars patients={exploration.patients} populations={dataset.populations} />
 
@@ -50,27 +48,21 @@ Each bar above is one patient's composition, and the spread between them is the 
 measured. It is much wider than the error any of the methods below make, which is what keeps the
 small numbers later on meaningful rather than merely small.
 
-## The data, and what travels with it
+## The data and its licence
 
-The study runs on the FlowCyt classification benchmark: bone-marrow aspirates with an expert
-label on every cell. The cohort was split once, before anything was fitted, into a reference group
-that the compression is built from and a held-out group that nothing downstream has ever seen.
-Every number on this page that is called held out was computed on that second group.
+The cohort was split once, before anything was fitted, into a reference group that the
+compression is built from and a held-out group that nothing downstream has seen. Every number on
+this page that is called held out was computed on that second group.
 
-The benchmark is not ScoreQuant's data. It is &copy; {dataset.citation} and licensed{" "}
-<a href={dataset.licenseUrl} rel="noreferrer noopener" target="_blank">{f("license")}</a>,
-separately from ScoreQuant's own MIT licence, and everything derived from it here — the charts,
-the committed score table, the numbers — carries the same attribution and share-alike terms. The
-benchmark itself lives in its{" "}
+The benchmark is &copy; {dataset.citation}, licensed{" "}
+<a href={dataset.licenseUrl} rel="noreferrer noopener" target="_blank">{f("license")}</a>, and
+lives in its{" "}
 <a href={f("sourceRepository")} rel="noreferrer noopener" target="_blank">source repository</a>;
-this repository does not redistribute it.
-
-What this repository does commit is two much smaller things. One is a deterministic fixture —
-{f("referencePerPatientClass")} cells per population per reference patient and{" "}
-{f("testPerPatient")} cells per held-out patient — so the whole pipeline runs in CI without the
-benchmark present. The other is the score table the fits on this page use, which is the same one
-the Lab loads in the browser. The headline numbers further down are neither of those: they come from
-the full study, on {f("studyCells")} real cells drawn from the complete cohort.
+this repository does not redistribute it. What is committed here is a small deterministic fixture
+and the score table the fits on this page use. The headline numbers further down come from the
+full study on {f("studyCells")} cells; the acquisition protocol, the fixture's contents and the
+per-patient estimates are in the{" "}
+<ReferenceLink to="usecases/flowcyt/">FlowCyt case study</ReferenceLink>.
 
 ```python
 import json
@@ -112,11 +104,13 @@ cannot be a rectangle on one plane.
 
 ## From marker channels to a score
 
-The score model here is Door 3, the density-ratio route. A calibrated, patient-cross-fitted
-classifier estimates each cell's posterior over the populations; dividing those posteriors by the
-priors the classifier was trained under turns them into component density ratios, and the mixture
-parameterization turns the ratios into a score — the derivative of a cell's log likelihood with
-respect to the population fractions. One population is absorbed as the simplex-dependent
+The score model here is Door 3, the density-ratio route. A patient-cross-fitted classifier
+estimates each cell's posterior over the populations under the mixture it was trained on. If those
+posteriors are calibrated, dividing each by its population's training proportion gives that
+population's density relative to the training mixture, and the ratio of any two of them is the
+posterior odds over the prior odds, which is the ratio of the two population densities. The
+mixture parameterization turns those ratios into a score — the derivative of a cell's log
+likelihood with respect to the population fractions. One population is absorbed as the simplex-dependent
 reference, so the score has one coordinate per remaining population:
 
 <ul className="showcase-schema">
@@ -231,7 +225,7 @@ its soft objective: both are scored after hardening, on patients neither of them
     {
       label: "Soft Voronoi, held-out macro RMSE",
       value: f("softVoronoiRmse"),
-      meaning: "Error in the recovered population fractions, averaged over populations and held-out patients. This is the number a cytometrist cares about.",
+      meaning: "Error in the recovered population fractions, averaged over populations and held-out patients: the error in the quantity this page estimates.",
     },
     {
       label: "Soft Voronoi, held-out D-efficiency",
@@ -284,28 +278,21 @@ holdout_efficiency = float(fitted.validation_report.geometric_mean_retention)
 assert 0.0 < holdout_efficiency <= 1.0
 ```
 
-That is the mechanism; the study proper does something stronger, because its held-out set is whole
-patients frozen before any fitting rather than alternate rows of one table. The complete record of
-that study — the acquisition protocol, the calibration audit that chose the ratio model, the
-solver comparison, the transport diagnostics, and the per-patient estimates — is the reference
-study at{" "}
-<ReferenceLink to="usecases/flowcyt/">the FlowCyt case study</ReferenceLink>, and
-this page quotes it rather than repeating it.
+That is the mechanism; the study proper holds out whole patients frozen before any fitting rather
+than alternate rows of one table. Its solver comparison, score calibration and per-patient
+estimates are in the{" "}
+<ReferenceLink to="usecases/flowcyt/">FlowCyt case study</ReferenceLink>.
 
-## What that means for the report
+## What that means for the composition
 
-A patient can be reported as a few integer counts and still yield the population fractions to
-within an error far smaller than the differences between patients. The categories are not drawn by
-hand and are not rectangles on a projection; they are chosen from the estimation problem itself,
-and they are frozen, so the same rule applies to every patient in the cohort and to the next one
-that arrives.
+On this cohort a patient can be reduced to {f("bins")} integer counts and still yield the
+population fractions to within an error far smaller than the differences between patients. The
+categories are not rectangles on a two-channel projection; they are chosen from the estimation
+problem itself, and they are frozen, so the same rule applies to every patient in the cohort and
+to the next one that arrives. How many categories that takes is measured below rather than
+assumed.
 
-The practical consequence is that the number of categories you need is smaller than intuition
-suggests and can be decided in advance rather than defended afterwards. The browser experiment for
-this page arrives with its lesson rewrite; the [lessons index](/lab) says what runs in the browser
-today.
-
-## What the usual gates retain on the same cells
+## What simpler reductions retain on the same cells
 
 Every method below sees the same cells and gets the same budget, and every one is scored the same
 way: fit the fractions from the counts on the frozen patients, and measure the result against the
@@ -345,12 +332,11 @@ expert composition.
   ]}
 />
 
-The three baselines are the ones a practitioner would actually reach for, not straw men. A
-rectangular grid on two channels is gating with the polygons squared off. Clustering the raw
-marker vectors is the automatic version of the same instinct — group cells that look alike and
-count the groups. Cutting a single score direction into intervals is what you get if you accept
-that the classifier output matters but keep the summary one-dimensional. All three are defensible
-choices, and all three land an order of magnitude away on estimation error as well:
+The three baselines use the same cells and the same budget without the score geometry. A
+rectangular grid on two marker channels is a two-dimensional gate with straight edges. Clustering
+the raw marker vectors groups cells that look alike and counts the groups. Cutting a single score
+direction into intervals keeps the classifier output but summarises it in one dimension. All three
+land an order of magnitude away on estimation error as well:
 
 <MethodComparison baseline={comparison.unbinnedBaseline} methods={comparison.methods} />
 

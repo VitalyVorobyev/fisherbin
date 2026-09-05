@@ -6,8 +6,6 @@ sidebar_position: 9
 
 # Reading the claim record
 
-*Who this is for: a reader who would rather check the project's work than take it on trust.*
-
 Everything on the preceding pages is a paraphrase. The unparaphrased version is a registry of
 claims: one record per statement, each carrying its own status, its assumptions, what it depends
 on, and — where one exists — the exact example that marks its boundary. This page explains how to

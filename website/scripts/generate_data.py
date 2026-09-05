@@ -1,4 +1,4 @@
-"""Generate the portal's API, evidence, research, and score-space data."""
+"""Generate the portal's API, research, and solver-matrix data."""
 
 from __future__ import annotations
 
@@ -7,10 +7,6 @@ import json
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
-
-import numpy as np
-
-import scorequant as sq
 
 # ``_SOLVER_TABLE`` is a private module-level constant, not part of ``scorequant``'s public
 # surface. The generator is deliberately coupled to it anyway: it is the single source of
@@ -110,30 +106,6 @@ def _api_data() -> list[dict[str, object]]:
     return entries
 
 
-def _benchmark_data() -> dict[str, object]:
-    baseline = json.loads((ROOT / "benchmarks" / "baselines.json").read_text())
-    runs = [run for run in baseline["runs"] if not run["skipped"]]
-    return {
-        "environment": baseline["environment"],
-        "runs": [
-            {
-                key: run[key]
-                for key in (
-                    "scenario",
-                    "rows",
-                    "dims",
-                    "bins",
-                    "elapsed_seconds",
-                    "peak_rss_megabytes",
-                    "quality_label",
-                    "quality",
-                )
-            }
-            for run in runs
-        ],
-    }
-
-
 def _research_data() -> list[dict[str, object]]:
     allowlist = json.loads((WEBSITE / "content" / "research-public.json").read_text())["claims"]
     claims: dict[str, dict[str, object]] = {}
@@ -160,99 +132,6 @@ def _research_data() -> list[dict[str, object]]:
         }
         for claim_id in allowlist
     ]
-
-
-#: Grid resolution for the rasterized cell regions ``ScoreSpace.tsx`` draws behind the points.
-_REGION_GRID_NX = 72
-_REGION_GRID_NY = 48
-
-
-def _display_window(points: np.ndarray, quantile: float) -> tuple[float, float, float, float]:
-    """Return the raw-coordinate display window ``(x0, x1, y0, y1)`` the plot fits to.
-
-    Mirrors ``makeProjector`` in ``ScoreSpace.tsx`` exactly, including its
-    ``pad = (high - low) * 0.08 or 1`` fallback: per axis, the window is the
-    ``quantile``/``1 - quantile`` interval of ``points`` padded by 8% of its
-    span, so a region grid built on this window lines up pixel-for-pixel with
-    what the TS projector draws.
-    """
-    bounds: list[tuple[float, float]] = []
-    for axis in range(2):
-        values = np.sort(points[:, axis])
-        count = values.shape[0]
-        low = float(values[int(np.floor((count - 1) * quantile))])
-        high = float(values[int(np.ceil((count - 1) * (1 - quantile)))])
-        pad = (high - low) * 0.08 or 1.0
-        bounds.append((low - pad, high + pad))
-    (x0, x1), (y0, y1) = bounds
-    return x0, x1, y0, y1
-
-
-def _score_space_data() -> dict[str, object]:
-    rng = np.random.default_rng(28)
-    scores = np.concatenate(
-        [
-            rng.normal((-1.15, -0.1), (0.42, 0.32), size=(22, 2)),
-            rng.normal((0.8, 0.45), (0.5, 0.36), size=(22, 2)),
-            rng.normal((0.1, -0.75), (0.34, 0.25), size=(12, 2)),
-        ]
-    )
-    weights = np.linspace(0.7, 1.3, scores.shape[0])
-    execution = sq.ExecutionConfig(backend="numpy", precision="float64", device="cpu")
-    scenarios: dict[str, object] = {}
-    for n_bins in (3, 4, 5):
-        result = sq.optimize_partition(
-            scores,
-            weights=weights,
-            n_bins=n_bins,
-            config=sq.DExchangeConfig(seed=28, initializer_restarts=2, max_scans=120),
-            execution=execution,
-        )
-        # Every committed fixture is exchange-stable and nonsingular, so Theorem 3
-        # compiles it into the canonical Mahalanobis rule; ``compile_quantizer``
-        # itself raises a clear ``RefusalError`` if a future fixture is not, rather
-        # than this generator silently skipping the region export.
-        quantizer = result.compile_quantizer()
-        predicted = quantizer.predict_scores(scores)
-        if not np.array_equal(predicted, result.labels):
-            raise RuntimeError(
-                f"compiled quantizer for n_bins={n_bins} disagrees with the fitted "
-                "partition's own labels; the committed fixture is no longer a "
-                "self-consistent Mahalanobis Voronoi partition"
-            )
-        if quantizer.metric is None:
-            raise RuntimeError(
-                f"compiled quantizer for n_bins={n_bins} carries no Mahalanobis metric"
-            )
-        x0, x1, y0, y1 = _display_window(np.concatenate([scores, result.cell_score_means]), 0.01)
-        nx, ny = _REGION_GRID_NX, _REGION_GRID_NY
-        cell_x = x0 + (np.arange(nx) + 0.5) * (x1 - x0) / nx
-        cell_y = y0 + (np.arange(ny) + 0.5) * (y1 - y0) / ny
-        grid_x, grid_y = np.meshgrid(cell_x, cell_y)
-        grid_points = np.stack([grid_x.ravel(), grid_y.ravel()], axis=1)
-        region_labels = quantizer.predict_scores(grid_points)
-        # One digit per grid cell keeps the committed JSON and the home-page bundle
-        # small: 3,456 cells serialize to one short string instead of 3,456 lines.
-        if n_bins > 10:
-            raise RuntimeError("region labels are exported as single digits; n_bins must be <= 10")
-        region_digits = "".join(str(int(label)) for label in region_labels)
-        scenarios[str(n_bins)] = {
-            "labels": result.labels.tolist(),
-            "centers": result.cell_score_means.tolist(),
-            "retention": result.train_report.geometric_mean_retention,
-            "objective": result.objective,
-            "regions": {
-                "x0": x0,
-                "x1": x1,
-                "y0": y0,
-                "y1": y1,
-                "nx": nx,
-                "ny": ny,
-                "labels": region_digits,
-            },
-            "metric": quantizer.metric.tolist(),
-        }
-    return {"points": scores.tolist(), "weights": weights.tolist(), "scenarios": scenarios}
 
 
 def _solver_matrix() -> list[dict[str, object]]:
@@ -331,9 +210,7 @@ def main() -> None:
     payload = {
         "schemaVersion": 2,
         "api": _api_data(),
-        "benchmarks": _benchmark_data(),
         "research": _research_data(),
-        "scoreSpace": _score_space_data(),
         "solverMatrix": solver_matrix,
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)

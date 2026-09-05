@@ -6,8 +6,6 @@ sidebar_position: 7
 
 # How the API names each result
 
-*Who this is for: someone holding an error message, a config object, or a report field, who wants to know which result it comes from.*
-
 The library is written so that the mathematics is visible in the object names rather than hidden
 behind one opaque `fit`. This page is the map in both directions: from a message or a class name to
 the result behind it, and from a result to the object that carries it. Field-level documentation

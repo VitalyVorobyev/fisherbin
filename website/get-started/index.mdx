@@ -10,9 +10,6 @@ import {REFERENCE_BASE} from "@site/src/lib/site";
 
 # Get started
 
-*One problem, followed from installation to a rule you can ship. Every number on this page was
-printed by the program that produced it, not typed into the page.*
-
 ## Which of the two tasks is yours
 
 If you have a finite weighted score table and only those rows need labels, read as far as
@@ -28,8 +25,8 @@ cell below, and both report the information kind they were evaluated with.
 
 One choice is worth understanding before the first fit rather than after it. ScoreQuant runs on
 two backends. JAX is the default and the faster one. NumPy is the portable one, and it is what
-lets a saved rule predict where JAX is absent — including inside a browser, which is exactly what
-the Lab on this site runs. Whether to enable 64-bit floats is the application's call and never the
+lets a saved rule predict where JAX is absent — including inside a browser, which is what the
+refit further down this page runs. Whether to enable 64-bit floats is the application's call and never the
 library's, so ScoreQuant never touches global JAX configuration at import.
 
 Every snippet below passes an explicit NumPy, float64 execution, so the output printed here is the

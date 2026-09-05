@@ -6,8 +6,6 @@ sidebar_position: 2
 
 # The problem
 
-*Who this is for: anyone who must report a continuous measurement as counts in a few categories and wants to know what that costs.*
-
 ## The situation, before any vocabulary
 
 A pipeline produces many rich observations — waveforms, tracks, cells, images, spectra — and the

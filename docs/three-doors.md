@@ -77,25 +77,27 @@ Divide numerator and denominator by any nonzero reference density and every abso
 cancels — only ratios remain. That is the whole reason a ratio oracle suffices where a density
 would seem to be required.
 
-A calibrated classifier is one such oracle. If it predicts class posteriors \(q_k(x)\) under
-training priors \(\pi_k\), then
+A calibrated classifier is one such oracle. Train it on labelled events from the components in
+training proportions \(\pi_k\). If its posteriors \(q_k(x)\) are calibrated with respect to that
+training mixture, that is, if \(q_k(x)\) is the actual conditional class probability under it,
+then Bayes' rule gives
 
 $$
 \frac{p_k(x)}{p_{\rm ref}(x)}
-\propto
+=
 \frac{q_k(x)/\pi_k}
-     {q_{\rm ref}(x)/\pi_{\rm ref}},
+     {q_{\rm ref}(x)/\pi_{\rm ref}}:
 $$
 
-up to a common event-wise factor that cancels again in the score. A ranking score or an arbitrary
-monotonic classifier output is *not* enough: the construction needs calibrated ratios, not merely
-event ordering.
+the density ratio is the posterior odds divided by the prior odds. Each \(q_k/\pi_k\) alone is
+\(p_k/p_{\rm train}\) with \(p_{\rm train}=\sum_j\pi_j p_j\), and that common factor cancels in the
+score. Two assumptions carry the statement, calibration and known training proportions; a ranking
+score or an arbitrary monotonic classifier output is *not* enough. [Chapter
+4](book/ch04-scores-and-doors.md) derives the construction.
 
-One distinction runs through everything downstream. **Model density ratios** — \(\phi_k/\phi_{\rm ref}\)
-or \(p(x\mid\theta)/p(x\mid\theta_0)\) — are a statistical representation: they build scores and
-enter through a provider. **Importance ratios** — \(p_{\theta_0}(x)/g(x)\) for a sample drawn from
-a proposal \(g\) — reweight expectations and enter as source *weights*, never through a provider.
-The two kinds never share an argument.
+**Model density ratios** of this kind build scores and enter through a provider. **Importance
+ratios**, \(p_{\theta_0}(x)/g(x)\) for a sample drawn from a proposal \(g\), reweight expectations
+and enter as source *weights*, never through a provider. The two kinds never share an argument.
 
 ## Door 1: precomputed scores
 

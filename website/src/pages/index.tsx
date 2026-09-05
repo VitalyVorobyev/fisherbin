@@ -1,250 +1,187 @@
 import Link from "@docusaurus/Link";
 import Layout from "@theme/Layout";
 
-import {ScoreSpaceLiveFit} from "../components/ScoreSpaceLiveFit";
-import {factsFor} from "../lib/facts";
+import {ReferenceLink} from "../components/ReferenceLink";
+import {Tex} from "../components/Tex";
 
 /**
- * Every number this page displays resolves from committed evidence through the
- * fact contract; the page holds no numeric literal of its own, which
- * `tests/test_walkthrough_facts.py` enforces.
+ * The portal's front page: the definitions a reader needs before any other
+ * page makes sense, and where each of them is derived. It quotes no
+ * measurement (`tests/test_walkthrough_facts.py` holds it to that) and runs
+ * nothing.
  */
-const fact = factsFor("home");
-
 export default function Home(): React.JSX.Element {
   return (
     <Layout
       title="ScoreQuant"
-      description="Choose bins that keep the information your parameters depend on, and measure what the binning cost."
+      description="Definitions: score, Fisher information, hard binning and what it costs, the two tasks, the criteria, and where each is derived."
     >
-      <section className="home-section section-wrap">
-        <div className="home-opening">
-          <div className="home-lede">
-            <h1>Choose K labels for the parameters you estimate, and know what they kept.</h1>
-            <p>
-              ScoreQuant groups observations into a fixed number of labels for parameter
-              estimation. You supply scores at a reference model point, or a model that computes
-              them. The library optimizes a partition of a fixed sample, or fits a rule that labels
-              future scores, and reports the Fisher information the hard labels retain.
-            </p>
-            <p>
-              The two tasks are chosen explicitly. <code>optimize_partition</code> labels the rows
-              you have and returns no predictor. <code>fit_quantizer</code> returns a rule for
-              scores you have not seen yet. Every result names its information kind: exact under
-              the model you supplied, or a surrogate computed from estimated scores.
-            </p>
-          </div>
-          <aside className="home-identity" aria-label="What ScoreQuant is">
-            <p className="home-identity__what">
-              <b>ScoreQuant</b> is a Python library for choosing those bins so they keep the Fisher
-              information your parameters depend on, and for measuring what the binning cost.
-            </p>
-            <p className="home-identity__install">
-              <code>uv add scorequant</code>
-            </p>
-            <p className="home-identity__runtime">
-              Runs on JAX by default, and on NumPy with no accelerator and no compiler.
-            </p>
-          </aside>
-        </div>
-      </section>
-
-      <section className="home-section section-wrap section-rule">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Measured, not asserted</span>
-            <h2>How much is given up</h2>
-          </div>
-          <p>
-            Bone-marrow flow cytometry, six cell populations, thirty patients. One number: the
-            geometric-mean retention computed from classifier-estimated scores for the population
-            fractions, evaluated on held-out patients at a budget of {fact("bins")} bins.
+      <article className="home-article">
+        <header>
+          <h1>ScoreQuant</h1>
+          <p className="home-article__lead">
+            A Python library for information-preserving hard binning: it assigns observations to
+            a fixed number of labels while retaining the Fisher information that parameter
+            estimation depends on, and it reports what the binning cost.
           </p>
-        </div>
-        <dl className="home-measure">
-          <div className="measure-row">
-            <dt>Weighted k-means on the standardized markers</dt>
-            <dd>{fact("naiveBestEfficiency")}</dd>
-          </div>
-          <div className="measure-row">
-            <dt>Equal-frequency bins along the leading score direction</dt>
-            <dd>{fact("naiveScoreProjectionEfficiency")}</dd>
-          </div>
-          <div className="measure-row">
-            <dt>Equal-width grid on the first two principal components</dt>
-            <dd>{fact("naiveGridEfficiency")}</dd>
-          </div>
-          <div className="measure-row measure-row--result">
-            <dt>ScoreQuant, same data, same bin budget</dt>
-            <dd>{fact("scorequantEfficiency")}</dd>
-          </div>
-        </dl>
-        <p className="provenance-note">
-          <span aria-hidden="true">◇</span>
-          <span>
-            The comparison is quoted against the strongest of the three standard rules, not the
-            weakest. A headline measured against the worst available baseline reports the
-            baseline&rsquo;s difficulty rather than the method.{" "}
-            <Link to="/walkthroughs/flowcyt">How this surrogate was evaluated →</Link>
-          </span>
-        </p>
-      </section>
-
-      <section className="home-section section-wrap section-rule">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">The mechanism</span>
-            <h2>The loss has a closed form</h2>
-          </div>
-          <p>
-            Binning can only lose information, never create it. That is an identity rather than a
-            claim, and it says exactly where the loss goes.
+          <p className="home-article__install">
+            <code>uv add scorequant</code>
           </p>
-        </div>
-        <div className="home-explain">
-          <div>
-            <p>
-              An event&rsquo;s <em>score</em> is the gradient of its log-likelihood at the
-              reference point. The unbinned information is the second moment of the score; K hard
-              labels keep the between-cell part, and the loss is the within-cell scatter of the
-              score, not of the observation.
-            </p>
-            <div className="math-display">
-              I<sub>∞</sub> − I<sub>q</sub> = Σ<sub>b</sub> E[ 1{"{"}q=b{"}"} (s − μ
-              <sub>b</sub>)(s − μ<sub>b</sub>)<sup>T</sup> ] ⪰ 0
-            </div>
-            <p>
-              ScoreQuant optimizes in score space, where that identity is written, with one
-              coordinate per parameter however many measurement variables an event carries. The
-              figure shows a committed fixture: points coloured by their label, the cell regions of
-              the compiled rule, and the D-efficiency those labels retain. Refitting it in your
-              browser runs the same solver on the same points.
-            </p>
-          </div>
-          <ScoreSpaceLiveFit />
-        </div>
-      </section>
+        </header>
 
-      <section className="home-section section-wrap section-rule">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Your decision, not a preference</span>
-            <h2>Will you ever label an event that is not in this table?</h2>
-          </div>
-        </div>
-        <div className="home-choice">
-          <article className="choice">
-            <h3>No — the rows are the final object</h3>
-            <p>
-              <code>optimize_partition</code> solves a finite assignment problem and hands back a
-              label vector for those rows. A frozen Monte Carlo template set, a fixed calibration
-              sample, a study of how much a given cell budget can retain.
-            </p>
-            <Link className="plain-link" to="/walkthroughs/flowcyt">
-              A worked fixed-sample study →
-            </Link>
-          </article>
-          <article className="choice">
-            <h3>Yes — future events must be labeled the same way</h3>
-            <p>
-              <code>fit_quantizer</code> chooses a geometric rule on score space and hands back
-              something <code>predict_scores</code> can apply anywhere. A trigger, a gate applied to
-              new runs, a categorization shipped with an analysis.
-            </p>
-            <Link className="plain-link" to="/walkthroughs/michelson">
-              A worked reusable rule →
-            </Link>
-          </article>
-        </div>
-        <p className="home-aside">
-          <code>PartitionResult</code> deliberately has no predict method. Many different rules
-          reproduce the same labels on a finite sample and disagree everywhere else, so a sample
-          optimum does not name one of them. There is exactly one crossing between the two, and it
-          is a theorem rather than a convenience — <Link to="/get-started">Get started</Link> shows
-          it, and the refusal that guards it.
-        </p>
-      </section>
-
-      <section className="home-section section-wrap section-rule">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">The way in</span>
-            <h2>What do you already have?</h2>
-          </div>
+        <section aria-labelledby="setting">
+          <h2 id="setting">The setting</h2>
           <p>
-            The door into score space is fixed by what your analysis can honestly supply, not by
-            preference.
+            An observation <Tex>x</Tex> is drawn from a parametric model{" "}
+            <Tex>{String.raw`p(x \mid \theta)`}</Tex>. A <em>reference point</em>{" "}
+            <Tex>{String.raw`\theta_0`}</Tex> is fixed in advance: the current best estimate, the
+            nominal calibration, the null hypothesis. Everything below is evaluated there.
           </p>
-        </div>
-        <div className="home-doors">
-          <article className="door-item">
-            <h3>Scores, already computed</h3>
-            <div className="door-item__body">
-              <p>
-                Pass the array, or wrap it in <code>ScoreSample</code>. The shortest and most
-                transparent path.
-              </p>
-            </div>
-          </article>
-          <article className="door-item">
-            <h3>A component or analytic model</h3>
-            <div className="door-item__body">
-              <p>
-                <code>LinearComponentScore</code> or <code>ScoreFunction</code>, paired with an
-                observation sample or a bounded quadrature source. The statistical model stays visible
-                in the call.
-              </p>
-            </div>
-          </article>
-          <article className="door-item">
-            <h3>Density ratios</h3>
-            <div className="door-item__body">
-              <p>
-                <code>DensityRatioScore</code>, or <code>CentralLogRatioScore</code> for paired
-                central classifiers. This is the classifier route, and the caveat belongs here rather
-                than further in: an estimated ratio yields an estimated score. The optimization is
-                unchanged, but the Fisher semantics are only as good as the calibration behind the
-                ratio, so ScoreQuant records that provenance instead of letting it disappear, and{" "}
-                <code>ratio_closure_report</code> measures whether the ratios actually close.
-              </p>
-              <Link className="plain-link" to="/walkthroughs/ratios">
-                A worked classifier route →
-              </Link>
-            </div>
-          </article>
-        </div>
-      </section>
+          <p>
+            The <em>score</em> of an observation is the gradient of its log-likelihood at the
+            reference point,
+          </p>
+          <Tex display>{String.raw`s(x) = \nabla_\theta \log p(x \mid \theta)\,\big|_{\theta_0},`}</Tex>
+          <p>
+            one coordinate per parameter, whatever the dimension of <Tex>x</Tex>. The{" "}
+            <em>Fisher information</em> of one observation is the second moment of its score,{" "}
+            <Tex>{String.raw`I = \mathbb{E}\big[s(X)\,s(X)^{\top}\big]`}</Tex>. For independent observations in a regular model, the inverse of the total information
+            bounds the covariance of unbiased estimators of <Tex>{String.raw`\theta`}</Tex>{" "}
+            when that information is nonsingular.
+          </p>
+        </section>
 
-      <section className="home-section section-wrap section-rule">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Where to go</span>
-            <h2>Two ways to start</h2>
-          </div>
-        </div>
-        <div className="home-exits">
-          <article className="exit">
-            <h3>Run it with nothing installed</h3>
-            <p>
-              The Lab loads ScoreQuant into your browser and fits a partition there, on the same
-              NumPy backend the library ships.
-            </p>
-            <Link className="plain-link" to="/lab">
-              Open the lessons →
-            </Link>
-          </article>
-          <article className="exit">
-            <h3>Install it and follow the path</h3>
-            <p>
-              <code>uv add scorequant</code>, then a page that walks the smallest real fit through
-              to the meaning of every number it prints.
-            </p>
-            <Link className="plain-link" to="/get-started">
-              Get started →
-            </Link>
-          </article>
-        </div>
-      </section>
+        <section aria-labelledby="binning">
+          <h2 id="binning">Hard binning, and what it costs</h2>
+          <p>
+            A <em>hard binning</em> is a map <Tex>{String.raw`q : x \mapsto \{1, \dots, K\}`}</Tex>.
+            For a fixed rule in a regular model, the bin label has per-observation Fisher
+            information <Tex>{String.raw`I_q`}</Tex>. The difference is an identity, not an
+            estimate:
+          </p>
+          <Tex display>{String.raw`I - I_q \;=\; \sum_{b=1}^{K} \mathbb{E}\Big[\,\mathbb{1}\{q(X)=b\}\,\big(s(X)-\mu_b\big)\big(s(X)-\mu_b\big)^{\top}\Big] \;\succeq\; 0,`}</Tex>
+          <p>
+            where <Tex>{String.raw`\mu_b`}</Tex> is the mean score of cell <Tex>b</Tex>. Two things
+            follow. Binning never creates information. And the loss is the within-cell scatter of
+            the <em>score</em>, not of the observation, so the space in which to choose cells is
+            score space. ScoreQuant reports the <em>retention</em>, a normalised ratio of{" "}
+            <Tex>{String.raw`I_q`}</Tex> to <Tex>I</Tex> according to the chosen criterion. Zero D-efficiency can mean that just one parameter
+            direction was lost; it does not imply that no information remains.
+          </p>
+        </section>
+
+        <section aria-labelledby="tasks">
+          <h2 id="tasks">The task, stated twice</h2>
+          <p>
+            <strong>Partition a fixed table.</strong> Given <Tex>N</Tex> scores with weights,
+            choose a label for each of those rows. <code>optimize_partition</code> returns a{" "}
+            <code>PartitionResult</code>: the labels, the retained information and its
+            certificates, and no predictor. A finite sample optimum does not name a rule for
+            observations outside the sample. This is the task when the rows are the final object:
+            a frozen template set, a calibration sample, a study of what a cell budget can retain.
+          </p>
+          <p>
+            <strong>Fit a reusable rule.</strong> Given a source measure over observations and a
+            score provider that converts observations to scores, choose a rule on score space
+            that labels scores not yet seen. <code>fit_quantizer</code> returns a{" "}
+            <code>QuantizerResult</code> whose <code>predict_scores</code> applies the rule
+            anywhere. This is the task when future observations must be labelled the same way: a
+            trigger, a gate, a categorisation shipped with an analysis.
+          </p>
+          <p>
+            A full-D partition can be compiled after its stability and geometry are verified,
+            reproducing positive-weight training labels. The library does not provide a generic
+            compiler for profiled Ds.
+          </p>
+        </section>
+
+        <section aria-labelledby="criteria">
+          <h2 id="criteria">The criteria</h2>
+          <p>
+            A criterion turns the retained information matrix into one number to maximise.{" "}
+            <strong>D-optimality</strong> maximises <Tex>{String.raw`\det I_q`}</Tex> over the
+            informative subspace, weighing every parameter direction at once.{" "}
+            <strong>Profiled <Tex>{String.raw`D_s`}</Tex>-optimality</strong> maximises the
+            determinant of the Schur complement for the parameters of interest, after the nuisance
+            parameters are profiled out. The <strong>normalised trace</strong> maximises{" "}
+            <Tex>{String.raw`\operatorname{tr}(I^{-1} I_q)`}</Tex>, which after whitening is the
+            <Tex>k</Tex>-means objective. Each criterion pairs with a fixed set of solvers, and an
+            unsupported pair fails before anything runs; the{" "}
+            <ReferenceLink to="method/">method overview</ReferenceLink> lists the pairs and{" "}
+            <ReferenceLink to="user-workflow/">Choosing your workflow</ReferenceLink> decides
+            between them.
+          </p>
+        </section>
+
+        <section aria-labelledby="provenance">
+          <h2 id="provenance">Where the scores come from</h2>
+          <p>
+            An <em>exact</em> score is the derivative of a model you can write down, or an array
+            of scores you computed from one. An <em>estimated</em> score comes from density ratios,
+            typically a calibrated classifier whose posterior odds over its prior odds estimate
+            the likelihood ratio. The optimisation is the same in both cases. The information is
+            not: an estimated score yields a <em>surrogate</em> information whose Fisher meaning
+            is only as good as the estimate, and every result records which of the two it
+            reported. <ReferenceLink to="three-doors/">Three doors</ReferenceLink> describes the
+            input routes.
+          </p>
+        </section>
+
+        <section aria-labelledby="reading">
+          <h2 id="reading">Where each of these is derived</h2>
+          <ul className="home-article__refs">
+            <li>
+              <ReferenceLink to="book/ch01-why-bin/">Why bin at all</ReferenceLink>: the score,
+              the information, and the cost of binning on a model computable by hand.
+            </li>
+            <li>
+              <ReferenceLink to="book/ch04-scores-and-doors/">Scores, score laws, and the three doors</ReferenceLink>:
+              exact densities, density ratios, and precomputed scores as inputs.
+            </li>
+            <li>
+              <ReferenceLink to="book/ch05-information-after-binning/">Information after hard labels</ReferenceLink>:
+              the identity above, derived.
+            </li>
+            <li>
+              <ReferenceLink to="book/ch06-two-tasks/">Two tasks and three optimisation levels</ReferenceLink>:
+              why a partition has no predict method.
+            </li>
+            <li>
+              <ReferenceLink to="book/ch08-d-optimality/">D-optimality and exact exchange</ReferenceLink>:
+              the finite solver and the compile bridge.
+            </li>
+            <li>
+              <ReferenceLink to="book/ch10-profiled-ds/">Nuisance parameters and profiled <Tex>{String.raw`D_s`}</Tex></ReferenceLink>:
+              the Schur complement, the efficient-score ceiling, and what cannot be compiled.
+            </li>
+            <li>
+              <ReferenceLink to="book/ch13-estimated-scores/">Estimated density ratios and scores</ReferenceLink>:
+              what a surrogate information does and does not mean.
+            </li>
+            <li>
+              <ReferenceLink to="api/">API guide</ReferenceLink> and the{" "}
+              <ReferenceLink to="symbols/">generated reference</ReferenceLink> for every public
+              object, including the refusals.
+            </li>
+            <li>
+              <ReferenceLink to="examples/">Runnable examples</ReferenceLink>, each with its
+              committed evidence file.
+            </li>
+            <li>
+              <Link to="/get-started">Get started</Link>: one problem from installation to a
+              rule, with the printed output of every step.
+            </li>
+            <li>
+              <Link to="/walkthroughs">Walkthroughs</Link>: four applied problems, each on
+              real or generated data with every number traced to a committed run.
+            </li>
+            <li>
+              <Link to="/research">Research</Link>: what was known, what the library adds, what
+              cannot be certified, and what is open.
+            </li>
+          </ul>
+        </section>
+      </article>
     </Layout>
   );
 }

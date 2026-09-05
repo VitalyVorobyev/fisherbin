@@ -82,3 +82,20 @@
 .budget-explorer__reset { margin: 0 0 20px; padding: 9px 16px; border: 1px solid var(--border-strong); border-radius: 7px; color: var(--text); background: var(--surface-sunken); font-size: 13px; font-weight: 620; cursor: pointer; }
 .budget-explorer__reset:hover:not(:disabled) { background: var(--surface); }
 .budget-explorer__reset:disabled { cursor: not-allowed; opacity: .55; }
+
+/* Michelson bench and fringe law */
+
+.michelson-bench__source { fill: var(--accent); stroke: none; }
+.michelson-bench__beam { stroke: var(--accent); stroke-width: 2; fill: none; }
+.michelson-bench__mirror { stroke: var(--ink-700); stroke-width: 6; stroke-linecap: round; fill: none; }
+.michelson-bench__splitter { stroke: var(--ink-700); stroke-width: 3; fill: none; }
+.michelson-bench__label { fill: var(--ink-700); font-family: var(--font-body); font-size: 12px; }
+.michelson-bench__fringe { fill: var(--accent); stroke: none; }
+.michelson-bench__strip { fill: none; stroke: var(--ink-700); stroke-width: 1.5; }
+.michelson-bench__cell { fill: none; stroke: var(--border-strong); stroke-width: 1; }
+
+.fringe-curve__curve { stroke: var(--accent); }
+.fringe-curve__segment-fill { fill: var(--accent-quiet); opacity: .5; }
+.fringe-curve__segment-boundary { stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 4 3; }
+
+.michelson-bench, .fringe-curve { margin-bottom: 28px; }

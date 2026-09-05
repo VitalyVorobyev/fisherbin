@@ -1,125 +1,38 @@
-# Operator playbook — running research sessions
+# Running a research session
 
-How to drive this workspace as the human operator. Works with Claude Code or
-Codex; the prompts below are copy-paste ready. One session = one `WORK/`
-packet. Keep prompts short — the workspace files carry the protocol, so the
-prompt only needs to point at them.
+Choose work from `OPEN_PROBLEMS.md`. A file in `WORK/active/` may be parked; its location is
+not authorization to resume it. One session executes one selected packet.
 
-## Session types at a glance
-
-| Session | Model / effort | Context rule |
-|---|---|---|
-| Research (theorem work) | Strongest model, extended thinking / high reasoning | Owns the packet; delegates reads, never derivation |
-| Adversarial audit | Strongest model, extended thinking | **Fresh session**; must not share the researcher's context |
-| Bookkeeping | Mid-tier model is fine | Registry/doc edits; validator tests catch slips |
-| Literature | Mid-tier + web search | Writes into `LITERATURE/`, links papers to claim ids |
-
-## 1. Research session (the default)
-
-Start a fresh session in the repo root, on a fresh branch, and paste:
+## Next session
 
 ```text
-You are running a ScoreQuant research session.
-
-Read agenticresearch/README.md and follow its canonical read order.
-Execute the work packet agenticresearch/WORK/active/<PACKET-ID>.md
-following agenticresearch/protocols/theorem.md. Falsify before proving.
-
-Rules of engagement:
-- Work on branch research-<packet-id>; commit as you go.
-- Delegate wide reading and exhaustive numerical searches if your harness
-  supports it; do the mathematics yourself.
-- Do not re-derive project_proved claims; if one looks wrong, record an
-  audit task instead.
-- Before finishing: patch the claim files under agenticresearch/claims/,
-  serialize any counterexample, update the packet's status, then run
-  python agenticresearch/py/registry.py reindex && python agenticresearch/py/registry.py validate
-  and JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py tests/test_research_registry.py
-  and uv run ruff check . — all must be green.
-- End with the packet's stop-condition verdict and the next
-  dependency-blocking question.
+Execute agenticresearch/WORK/active/SCORE-ORACLE-ROBUSTNESS.md.
+Follow agenticresearch/README.md and protocols/theorem.md.
+Derive the frozen-rule scalar retention uncertainty result, run its one falsification/
+coverage experiment, and stop at proved, refuted or reduced. No new public API.
 ```
 
-Fill `<PACKET-ID>` from `ls agenticresearch/WORK/active/` — that directory is
-the only current list, so nothing here can go stale. Pick the packet from the
-highest-ranked ready programme in `claims/INDEX.md`. If no
-packet exists yet, first ask a session (or do it yourself) to draft one from
-the top unblocked programme in `OPEN_PROBLEMS.md` using `WORK/TEMPLATE.md`.
+## Other session types
 
-## 2. Adversarial audit session
+- **Independent audit:** a fresh context receives a claim ID and frozen proof/artifacts,
+  then follows `protocols/audit.md`. Do not give it the derivation transcript.
+- **Literature:** identify one claim or question and follow `protocols/literature.md`.
+  A search gap does not prove novelty.
+- **Bookkeeping:** name the exact registry/document change; do no new mathematics.
 
-Run only when a result is being promoted (novelty/publication claim, or a
-guarantee the library will ship). **Must be a brand-new session** — never a
-continuation of the researcher's session, and never given the researcher's
-chat transcript. Paste:
+Derivation remains with its owner; wide reading can be delegated under `AGENT.md`.
+Do not prescribe a model hierarchy or start additional packets automatically.
 
-```text
-You are an independent adversarial auditor for a ScoreQuant research claim.
-You did not produce this proof; your job is to break it.
+## Handoff
 
-Read agenticresearch/README.md (canonical read order), then
-agenticresearch/protocols/audit.md and follow its 16-item output contract
-exactly. AUDITS/AUDIT-D-EXCHANGE-VORONOI-001.md is the size/rigor exemplar.
+Record the verdict, changed claim IDs, evidence, limitations and one proposed next action.
+After claim edits, regenerate indexes. Validate with:
 
-Audit target: claim <CLAIM-ID>. Start from
-python agenticresearch/py/registry.py show <CLAIM-ID> --deps --proof
-
-Rules of engagement:
-- Recheck every dependency yourself; do not trust the researcher's summary.
-- Run your own counterexample search per protocols/numerical.md (exact
-  rationals; attack ties, duplicates, singletons, singular information).
-- Run your own targeted prior-art search per protocols/literature.md; an
-  empty result is a search gap, never novelty.
-- Verdict must be one of: verified (possibly with hardened assumptions),
-  refuted (with a serialized counterexample), or reduced to explicitly
-  listed unresolved assumptions.
-- Deliverables: AUDITS/AUDIT-<CLAIM-ID>-00N.md, registry patch, any
-  boundary counterexamples with fixtures and a pinned test, and the same
-  green test/lint gate as a research session.
+```bash
+uv run python agenticresearch/py/registry.py reindex
+uv run python agenticresearch/py/registry.py validate
+JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py tests/test_research_registry.py
 ```
 
-## 3. Bookkeeping session
-
-```text
-Bookkeeping session for agenticresearch/ — no mathematics.
-Read agenticresearch/README.md. Task: <e.g. serialize the counterexample
-described in <file> / sync a KNOWN_RESULTS section with claim Y / add a
-NUMERICAL_EVIDENCE row>.
-Indexes are generated, never hand-edited: run
-python agenticresearch/py/registry.py reindex
-Finish with python agenticresearch/py/registry.py validate clean, and
-JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest
-tests/test_research_registry.py tests/test_research_claims.py and
-uv run ruff check . green.
-```
-
-## 4. Literature session
-
-```text
-Literature session for agenticresearch/. Read agenticresearch/README.md and
-agenticresearch/protocols/literature.md. Run one snowballing round from
-LITERATURE/seeds.md (or the targeted novelty search for claim <ID>).
-Record per-round candidate/relevant counts in LITERATURE/graph.json, update
-reviewed.md / rejected.md / gaps.md, link every paper to claim ids, and give
-any new registry bibliography key a **Key:** line under its annotating heading
-in LITERATURE/topics/ so python agenticresearch/py/registry.py validate stays
-clean.
-Do not change claim statuses; report proposed status changes instead.
-```
-
-## After any session (operator checklist)
-
-1. `git log --oneline` — commits are small and labeled.
-2. `python agenticresearch/py/registry.py validate` — clean; then
-   `JAX_ENABLE_X64=1 MPLBACKEND=Agg uv run pytest tests/test_research_claims.py tests/test_research_registry.py` — green.
-3. Skim the packet file — status updated, stop condition addressed.
-4. Open a PR; the registry validator runs in CI on every push.
-5. If a result was promoted toward publication-critical, schedule the audit
-   session (type 2) before merging the promotion.
-
-## Escalation ladder (from AGENT.md)
-
-- exploratory lemma → one research session;
-- promising theorem → research session + one independent audit session;
-- publication-critical claim → research + adversarial audit + independent
-  prior-art search (types 2 and 4, separate sessions).
+Run the contributor checks relevant to other changed files. Promotion to a shipped guarantee
+or publication claim requires independent audit. Pushes and merges require owner authorization.

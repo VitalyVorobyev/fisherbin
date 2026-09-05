@@ -108,43 +108,6 @@ FLOWCYT_FIXTURE = "examples/data/flowcyt_fixture.json"
 HEP_FIXTURE = "examples/data/hep_higgsml_fixture.json"
 
 FACTS: tuple[Fact, ...] = (
-    # ------------------------------------------------------------------- home
-    # The front door opens on a measured comparison rather than a claim, so the
-    # baseline it is measured against must be the strongest naive rule in the
-    # study, not the most flattering one. At eight bins the three naive rules on
-    # this data span 0.0223 (an equal-width grid on two PCA components of the
-    # markers) through 0.0378 (equal-frequency bins along the leading Fisher
-    # direction of the score) to 0.0704 (weighted k-means on the standardized
-    # markers). The home page quotes the last of those, and publishes the other
-    # two beside it, for the reason S7 recorded: a headline measured against the
-    # weakest available baseline reports the baseline's difficulty, not the
-    # method. Every one of these is held-out, at the same bin budget as the
-    # ScoreQuant number they are compared with.
-    Fact("home", "bins", f"{FLOWCYT_STUDY}#/operating_partition/n_bins", _count),
-    Fact(
-        "home",
-        "naiveBestEfficiency",
-        f"{FLOWCYT_STUDY}#/marker_kmeans:8/held_out_d_efficiency",
-        _fixed(4),
-    ),
-    Fact(
-        "home",
-        "naiveScoreProjectionEfficiency",
-        f"{FLOWCYT_STUDY}#/one_dimensional_score:8/held_out_d_efficiency",
-        _fixed(4),
-    ),
-    Fact(
-        "home",
-        "naiveGridEfficiency",
-        f"{FLOWCYT_STUDY}#/two_dimensional_grid:8/held_out_d_efficiency",
-        _fixed(4),
-    ),
-    Fact(
-        "home",
-        "scorequantEfficiency",
-        f"{FLOWCYT_STUDY}#/finite_d_exchange:8/held_out_d_efficiency",
-        _fixed(4),
-    ),
     # ---------------------------------------------------------------- flowcyt
     Fact("flowcyt", "bins", f"{FLOWCYT_STUDY}#/operating_partition/n_bins", _count),
     # The study's two ScoreQuant methods disagree about which is better, and they
@@ -451,7 +414,7 @@ FACTS: tuple[Fact, ...] = (
     ),
     # -------------------------------------------------------------- michelson
     Fact("michelson", "bins", f"{MICHELSON}#/headline_bins", _count),
-    Fact("michelson", "fringes", f"{MICHELSON}#/fringes", _fixed(1)),
+    Fact("michelson", "fringes", f"{MICHELSON}#/fringes", _count),
     Fact("michelson", "visibility", f"{MICHELSON}#/v0", _fixed(2)),
     Fact("michelson", "nNodes", f"{MICHELSON}#/n_nodes", _count),
     Fact("michelson", "iPhiPhi", f"{MICHELSON}#/closed_form/i_phiphi", _fixed(4)),
@@ -575,8 +538,8 @@ def build_michelson_sweep() -> dict[str, object]:
     Returns
     -------
     dict
-        ``{"schemaVersion", "uMax", "fringes", "headlineBins", "rows"}``, one
-        row per swept bin budget, each row carrying its three retentions, the
+        ``{"schemaVersion", "uMax", "fringes", "headlineBins", "visibility",
+        "rows"}``, one row per swept bin budget, each row carrying its three retentions, the
         certified ceiling, the bound gap, the three labelings' aperture runs,
         and a ``text`` object formatted with the same renderers the fact
         table uses -- a page never formats a value itself, and a static
@@ -613,6 +576,7 @@ def build_michelson_sweep() -> dict[str, object]:
         "uMax": evidence["u_max"],
         "fringes": evidence["fringes"],
         "headlineBins": evidence["headline_bins"],
+        "visibility": evidence["v0"],
         "rows": rows,
     }
 

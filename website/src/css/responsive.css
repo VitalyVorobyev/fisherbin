@@ -27,11 +27,6 @@
   .door-item { grid-template-columns: 1fr; gap: 10px; }
   .home-explain { grid-template-columns: 1fr; gap: 36px; }
   .home-explain__visual { margin-top: 4px; }
-  .content-grid { display: block; }
-  .side-index { position: static; display: flex; gap: 14px; overflow-x: auto; margin-bottom: 28px; padding-bottom: 7px; }
-  .side-index > span { display: none; }
-  .side-index button, .side-index a { width: max-content; white-space: nowrap; }
-  .page-intro { padding: 66px 0 48px; }
   .site-footer { grid-template-columns: 1fr 1fr; }
   .site-footer > div:first-child { grid-column: 1 / -1; }
 }
@@ -39,14 +34,8 @@
 @media (max-width: 520px) {
   .brand__word { font-size: 17px; }
   .site-actions { gap: 1px; }
-  .page-intro h1 { font-size: 43px; }
-  .score-space__metrics small { font-size: 7px; }
-  .score-space__metrics span { padding-inline: 8px; }
   .provenance-grid { grid-template-columns: 1fr; }
   .provenance-grid div { border-right: 0; border-bottom: 1px solid var(--border); }
-  .benchmark-chart { padding: 18px; }
-  .benchmark-row { grid-template-columns: minmax(90px, 1fr) minmax(60px, 100px) 60px; align-items: start; }
-  .benchmark-row > *:nth-child(2), .benchmark-row > *:nth-child(3), .benchmark-row > *:last-child { display: none; }
   .site-footer { display: block; }
   .site-footer > div { margin-bottom: 30px; }
 }
@@ -57,6 +46,6 @@
 }
 
 @media print {
-  .site-header, .site-footer, .filter-row { display: none !important; }
+  .site-header, .site-footer { display: none !important; }
   body { background: white; }
 }

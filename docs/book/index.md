@@ -7,30 +7,12 @@ partition of the data keeps the most Fisher information about the parameters you
 about, and how do you find it? The package is one answer to that question; the book is
 the argument for why that answer is correct.
 
-## Who it is for
-
-You do not need to be running the ScoreQuant library to read this. The book stands on its
-own as an account of hard quantization for parameter estimation, connecting classical
-optimal-design and quantization theory to modern simulation-based inference. If you do use
-the package, the book is also the reference for what each criterion, solver, and
-diagnostic actually computes and under which assumptions. Executable examples accompany
-the mathematics; the API reference carries the complete interface contracts.
-
-## A gradual, 1D-first structure
-
-The book is built to be climbable rather than merely readable. It opens with the smallest
-version of the problem — one parameter, one score coordinate, a handful of cells — solved
-by hand and then by exact dynamic programming, before any matrix, criterion, or
-optimization algorithm appears. Only once that case is completely understood does the book
-generalize: to vector scores and the three ways an observation can become one, to the
-exact information identity that every later chapter depends on, to the two tasks
-(population design and finite assignment) that the rest of the machinery is built to
-serve, and finally to the criteria (trace, D, profiled \(D_s\), E) and algorithms (whitened
-k-means, exact exchange, guarded Lloyd, soft rules) that solve them. The last two chapters
-turn to what happens when scores themselves are estimated rather than known, and to how to
-choose among everything that came before.
-
-Every substantive statement is tagged as one of:
+The book stands on its own as an account of hard quantization for parameter estimation,
+connecting classical optimal design and quantization theory to simulation-based inference; for a
+user of the package it is also the reference for what each criterion, solver and diagnostic
+computes and under which assumptions. It opens with one parameter, one score coordinate and a
+handful of cells, solved by hand and then by exact dynamic programming, and generalizes only once
+that case is understood. Every substantive statement is tagged as one of:
 
 - **Theorem** — a mathematical claim with stated assumptions and a proof or proof sketch;
 - **Proposition** — a narrower derived claim;
@@ -39,7 +21,9 @@ Every substantive statement is tagged as one of:
 
 Small analytic or rational laboratories illustrate exact claims throughout. The FlowCyt
 cytometry study in the [evidence section](../usecases/flowcyt/index.md) is a capstone
-application and never serves as proof of a theorem.
+application and never serves as proof of a theorem. The [method overview](../method.md) is the
+package-facing summary of the same material, and [Choosing your workflow](../user-workflow.md)
+the decision guide; neither is repeated here.
 
 ## Chapters
 

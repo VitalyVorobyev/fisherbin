@@ -15,48 +15,37 @@ export const f = factsFor("hep");
 
 # A Higgs search with a floating energy scale
 
-*Who this is for: a physicist who histograms a classifier output before fitting, and wants to know
-what that histogram costs once a detector systematic is floating in the same fit.*
-
 ## The measurement
 
-An H→ττ analysis is trying to measure one number: how much Higgs-to-tau-tau signal is present,
-relative to what the Standard Model predicts. In this study, simulated events are reduced to a table of counts — how many candidate events landed in each of
-a handful of categories — and the likelihood is built on that table. A common baseline uses slices of a classifier output: train a network to separate signal from background, and
-histogram what it says.
+This is a simulation study. The events are {f("nEvents")} simulated collision events from the{" "}
+{f("datasetName")}, {f("signalEvents")} labelled as `htautau` signal and {f("backgroundEvents")}
+as background, each carried at its Monte Carlo weight. The quantity to estimate is the signal
+strength: the `htautau` rate relative to the nominal prediction. The tau energy scale is treated
+as a nuisance parameter, constrained but not fixed, that floats in the fit beside the signal rate
+and the background rate; the committed fixture holds row-aligned copies of every event with the
+energy scale shifted down and shifted up, which is what makes its effect measurable.
 
-The complication is that the tau energy scale is not known exactly. Calibration leaves a residual
-uncertainty, and a modern analysis handles that by letting the energy scale float in the fit as a
-nuisance parameter, constrained but not fixed. That changes the question the histogram has to
-answer. A category boundary that separates signal from background beautifully is not necessarily a
-category boundary that survives having the energy scale floated alongside the signal strength: the
-region where signal concentrates is also the region the energy scale moves events through, so some
-of what those categories carry gets absorbed by the nuisance rather than by the parameter you care
-about.
+The design question is this. The events are to be reduced to a table of {f("bins")} counts, and
+the likelihood is built on that table. A category boundary that separates signal from background
+well is not necessarily one that survives having the energy scale floated: the region where signal
+concentrates is also the region the energy scale moves events through, so some of what those
+categories carry is absorbed by the nuisance rather than by the parameter of interest. Given that
+only {f("bins")} counts are kept, and given that the energy scale floats, which {f("bins")}
+categories retain the most information about the signal strength?
 
-So the question is not "is the classifier good". It is: given that you may publish only a handful
-of counts, and given that the energy scale will float, which handful?
+Nothing on this page describes how a published H→ττ measurement is performed. The sample is
+small and public, the background processes are combined into one component, the energy scale
+enters as a shape deformation with the event selection held fixed, and the classifiers are
+ordinary logistic fits. Each of those choices is stated on the reference page.
 
 ## Where the events come from
 
-The study runs on {f("nEvents")} events drawn from the {f("datasetName")} —
-{f("signalEvents")} labelled as `htautau` signal and {f("backgroundEvents")} as background, each
-carried at its Monte Carlo weight. The committed fixture holds several tau-energy-scale variants of
-those same rows, so a shifted-up and a shifted-down copy of every event exist side by side and stay
-row-aligned.
-
-The provenance is three separate facts and is worth keeping separate. The bytes were fetched from
-<a href={f("bytesFetchedFrom")} rel="noreferrer noopener" target="_blank">the
-<code>FAIR-Universe/HEP-Challenge</code> code repository</a>, at commit <code>{f("upstreamCommit")}</code>. That code repository carries **no licence
-file** of its own. The {f("license")} claim is made under the Zenodo archival record for the public
-dataset the sample is drawn from, <a href={f("licenseRecordUrl")} rel="noreferrer noopener" target="_blank">DOI
-{f("licenseRecordDoi")}</a> — not under the code repository. Collapsing those three into one
-licence line would be a claim nobody checked.
-
-Everything below is the narrative arc; the exhaustive record — the modelling choices, the
-finite-difference convergence study, and the sweep across bin budgets — lives in the
-<ReferenceLink to="usecases/hep/">HEP classifier study</ReferenceLink> in the
-reference, and that page is where to go for the parts this one only summarises.
+The sample is drawn from the {f("datasetName")}, published under {f("license")} through its
+Zenodo record, <a href={f("licenseRecordUrl")} rel="noreferrer noopener" target="_blank">DOI
+{f("licenseRecordDoi")}</a>. The fixture's build record, the modelling choices, the
+finite-difference convergence study and the sweep across bin budgets are in the{" "}
+<ReferenceLink to="usecases/hep/">HEP classifier study</ReferenceLink> in the reference; this
+page keeps to the result.
 
 ## Reading an event as three coordinates
 
@@ -155,7 +144,7 @@ With the table in hand the fit is one call. `optimize_partition` assigns each of
 {f("nEvents")} events to one of {f("bins")} categories, and the criterion says what "best" means:
 `ProfiledDOptimality` asks for the categories that retain the most information about
 `mu_htautau` *after* the background rate and the energy scale have been profiled out, which is the
-question the analysis actually asks. `DExchangeConfig` is the exact finite solver — it moves one
+question this study asks. `DExchangeConfig` is the exact finite solver — it moves one
 event at a time, accepts only moves whose exact gain is positive, and therefore terminates rather
 than converging approximately.
 
@@ -250,18 +239,17 @@ remainder is not sitting there waiting to be recovered by a cleverer rule: the c
 that many cells is {f("ceilingRetention")}, and the fitted categories are {f("gapToCeiling")} below
 it. The compression costs what it costs; the choice of compression, at this budget, no longer does.
 
-The practical consequence is that the size of the published table becomes a design parameter you
-can set on evidence rather than on convention. What one more category would buy is a measurement,
-not a guess. The browser experiment for this page arrives with its lesson rewrite; the
-[lessons index](/lab) says what runs in the browser today.
+On this sample, then, the size of the table is a design parameter with a measured cost: what one
+more category would buy is read from the bin-budget sweep on the reference page rather than
+guessed.
 
-## What the histogram you would have drawn retains
+## What simple rules on the classifier output retain
 
-The comparison has to be against something a physicist would actually do, and the honest version
-of that is more than one thing. Slicing the classifier output into equal-frequency cells is the
-first instinct. Slicing the *logit* of the same output into equal-width cells is the second, and on
-this dataset it is considerably better. The two-bin significance cut — pick the threshold
-maximising S/√B and count either side — is the most recognisable of all.
+The comparison is against rules built from the signal classifier's output alone, and there is
+more than one such rule. Slicing the output into equal-frequency cells is the simplest. Slicing
+the *logit* of the same output into equal-width cells is another, and on this sample it is
+considerably better. The two-bin significance cut, a single threshold chosen to maximise S/√B
+with a count on either side, is the coarsest.
 
 <BinningComparison
   axisLabel="Profiled information about the signal rate, retained"
@@ -318,7 +306,7 @@ the energy-scale direction is precisely the one it never contained.
 Here is the part worth taking away, and it cuts against the headline. Binning *the same classifier
 posterior* two reasonable ways moves the retained profiled information by {f("baselineSpread")}.
 Against the equal-frequency cells the gap reads {f("gapToEqualFrequency")}; against the logit
-equal-width cells it reads {f("headlineGap")}. Both baselines are things people do. The difference
+equal-width cells it reads {f("headlineGap")}. Both are natural rules. The difference
 between them is larger than most method comparisons ever report, and it means a large part of any
 such headline is a statement about how hard the baseline was tried, not about the method.
 

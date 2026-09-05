@@ -149,6 +149,8 @@ _LITERAL_ALLOWLIST: dict[str, str] = {
     "4": "counting word: four walkthroughs",
     "10.5281": "the DOI prefix of the HEP fixture's Zenodo record",
     "3.12": "the minimum supported Python version, not a measurement",
+    "1881": "the year of Michelson's first interferometer, a date rather than a measurement",
+    "1887": "the year of the Michelson–Morley experiment, a date rather than a measurement",
 }
 
 _FENCE = re.compile(r"^```.*?^```", re.DOTALL | re.MULTILINE)
@@ -198,12 +200,6 @@ _UNGUARDED_CONTENT_ROOTS: dict[str, str] = {
         "The research narrative cites claim ids, dates and counts from the novelty "
         "ledger rather than from run evidence, so the fact contract is not the right "
         "instrument for it; S6 gave it claim-id linking as its own check instead."
-    ),
-    "blog": (
-        "Posts are dated accounts of a research or feature arc, written once and not "
-        "regenerated. A post quotes the numbers that were true when it was written, "
-        "which is what makes it a record; holding it to the current evidence would "
-        "require rewriting history every time a study is re-run."
     ),
 }
 

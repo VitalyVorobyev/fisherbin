@@ -55,6 +55,7 @@ export interface MichelsonSweep {
   uMax: number;
   fringes: number;
   headlineBins: number;
+  visibility: number;
   rows: MichelsonSweepRow[];
 }
 
@@ -87,6 +88,7 @@ interface RawMichelsonSweep {
   uMax: number;
   fringes: number;
   headlineBins: number;
+  visibility: number;
   rows: RawMichelsonSweepRow[];
 }
 
@@ -107,6 +109,7 @@ export const michelsonSweep: MichelsonSweep = {
   uMax: raw.uMax,
   fringes: raw.fringes,
   headlineBins: raw.headlineBins,
+  visibility: raw.visibility,
   rows: raw.rows.map((row) => ({
     nBins: row.nBins,
     equalWidth: row.equalWidth,

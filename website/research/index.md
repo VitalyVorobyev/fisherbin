@@ -6,32 +6,10 @@ sidebar_position: 1
 
 # Research
 
-*Who this is for: a reader deciding how much of ScoreQuant's mathematics to trust, and for what.*
-
-This section explains the research question behind the library, what the literature had settled
-before the project started, which results the project proved itself, and — at the same length —
-which parts are not proved and are recorded as open, or as numerical observation only.
-
-Every statement in this section is drawn from two documents and nothing else: the internal
-novelty ledger, which assigns each result a label from *known* / *direct corollary* /
-*adaptation* / *apparently new* / *unresolved* together with the sources it must cite, and the
-<a href="pathname:///reference/related-work/" target="_self">related-work survey</a>, which maps
-the four research traditions this problem sits in. Where a page states a result it names the
-registry claim id and links to [the claim record](/research/claim-record), so you can read the
-exact statement, its assumptions and its dependencies instead of trusting a paraphrase.
-
-Two conventions are worth knowing before you read further.
-
-**A search gap is not a novelty proof.** Several results below carry the ledger label *apparently
-new*. That label means a targeted literature search found no direct precedent — not that none
-exists. Those results are written here as "no direct precedent was found", with the nearest prior
-art named beside them, and every one of them is scheduled for an adversarial literature review
-that can demote it.
-
-**A counterexample is a boundary, not a defeat.** The most useful entries in the record are the
-exact rational examples that show where a theorem stops holding. Four of them are wired into the
-library as refusal messages, so a user who meets one is being told which counterexample forbids
-the thing they asked for.
+The library combines established Fisher-information identities with finite-partition algorithms
+and verified limits on their guarantees. The pages below separate prior work, project results
+and open questions. Exact assumptions and proof links are in the claim record; a project proof
+status does not establish novelty or external peer review.
 
 ## The pages
 
@@ -46,16 +24,3 @@ the thing they asked for.
 | [The book, chapter by chapter](/research/book-contents) | The fourteen-chapter derivation in the reference, and who should read which chapter |
 | [Reading the claim record](/research/reading-the-claim-record) | How the claim registry works, and how to read one entry |
 | [The claim record](/research/claim-record) | The published claims themselves, one anchored entry each |
-
-## Where to start
-
-If you are deciding whether the method fits your problem, read
-[the problem](/research/the-problem) and then
-[what cannot be certified](/research/what-cannot-be-certified). The second page is the one that
-decides the question.
-
-If you met an error message and want to know where it comes from, go straight to
-[how the API names each result](/research/api-and-theorems).
-
-If you want the derivations rather than the summaries, the fourteen book chapters are listed in
-[the book, chapter by chapter](/research/book-contents).

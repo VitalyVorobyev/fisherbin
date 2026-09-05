@@ -2,7 +2,7 @@ import Link from "@docusaurus/Link";
 import {useEffect, useMemo, useRef, useState} from "react";
 
 import {portalData} from "../data/portal";
-import {siteUrl} from "../lib/site";
+import {REFERENCE_BASE, siteUrl} from "../lib/site";
 
 interface PagefindData {
   excerpt: string;
@@ -32,11 +32,8 @@ interface SearchDialogProps {
 
 const routes = [
   ["Get started", "/get-started", "Install it and follow the first fit through to what it means."],
-  ["API", "/api", "Inspect generated Python signatures and contracts."],
   ["Walkthroughs", "/walkthroughs", "One applied question followed end to end, with real numbers."],
-  ["Benchmarks", "/benchmarks", "Compare speed, scale, and retained information."],
-  ["Research", "/research", "Follow claims, dependencies, and counterexamples."],
-  ["Lessons", "/lab", "One dataset and one task, taught in order; the browser runs at the end."]
+  ["Research", "/research", "Follow claims, dependencies, and counterexamples."]
 ] as const;
 
 export function SearchDialog({open, onClose}: SearchDialogProps): React.JSX.Element | null {
@@ -91,7 +88,7 @@ export function SearchDialog({open, onClose}: SearchDialogProps): React.JSX.Elem
     const routeResults = routes.map(([title, href, summary]) => ({title, href, summary, type: "Route"}));
     const apiResults = portalData.api.map((symbol) => ({
       title: symbol.name,
-      href: `/api#${symbol.name.toLowerCase()}`,
+      href: `${REFERENCE_BASE}symbols/`,
       summary: symbol.summary,
       type: symbol.kind === "class" ? "Class" : "Function"
     }));
@@ -124,13 +121,24 @@ export function SearchDialog({open, onClose}: SearchDialogProps): React.JSX.Elem
           <kbd>esc</kbd>
         </label>
         <div className="search-dialog__results" aria-live="polite">
-          {results.map((item) => (
-            <Link key={`${item.type}-${item.title}`} to={item.href} onClick={onClose}>
-              <span className="search-result__type">{item.type}</span>
-              <span><strong>{item.title}</strong><small>{item.summary}</small></span>
-              <span aria-hidden="true">↗</span>
-            </Link>
-          ))}
+          {results.map((item) =>
+            // Class/Function results point at the separately built MkDocs reference
+            // tree mounted outside the Docusaurus app -- reaching it always means
+            // leaving this app, so it needs a real page load, not client-side routing.
+            item.type === "Class" || item.type === "Function" ? (
+              <a key={`${item.type}-${item.title}`} href={item.href} onClick={onClose}>
+                <span className="search-result__type">{item.type}</span>
+                <span><strong>{item.title}</strong><small>{item.summary}</small></span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              <Link key={`${item.type}-${item.title}`} to={item.href} onClick={onClose}>
+                <span className="search-result__type">{item.type}</span>
+                <span><strong>{item.title}</strong><small>{item.summary}</small></span>
+                <span aria-hidden="true">↗</span>
+              </Link>
+            )
+          )}
           {results.length === 0 && <p className="empty-state">No exact match. Try “Fisher”, “ratio”, or a symbol name.</p>}
         </div>
         <footer><span>Static search index: Pagefind after production build</span><span>↑↓ navigate · enter open</span></footer>
