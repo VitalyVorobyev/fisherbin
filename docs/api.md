@@ -19,6 +19,23 @@ know you have; none is needed to fit anything.
 The sections below follow that order. The generated [reference](symbols/index.md) covers every
 public object.
 
+## Which task, which criterion, which solver
+
+<!-- generated: solver-matrix (do not edit by hand; run `pnpm generate:data`) -->
+| Configuration | `optimize_partition` | `fit_quantizer` | Contract |
+| --- | --- | --- | --- |
+| `DExchangeConfig` | `DOptimality`, `ProfiledDOptimality` | `DOptimality` | Exact positive-gain relocations; monotone objective; terminates exchange-stable |
+| `MahalanobisLloydConfig` | `DOptimality`, `ProfiledDOptimality` | `DOptimality` | A batch is adopted only if the exactly rebuilt objective improves; optional exact-exchange guard |
+| `KMeansConfig` | — | `NormalizedTrace` | Weighted $k$-means in whitened score space |
+| `SoftVoronoiConfig` | — | `DOptimality`, `ProfiledDOptimality` | Differentiable soft optimization then hardening, with the hardening gap reported |
+| `ScalarDPConfig` | — | `DOptimality` | The exact global interval solution for rank-one score space |
+<!-- /generated: solver-matrix -->
+
+A pair that is absent from this table is refused before any optimization starts. Read a result in
+this order: the information kind it reports (exact model or supplied-score surrogate), the sample
+it was evaluated on, the retained rank, the hard D-efficiency, the worst-direction diagnostics,
+then the convergence or certificate status.
+
 ---
 
 # Core

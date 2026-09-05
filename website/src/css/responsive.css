@@ -59,8 +59,8 @@
   .provenance-grid { grid-template-columns: 1fr; }
   .provenance-grid div { border-right: 0; border-bottom: 1px solid var(--border); }
   .benchmark-chart { padding: 18px; }
-  .benchmark-row { grid-template-columns: 92px minmax(60px, 1fr) 60px; }
-  .benchmark-row > *:last-child { display: none; }
+  .benchmark-row { grid-template-columns: minmax(90px, 1fr) minmax(60px, 100px) 60px; align-items: start; }
+  .benchmark-row > *:nth-child(2), .benchmark-row > *:nth-child(3), .benchmark-row > *:last-child { display: none; }
   .site-footer { display: block; }
   .site-footer > div { margin-bottom: 30px; }
   .lab-page { padding-top: 28px; }

@@ -1,6 +1,6 @@
 import {useMemo, useState} from "react";
 
-import {portalData, type ScoreScenario} from "../data/portal";
+import {portalData, type ScoreRegions, type ScoreScenario} from "../data/portal";
 
 const palette = ["#2b77f3", "#20bfae", "#86a8ff", "#f0a84b", "#b77ee8"];
 
@@ -34,17 +34,51 @@ function makeProjector(points: readonly (readonly number[])[], quantile: number)
   ];
 }
 
-function bisector(scalePoint: Projector, first: readonly number[], second: readonly number[], index: number): React.JSX.Element {
-  const [x1, y1] = scalePoint(first);
-  const [x2, y2] = scalePoint(second);
-  const middleX = (x1 + x2) / 2;
-  const middleY = (y1 + y2) / 2;
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const length = Math.hypot(dx, dy) || 1;
-  const px = (-dy / length) * 460;
-  const py = (dx / length) * 460;
-  return <line key={`${index}-${middleX}`} x1={middleX - px} y1={middleY - py} x2={middleX + px} y2={middleY + py} />;
+/**
+ * Rasterize the compiled cell regions ``scenario.regions`` carries.
+ *
+ * The rule drawn here is the compiled Mahalanobis rule
+ * `argmin_b (s - mu_b)^T M (s - mu_b)`, with `M` the scenario's exported
+ * `metric` -- the inverse retained information Theorem 3 makes canonical for
+ * an exchange-stable D partition (see `PartitionResult.compile_quantizer`).
+ * The picture below is therefore a raster of that library-computed rule, one
+ * label per grid cell from `predict_scores`, rather than a geometric
+ * construction: a general Mahalanobis Voronoi boundary has no closed form a
+ * handful of line segments could draw exactly.
+ *
+ * Equal labels adjacent within a row are merged into one `<rect>` (a simple
+ * run-length pass per row) to keep the DOM to a few dozen elements instead of
+ * one per grid cell.
+ */
+function regionRects(scalePoint: Projector, regions: ScoreRegions): React.JSX.Element[] {
+  const {labels, nx, ny, x0, x1, y0, y1} = regions;
+  const dx = (x1 - x0) / nx;
+  const dy = (y1 - y0) / ny;
+  const rects: React.JSX.Element[] = [];
+  for (let row = 0; row < ny; row += 1) {
+    let runStart = 0;
+    for (let column = 0; column <= nx; column += 1) {
+      const atRowEnd = column === nx;
+      const label = labels.charCodeAt(row * nx + runStart) - 48;
+      if (atRowEnd || labels.charCodeAt(row * nx + column) - 48 !== label) {
+        const [cornerAX, cornerAY] = scalePoint([x0 + runStart * dx, y0 + row * dy]);
+        const [cornerBX, cornerBY] = scalePoint([x0 + column * dx, y0 + (row + 1) * dy]);
+        rects.push(
+          <rect
+            key={`${row}-${runStart}`}
+            x={Math.min(cornerAX, cornerBX)}
+            y={Math.min(cornerAY, cornerBY)}
+            width={Math.abs(cornerBX - cornerAX)}
+            height={Math.abs(cornerBY - cornerAY)}
+            fill={palette[label % palette.length]}
+            fillOpacity={0.16}
+          />
+        );
+        runStart = column;
+      }
+    }
+  }
+  return rects;
 }
 
 interface ScoreSpaceProps {
@@ -63,10 +97,6 @@ export function ScoreSpace({compact = false, controlledBins, onBinsChange, place
   const bins = controlledBins ?? localBins;
   const scenario = scenarioOverride ?? portalData.scoreSpace.scenarios[String(bins)];
   if (scenario === undefined) throw new Error(`No generated score-space fixture exists for ${bins} bins.`);
-  const pairs = useMemo(
-    () => scenario.centers.flatMap((center, index) => scenario.centers.slice(index + 1).map((other) => [center, other] as const)),
-    [scenario]
-  );
   const setBins = (value: number): void => {
     setLocalBins(value);
     onBinsChange?.(value);
@@ -84,6 +114,13 @@ export function ScoreSpace({compact = false, controlledBins, onBinsChange, place
   // Above two dimensions the picture is a projection onto the first two
   // coordinates; the caller says so beside the plot.
   const dimensions = points[0]?.length ?? 2;
+  // The exported regions were rasterized in 2D score space; above that, this
+  // picture is already a projection and the regions would not describe it.
+  const drawableRegions = dimensions <= 2 ? scenario.regions : undefined;
+  const regions = useMemo(
+    () => (drawableRegions === undefined ? [] : regionRects(scalePoint, drawableRegions)),
+    [drawableRegions, scalePoint]
+  );
   // A large table would draw tens of thousands of overlapping circles for no
   // added information, so the plot samples it evenly and says nothing it cannot
   // show honestly.
@@ -105,7 +142,7 @@ export function ScoreSpace({compact = false, controlledBins, onBinsChange, place
   return (
     <div className={compact ? "score-space score-space--compact" : "score-space"}>
       <div className="score-space__toolbar">
-        <span><i className="status-dot"/> live fixture</span>
+        <span><i className="status-dot"/> committed fixture</span>
         {!compact && (
           <label>Bins <input type="range" min="3" max="5" value={bins} onChange={(event) => setBins(Number(event.target.value))}/><strong>{bins}</strong></label>
         )}
@@ -113,7 +150,9 @@ export function ScoreSpace({compact = false, controlledBins, onBinsChange, place
       <svg viewBox="0 0 600 410" role="img" aria-label={`Score-space partition with ${bins} bins`}>
         <defs><clipPath id="plot-clip"><rect x="24" y="18" width="552" height="354" rx="8"/></clipPath></defs>
         <g className="score-grid"><path d="M24 106H576M24 194H576M24 282H576M162 18V372M300 18V372M438 18V372"/></g>
-        <g clipPath="url(#plot-clip)" className="score-bisectors">{pairs.map(([a, b], index) => bisector(scalePoint, a, b, index))}</g>
+        {regions.length > 0 && (
+          <g clipPath="url(#plot-clip)" className="score-regions">{regions}</g>
+        )}
         <g>
           {drawn.map((point, index) => {
             const [cx, cy] = scalePoint(point);
